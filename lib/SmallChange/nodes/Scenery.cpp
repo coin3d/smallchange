@@ -636,12 +636,9 @@ Scenery::colortexgen_cb(void * closure, double * pos, float elevation, double * 
 void
 Scenery::colormaptexchange(void)
 {
-  // FIXME: invalidate texture
   if ( this->colorTexture.getValue() ) {
     if ( this->colormaptexid != -1 ) {
-      fprintf(stderr, "invalidating texture\n");
       this->refreshTextures(this->colormaptexid);
-      fprintf(stderr, "done\n");
     }
   }
 }
