@@ -32,7 +32,9 @@
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFVec2s.h>
+#include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoMFString.h>
+#include <Inventor/fields/SoMFBool.h>
 #include <SmallChange/basic.h>
 
 class SmPopupMenuKitP;
@@ -65,12 +67,12 @@ class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(textFont);
   SO_KIT_CATALOG_ENTRY_HEADER(textColor);
   SO_KIT_CATALOG_ENTRY_HEADER(textPickStyle);
-  SO_KIT_CATALOG_ENTRY_HEADER(textShape);
+  SO_KIT_CATALOG_ENTRY_HEADER(itemSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(activeMaterial);
   SO_KIT_CATALOG_ENTRY_HEADER(activeShape);
   SO_KIT_CATALOG_ENTRY_HEADER(borderShape);
-  SO_KIT_CATALOG_ENTRY_HEADER(submenuMarkerSeparator);
-  SO_KIT_CATALOG_ENTRY_HEADER(separatorSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(titleSeparator);
+
 
 public:
   SmPopupMenuKit(void);
@@ -104,7 +106,9 @@ public:
   SoMFString itemList;
   SoMFNode itemData;
   SoMFString itemSchemeScript;
-  
+  SoMFBool itemTagged;
+  SoMFBool itemDisabled;
+  SoSFString menuTitle;
   SoSFBool visible;
   SoSFBool isActive;
 
@@ -120,7 +124,6 @@ public:
   void childFinished(SmPopupMenuKit * child);
   
 private:
-
   void updateBackground(void);
   void updateActiveItem(void);
   void itemPicked(const int idx);
