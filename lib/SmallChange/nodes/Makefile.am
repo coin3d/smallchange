@@ -7,7 +7,7 @@ else
 noinst_LTLIBRARIES = libnodes.la
 endif
 
-libnodes_la_SOURCES = \
+SOURCES = \
 	AutoFile.cpp AutoFile.h \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
@@ -28,30 +28,17 @@ libnodes_la_SOURCES = \
 	SoLODExtrusion.cpp \
 	SoLODExtrusion.h \
 	FrustumCamera.cpp \
-	FrustumCamera.h
+	FrustumCamera.h \
+	UTMCamera.cpp \
+	UTMCamera.h \
+	UTMPosition.cpp \
+	UTMPosition.h \
+	UTMCoordinate.cpp \
+	UTMCoordinate.h
 
-nodes_lst_SOURCES = \
-	AutoFile.cpp AutoFile.h \
-	DepthBuffer.cpp DepthBuffer.h \
-	ViewportRegion.cpp ViewportRegion.h \
-	Coinboard.cpp Coinboard.h \
-	Switchboard.cpp Switchboard.h \
-	SwitchboardOperator.cpp SwitchboardOperator.h \
-	CoinEnvironment.cpp CoinEnvironment.h \
-	SkyDome.cpp SkyDome.h \
-	ShapeScale.cpp ShapeScale.h \
-	PickSwitch.cpp PickSwitch.h \
-	PickCallback.cpp PickCallback.h \
-	SoTCBCurve.cpp \
-	SoTCBCurve.h \
-	SoText2Set.cpp \
-	SoText2Set.h \
-	SoPointCloud.cpp \
-	SoPointCloud.h \
-	SoLODExtrusion.cpp \
-	SoLODExtrusion.h \
-	FrustumCamera.cpp \
-	FrustumCamera.h
+libnodes_la_SOURCES = $(SOURCES)
+
+nodes_lst_SOURCES = $(SOURCES)
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
@@ -70,7 +57,10 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h \
-	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h
+	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h \
+	$(top_srcdir)/lib/SmallChange/nodes/UTMCamera.h \
+	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
+	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -8,13 +8,16 @@ noinst_LTLIBRARIES = libelements.la
 endif
 
 libelements_la_SOURCES = \
-	GLDepthBufferElement.cpp GLDepthBufferElement.h
+	GLDepthBufferElement.cpp GLDepthBufferElement.h \
+	UTMElement.cpp UTMElement.h
 
 elements_lst_SOURCES = \
-	GLDepthBufferElement.cpp GLDepthBufferElement.h
+	GLDepthBufferElement.cpp GLDepthBufferElement.h \
+	UTMElement.cpp UTMElement.h
 
 libelementsincdir = $(includedir)/SmallChange/elements
 libelementsinc_HEADERS = \
+	$(top_srcdir)/lib/SmallChange/elements/UTMElement.h \
 	$(top_srcdir)/lib/SmallChange/elements/GLDepthBufferElement.h
 
 elements.lst: $(elements_lst_OBJECTS)

@@ -158,15 +158,18 @@ INCLUDES = -I$(top_srcdir)/lib
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libelements.la
 
 libelements_la_SOURCES = \
-	GLDepthBufferElement.cpp GLDepthBufferElement.h
+	GLDepthBufferElement.cpp GLDepthBufferElement.h \
+	UTMElement.cpp UTMElement.h
 
 
 elements_lst_SOURCES = \
-	GLDepthBufferElement.cpp GLDepthBufferElement.h
+	GLDepthBufferElement.cpp GLDepthBufferElement.h \
+	UTMElement.cpp UTMElement.h
 
 
 libelementsincdir = $(includedir)/SmallChange/elements
 libelementsinc_HEADERS = \
+	$(top_srcdir)/lib/SmallChange/elements/UTMElement.h \
 	$(top_srcdir)/lib/SmallChange/elements/GLDepthBufferElement.h
 
 subdir = lib/SmallChange/elements
@@ -178,20 +181,23 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 elements_lst_AR = $(AR) cru
 elements_lst_LIBADD =
-am_elements_lst_OBJECTS = GLDepthBufferElement.$(OBJEXT)
+am_elements_lst_OBJECTS = GLDepthBufferElement.$(OBJEXT) \
+	UTMElement.$(OBJEXT)
 elements_lst_OBJECTS = $(am_elements_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libelements_la_LDFLAGS =
 libelements_la_LIBADD =
-am_libelements_la_OBJECTS = GLDepthBufferElement.lo
+am_libelements_la_OBJECTS = GLDepthBufferElement.lo UTMElement.lo
 libelements_la_OBJECTS = $(am_libelements_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/GLDepthBufferElement.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/GLDepthBufferElement.Po
+@AMDEP_TRUE@	./$(DEPDIR)/GLDepthBufferElement.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/UTMElement.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/UTMElement.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -245,6 +251,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GLDepthBufferElement.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GLDepthBufferElement.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UTMElement.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UTMElement.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
