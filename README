@@ -1,0 +1,30 @@
+NAME
+
+SmallChange
+
+
+BRIEF DESCRIPTION
+
+A collection of extensions to the Open Inventor[1] API. Can be used 
+both with Coin and Open Inventor[1].
+
+HOMEPAGE
+
+<URL:http://www.coin3d.org>
+
+
+LICENSE
+
+SmallChange is released publicly under the GNU General Public License
+(GPL) for developers of free software (see LICENSE.GPL) and is also
+available for any proprietary use under a Professional Edition
+license. Read the GPL carefully to decide whether or not your use of
+SmallChange is compatible with this free, open source license.
+
+MAIN DEVELOPERS
+
+Peder Blekken <pederb@sim.no>
+
+
+-- 
+[1] Open Inventor is a trademark of SGI Inc. 

@@ -1,0 +1,22 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define if you have the <windows.h> header file. */
+#undef HAVE_WINDOWS_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* define this to the libSmallchange major version number */
+#undef SMALLCHANGE_MAJOR_VERSION
+
+/* define this to the libSmallchange release version number */
+#undef SMALLCHANGE_MICRO_VERSION
+
+/* define this to the libSmallchange minor version number */
+#undef SMALLCHANGE_MINOR_VERSION
+
+/* define this to the full libSmallchange major.minor.micro version number */
+#undef SMALLCHANGE_VERSION
+
+/* Version number of package */
+#undef VERSION

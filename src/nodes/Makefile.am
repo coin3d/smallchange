@@ -1,0 +1,14 @@
+noinst_LTLIBRARIES = libnodes.la
+
+INCLUDES = -I$(top_srcdir)/src
+
+libnodes_la_SOURCES = \
+	DepthBuffer.cpp DepthBuffer.h \
+	ViewportRegion.cpp ViewportRegion.h
+
+libnodesincdir = $(includedir)/SmallChange
+
+libnodesinc_HEADERS = \
+	$(top_srcdir)/src/nodes/ViewportRegion.h \
+	$(top_srcdir)/src/nodes/DepthBuffer.h
+

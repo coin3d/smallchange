@@ -1,0 +1,417 @@
+# Makefile.in generated automatically by automake 1.4c from Makefile.am
+
+# Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000
+# Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ../..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_STRIP_FLAG =
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+
+@SET_MAKE@
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+AMDEP = @AMDEP@
+AMTAR = @AMTAR@
+AS = @AS@
+AWK = @AWK@
+BUILD_WITH_MSVC = @BUILD_WITH_MSVC@
+CC = @CC@
+CXX = @CXX@
+DEPDIR = @DEPDIR@
+DLLTOOL = @DLLTOOL@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+LT_AGE = @LT_AGE@
+LT_CURRENT = @LT_CURRENT@
+LT_REVISION = @LT_REVISION@
+MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+SMALLCHANGE_MAJOR_VERSION = @SMALLCHANGE_MAJOR_VERSION@
+SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
+SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
+SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
+VERSION = @VERSION@
+install_sh = @install_sh@
+sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
+
+
+noinst_LTLIBRARIES = libnodes.la
+
+INCLUDES = -I$(top_srcdir)/src
+
+libnodes_la_SOURCES = \
+	DepthBuffer.cpp DepthBuffer.h \
+	ViewportRegion.cpp ViewportRegion.h
+
+
+libnodesincdir = $(includedir)/SmallChange
+
+libnodesinc_HEADERS = \
+	$(top_srcdir)/src/nodes/ViewportRegion.h \
+	$(top_srcdir)/src/nodes/DepthBuffer.h
+
+subdir = src/nodes
+mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
+CONFIG_HEADER = ../../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(noinst_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+libnodes_la_LDFLAGS = 
+libnodes_la_LIBADD = 
+am_libnodes_la_OBJECTS =  DepthBuffer.lo ViewportRegion.lo
+libnodes_la_OBJECTS =  $(am_libnodes_la_OBJECTS)
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXFLAGS = @CXXFLAGS@
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+DIST_SOURCES =  $(libnodes_la_SOURCES)
+HEADERS =  $(libnodesinc_HEADERS)
+
+depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
+DEP_FILES =  @AMDEP@ $(DEPDIR)/DepthBuffer.Plo \
+$(DEPDIR)/ViewportRegion.Plo
+DIST_COMMON =  $(libnodesinc_HEADERS) Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+
+GZIP_ENV = --best
+SOURCES = $(libnodes_la_SOURCES)
+OBJECTS = $(am_libnodes_la_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .c .cpp .h .lo .o
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu src/nodes/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-noinstLTLIBRARIES:
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+
+distclean-noinstLTLIBRARIES:
+
+maintainer-clean-noinstLTLIBRARIES:
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libnodes.la: $(libnodes_la_OBJECTS) $(libnodes_la_DEPENDENCIES)
+	$(CXXLINK)  $(libnodes_la_LDFLAGS) $(libnodes_la_OBJECTS) $(libnodes_la_LIBADD) $(LIBS)
+
+install-libnodesincHEADERS: $(libnodesinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libnodesincdir)
+	@list='$(libnodesinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  if cmp -s $$d$$p $(DESTDIR)$(libnodesincdir)/$$f; then :; else \
+	    echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(libnodesincdir)/$$f"; \
+	    $(INSTALL_DATA) $$d$$p $(DESTDIR)$(libnodesincdir)/$$f; \
+	  fi; \
+	done
+
+uninstall-libnodesincHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libnodesinc_HEADERS)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(libnodesincdir)/$$f"; \
+	  rm -f $(DESTDIR)$(libnodesincdir)/$$f; \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
+
+GTAGS:
+	here=`CDPATH=: && cd $(top_builddir) && pwd` \
+	  && cd $(top_srcdir) \
+	  && gtags -i $$here
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+@AMDEP@include $(DEPDIR)/DepthBuffer.Plo
+@AMDEP@include $(DEPDIR)/ViewportRegion.Plo
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf $(DEPDIR)
+
+maintainer-clean-depend:
+
+@AMDEP@CXXDEPMODE = @CXXDEPMODE@
+
+.cpp.o:
+@AMDEP@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CXXCOMPILE) -c -o $@ `test -f $< || echo '$(srcdir)/'`$<
+
+.cpp.lo:
+@AMDEP@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
+@AMDEP@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LTCXXCOMPILE) -c -o $@ `test -f $< || echo '$(srcdir)/'`$<
+
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+distdir: $(DISTFILES)
+	$(mkinstalldirs) $(distdir)/$(top_srcdir)/src/nodes
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pR $$d/$$file $(distdir) \
+	    || exit 1; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || cp -p $$d/$$file $(distdir)/$$file \
+	    || exit 1; \
+	  fi; \
+	done
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am:
+install-exec: install-exec-am
+
+install-data-am: install-libnodesincHEADERS
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-libnodesincHEADERS
+uninstall: uninstall-am
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(libnodesincdir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+	-rm -f Makefile.in
+mostlyclean-am:  mostlyclean-noinstLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags mostlyclean-depend \
+		mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-noinstLTLIBRARIES clean-compile clean-libtool \
+		clean-tags clean-depend clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-noinstLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-tags distclean-depend \
+		distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-noinstLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY:   all all all all all-am all-am all-am all-am all-recursive \
+all-recursive all-recursive-am all-redirect all-redirect all-redirect \
+all-redirect check check check check check-am check-am check-am \
+check-am check-recursive check-recursive clean clean clean clean \
+clean-compile clean-compile clean-compile clean-depend clean-depend \
+clean-generic clean-generic clean-generic clean-generic clean-hdr \
+clean-libLTLIBRARIES clean-libtool clean-libtool clean-libtool \
+clean-noinstLTLIBRARIES clean-noinstLTLIBRARIES clean-recursive \
+clean-recursive clean-tags clean-tags clean-tags clean-tags distclean \
+distclean distclean distclean distclean-compile distclean-compile \
+distclean-compile distclean-depend distclean-depend distclean-generic \
+distclean-generic distclean-generic distclean-generic distclean-hdr \
+distclean-libLTLIBRARIES distclean-libtool distclean-libtool \
+distclean-libtool distclean-noinstLTLIBRARIES \
+distclean-noinstLTLIBRARIES distclean-recursive distclean-recursive \
+distclean-tags distclean-tags distclean-tags distclean-tags distdir \
+distdir distdir distdir dvi dvi dvi dvi dvi-am dvi-am dvi-am dvi-am \
+dvi-recursive dvi-recursive info info info info info-am info-am info-am \
+info-am info-recursive info-recursive install install install install \
+install-am install-am install-am install-am install-data install-data \
+install-data install-data install-data-am install-data-am \
+install-data-am install-data-am install-data-recursive \
+install-data-recursive install-exec install-exec install-exec \
+install-exec install-exec-am install-exec-am install-exec-am \
+install-exec-am install-exec-recursive install-exec-recursive \
+install-libLTLIBRARIES install-libnodekitsincHEADERS \
+install-libnodesincHEADERS install-recursive install-recursive \
+install-strip install-strip install-strip install-strip installcheck \
+installcheck installcheck installcheck installcheck-am installcheck-am \
+installcheck-am installcheck-am installcheck-recursive \
+installcheck-recursive installdirs installdirs installdirs installdirs \
+installdirs-am installdirs-am installdirs-recursive \
+installdirs-recursive maintainer-clean maintainer-clean \
+maintainer-clean maintainer-clean maintainer-clean-compile \
+maintainer-clean-compile maintainer-clean-compile \
+maintainer-clean-depend maintainer-clean-depend \
+maintainer-clean-generic maintainer-clean-generic \
+maintainer-clean-generic maintainer-clean-generic maintainer-clean-hdr \
+maintainer-clean-libLTLIBRARIES maintainer-clean-libtool \
+maintainer-clean-libtool maintainer-clean-libtool \
+maintainer-clean-noinstLTLIBRARIES maintainer-clean-noinstLTLIBRARIES \
+maintainer-clean-recursive maintainer-clean-recursive \
+maintainer-clean-tags maintainer-clean-tags maintainer-clean-tags \
+maintainer-clean-tags mostlyclean mostlyclean mostlyclean mostlyclean \
+mostlyclean-compile mostlyclean-compile mostlyclean-compile \
+mostlyclean-depend mostlyclean-depend mostlyclean-generic \
+mostlyclean-generic mostlyclean-generic mostlyclean-generic \
+mostlyclean-hdr mostlyclean-libLTLIBRARIES mostlyclean-libtool \
+mostlyclean-libtool mostlyclean-libtool mostlyclean-noinstLTLIBRARIES \
+mostlyclean-noinstLTLIBRARIES mostlyclean-recursive \
+mostlyclean-recursive mostlyclean-tags mostlyclean-tags \
+mostlyclean-tags mostlyclean-tags tags tags tags tags tags-recursive \
+tags-recursive uninstall uninstall uninstall uninstall uninstall-am \
+uninstall-am uninstall-am uninstall-am uninstall-libLTLIBRARIES \
+uninstall-libnodekitsincHEADERS uninstall-libnodesincHEADERS \
+uninstall-recursive uninstall-recursive
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
