@@ -86,6 +86,8 @@
 #include <Inventor/SbViewVolume.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoComplexityTypeElement.h>
+#include <Inventor/elements/SoComplexityElement.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoDrawStyle.h>
@@ -203,6 +205,8 @@ SmAxisDisplayKit::GLRender(SoGLRenderAction *action)
   else {
     SoState *state = action->getState();
     state->push();
+    SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
+    SoComplexityElement::set(state, this, SoComplexityElement::getDefault());
     SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
     inherited::GLRender(action);
     state->pop();

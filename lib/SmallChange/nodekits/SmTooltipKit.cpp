@@ -92,6 +92,8 @@
 #include <Inventor/elements/SoDrawStyleElement.h>
 #include <Inventor/events/SoLocation2Event.h>
 #include <SmallChange/nodes/SmTooltip.h>
+#include <Inventor/elements/SoComplexityTypeElement.h>
+#include <Inventor/elements/SoComplexityElement.h>
 
 class SmTooltipKitP {
 public:
@@ -218,6 +220,8 @@ SmTooltipKit::GLRender(SoGLRenderAction * action)
   SoState *state = action->getState();
   state->push();
   SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
+  SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
+  SoComplexityElement::set(state, this, SoComplexityElement::getDefault());
   inherited::GLRender(action);
   state->pop();
 }
