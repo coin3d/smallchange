@@ -51,6 +51,7 @@ class SMALLCHANGE_DLL_API LegendKit : public SoBaseKit {
   SO_KIT_HEADER(LegendKit);
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(viewport);
   SO_KIT_CATALOG_ENTRY_HEADER(resetTransform);
   SO_KIT_CATALOG_ENTRY_HEADER(position);
   SO_KIT_CATALOG_ENTRY_HEADER(depthBuffer);
@@ -130,6 +131,15 @@ public:
 protected:
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
+  virtual void handleEvent(SoHandleEventAction * action);
+  virtual void search(SoSearchAction * action);
+  virtual void callback(SoCallbackAction * action);
+  virtual void getMatrix(SoGetMatrixAction * action);
+  virtual void pick(SoPickAction * action);
+  virtual void rayPick(SoRayPickAction * action);
+  virtual void audioRender(SoAudioRenderAction * action);
+  virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
+
   virtual ~LegendKit();
   virtual void notify(SoNotList * list);
   

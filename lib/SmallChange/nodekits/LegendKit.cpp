@@ -211,6 +211,9 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoDrawStyleElement.h>
+#include <Inventor/elements/SoComplexityTypeElement.h>
+#include <Inventor/elements/SoComplexityElement.h>
 
 #ifdef __COIN__
 #include <Inventor/lists/SbList.h>
@@ -221,6 +224,7 @@
 #endif
 
 #include <SmallChange/nodes/DepthBuffer.h>
+#include <SmallChange/nodes/ViewportRegion.h>
 #include <string.h>
 #include <float.h>
 
@@ -318,11 +322,8 @@ LegendKit::LegendKit(void)
   SO_KIT_ADD_FIELD(discreteUseLower, (FALSE));
   SO_KIT_ADD_FIELD(threadSafe, (FALSE));
   
-  // Note: we must use "" instead of , , to humour MS VisualC++ 6.
-
-#if defined(__COIN__) // the logical (Coin) way to do it, order is not important (yay, mortene rulez!)
-
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(viewport, ViewportRegion, TRUE, this, resetTransform, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, TRUE, topSeparator, lightModel, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topSeparator, camera, TRUE);
@@ -349,46 +350,6 @@ LegendKit::LegendKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(textMaterial, SoMaterial, TRUE, topSeparator, renderCallbackText, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(renderCallbackText, SoCallback, TRUE, topSeparator, extraNodes, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(extraNodes, SoSeparator, TRUE, topSeparator, "", TRUE);
-
-#else // the Inventor way of doing it (order is very important)
-
-#define EMPTY \x0 // Inventor doesn't handle "" either...
-
-  SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, EMPTY, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(extraNodes, SoSeparator, TRUE, topSeparator, EMPTY, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(renderCallbackText, SoCallback, TRUE, topSeparator, extraNodes, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(textMaterial, SoMaterial, TRUE, topSeparator, renderCallbackText, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(renderCallbackLines, SoCallback, TRUE, topSeparator, textMaterial, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(tickMaterial, SoMaterial, FALSE, topSeparator, renderCallbackLines, TRUE);
-
-  SO_KIT_ADD_CATALOG_ENTRY(imageSeparator, SoSeparator, FALSE, topSeparator, tickMaterial, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(backgroundShape, SoIndexedFaceSet, FALSE, topSeparator, imageSeparator, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(backgroundMaterial, SoMaterial, FALSE, topSeparator, backgroundShape, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, TRUE, topSeparator, backgroundMaterial, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, pickStyle, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(texture, SoTexture2, FALSE, topSeparator, shapeHints, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(position, SoTranslation, TRUE, topSeparator, texture, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(camera, SoOrthographicCamera, FALSE, topSeparator, position, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topSeparator, camera, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, TRUE, topSeparator, lightModel, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, position, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(imageSwitch, SoSwitch, FALSE, imageSeparator, EMPTY, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(imageMaterial, SoMaterial, FALSE, imageSeparator, imageSwitch, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(imageTransform, SoTransform, FALSE, imageSeparator, imageMaterial, TRUE);
-
-  SO_KIT_ADD_CATALOG_ENTRY(textureGroup, SoGroup, FALSE, imageSwitch, EMPTY, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(textureShape, SoFaceSet, FALSE, textureGroup, EMPTY, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(textureImage, SoTexture2, FALSE, textureGroup, textureShape, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(textureQuality, SoComplexity, FALSE, textureGroup, textureImage, FALSE);
-
-  SO_KIT_ADD_CATALOG_ENTRY(imageGroup, SoGroup, FALSE, imageSwitch, textureGroup, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(image, SoImage, FALSE, imageGroup, EMPTY, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(imageTranslation, SoTranslation, FALSE, imageGroup, image, TRUE);
-
-#undef EMPTY
-
-#endif // OIV kit specification
-
 
   SO_KIT_INIT_INSTANCE();
 
@@ -527,7 +488,13 @@ LegendKit::GLRender(SoGLRenderAction * action)
   }
   SoState * state = action->getState();
   if (!this->threadSafe.getValue()) this->preRender(action);
+
+  state->push();
+  SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
+  SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
+  SoComplexityElement::set(state, this, SoComplexityElement::getDefault());
   inherited::GLRender(action);
+  state->pop();
 }
 
 void 
@@ -537,6 +504,55 @@ LegendKit::getBoundingBox(SoGetBoundingBoxAction * action)
   // this nodekit (the bounding box for this sub-graph is not in the
   // same coordinate system as the main scene graph)
   SoCacheElement::invalidate(action->getState());
+}
+
+void 
+LegendKit::handleEvent(SoHandleEventAction * action)
+{
+  SoNode::handleEvent(action);
+}
+
+void 
+LegendKit::search(SoSearchAction * action)
+{
+  // don't search under this nodekit
+  SoNode::search(action);
+}
+
+void 
+LegendKit::callback(SoCallbackAction * action)
+{
+  SoNode::callback(action);
+}
+
+void 
+LegendKit::getMatrix(SoGetMatrixAction * action)
+{
+  SoNode::getMatrix(action);
+}
+
+void 
+LegendKit::pick(SoPickAction * action)
+{
+  SoNode::pick(action);
+}
+
+void 
+LegendKit::rayPick(SoRayPickAction * action)
+{
+  SoNode::rayPick(action);
+}
+
+void 
+LegendKit::audioRender(SoAudioRenderAction * action)
+{
+  SoNode::audioRender(action);
+}
+
+void 
+LegendKit::getPrimitiveCount(SoGetPrimitiveCountAction * action)
+{
+  SoNode::getPrimitiveCount(action);
 }
 
 
