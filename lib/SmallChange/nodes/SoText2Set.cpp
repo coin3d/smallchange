@@ -159,12 +159,10 @@ static int sotext2set_sortcompare(const void * element1, const void * element2)
 {
   sotext2set_indexdistance * item1 = (sotext2set_indexdistance *) element1;
   sotext2set_indexdistance * item2 = (sotext2set_indexdistance *) element2;
-  if (item1->distance < item2->distance)
-    return -1;
-  else if (item1->distance > item2->distance)
-    return 1;
-  else
-    return 0;
+
+  if (item1->distance < item2->distance) return -1;
+  else if (item1->distance > item2->distance) return 1;
+  else return 0;
 }
 
 
@@ -382,7 +380,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       const SbBox3f stringbbox(nilpoint, nilpoint);
       // FIXME: there should be a
       // SoCullElement::cullTest(..,SbVec3f,...) method. 20031222 mortene.
-      if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
+      if (SoCullElement::cullTest(state, stringbbox, FALSE)) { continue; }
 #else
       // This culls versus the whole string, i.e. if just a single
       // piece of the string is within the view volume (+ other
@@ -390,7 +388,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       const SbBox3f stringbbox = PRIVATE(this)->stringBBox(state, index);
       if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
 #endif
-
+      
       vv.projectToScreen(nilpoint, nilpoint);
       nilpoint[2] *= 2.0f;
       nilpoint[2] -= 1.0f;
