@@ -792,7 +792,7 @@ SmPopupMenuKit::updateActiveItem(void)
   if (this->menuTitle.getValue().getLength() != 0) ++item; // Take the title into account?
 
   float offset = (item  * size) 
-    + ((PRIVATE(this)->padding[1] + 2*2) / PRIVATE(this)->vp.getViewportSizePixels()[1]) / 2.0f;
+    + ((PRIVATE(this)->padding[1] + 2.0f) / PRIVATE(this)->vp.getViewportSizePixels()[1]);
   
   vecdata[0][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
   vecdata[1][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
@@ -954,7 +954,7 @@ SmPopupMenuKitP::buildTextScenegraph()
     SoTranslation * trans = new SoTranslation;
     trans->translation.setValue(0, spacing, 0); 
     SoBaseColor * titlecolor = new SoBaseColor;
-    titlecolor->rgb.setValue(0, 0, 0);
+    titlecolor->rgb.setValue(0.2f, 0.2f, 0.2f);
     SoText2 * title = new SoText2;
     title->string = PUBLIC(this)->menuTitle.getValue();
     textsep->addChild(trans);
@@ -993,7 +993,7 @@ SmPopupMenuKit::updateBackground(void)
   bb.extendBy(bb.getMin() - pad);  
   p->unref();
 
-  SoVertexProperty * vp = (SoVertexProperty*) fs->vertexProperty.getValue();
+  SoVertexProperty * vp = (SoVertexProperty *) fs->vertexProperty.getValue();
   if (vp == NULL) {
     vp = new SoVertexProperty;
     fs->vertexProperty = vp;
