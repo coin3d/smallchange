@@ -21,12 +21,20 @@
  *
 \**************************************************************************/
 
+/*
+  \class SmWellLogKit SmallChange/nodekits/SmWellLogKit.h
+  \brief The SmWellLogKit class is used to visualize wells.
+  
+*/
+
 #include "SmWellLogKit.h"
 #include <SmallChange/nodes/UTMPosition.h>
+#include <SmallChange/nodes/SoLODExtrusion.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoLOD.h>
+#include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoScale.h>
 #include <Inventor/nodes/SoLightModel.h>
 #include <Inventor/nodes/SoShapeHints.h>
@@ -137,6 +145,7 @@ SmWellLogKit::SmWellLogKit(void)
 
   SO_KIT_ADD_FIELD(lodDistance1, (50000.0f));
   SO_KIT_ADD_FIELD(lodDistance2, (100000.0f));
+  SO_KIT_ADD_FIELD(wellRadius,(1.0f));
   
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
@@ -150,11 +159,10 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(transform, SoTransform, FALSE, topSeparator, topLod, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLod, SoLOD, FALSE, topSeparator, "", TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLodGroup, SoSeparator, FALSE, topLod, topInfo, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, shapeHints, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topLodGroup, lineSetColor, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(lineSetColor, SoBaseColor, FALSE, topLodGroup, lineCoords, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(lineCoords, SoCoordinate3, FALSE, topLodGroup, lineSet, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(lineSet, SoLineSet, FALSE, topLodGroup, pickStyle, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topLodGroup, wellMaterial, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(wellMaterial, SoMaterial, FALSE, topLodGroup, well, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, lightModel, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, pickStyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, FALSE, topLodGroup, lod, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lod, SoLOD, FALSE, topLodGroup, "", TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lodSeparator, SoSeparator, FALSE, lod, info, FALSE);
@@ -169,9 +177,14 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_INIT_INSTANCE();
 
   SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapeHints", TRUE);
-  sh->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
+  sh->vertexOrdering = SoShapeHints::CLOCKWISE;
   sh->shapeType = SoShapeHints::UNKNOWN_SHAPE_TYPE;
   sh->faceType = SoShapeHints::CONVEX;
+
+  SoLODExtrusion * well = (SoLODExtrusion*) this->getAnyPart("well", TRUE);
+  well->lodDistance1.connectFrom(&this->lodDistance1);
+  well->radius.connectFrom(&this->wellRadius);
+  well->ccw = TRUE;
   
   SoPickStyle * ps = (SoPickStyle*) this->getAnyPart("pickStyle", TRUE);
   ps->style = SoPickStyle::UNPICKABLE;
@@ -591,14 +604,14 @@ SmWellLogKitP::buildGeometry(void)
     }
   }
 
-  SoCoordinate3 * lscoord = (SoCoordinate3*) PUBLIC(this)->getAnyPart("lineCoords", TRUE);
-  
-  lscoord->point.setNum(redlist.getLength());
-  SbVec3f * lsdst = lscoord->point.startEditing();
+  SoLODExtrusion * well = (SoLODExtrusion*) PUBLIC(this)->getAnyPart("well", TRUE);
+  well->spine.setNum(redlist.getLength());
+
+  SbVec3f * lsdst = well->spine.startEditing();
   for (i = 0; i < redlist.getLength(); i++) {
     lsdst[i] = redlist[i];
   }
-  lscoord->point.finishEditing();
+  well->spine.finishEditing();
 
   SoPackedColor * fscol = (SoPackedColor*) PUBLIC(this)->getAnyPart("faceSetColor", TRUE);
   SoCoordinate3 * coord = (SoCoordinate3*) PUBLIC(this)->getAnyPart("coord", TRUE);
@@ -865,8 +878,8 @@ SmWellLogKitP::updateList(void)
     SoIndexedFaceSet * fs = (SoIndexedFaceSet*) PUBLIC(this)->getPart("faceSet", TRUE);
     fs->coordIndex.setNum(0);
 
-    SoLineSet * ls = (SoLineSet*) PUBLIC(this)->getPart("lineSet", TRUE);
-    ls->numVertices = 0;
+    SoLODExtrusion * lod = (SoLODExtrusion*) PUBLIC(this)->getPart("well", TRUE);
+    lod->spine.setNum(0);
     return;
   }
   
@@ -898,7 +911,6 @@ SmWellLogKitP::updateList(void)
     
     pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.tvdepth = - t[2];
-    // FIXME: remove fabs
     pos.left = PUBLIC(this)->getLeftCurveData(i);
     pos.right = PUBLIC(this)->getRightCurveData(i);
     
