@@ -373,6 +373,6 @@ static void fieldsChangedCallback(void * classObject, SoSensor * sensor)
 {
   SmAxisKitP * thisp = (SmAxisKitP *) classObject;  // Fetch caller object
 
-  thisp->axisRoot->removeAllChildren();
-  thisp->axisRoot->addChild(thisp->generateLOD());
+  assert(thisp->axisRoot->getNumChildren() == 1);
+  thisp->axisRoot->replaceChild(0, thisp->generateLOD());
 }
