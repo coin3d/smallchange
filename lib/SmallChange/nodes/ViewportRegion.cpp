@@ -246,12 +246,16 @@ ViewportRegion::doAction(SoAction * action)
     if (this->clearDepthBuffer.getValue()) mask |= GL_DEPTH_BUFFER_BIT;
     if (this->clearColorBuffer.getValue()) mask |= GL_COLOR_BUFFER_BIT;
     if (mask) {
-#if 0
+      GLfloat oldcc[4];
+      glGetFloatv(GL_COLOR_CLEAR_VALUE, oldcc);
       glClearColor(this->clearColor.getValue()[0],
                    this->clearColor.getValue()[1],
                    this->clearColor.getValue()[2],
                    0.0f);
-#endif
+      // FIXME: the scissor test here was only needed because of a old
+      // driver bug which caused the entire window to be cleared, not
+      // just the current viewport. Investigate if we can remove this
+      // workaround. pederb, 2003-01-21
       glScissor(vp.getViewportOriginPixels()[0],
                 vp.getViewportOriginPixels()[1],
                 vp.getViewportSizePixels()[0],
@@ -259,6 +263,8 @@ ViewportRegion::doAction(SoAction * action)
       glEnable(GL_SCISSOR_TEST);
       glClear(mask);
       glDisable(GL_SCISSOR_TEST);
+
+      glClearColor(oldcc[0], oldcc[1], oldcc[2], oldcc[3]);
     }
   }
 }
