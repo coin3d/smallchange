@@ -220,14 +220,16 @@ sc_set_use_byte_normals(int enable)
 /* ********************************************************************** */
 
 #ifdef HAVE_WINDOWS_H
-#define GL_PROC_ADDRESS(proc) (void *) GetProcAddress(handle, #proc)
+#define APP_HANDLE_TYPE HINSTANCE
 #define APP_HANDLE() NULL
 #define APP_HANDLE_CLOSE() /* nada */
+#define GL_PROC_ADDRESS(proc) (void *) GetProcAddress(handle, #proc)
 #else
 #ifdef HAVE_DLFCN_H
-#define GL_PROC_ADDRESS(proc) dlsym(handle, #proc)
+#define APP_HANDLE_TYPE void *
 #define APP_HANDLE() dlopen(NULL, RTLD_NOW)
 #define APP_HANDLE_CLOSE(handle) dlclose(handle)
+#define GL_PROC_ADDRESS(proc) dlsym(handle, #proc)
 #else
 #error system not supported (for probing dynamic symbols)
 #endif
@@ -236,7 +238,7 @@ sc_set_use_byte_normals(int enable)
 void
 sc_probe_gl(int verbose)
 {
-  void * handle = APP_HANDLE();
+  APP_HANDLE_TYPE handle = APP_HANDLE();
   void * ptr = NULL;
 
   // FIXME: probe GL for extensions
@@ -296,8 +298,10 @@ sc_probe_gl(int verbose)
   APP_HANDLE_CLOSE(handle);
 }
 
+#undef APP_HANDLE_TYPE
+#undef APP_HANDLE
+#undef APP_HANDLE_CLOSE
 #undef GL_PROC_ADDRESS
-#undef GL_EXTENSION
 
 /* ********************************************************************** */
 /* texture management */
