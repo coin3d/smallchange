@@ -17,6 +17,10 @@
 #include <Inventor/fields/SoSFColor.h>
 #include <Inventor/fields/SoSFBool.h>
 
+#ifdef WIN32
+#include <SoWinLeaveScope.h>
+#endif
+
 class ViewportRegion : public SoNode {
   typedef SoNode inherited;
 
@@ -52,5 +56,9 @@ private:
   SbBool usepixelsize;
   SbBool usepixelorigin;
 };
+
+#ifdef WIN32
+#include <SoWinEnterScope.h>
+#endif
 
 #endif // COIN_VIEWPORTREGION_H
