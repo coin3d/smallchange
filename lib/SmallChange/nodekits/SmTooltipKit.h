@@ -31,6 +31,7 @@
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoSFVec2s.h>
 #include <Inventor/fields/SoMFString.h>
+#include <Inventor/SbVec2f.h>
 #include <SmallChange/basic.h>
 
 class SmTooltipKitP;
@@ -81,6 +82,7 @@ protected:
 public:
   
   void setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & vp);
+  void setPickedPosition(const SbVec2f & pos, const SbViewportRegion & vp);
   void setViewportRegion(const SbViewportRegion & vp);
 
   SoSFBool autoTrigger;
