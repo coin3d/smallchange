@@ -45,14 +45,14 @@
 #include <config.h>
 #endif
 
-#include "SoListener.h"
-#include "SoSound.h"
-#include "SoAudioClip.h"
-#include "SoAudioClipStreaming.h"
-#include "SoAudioDevice.h"
-#include "ALTools.h"
+#include <nodes/SoListener.h>
+#include <nodes/SoSound.h>
+#include <nodes/SoAudioClip.h>
+#include <nodes/SoAudioClipStreaming.h>
+#include <misc/SoAudioDevice.h>
+#include <misc/ALTools.h>
 
-#include "SbAudioWorkerThread.h"
+#include <misc/SbAudioWorkerThread.h>
 
 
 SoSeparator * root;
