@@ -43,6 +43,18 @@
   Will be triggered right after callbacks are called (if any).
 */
 
+/*!
+  \var SoSFVec3f::objectSpacePickedPoint
+  Will be set before callbacks are called (if any)
+*/
+
+/*!
+  \var SoSFVec3f::worldSpacePickedPoint
+  Will be set before callbacks are called (if any)
+*/
+  
+
+
 #include "PickCallback.h"
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
@@ -77,7 +89,9 @@ PickCallback::PickCallback()
   SO_NODE_ADD_FIELD(schemeFile, (""));
   SO_NODE_ADD_FIELD(schemeScript, (""));
   SO_NODE_ADD_FIELD(trigger, ());
-
+  SO_NODE_ADD_FIELD(objectSpacePickedPoint, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(worldSpacePickedPoint, (0.0f, 0.0f, 0.0f));
+  
   this->pickedpoint = NULL;
   this->buttonnum = 0;
   this->curraction = NULL;
@@ -207,6 +221,8 @@ PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
   if (pp) {
     SoPath * path = pp->getPath();
     if (path->containsPath(action->getCurPath())) {
+      this->objectSpacePickedPoint = pp->getObjectPoint();
+      this->worldSpacePickedPoint = pp->getPoint();
       this->pickedpoint = pp;
       this->mousepress = mousepress;
       this->cblist.invokeCallbacks(path);

@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTrigger.h>
 #include <Inventor/fields/SoSFString.h>
+#include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/lists/SoCallbackList.h>
 
 #include <SmallChange/basic.h>
@@ -56,6 +57,9 @@ public:
   SoSFBool onButton3;
   SoSFString schemeFile;
   SoSFString schemeScript;
+
+  SoSFVec3f objectSpacePickedPoint;
+  SoSFVec3f worldSpacePickedPoint;
   
   const SoPickedPoint * getCurrentPickedPoint(void) const;
   const SoEvent * getCurrentEvent(void) const;
