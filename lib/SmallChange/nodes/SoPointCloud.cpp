@@ -242,17 +242,17 @@ void
 SoPointCloud::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
+  state->push();
+  // flat shading
+  SoGLShadeModelElement::set(state, TRUE);
 
-  SbBool didpush = FALSE;
   if (this->vertexProperty.getValue()) {
-    state->push();
-    didpush = TRUE;
     this->vertexProperty.getValue()->GLRender(action);
   }
 
   const SoCoordinateElement * tmp;
   const SbVec3f * normals;
-  SbBool needNormals;
+  SbBool needNormals = FALSE;
 
   SoVertexShape::getVertexData(state, tmp, normals,
                                needNormals);
@@ -260,8 +260,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   Shape rendershape = (Shape) this->shape.getValue();
 
   if (!this->shouldGLRender(action)) {
-    if (didpush)
-      state->pop();
+    state->pop();
     return;
   }
   
@@ -293,9 +292,6 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst(); // make sure we have the correct material
 
-  // flat shading
-  SoGLShadeModelElement::forceSend(state, TRUE);
-
   int32_t idx = this->startIndex.getValue();
   int32_t numpts = this->numPoints.getValue();
   if (numpts < 0) numpts = coords->getNum() - idx;
@@ -312,7 +308,6 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   float dz = this->zSize.getValue();
 
   // render in two loops to avoid frequent OpenGL state changes
-
 
   // FIXME: add test here when adding more shapes
   if (rendershape == CUBE) {
@@ -373,9 +368,6 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   }
   glEnd();
 
-  if (didpush)
-    state->pop();
-
   if (waslightingenabled && !islightingenabled) {
     glEnable(GL_LIGHTING);
   }
@@ -389,7 +381,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   if (!iscullingenabled && wascullingenabled) {
     glEnable(GL_CULL_FACE);
   }
-
+  state->pop();
 }
 
 // Documented in superclass.

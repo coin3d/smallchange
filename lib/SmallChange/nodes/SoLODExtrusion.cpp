@@ -88,7 +88,6 @@
 */
 
 #include "SoLODExtrusion.h"
-#include <Inventor/VRMLnodes/SoVRMLMacros.h>
 // #include <Inventor/nodes/SoSubNodeP.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/misc/SoNormalGenerator.h>
@@ -145,7 +144,7 @@ public:
      color_idx(32),
      segidx(32),
      striplens(32),
-     gen(TRUE),
+     gen(NULL),
      tess(tess_callback, this),
      dirty(TRUE)
   {
@@ -159,7 +158,7 @@ public:
   SbList <int> segidx;  // index into idx, for each spine segment
   SbList <int32_t> striplens;  // lengths of tri-strips
   SbList <float> spinelens;    // geometric length of each spine segment, precalculated
-  SoNormalGenerator gen;
+  SoNormalGenerator * gen;
   SbTesselator tess;
   SbBool dirty;
 
@@ -189,10 +188,10 @@ SoLODExtrusion::SoLODExtrusion(void)
 
   SO_NODE_CONSTRUCTOR(SoLODExtrusion);
 
-  SO_VRMLNODE_ADD_FIELD(beginCap, (TRUE));
-  SO_VRMLNODE_ADD_FIELD(endCap, (TRUE));
-  SO_VRMLNODE_ADD_FIELD(ccw, (FALSE));
-  SO_VRMLNODE_ADD_FIELD(creaseAngle, (0.0f));
+  SO_NODE_ADD_FIELD(beginCap, (TRUE));
+  SO_NODE_ADD_FIELD(endCap, (TRUE));
+  SO_NODE_ADD_FIELD(ccw, (FALSE));
+  SO_NODE_ADD_FIELD(creaseAngle, (0.0f));
 
   SO_NODE_ADD_FIELD(crossSection, (0.0f, 0.0f));
   this->crossSection.setNum(5);
@@ -221,6 +220,7 @@ SoLODExtrusion::SoLODExtrusion(void)
 
 SoLODExtrusion::~SoLODExtrusion()
 {
+  delete THIS->gen;
   delete THIS;
 }
 
@@ -772,7 +772,14 @@ SoLODExtrusionP::generateCoords(void)
 void
 SoLODExtrusionP::generateNormals(void)
 {
-  this->gen.reset(this->master->ccw.getValue());
+#if 0 // reset() is only available in Coin-2
+  if (this->gen) this->gen->reset(this->master->ccw.getValue());
+  else this->gen = new SoNormalGenerator(this->master->ccw.getValue());
+#else // only Coin-2
+  delete this->gen;
+  this->gen = new SoNormalGenerator(this->master->ccw.getValue());
+#endif // Coin-1 fix
+
   const SbVec3f * vertices = this->coord.getArrayPtr();
 
   const int32_t * ptr = this->striplens.getArrayPtr();
@@ -789,20 +796,20 @@ SoLODExtrusionP::generateNormals(void)
     striptri[0] = vertices[idxptr[cnt++]];
     striptri[1] = vertices[idxptr[cnt++]];
     striptri[2] = vertices[idxptr[cnt++]];
-    this->gen.triangle(striptri[0], striptri[1], striptri[2]);
+    this->gen->triangle(striptri[0], striptri[1], striptri[2]);
     SbBool flag = FALSE;
     while (num--) {
       if (flag) striptri[1] = striptri[2];
       else striptri[0] = striptri[2];
       flag = !flag;
       striptri[2] = vertices[idxptr[cnt++]];
-      this->gen.triangle(striptri[0], striptri[1], striptri[2]);
+      this->gen->triangle(striptri[0], striptri[1], striptri[2]);
     }
   }
 
-  this->gen.generate(this->master->creaseAngle.getValue(),
-		     this->striplens.getArrayPtr(),
-		     this->striplens.getLength());
+  this->gen->generate(this->master->creaseAngle.getValue(),
+                      this->striplens.getArrayPtr(),
+                      this->striplens.getLength());
 }
 
 void
@@ -830,7 +837,7 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   const int * siv = this->segidx.getArrayPtr();
   const int * iv = this->idx.getArrayPtr();
   const SbVec3f * cv = this->coord.getArrayPtr();
-  const SbVec3f * nv = this->gen.getNormals();
+  const SbVec3f * nv = this->gen->getNormals();
   const SbColor * colorv = this->master->color.getValues(0);
   const int * coloridx = this->color_idx.getArrayPtr();
   int vcnt = this->coord.getLength();
