@@ -12,7 +12,8 @@ SOURCES = \
 	SmTooltipKit.cpp SmTooltipKit.h \
 	SmWellLogKit.cpp SmWellLogKit.h \
 	SmCameraControlKit.cpp SmCameraControlKit.h \
-	GeoMarkerKit.cpp SmGeoMarkerKit.h
+	GeoMarkerKit.cpp SmGeoMarkerKit.h \
+	NormalsKit.cpp SmNormalsKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
@@ -25,7 +26,8 @@ libnodekitsinc_HEADERS = \
 	$(srcdir)/SmTooltipKit.h \
 	$(srcdir)/SmWellLogKit.h \
 	$(srcdir)/SmCameraControlKit.h \
-	$(srcdir)/SmGeoMarkerKit.h
+	$(srcdir)/SmGeoMarkerKit.h \
+	$(srcdir)/SmNormalsKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
