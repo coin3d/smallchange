@@ -1,5 +1,5 @@
 #ifndef COIN_SOPOINTCLOUD_H
-#define COIN_SOPOINTCLOD_H
+#define COIN_SOPOINTCLOUD_H
 
 /**************************************************************************\
  *
