@@ -43,13 +43,14 @@ static uint32_t color_cb(double val)
 }
 
 int
-main(
-  int argc,
-  char ** argv )
+main(int argc, char ** argv)
 {
-  assert(argc >= 2);
-  QWidget * window = SoQt::init( argv[0] );
+  if (argc != 2) {
+    (void)fprintf(stderr, "\n\tUsage: %s legendkitfile.iv\n\n", argv[0]);
+    exit(1);
+  }
 
+  QWidget * window = SoQt::init(argv[0]);
   LegendKit::initClass();
 
   SoInput input;
