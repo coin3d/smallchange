@@ -601,15 +601,15 @@ SmPopupMenuKit::setNormalizedPosition(const SbVec2f & npt)
     
     // check if parts of the menu is outside the window
     finished = TRUE;
-        
-    if (PRIVATE(this)->backgroundmenulow < 0.0f) {
-      t->translation = SbVec3f(npt[0], npt[1] - PRIVATE(this)->backgroundmenulow, 0.0f) + j;
-      this->updateBackground();  
-    }    
+
     if (PRIVATE(this)->backgroundmenuhigh > 1.0f) {
       t->translation = SbVec3f(npt[0], npt[1] - (PRIVATE(this)->backgroundmenuhigh - 1.0f), 0.0f) + j;
       this->updateBackground();  
-    }
+    }        
+    else if (PRIVATE(this)->backgroundmenulow < 0.0f) {
+      t->translation = SbVec3f(npt[0], npt[1] - PRIVATE(this)->backgroundmenulow, 0.0f) + j;
+      this->updateBackground();  
+    }    
 
     if (!PRIVATE(this)->flipleftright && PRIVATE(this)->backgroundright > 1.0f) {
       PRIVATE(this)->flipleftright = TRUE;
