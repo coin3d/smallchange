@@ -25,27 +25,25 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+#include <assert.h>
 #include <stdio.h>
 
 #include <Inventor/misc/SoState.h>
 #include <Inventor/bundles/SoTextureCoordinateBundle.h>
-#include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/actions/SoRayPickAction.h>
-#include <Inventor/nodes/SoVertexProperty.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
+#include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/nodes/SoVertexProperty.h>
+#include <Inventor/nodes/SoShape.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/details/SoFaceDetail.h>
+#include <Inventor/misc/SoGLImage.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCacheElement.h>
-#include <Inventor/SbBox3f.h>
-#include <Inventor/misc/SoState.h>
-#include <Inventor/elements/SoCullElement.h>
-#include <Inventor/misc/SoState.h>
-#include <Inventor/misc/SoGLImage.h>
 #include <Inventor/elements/SoCullElement.h>
 #include <Inventor/elements/SoGLTextureImageElement.h>
 #include <Inventor/elements/SoGLLazyElement.h>
@@ -53,14 +51,8 @@
 #include <Inventor/elements/SoTextureQualityElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/sensors/SoFieldSensor.h>
-#include <Inventor/SoInput.h>
 #include <Inventor/lists/SbStringList.h>
-#include <Inventor/SoPrimitiveVertex.h>
-#include <Inventor/nodes/SoShape.h>
-
-#ifdef __COIN__
-#include <Inventor/C/tidbits.h> // coin_getenv()
-#endif // __COIN__
+#include <Inventor/SoInput.h>
 
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/SmScenery.h>
@@ -156,9 +148,10 @@ public:
   static void hash_check_unused(unsigned long key, void * val, void * closure);
 
   // rendering
-  void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
   static int render_pre_cb(void * closure, ss_render_pre_cb_info * info);
 
+  // generate primitives / raypick
+  void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
   static int gen_pre_cb(void * closure, ss_render_pre_cb_info * info);
   static void gen_cb(void * closure, const int x, const int y,
                      const int len, const unsigned int bitmask);
@@ -184,13 +177,6 @@ SceneryP::SceneryP(void)
   this->bboxmax[1] = 0.0;
   this->bboxmax[2] = 0.0;
 }
-
-/* ********************************************************************** */
-
-static int pre_block_cb(void * closure, const double * bmin, const double * bmax);
-static void post_block_cb(void * closure);
-static int raypick_pre_cb(void * closure, const double * bmin, const double * bmax);
-static void raypick_post_cb(void * closure);
 
 /* ********************************************************************** */
 
@@ -290,6 +276,25 @@ SmScenery::SmScenery(ss_system * system)
 
 }
 
+void
+SceneryP::commonConstructor(void)
+{
+  this->blocksensor = new SoFieldSensor(SceneryP::blocksensor_cb, PUBLIC(this));
+  this->blocksensor->attach(&PUBLIC(this)->blockRottger);
+
+  this->loadsensor = new SoFieldSensor(SceneryP::loadsensor_cb, PUBLIC(this));
+  this->loadsensor->attach(&PUBLIC(this)->loadRottger);
+
+  this->colormapsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
+  this->colormapsensor->attach(&PUBLIC(this)->colorMap);
+
+  this->colortexturesensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
+  this->colortexturesensor->attach(&PUBLIC(this)->colorTexture);
+
+  this->colorelevationsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
+  this->colorelevationsensor->attach(&PUBLIC(this)->colorElevation);
+}
+
 SmScenery::~SmScenery(void)
 {
   delete PRIVATE(this)->filenamesensor;
@@ -379,10 +384,11 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                          SceneryP::render_pre_cb, this);
+
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          pre_block_cb, state);
+                                          sc_box_culling_pre_cb, action);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           post_block_cb, state);
+                                           sc_box_culling_post_cb, action);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
@@ -431,16 +437,16 @@ SmScenery::rayPick(SoRayPickAction * action)
 {
   if ( !sc_scenery_available() ) { return; }
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                   raypick_pre_cb, action);
+                                          sc_ray_culling_pre_cb, action);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                    raypick_post_cb, action);
+                                           sc_ray_culling_post_cb, action);
 
   inherited::rayPick(action); // just generate primitives
   
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                   NULL, NULL);
+                                          NULL, NULL);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                    NULL, NULL);
+                                           NULL, NULL);
 }
 
 void 
@@ -461,9 +467,9 @@ SmScenery::callback(SoCallbackAction * action)
   PRIVATE(this)->currhotspot = campos;
 
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          pre_block_cb, state);
+                                          sc_box_culling_pre_cb, action);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           post_block_cb, state);
+                                           sc_box_culling_post_cb, action);
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                          NULL, this);
   double hotspot[3];
@@ -680,26 +686,7 @@ SmScenery::refreshTextures(const int id)
 }
 
 
-/* ********************************************************************** */
-
-void
-SceneryP::commonConstructor(void)
-{
-  this->blocksensor = new SoFieldSensor(SceneryP::blocksensor_cb, PUBLIC(this));
-  this->blocksensor->attach(&PUBLIC(this)->blockRottger);
-
-  this->loadsensor = new SoFieldSensor(SceneryP::loadsensor_cb, PUBLIC(this));
-  this->loadsensor->attach(&PUBLIC(this)->loadRottger);
-
-  this->colormapsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
-  this->colormapsensor->attach(&PUBLIC(this)->colorMap);
-
-  this->colortexturesensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
-  this->colortexturesensor->attach(&PUBLIC(this)->colorTexture);
-
-  this->colorelevationsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
-  this->colorelevationsensor->attach(&PUBLIC(this)->colorElevation);
-}
+// *************************************************************************
 
 void 
 SceneryP::filenamesensor_cb(void * data, SoSensor * sensor)
@@ -951,23 +938,24 @@ SceneryP::hash_check_unused(unsigned long key, void * val, void * closure)
 }
 
 // *************************************************************************
-
-////////////// render ///////////////////////////////////////////////////////////
+// RENDER
 
 int 
 SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
-  if ( sc_scenery_available() ) {
+  if ( !sc_scenery_available() ) { return 0; }
+
   SmScenery * thisp = (SmScenery*) closure; 
+
   SoState * state = PRIVATE(thisp)->currstate;
   
   RenderState & renderstate = PRIVATE(thisp)->renderstate;
   
   sc_ssglue_render_get_elevation_measures(info, 
-                                   renderstate.voffset,
-                                   renderstate.vspacing,
-                                   &renderstate.elevdata,
-                                   &renderstate.normaldata);
+                                          renderstate.voffset,
+                                          renderstate.vspacing,
+                                          &renderstate.elevdata,
+                                          &renderstate.normaldata);
 
   float ox = renderstate.voffset[0] / PRIVATE(thisp)->bboxmax[0];
   float oy = renderstate.voffset[1] / PRIVATE(thisp)->bboxmax[1];
@@ -983,9 +971,9 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
   PRIVATE(thisp)->debuglist.append(oy+sy);
 
   sc_ssglue_render_get_texture_measures(info,
-                                 &renderstate.texid,
-                                 renderstate.toffset,
-                                 renderstate.tscale);
+                                        &renderstate.texid,
+                                        renderstate.toffset,
+                                        renderstate.tscale);
   
   if (PRIVATE(thisp)->dotex && renderstate.texid) {
     if (renderstate.texid != PRIVATE(thisp)->currtexid) {      
@@ -994,10 +982,10 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
         image = PRIVATE(thisp)->createTexture(renderstate.texid);
         assert(image);      
         sc_ssglue_render_get_texture_image(info, renderstate.texid,
-                                    &renderstate.texdata,
-                                    &renderstate.texw,
-                                    &renderstate.texh,
-                                    &renderstate.texnc);
+                                           &renderstate.texdata,
+                                           &renderstate.texw,
+                                           &renderstate.texh,
+                                           &renderstate.texnc);
 #if 0 // workaround for preng bug in texture
         assert(renderstate.texnc == 4);
         uint32_t * dst = (uint32_t*) renderstate.texdata;
@@ -1033,12 +1021,10 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
     }
   }
   return 1;
-  } else {
-    return 0;
-  }
 }
 
-//////////// generate primitives ///////////////////////////////////////////////
+// *************************************************************************
+// GENERATE PRIMITIVES
 
 int 
 SceneryP::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
@@ -1142,54 +1128,6 @@ SceneryP::gen_cb(void * closure, const int x, const int y,
   thisp->endShape();
   
 #undef ELEVATION
-}
-
-/* ********************************************************************** */
-
-int
-pre_block_cb(void * closure, const double * bmin, const double * bmax)
-{
-  SoState * state = (SoState*) closure;
-  state->push();
-  if (!SoCullElement::completelyInside(state)) {
-    SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
-    if (SoCullElement::cullBox(state, box, TRUE)) {
-
-//       fprintf(stderr,"culled box: %g %g %g, %g %g %g\n",
-//               bmin[0], bmin[1], bmin[2],
-//               bmax[0], bmax[1], bmax[2]);
-      return 0;
-    }
-  }
-  return 1;
-}
-
-void
-post_block_cb(void * closure)
-{
-  SoState * state = (SoState*) closure;  
-  state->pop();
-}
- 
-int
-raypick_pre_cb(void * closure, const double * bmin, const double * bmax)
-{
-  SoRayPickAction * action = (SoRayPickAction*) closure;
-  SoState * state = action->getState();
-  state->push();
-
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
-  if (box.isEmpty()) return 0;
-  action->setObjectSpace();
-  return action->intersect(box, TRUE);
-}
-
-void
-raypick_post_cb(void * closure)
-{
-  SoRayPickAction * action = (SoRayPickAction*) closure;
-  SoState * state = action->getState();
-  state->pop();
 }
 
 /* ********************************************************************** */

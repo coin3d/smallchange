@@ -25,6 +25,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+#include <assert.h>
 #include <stdlib.h> // atoi()
 
 #include <Inventor/SbBasic.h> // __COIN__
@@ -33,9 +34,15 @@
 #error this part depends on some Coin-specific features
 #endif // __COIN__
 
+#include <Inventor/C/tidbits.h> // coin_getenv()
 #include <Inventor/system/gl.h>
 #include <Inventor/lists/SbList.h>
-#include <Inventor/C/tidbits.h> // coin_getenv()
+#include <Inventor/SbBox3f.h>
+#include <Inventor/actions/SoRayPickAction.h>
+#include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoCallbackAction.h>
+#include <Inventor/misc/SoState.h>
+#include <Inventor/elements/SoCullElement.h>
 
 #include <SmallChange/nodes/SceneryGL.h>
 #include <SmallChange/misc/SceneryGlue.h>
@@ -67,6 +74,8 @@ sc_display_debug_info(float * campos, short * vpsize, void * debuglist)
 {
   SbList<float> * list = (SbList<float> *) debuglist;
 
+  int depthtest = glIsEnabled(GL_DEPTH_TEST);
+  if ( depthtest ) glDisable(GL_DEPTH_TEST);
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
@@ -124,6 +133,7 @@ sc_display_debug_info(float * campos, short * vpsize, void * debuglist)
     glEnd();
   }
 
+  if ( depthtest ) glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
@@ -373,6 +383,70 @@ sc_render_cb(void * closure, const int x, const int y,
     glEnd();
 #undef ELEVATION
   }
+}
+
+/* ********************************************************************** */
+// CULLING
+
+// view volume box vs terrain block bounding box culling
+int
+sc_box_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
+{
+  assert(closure);
+  SoAction * action = (SoAction *) closure;
+  assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
+         action->isOfType(SoCallbackAction::getClassTypeId()) );
+
+  SoState * state = action->getState();
+  state->push();
+
+  if ( SoCullElement::completelyInside(state) ) { return TRUE; }
+
+  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
+  if ( !SoCullElement::cullBox(state, box, TRUE) ) { return TRUE; }
+
+  return FALSE;
+}
+
+void
+sc_box_culling_post_cb(void * closure)
+{
+  assert(closure);
+  SoAction * action = (SoAction *) closure;
+  assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
+         action->isOfType(SoCallbackAction::getClassTypeId()) );
+
+  SoState * state = action->getState();
+  state->pop();
+}
+
+// ray vs terrain block bounding box culling
+int
+sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
+{
+  assert(closure);
+  SoAction * action = (SoAction *) closure;
+  assert(action->isOfType(SoRayPickAction::getClassTypeId()));
+  SoRayPickAction * rpaction = (SoRayPickAction *) action;
+
+  SoState * state = rpaction->getState();
+  state->push();
+
+  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
+  if ( box.isEmpty() ) return FALSE;
+  rpaction->setObjectSpace();
+  return rpaction->intersect(box, TRUE);
+}
+
+void
+sc_ray_culling_post_cb(void * closure)
+{
+  assert(closure);
+  SoAction * action = (SoAction *) closure;
+  assert(action->isOfType(SoRayPickAction::getClassTypeId()));
+  
+  SoState * state = action->getState();
+  state->pop();
 }
 
 /* ********************************************************************** */
