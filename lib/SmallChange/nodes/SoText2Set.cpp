@@ -171,6 +171,9 @@ public:
   void dumpGlyphCache();
   void dumpBuffer(unsigned char * buffer, SbVec2s size, SbVec2s pos);
 
+  SoText2Set::Justification getJustification(int idx) const;
+  float getRotation(int idx) const;
+
 private:
   SoText2Set * master;
 };
@@ -284,8 +287,6 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     // FIXME: this is not good, just asserting. Should warn, then use
     // default values for too short arrays. 20031215 mortene.
     assert(stringcnt == (unsigned int)this->position.getNum());
-    assert(stringcnt == (unsigned int)this->rotation.getNum());
-    assert(stringcnt == (unsigned int)this->justification.getNum());
 
     for (unsigned int i = 0; i < stringcnt; i++) {
 
@@ -326,7 +327,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       float ypos = nilpoint[1];
 
       const unsigned int charcnt = this->string[i].getLength();
-      switch (this->justification[i]) {
+      switch (PRIVATE(this)->getJustification(i)) {
       case SoText2Set::LEFT:
         // No action
         break;
@@ -610,6 +611,22 @@ SoText2SetP::dumpGlyphCache()
   }
 }
 
+SoText2Set::Justification
+SoText2SetP::getJustification(int idx) const
+{
+  const int justnum = PUBLIC(this)->justification.getNum();
+  if (idx >= justnum) { return SoText2Set::LEFT; }
+  return (SoText2Set::Justification) PUBLIC(this)->justification[idx];
+}
+
+float
+SoText2SetP::getRotation(int idx) const
+{
+  const int num = PUBLIC(this)->rotation.getNum();
+  if (idx >= num) { return 0.0f; }
+  return PUBLIC(this)->rotation[idx];
+}
+
 // Calculates a quad around the text in 3D.
 void
 SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
@@ -651,11 +668,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   float halfw = (maxx - minx) / (float)2.0;
   float halfh = (maxy - miny) / (float)2.0;
 
-  int justificationindex = stringidx;
-  if (justificationindex > PUBLIC(this)->justification.getNum())
-    justificationindex = PUBLIC(this)->justification.getNum() - 1;
-
-  switch (PUBLIC(this)->justification[justificationindex]) {
+  switch (this->getJustification(stringidx)) {
   case SoText2Set::LEFT:
     n0[0] += halfw;
     n1[0] += halfw;
@@ -783,7 +796,7 @@ SoText2SetP::buildGlyphCache(SoState * state)
 
     s = PUBLIC(this)->string[i].getString();
     stringbox.makeEmpty();
-    rotation = PUBLIC(this)->rotation[i];
+    rotation = this->getRotation(i);
 
     if ((len = strlen(s)) > 0) {
 
