@@ -37,17 +37,25 @@
 */
 
 /*!
-  \var SoMFString SmPopupMenuKit::items
+  \var SoMFString SmPopupMenuKit::itemList
 
   The menu items
+*/
+
+/*!
+  \var SoMFString SmPopupMenuKit::itemData
+
+  Node data for each item. If an item contains an SmPopupMenuKit, a
+  sub menu will be opened when the user selects this item.
 */
 
 /*!
   \var SoSFInt32 SmPopupMenuKit::frameSize
 
   The amount of extra pixels around the frame. The default value is 3.
-
 */
+
+
 
 #include "SmPopupMenuKit.h"
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -82,6 +90,8 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoDrawStyleElement.h>
+#include <Inventor/elements/SoOverrideElement.h>
+#include <Inventor/elements/SoTextureOverrideElement.h>
 #include <Inventor/events/SoLocation2Event.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/elements/SoComplexityTypeElement.h>
@@ -128,8 +138,11 @@ public:
   int activeitem;
 
   SmPopupMenuKit * getSubMenu(const int idx) {
-    if (idx < master->submenu.getNum()) {
-      return (SmPopupMenuKit*) master->submenu[idx];
+    if (idx < master->itemData.getNum()) {
+      SoNode * n = master->itemData[idx];
+      if (n && n->isOfType(SmPopupMenuKit::getClassTypeId())) {
+        return (SmPopupMenuKit*) n;
+      }
     }
     return NULL;
   }
@@ -160,9 +173,9 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   
   SO_KIT_ADD_FIELD(isActive, (FALSE));
   SO_KIT_ADD_FIELD(visible, (FALSE));
-  SO_KIT_ADD_FIELD(items, (""));
-  SO_KIT_ADD_FIELD(submenu, (NULL));
-  SO_KIT_ADD_FIELD(frameSize, (3));
+  SO_KIT_ADD_FIELD(itemList, (""));
+  SO_KIT_ADD_FIELD(itemData, (NULL));
+  SO_KIT_ADD_FIELD(frameSize, (4));
   SO_KIT_ADD_FIELD(offset, (0, 0));
   SO_KIT_ADD_FIELD(spacing, (1.5f));
   SO_KIT_ADD_FIELD(pickedItem, (-1));
@@ -231,7 +244,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   tt->value = SoTransparencyType::BLEND;
   
   PRIVATE(this)->itemssensor = new SoFieldSensor(items_changed_cb, this);
-  PRIVATE(this)->itemssensor->attach(&this->items);
+  PRIVATE(this)->itemssensor->attach(&this->itemList);
   PRIVATE(this)->itemssensor->setPriority(1);
   PRIVATE(this)->flipleftright = FALSE;
   PRIVATE(this)->flipupdown = FALSE;
@@ -327,9 +340,15 @@ SmPopupMenuKit::GLRender(SoGLRenderAction * action)
   }
   SoState *state = action->getState();
   state->push();
+  // set elements directly to overwrite overrided elements
   SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
   SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
   SoComplexityElement::set(state, this, SoComplexityElement::getDefault());
+  SoOverrideElement::setDiffuseColorOverride(state, this, FALSE);
+  SoOverrideElement::setMaterialBindingOverride(state, this, FALSE);
+  SoOverrideElement::setPolygonOffsetOverride(state, this, FALSE);
+  SoTextureOverrideElement::setImageOverride(state, FALSE);
+  SoTextureOverrideElement::setQualityOverride(state, FALSE);
   inherited::GLRender(action);
   state->pop();
 }
@@ -358,10 +377,10 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
       p[1] *= PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] /= 12.0f * 1.5f;
       
-      if (this->items.getNum()) {
+      if (this->itemList.getNum()) {
         int idx = (int) p[1];
-        activeitem = (this->items.getNum()-1) - idx;
-        if (activeitem >= this->items.getNum()) activeitem = this->items.getNum()-1;
+        activeitem = (this->itemList.getNum()-1) - idx;
+        if (activeitem >= this->itemList.getNum()) activeitem = this->itemList.getNum()-1;
       }
     }
     if (activeitem >= 0 && SO_MOUSE_RELEASE_EVENT(event, ANY)) {
@@ -495,6 +514,8 @@ SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
   PRIVATE(this)->flipupdown = FALSE;
   PRIVATE(this)->flipleftright = FALSE;
 
+  SbBool finished = FALSE;
+
   do {  
     SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
     t->translation = npt;
@@ -521,21 +542,18 @@ SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
     this->updateBackground();  
     
     // check if parts of the menu is outside the window
-    SbBool dobreak = TRUE;
+    finished = TRUE;
     
-    if (PRIVATE(this)->backgroundmenulow < 0.0f) {
+    if (!PRIVATE(this)->flipupdown && PRIVATE(this)->backgroundmenulow < 0.0f) {
       PRIVATE(this)->flipupdown = TRUE;
-      dobreak = FALSE;
+      finished = FALSE;
     }
-    if (PRIVATE(this)->backgroundright > 1.0f) {
+    
+    if (!PRIVATE(this)->flipleftright && PRIVATE(this)->backgroundright > 1.0f) {
       PRIVATE(this)->flipleftright = TRUE;
-      dobreak = FALSE;
+      finished = FALSE;
     }
-
-    if (dobreak) break;
-  } while (!PRIVATE(this)->flipupdown || !PRIVATE(this)->flipleftright);
-  
-  
+  } while (!finished);
 
 }
 
@@ -633,7 +651,7 @@ SmPopupMenuKit::items_changed_cb(void * closure, SoSensor * s)
 {
   SmPopupMenuKit * thisp = (SmPopupMenuKit*) closure;
   SoText2 * text = (SoText2*) thisp->getAnyPart("textShape", TRUE);
-  text->string = thisp->items;
+  text->string = thisp->itemList;
   thisp->updateBackground();
 }
 
@@ -667,11 +685,9 @@ SmPopupMenuKit::opensub_cb(void * closure, SoSensor * s)
   SmPopupMenuKit * thisp = data->kit;
   SmPopupMenuKit * sub = data->sub;
 
-  fprintf(stderr,"open sub: %p %p\n", thisp, sub);
+  //  fprintf(stderr,"open sub: %p %p\n", thisp, sub);
   
   sub->setNormalizedPoint(data->np);
-//   sub->setAnyPart("activeShape", NULL);
-//   sub->setAnyPart("borderShape", NULL);
   sub->setParent(thisp);
   sub->visible = TRUE;
   sub->isActive = TRUE;

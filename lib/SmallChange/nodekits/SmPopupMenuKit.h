@@ -94,15 +94,19 @@ public:
   void setNormalizedPoint(const SbVec3f & npt);
 
   void setViewportRegion(const SbViewportRegion & vp);
+
+  SoMFString itemList;
+  SoMFNode itemData;
   
   SoSFBool visible;
   SoSFBool isActive;
-  SoMFString items;
-  SoMFNode submenu;
+
+  // signal
+  SoSFInt32 pickedItem;
+
   SoSFInt32 frameSize;
   SoSFVec2s offset;
   SoSFFloat spacing;
-  SoSFInt32 pickedItem;
   SoSFBool closeParent;
 
   void setParent(SmPopupMenuKit * kit);
