@@ -362,7 +362,7 @@ SmScenery::createInstance(double * origo, double * spacing, int * elements, floa
 }
 
 SmScenery *
-SmScenery::createInstance(const int cols, const int rows, double * xyzgrid, const float undefz = -1.0e30f)
+SmScenery::createInstance(const int cols, const int rows, double * xyzgrid, const float undefz)
 {
   if ( !sc_scenery_available() ) { return NULL; }
   // ss_system * system = sc_ssglue_system_construct_rotated(1, cols, rows, xyzgrid, undefz);
