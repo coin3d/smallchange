@@ -77,6 +77,7 @@ public:
   static void autoclip_update(void * closure, SoSensor * sensor);
 
   static SbBool debug(void);
+  int depth_bits;
   
   SoSearchAction * searchaction;
   SoGetMatrixAction * matrixaction;
@@ -118,6 +119,7 @@ SO_KIT_SOURCE(SmCameraControlKit);
 SmCameraControlKit::SmCameraControlKit(void)
 {
   PRIVATE(this) = new SmCameraControlKitP(this);
+  PRIVATE(this)->depth_bits = -1; // < 0 means that depth bits is unknown
 
   PRIVATE(this)->seek.seeking = FALSE;
   PRIVATE(this)->seek.distance = 50.0f;
@@ -187,6 +189,12 @@ SmCameraControlKit::initClass(void)
 void 
 SmCameraControlKit::GLRender(SoGLRenderAction * action)
 {
+  if (PRIVATE(this)->depth_bits < 0) {
+    GLint depthbits[1];
+    glGetIntegerv(GL_DEPTH_BITS, depthbits);
+    PRIVATE(this)->depth_bits = depthbits[0];
+  }
+
   SoState * state = action->getState();
   SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
   if (eh) {
@@ -388,6 +396,12 @@ SmCameraControlKit::setClippingPlanes(void)
       nearlimit = this->autoClippingValue.getValue();
     }
     else {
+      // we can't call glGetIntegerv() here, since we might not have a
+      // current context. The depth bits is found the first time
+      // GLRender() is called.
+      int depthbits = PRIVATE(this)->depth_bits;
+      if (depthbits < 0) depthbits = 32; // just set to 32 if not found yet
+
       // From glFrustum() documentation: Depth-buffer precision is
       // affected by the values specified for znear and zfar. The
       // greater the ratio of zfar to znear is, the less effective the
@@ -396,11 +410,8 @@ SmCameraControlKit::setClippingPlanes(void)
       // of depth buffer precision are lost. Because r approaches
       // infinity as znear approaches zero, you should never set znear
       // to zero.
-
-      GLint depthbits[1];
-      glGetIntegerv(GL_DEPTH_BITS, depthbits);
       
-      int use_bits = (int) (float(depthbits[0]) * (1.0f-this->autoClippingValue.getValue())); 
+      int use_bits = (int) (float(depthbits) * (1.0f-this->autoClippingValue.getValue())); 
       float r = (float) pow(2.0, (double) use_bits);
       nearlimit = farval / r;
     }
