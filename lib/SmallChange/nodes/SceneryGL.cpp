@@ -1,4 +1,3 @@
-
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
@@ -44,7 +43,7 @@
 #ifdef HAVE_OPENGL_GL_H
 #include <OpenGL/gl.h>
 #else
- #include <GL/gl.h>
+#include <GL/gl.h>
 #endif
 
 /* this source file is shared between SIM Scenery and SmallChange, hence the
@@ -796,8 +795,7 @@ sc_renderstate_construct(RenderState * state)
   // construct lists
   state->clipplanes = NULL;
   state->numclipplanes = 0;
-  state->reusetexlist = (void *) new SbList<TexInfo *>;
-  state->tmplist = (void *) new SbList<unsigned int>;
+  state->cullstate = (void *) new SbList<int>;
   state->debuglist = (void *) new SbList<float>;
   state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
   state->dotex = TRUE;
@@ -814,31 +812,16 @@ sc_renderstate_construct(RenderState * state)
   state->blockinfo = NULL;
 }
 
-static void sc_texture_hash_clear(const unsigned int & key, TexInfo * const & val, void * closure);
-
 void
 sc_renderstate_destruct(RenderState * state)
 {
-  // delete lists
-  if ( state->reusetexlist ) {
-    SbList<TexInfo *> * list = (SbList<TexInfo *> *) state->reusetexlist;
-    if ( list->getLength() ) {
-      int i;
-      assert(texture_release);
-      for ( i = 0; i < list->getLength(); i++ ) {
-        TexInfo * tex = (*list)[i];
-        texture_release(tex->image);
-        delete tex;
-      }
-    }
-    delete list;
-    state->reusetexlist = NULL;
-  }
-  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
-  texhash->apply(sc_texture_hash_clear, NULL);
-  delete texhash;
+  sc_delete_all_textures(state);
+
+  delete (SbHash<TexInfo *, unsigned int> *)state->texhash;
   state->texhash = NULL;
+
   // clipplanes are not owned by RenderState - managed elsewhere
+
 #define DELETE_LIST(list, type) \
   if ( state->list ) { \
     SbList<type> * instance = (SbList<type> *) state->list; \
@@ -846,7 +829,7 @@ sc_renderstate_destruct(RenderState * state)
     state->list = NULL; \
   }
   DELETE_LIST(debuglist, float);
-  DELETE_LIST(tmplist, unsigned int);
+  DELETE_LIST(cullstate, int);
   DELETE_LIST(varray, float);
   DELETE_LIST(narray, signed char);
   DELETE_LIST(t1array, float);
@@ -876,19 +859,8 @@ sc_create_texture(RenderState * state, void * image)
 {
   assert(state);
   assert(state->texhash);
-  assert(state->reusetexlist);
-  TexInfo * tex = NULL;
-  SbList<TexInfo *> * reusetexlist = (SbList<TexInfo *> *) state->reusetexlist;
-  if ( reusetexlist->getLength() ) {
-    tex = reusetexlist->pop();
-    // FIXME: optimize this
-    assert(texture_release);
-    texture_release(tex->image);
-    tex->image = NULL;
-  }
-  else {
-    tex = new TexInfo;
-  }
+
+  TexInfo * tex = new TexInfo;
   tex->image = image;
   tex->texid = state->currtexid;
   tex->unusedcount = 0;
@@ -898,56 +870,61 @@ sc_create_texture(RenderState * state, void * image)
   return tex->image;
 }
 
-static void sc_texture_hash_check_unused(const unsigned int & key, TexInfo * const & val, void * closure);
 static void sc_texture_hash_inc_unused(const unsigned int & key, TexInfo * const & val, void * closure);
-static void sc_texture_hash_add_all(const unsigned int & key, TexInfo * const & val, void * closure);
 
+
+// FIXME: the idea of making this the client code's responsibility
+// seems silly -- unused textures could be handled and destructed
+// automatically, methinks. 20040512 mortene.
 void
 sc_delete_unused_textures(RenderState * state)
 {
   assert(state);
-  assert(state->tmplist);
   assert(state->texhash);
-  assert(state->reusetexlist);
-  SbList<unsigned int> * tmplist = (SbList<unsigned int> *) state->tmplist;
-  assert(tmplist->getLength() == 0);
 
   SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
-  texhash->apply(sc_texture_hash_check_unused, tmplist);
-  
-  int i;
-  for (i = 0; i < tmplist->getLength(); i++) {
-    TexInfo * tex = NULL;
-    texhash->get((*tmplist)[i], tex);
-    ((SbList<TexInfo *> *) state->reusetexlist)->push(tex);
-    texhash->remove((*tmplist)[i]);
-  }
 
-  tmplist->truncate(0);
+  SbList<unsigned int> keylist;
+  texhash->makeKeyList(keylist);
+  
+  for (int i = 0; i < keylist.getLength(); i++) {
+    const unsigned int key = keylist[i];
+    TexInfo * tex = NULL;
+    texhash->get(key, tex);
+    assert(tex);
+
+    if (tex->unusedcount > MAX_UNUSED_COUNT) {
+      // FIXME: must be done in original GL ctx, of which there is no
+      // guarantee with this. 20040512 mortene.
+      texture_release(tex->image);
+      delete tex;
+      texhash->remove(key);
+    }
+  }
 }
 
 void
 sc_delete_all_textures(RenderState * state)
 {
   assert(state);
-  assert(state->tmplist);
   assert(state->texhash);
-  assert(state->reusetexlist);
-  SbList<unsigned int> * tmplist = (SbList<unsigned int> *) state->tmplist;
-  assert(tmplist->getLength() == 0);
-  SbList<TexInfo *> * reusetexlist = (SbList<TexInfo *> *) state->reusetexlist;
   SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
-  texhash->apply(sc_texture_hash_add_all, tmplist);
 
-  int i;
-  for ( i = 0; i < tmplist->getLength(); i++ ) {
+  SbList<unsigned int> keylist;
+  texhash->makeKeyList(keylist);
+
+  for (int i = 0; i < keylist.getLength(); i++ ) {
+    const unsigned int key = keylist[i];
     TexInfo * tex = NULL;
-    texhash->get((*tmplist)[i], tex);
+    texhash->get(key, tex);
     assert(tex);
-    reusetexlist->push(tex);
-    texhash->remove((*tmplist)[i]);
+    texhash->remove(key);
+
+    // FIXME: must be done in original GL ctx, of which there is no
+    // guarantee with this. 20040512 mortene.
+    texture_release(tex->image);
+    delete tex;
   }
-  tmplist->truncate(0);
 }
 
 void
@@ -958,35 +935,6 @@ sc_mark_unused_textures(RenderState * state)
 }
 
 /* ********************************************************************** */
-
-void
-sc_texture_hash_check_unused(const unsigned int & key, TexInfo * const & tex, void * closure)
-{
-  assert(tex);
-  if ( tex->unusedcount > MAX_UNUSED_COUNT ) {
-    SbList<unsigned int> * keylist = (SbList<unsigned int> *) closure;
-    keylist->append(key);
-  }
-}
-
-void
-sc_texture_hash_clear(const unsigned int & key, TexInfo * const & tex, void * closure)
-{
-  // safe to delete the TexInfo objects here since we'll never use this list again
-  assert(tex);
-  assert(tex->image);
-  assert(texture_release);
-  texture_release(tex->image);
-  delete tex;
-}
-
-void
-sc_texture_hash_add_all(const unsigned int & key, TexInfo * const & tex, void * closure)
-{
-  assert(tex);
-  SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
-  keylist->append(key);
-}
 
 void
 sc_texture_hash_inc_unused(const unsigned int & key, TexInfo * const & tex, void * closure)
@@ -1155,19 +1103,20 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   assert(closure);
   RenderState * state = (RenderState *) closure;
 
-  // when a block is not culled, it is either rendered, or its children are checked
-  // against the cull planes.  therefore - pre() and post() callbacks can be used stack-
-  // based and flags can be set to avoid testing against certain planes further down in
-  // the recursion when all corners are inside (inside == 8) the plane.
-  SbList<int> * cullstate = (SbList<int> *) state->tmplist;
+  // when a block is not culled, it is either rendered, or its
+  // children are checked against the cull planes.  therefore - pre()
+  // and post() callbacks can be used stack- based and flags can be
+  // set to avoid testing against certain planes further down in the
+  // recursion when all corners are inside (inside == 8) the plane.
+  SbList<int> * cullstate = (SbList<int> *) state->cullstate;
   assert(cullstate);
 
   int mask = 0;
   if ( cullstate->getLength() > 0 ) {
-    // This optimizes culling by telling which planes we do not need to cull against.
-    // It can only be enabled as long as we recurse the quadtree.  If random
-    // order is implemented to render from front to back, this will have to be
-    // disabled.
+    // This optimizes culling by telling which planes we do not need
+    // to cull against.  It can only be enabled as long as we recurse
+    // the quadtree.  If random order is implemented to render from
+    // front to back, this will have to be disabled.
     mask = cullstate->getLast();
   }
 
@@ -1275,7 +1224,7 @@ sc_plane_culling_post_cb(void * closure)
 {
   assert(closure);
   RenderState * state = (RenderState *) closure;
-  SbList<int> * cullstate = (SbList<int> *) state->tmplist;
+  SbList<int> * cullstate = (SbList<int> *) state->cullstate;
   assert(cullstate);
   cullstate->pop();
 }

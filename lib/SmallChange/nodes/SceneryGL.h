@@ -42,6 +42,7 @@ struct RenderState {
   float * clipplanes;
   int numclipplanes;
   float raypos[3], raydir[3];
+  void * cullstate; // SbList<int>
 
   // picking
   int intersected;
@@ -78,8 +79,6 @@ struct RenderState {
   int texisenabled;
 
   void * texhash;      // SbHash<TexInfo *, unsigned int>
-  void * reusetexlist; // SbList<TexInfo *>
-  void * tmplist;      // SbList<unsigned int>
   
   // debugging
   void * debuglist;    // SbList<float>
