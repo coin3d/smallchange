@@ -14,6 +14,7 @@
 #include <Inventor/nodes/SoEventCallback.h>
 #include <Inventor/events/SoKeyboardEvent.h>
 #include <SmallChange/misc/SmSceneManager.h>
+#include <SmallChange/nodes/SmViewpointWrapper.h>
 #include <stdio.h>
 
 
@@ -119,8 +120,18 @@ main(int argc, char ** argv )
     }
   }
 
-  SoCamera * camera = (SoCamera*) ck->getPart("camera", TRUE);
+  SoCamera * camera = NULL;
   
+  // handle VRML97 Viewpoints
+  if (SmViewpointWrapper::hasViewpoints(root)) {
+    camera = new SmViewpointWrapper;
+    ((SmViewpointWrapper*)camera)->setSceneGraph(root);
+    ck->setPart("camera", camera);
+  }
+  else {
+    camera = (SoCamera*) ck->getPart("camera", TRUE);
+  }
+
   So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
 
   // workaround for SoGui bug. The old SceneManager isn't deleted
@@ -137,11 +148,13 @@ main(int argc, char ** argv )
 
   renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   renderarea->setSceneGraph(ck);
-  scenemgr->setCamera(scenemgr->getCamera()); // cache camera
+  scenemgr->setCamera(camera); // cache camera
   renderarea->setBackgroundColor( SbColor( 0.0f, 0.2f, 0.3f )  );
   renderarea->show();
   So@Gui@::show( window );
-  ck->viewAll(renderarea->getViewportRegion());
+  if (!camera->isOfType(SmViewpointWrapper::getClassTypeId())) {
+    ck->viewAll(renderarea->getViewportRegion());
+  }
   So@Gui@::mainLoop();
 
   delete renderarea;
