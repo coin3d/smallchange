@@ -213,7 +213,7 @@ SmCameraControlKit::viewAll(const SbViewportRegion & vp,
       ((UTMCamera*)cam)->utmposition = utm->utmposition;
     }
     else {
-      SoDebugError::postWarning("SoQtRIMSViewer::setSceneGraph",
+      SoDebugError::postWarning("SmCameraControlKit::viewAll",
                                 "You're using a UTM Camera. "
                                 "Please consider supplying at least one UTMPosition node "
                                 "in your scene graph.");
