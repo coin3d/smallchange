@@ -1,0 +1,17 @@
+=====================================================================
+
+000 ShapeScale nodekit causes continuous redraws.
+
+    When using this nodekit in the SoGuiExamples/nodekits/scalemarker
+    example, it sometimes doesn't stop sending notifications to the
+    scenegraph -- causing it to continually trigger redraws.
+
+    This is quite straightforward to reproduce, just try starting and
+    stopping spin animations while having set the envvar
+    COIN_SHOW_FPS_COUNTER=1, and you'll sooner or later see that it
+    won't stop redrawing even though the scene camera's position and
+    orientation is frozen.
+
+    20031117 mortene.
+
+=====================================================================
