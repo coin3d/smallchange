@@ -64,8 +64,6 @@
 #include <SmallChange/nodes/SmScenery.h>
 #include <SmallChange/nodes/SceneryGL.h>
 
-#define MAX_UNUSED_COUNT 200
-
 // FIXME: implement rayPick() method
 // (is this old, or does it still count for undef-blocks? 20031019 larsa)
 
