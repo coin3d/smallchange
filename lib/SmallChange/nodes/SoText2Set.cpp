@@ -519,6 +519,9 @@ SoText2Set::notify(SoNotList * list)
 // SoText2SetP methods below
 #undef PRIVATE
 
+// FIXME: kill the local caching -- should be unnecessary, caching is
+// done (or at least should be done) at the glyph source. 20031215 mortene.
+
 void
 SoText2SetP::flushGlyphCache(const SbBool unrefglyphs)
 {
@@ -718,8 +721,8 @@ SoText2SetP::buildGlyphCache(SoState * state)
 
     SoText2Set * t = this->textnode;
     const char * s;
-    int len, i;
-    SbVec2s penpos, advance, kerning, thissize, thispos;
+    int len;
+    SbVec2s thissize, thispos;
     unsigned int idx;
     SbName curfontname;
     float curfontsize;
@@ -755,12 +758,8 @@ SoText2SetP::buildGlyphCache(SoState * state)
     memset(this->stringheight, 0, this->linecnt*sizeof(int));
 
     this->validarraydims = 1;
-    penpos[0] = 0;
-    penpos[1] = 0;
-    advance = penpos;
-    kerning = penpos;
 
-    for (i=0; i<this->linecnt; i++) {
+    for (int i=0; i<this->linecnt; i++) {
 
       s = t->string[i].getString();
       stringbox.makeEmpty();
@@ -776,6 +775,8 @@ SoText2SetP::buildGlyphCache(SoState * state)
         memset(this->charbboxes[i], 0, len*sizeof(SbVec2s));
         this->validarraydims = 2;
 
+        SbVec2s penpos(0, 0);
+
         for (int j=0; j<len; j++) {
           idx = (unsigned char)s[j];
           this->glyphs[i][j] = (SoGlyph *)(SoGlyph::getGlyph(state, idx, SbVec2s(0,0), rotation));
@@ -788,8 +789,10 @@ SoText2SetP::buildGlyphCache(SoState * state)
           }
 
           this->glyphs[i][j]->getBitmap(thissize, thispos, FALSE);
-          advance = this->glyphs[i][j]->getAdvance();
+          SbVec2s advance(this->glyphs[i][j]->getAdvance());
           if (outline) advance[0] += 1;
+
+          SbVec2s kerning;
 
           if (j > 0) 
             kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
@@ -798,9 +801,13 @@ SoText2SetP::buildGlyphCache(SoState * state)
           
           this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
     
-          SbVec2s pos = penpos + SbVec2s((short) thispos[0], (short) thispos[1]) + SbVec2s(0, (short) -thissize[1]);
+          SbVec2s pos = penpos +
+            SbVec2s((short) thispos[0], (short) thispos[1]) +
+            SbVec2s(0, (short) -thissize[1]);
+
           stringbox.extendBy(pos);
           stringbox.extendBy(pos + SbVec2s(advance[0] + kerning[0] + thissize[0], thissize[1]));
+
           this->positions[i][j] = pos;
 
           penpos += advance + kerning;
@@ -810,8 +817,7 @@ SoText2SetP::buildGlyphCache(SoState * state)
 	this->stringwidth[i] = stringbox.getMax()[0] - stringbox.getMin()[0];
         this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];       
         this->bboxes.append(stringbox);
-        penpos = SbVec2s(0, penpos[1] - (short)(SoFontSizeElement::get(state)));
-	
+
         // FIXME: Incorrect bbox for glyphs like 'g' and 'q'
         // etc. Should use the same techniques as SoText2 instead to
         // solve all these problems. (20031008 handegar)
