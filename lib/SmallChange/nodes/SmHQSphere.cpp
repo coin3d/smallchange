@@ -38,6 +38,8 @@
 #include <Inventor/SbLine.h>
 #include <Inventor/system/gl.h>
 #include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/C/glue/gl.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -177,35 +179,60 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
     glScalef(r, r, r);
   }
 
-  // FIXME: use vertex arrays to speed up rendering
-  glBegin(GL_TRIANGLES);
-  if (sendNormals && doTextures) {
-    for (int i = 0; i < n; i++) {
-      SbVec2f t = tc[idx[i]];
-      glTexCoord2f(t[0], t[1]);
-      SbVec3f v = pts[idx[i]];
-      glNormal3f(v[0], v[1], v[2]);
-      glVertex3f(v[0], v[1], v[2]);
-    }    
-  }
-  else if (sendNormals && !doTextures) {
-    for (int i = 0; i < n; i++) {
-      SbVec3f v = pts[idx[i]];
-      glNormal3f(v[0], v[1], v[2]);
-      glVertex3f(v[0], v[1], v[2]);
+  const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));  
+  if (cc_glglue_has_vertex_array(glue)) {
+    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 
+                              (GLvoid*) pts);
+    cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
+    
+    if (sendNormals) {
+      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, 
+                                (GLvoid*) pts);
+      cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
     }
+    if (doTextures) {
+      cc_glglue_glTexCoordPointer(glue, 2, GL_FLOAT, 0,
+                                  (GLvoid*) tc);
+      cc_glglue_glEnableClientState(glue, GL_TEXTURE_COORD_ARRAY);
+    } 
+    cc_glglue_glDrawElements(glue, GL_TRIANGLES, n, GL_UNSIGNED_INT, idx);
+    
+    cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
+    if (sendNormals) cc_glglue_glDisableClientState(glue, GL_NORMAL_ARRAY);
+    if (doTextures) cc_glglue_glDisableClientState(glue, GL_TEXTURE_COORD_ARRAY);
+    SoGLCacheContextElement::shouldAutoCache(state, SoGLCacheContextElement::DONT_AUTO_CACHE);
   }
   else {
-    for (int i = 0; i < n; i++) {
-      SbVec3f v = pts[idx[i]];
-      glVertex3f(v[0], v[1], v[2]);
+    glBegin(GL_TRIANGLES);
+    if (sendNormals && doTextures) {
+      for (int i = 0; i < n; i++) {
+        SbVec2f t = tc[idx[i]];
+        glTexCoord2f(t[0], t[1]);
+        SbVec3f v = pts[idx[i]];
+        glNormal3f(v[0], v[1], v[2]);
+        glVertex3f(v[0], v[1], v[2]);
+      }    
     }
+    else if (sendNormals && !doTextures) {
+      for (int i = 0; i < n; i++) {
+        SbVec3f v = pts[idx[i]];
+        glNormal3f(v[0], v[1], v[2]);
+        glVertex3f(v[0], v[1], v[2]);
+      }
+    }
+    else {
+      for (int i = 0; i < n; i++) {
+        SbVec3f v = pts[idx[i]];
+        glVertex3f(v[0], v[1], v[2]);
+      }
+    }
+    glEnd();  // GL_TRIANGLES
   }
-  glEnd();  // GL_TRIANGLES
   if (r != 1.0f) {
     glPopMatrix();
   }
 }
+
 
 void 
 SmHQSphere::getPrimitiveCount(SoGetPrimitiveCountAction * action)
