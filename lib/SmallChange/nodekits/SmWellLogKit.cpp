@@ -358,7 +358,9 @@ SmWellLogKit::handleEvent(SoHandleEventAction * action)
     SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
   }
 
-  SmTooltipKit * tooltip = (SmTooltipKit*)this->getAnyPart("tooltip", TRUE);
+  SmTooltipKit * tooltip = (SmTooltipKit*)this->getAnyPart("tooltip", FALSE);
+  if (!tooltip) return;
+
   const SoEvent * event = action->getEvent();
 
   SbBool handled = FALSE;
@@ -366,7 +368,9 @@ SmWellLogKit::handleEvent(SoHandleEventAction * action)
   if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
     if (tooltip->isActive.getValue()) {
       tooltip->isActive = FALSE;
-      handled = TRUE;
+      action->releaseGrabber();
+      action->setHandled();
+      return;
     }
   }
 
@@ -388,8 +392,10 @@ SmWellLogKit::handleEvent(SoHandleEventAction * action)
         if (detail && detail->isOfType(SoLineDetail::getClassTypeId())) {
           idx = this->findPickIdx(pp->getObjectPoint());
           if (this->setTooltipInfo(idx, tooltip)) {
+            handled = TRUE;
             tooltip->setPickedPoint(pp, action->getViewportRegion());
             tooltip->isActive = TRUE;
+            action->setGrabber(this);
           }
         }
       }
