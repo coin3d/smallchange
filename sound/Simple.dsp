@@ -120,6 +120,10 @@ SOURCE=..\lib\SmallChange\nodes\SoListener.cpp
 
 SOURCE=..\lib\SmallChange\nodes\SoSound.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\tariff.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -171,6 +175,10 @@ SOURCE=..\lib\SmallChange\nodes\SoSound.h
 # Begin Source File
 
 SOURCE=..\lib\SmallChange\nodes\SoSoundP.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\tariff.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
