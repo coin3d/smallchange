@@ -116,7 +116,7 @@ GeoMarkerKitP::scene[] = {
   "    angle 1.67\n",
   "  }",
   "  Scale {\n",
-  "    scaleFactor 0.4 10 0.4\n",
+  "    scaleFactor 0.2 5 0.2\n",
   "  }\n",
   "  Translation {\n",
   "    translation 0 1 0\n",
