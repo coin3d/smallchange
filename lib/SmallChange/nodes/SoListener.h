@@ -2,9 +2,9 @@
 #define COIN_SOLISTENER_H
 
 #include <Inventor/nodes/SoSubNode.h>
-#include <Inventor/fields/SoSfVec3f.h>
-#include <Inventor/fields/SoSfRotation.h>
-#include <Inventor/fields/SoSfFloat.h>
+#include <Inventor/fields/SoSFVec3f.h>
+#include <Inventor/fields/SoSFRotation.h>
+#include <Inventor/fields/SoSFFloat.h>
 
 class SoListener : public SoNode
 {

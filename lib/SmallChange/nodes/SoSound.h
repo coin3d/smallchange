@@ -2,10 +2,10 @@
 #define COIN_SOSOUND_H
 
 #include <Inventor/nodes/SoSubNode.h>
-#include <Inventor/fields/SoSfVec3f.h>
-#include <Inventor/fields/SoSfFloat.h>
-#include <Inventor/fields/SoSfNode.h>
-#include <Inventor/fields/SoSfBool.h>
+#include <Inventor/fields/SoSFVec3f.h>
+#include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFNode.h>
+#include <Inventor/fields/SoSFBool.h>
 
 #include <SmallChange/actions/SoAudioRenderAction.h>
 

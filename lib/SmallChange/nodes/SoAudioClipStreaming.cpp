@@ -44,8 +44,10 @@ SoAudioClipStreaming::SoAudioClipStreaming()
   THIS->usercallback = THIS->defaultCallbackWrapper;
   THIS->userdata = THIS;
 
+#ifdef HAVE_OGGVORBIS
   THIS->ovFile = NULL;
   THIS->ovCurrentSection = 0;
+#endif // HAVE_OGGVORBIS
 
   THIS->urlFileType = SoAudioClipStreamingP::AUDIO_UNKNOWN;
 };
@@ -57,7 +59,7 @@ SoAudioClipStreaming::~SoAudioClipStreaming()
 
   printf("~SoAudioClipStreaming()\n");
 
-  if (this->soaudioclip_impl->bufferId != NULL)
+  if (this->soaudioclip_impl->bufferId != 0)
     delete[] THIS->alBuffers;
   delete THIS;
 };
@@ -144,9 +146,10 @@ SbBool SoAudioClipStreamingP::stopPlaying(SbBool force)
 
 SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
 {
-  if (this->usercallback != NULL)
+  if (this->usercallback != 0)
     return this->usercallback(buffer, size, this->userdata);
-};
+  return FALSE;
+}
 
 SbBool SoAudioClipStreamingP::defaultCallbackWrapper(void *buffer, int length, void *userdata)
 {

@@ -1,5 +1,8 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
+/* Define if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
 /* Ogg Vorbis extensions available */
 #undef HAVE_OGGVORBIS
 

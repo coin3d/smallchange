@@ -33,7 +33,7 @@ public:
   SbBool defaultCallback(void *buffer, int length);
   void *userdata;
 
-#if HAVE_OGGVORBIS
+#ifdef HAVE_OGGVORBIS
   FILE *ovFile;
   OggVorbis_File ovOvFile;
   int ovCurrentSection;
