@@ -28,6 +28,7 @@
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoSFNode.h>
+#include <Inventor/fields/SoSFEnum.h>
 
 class SmVertexArrayShapeP;
 
@@ -52,7 +53,12 @@ public:
     QUAD_STRIP = -9,
     POLYGON = -10
   };
-  
+
+  enum RenderAsVertexBufferObjects {
+    OFF, ON, AUTO
+  };
+
+  SoSFEnum renderAsVertexBufferObject;  
   SoMFInt32 vertexIndex;
   SoSFNode vertexCoord;
   SoSFNode vertexNormal;
