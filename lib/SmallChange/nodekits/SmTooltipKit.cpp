@@ -115,6 +115,7 @@ public:
 
   SbBool flipleftright;
   SbBool flipupdown;
+  int fontsize;
 };
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -191,6 +192,7 @@ SmTooltipKit::SmTooltipKit(void)
   PRIVATE(this)->alarm_root = NULL;
   PRIVATE(this)->flipleftright = FALSE;
   PRIVATE(this)->flipupdown = FALSE;
+  PRIVATE(this)->fontsize = 12; // FIXME: test in GLRender() for current font
 }
 
 /*!
@@ -389,6 +391,8 @@ SmTooltipKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & 
 
     if (PRIVATE(this)->flipleftright) fof[0] = -fof[0];
     if (PRIVATE(this)->flipupdown) fof[1] = -fof[1];
+    
+    fof[1] -= float(PRIVATE(this)->fontsize) /  float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
 
     SbVec3f j(0.0f, 0.0f, 0.0f);
     if (PRIVATE(this)->flipleftright) j[0] = -PRIVATE(this)->bbw;
