@@ -160,9 +160,9 @@ static int sotext2set_sortcompare(const void * element1, const void * element2)
   sotext2set_indexdistance * item1 = (sotext2set_indexdistance *) element1;
   sotext2set_indexdistance * item2 = (sotext2set_indexdistance *) element2;
   if (item1->distance < item2->distance)
-    return 1;
-  else if (item1->distance > item2->distance)
     return -1;
+  else if (item1->distance > item2->distance)
+    return 1;
   else
     return 0;
 }
