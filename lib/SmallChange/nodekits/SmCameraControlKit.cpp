@@ -68,7 +68,6 @@ public:
   SoOneShotSensor * autoclippingsensor;
   static void autoclip_update(void * closure, SoSensor * sensor);
   
-  SbBool viewing;
   SoSearchAction * searchaction;
   SoGetMatrixAction * matrixaction;
   SoGetBoundingBoxAction * autoclipbboxaction;
@@ -108,7 +107,6 @@ SmCameraControlKit::SmCameraControlKit(void)
   PRIVATE(this)->searchaction = new SoSearchAction;
   PRIVATE(this)->matrixaction = new SoGetMatrixAction(SbViewportRegion(100,100));
 
-  PRIVATE(this)->viewing = TRUE;
   PRIVATE(this)->autoclippingsensor = 
     new SoOneShotSensor(SmCameraControlKitP::autoclip_update, PRIVATE(this));
   
@@ -118,7 +116,6 @@ SmCameraControlKit::SmCameraControlKit(void)
   SO_KIT_ADD_FIELD(autoClipping, (TRUE));
   SO_KIT_ADD_FIELD(autoClippingStrategy,(VARIABLE_NEAR_PLANE));
   SO_KIT_ADD_FIELD(autoClippingValue, (0.6f));
-  SO_KIT_ADD_FIELD(viewing, (TRUE));
   SO_KIT_ADD_FIELD(eventHandler, (NULL));
   SO_KIT_ADD_FIELD(viewUp, (0.0f, 1.0f, 0.0f));
 
@@ -491,10 +488,9 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
   if (!camera) return FALSE;
 
-  UTMCamera * utmcamera = NULL;
-  if (camera->isOfType(UTMCamera::getClassTypeId())) {
-    utmcamera = (UTMCamera*) camera;
-  }
+  UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
+    (UTMCamera *)camera : NULL;
+
   SoRayPickAction rpaction(vp);
   rpaction.setPoint(event->getPosition());
   rpaction.setRadius(2);
@@ -518,8 +514,8 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   }
   PRIVATE(this)->seek.camerastartorient = camera->orientation.getValue();
   
-  float fd = PRIVATE(this)->seek.distance;
-  fd *= (float) ((hitpoint - PRIVATE(this)->seek.camerastartposition).length()/100.0);
+  float fd = PRIVATE(this)->seek.distance / 100.0f;
+  fd *= (float) ((hitpoint - PRIVATE(this)->seek.camerastartposition).length());
   camera->focalDistance = fd;
 
   SbVec3f dir = SbVec3f(hitpoint - PRIVATE(this)->seek.camerastartposition);
@@ -621,14 +617,12 @@ SmCameraControlKitP::seeksensorCB(void * closure, SoSensor * s)
   UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
     (UTMCamera*) camera : NULL;
   
-  if (utmcamera) {
-    utmcamera->utmposition = thisp->seek.camerastartposition +
-      (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t;
-  }
-  else {
-    camera->position = SbVec3f(thisp->seek.camerastartposition +
-                               (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t);
-  }
+  SbVec3d newpos = thisp->seek.camerastartposition +
+    (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t;
+
+  if (utmcamera) { utmcamera->utmposition = newpos; }
+  else { camera->position = SbVec3f(newpos); }
+
   if (end) {
     thisp->seek.seeking = FALSE;
     thisp->seek.sensor->unschedule();

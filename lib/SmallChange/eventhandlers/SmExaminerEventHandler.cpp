@@ -139,32 +139,6 @@ SmExaminerEventHandler::handleEvent(SoHandleEventAction * action)
 {
   const SoEvent * ev = action->getEvent();
 
-  // Let the end-user toggle between camera-interaction mode
-  // ("viewing") and scenegraph-interaction mode with ALT key(s).
-  if (ev->getTypeId().isDerivedFrom(SoKeyboardEvent::getClassTypeId())) {
-    SoKeyboardEvent * ke = (SoKeyboardEvent *)ev;
-    switch (ke->getKey()) {
-    case SoKeyboardEvent::LEFT_ALT:
-    case SoKeyboardEvent::RIGHT_ALT:
-      if (this->isViewing() && (ke->getState() == SoButtonEvent::DOWN)) {
-        this->setViewing(FALSE);
-        return;
-      }
-      else if (!this->isViewing() && (ke->getState() == SoButtonEvent::UP)) {
-        this->setViewing(TRUE);
-        return;
-      }
-    default:
-      break;
-    }
-  }
-
-  // We're in "interact" mode (ie *not* the camera modification mode),
-  // so don't handle the event here. It should either be forwarded to
-  // the scenegraph, or caught by So@Gui@Viewer::processSoEvent() if
-  // it's an ESC press (to switch modes).
-  if (!this->isViewing()) return;
-    
   // Events when in "ready-to-seek" mode are ignored, except those
   // which influence the seek mode itself -- these are handled further
   // up the inheritance hierarchy.

@@ -110,18 +110,6 @@ SmEventHandler::interactiveCountDec(void)
   this->intcnt--;
 }
 
-void 
-SmEventHandler::setViewing(const SbBool onoff) 
-{
-  this->kit->viewing = onoff;
-}
-
-SbBool 
-SmEventHandler::isViewing(void) const 
-{
-    return this->kit->viewing.getValue();
-}
-
 SoCamera * 
 SmEventHandler::getCamera(void) 
 {

@@ -81,7 +81,6 @@ public:
   SoSFBool autoClipping;
   SoSFEnum autoClippingStrategy;
   SoSFFloat autoClippingValue;
-  SoSFBool viewing;
   SoSFNode eventHandler;
   SoSFVec3f viewUp;
 

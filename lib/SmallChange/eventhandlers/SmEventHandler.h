@@ -66,8 +66,6 @@ protected:
   void interactiveCountInc(void);
   void interactiveCountDec(void);
 
-  void setViewing(const SbBool onoff);
-  SbBool isViewing(void) const;
   SoCamera * getCamera(void);
 
   void yawCamera(const float rad);
