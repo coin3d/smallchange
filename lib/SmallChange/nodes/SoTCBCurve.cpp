@@ -336,7 +336,6 @@ SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpo
   float h1, h2, h3, h4;
   float t, t2, t3;
 
-  float adj0, adj1;
   float d10_x, d10_y, d10_z;
   float dd0_x, dd0_y, dd0_z;
   float ds1_x, ds1_y, ds1_z;
@@ -367,11 +366,6 @@ SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpo
     h3 = t3 - 2*t2 + t;
     h4 = t3 - t2;
 
-    if (k1 != 0) 
-      adj0 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2] - tStamps[k1 - 1]);
-    if (k2 != (numControlpoints - 1)) 
-      adj1 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2+1] - tStamps[k1]);
-
     //---- Calculating TCB-values...
     if (k1 == 0) {
       dd0_x = d10_x;
@@ -379,6 +373,8 @@ SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpo
       dd0_z = d10_z;
     }//if
     else {
+      float adj0 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2] - tStamps[k1 - 1]);
+
       dd0_x = adj0*((coords[k1][0] - coords[k1 - 1][0]) + d10_x);
       dd0_y = adj0*((coords[k1][1] - coords[k1 - 1][1]) + d10_y);
       dd0_z = adj0*((coords[k1][2] - coords[k1 - 1][2]) + d10_z);
@@ -390,6 +386,8 @@ SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpo
       ds1_z = d10_z;
     }//if
     else {
+      float adj1 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2+1] - tStamps[k1]);
+
       ds1_x = adj1*((coords[k2 + 1][0] - coords[k2][0]) + d10_x);
       ds1_y = adj1*((coords[k2 + 1][1] - coords[k2][1]) + d10_y);
       ds1_z = adj1*((coords[k2 + 1][2] - coords[k2][2]) + d10_z);
@@ -452,7 +450,6 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpo
   float h1, h2, h3, h4;
   float t, t2, t3;
 
-  float adj0, adj1;
   float d10_x, d10_y, d10_z;
   float dd0_x, dd0_y, dd0_z;
   float ds1_x, ds1_y, ds1_z;
@@ -483,11 +480,6 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpo
     h3 = t3 - 2*t2 + t;
     h4 = t3 - t2;
 
-    if (k1 != 0) 
-      adj0 = (timestamp[k2] - timestamp[k1])/(timestamp[k2] - timestamp[k1 - 1]);
-    if (k2 != (numControlpoints - 1)) 
-      adj1 = (timestamp[k2] - timestamp[k1])/(timestamp[k2+1] - timestamp[k1]);
-
     //---- Calculating TCB-values...
     if (k1 == 0) {
       dd0_x = d10_x;
@@ -495,6 +487,8 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpo
       dd0_z = d10_z;
     }//if
     else {
+      float adj0 = (timestamp[k2] - timestamp[k1])/(timestamp[k2] - timestamp[k1 - 1]);
+
       dd0_x = adj0*((vec[k1][0] - vec[k1 - 1][0]) + d10_x);
       dd0_y = adj0*((vec[k1][1] - vec[k1 - 1][1]) + d10_y);
       dd0_z = adj0*((vec[k1][2] - vec[k1 - 1][2]) + d10_z);
@@ -506,6 +500,8 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpo
       ds1_z = d10_z;
     }//if
     else {
+      float adj1 = (timestamp[k2] - timestamp[k1])/(timestamp[k2+1] - timestamp[k1]);
+
       ds1_x = adj1*((vec[k2 + 1][0] - vec[k2][0]) + d10_x);
       ds1_y = adj1*((vec[k2 + 1][1] - vec[k2][1]) + d10_y);
       ds1_z = adj1*((vec[k2 + 1][2] - vec[k2][2]) + d10_z);
