@@ -37,6 +37,7 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoWriteAction.h>
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -194,11 +195,227 @@ static SbBool fill_callback(void *buffer, int length, void *userdata)
 
 };
 
+SoSeparator *readFile(const char *filename) 
+{
+  SoInput mySceneInput;
+  if (!mySceneInput.openFile(filename)) {
+    fprintf(stderr, "couldn't open file\n");
+    return NULL;
+  }
+  SoSeparator *myGraph = SoDB::readAll(&mySceneInput);
+  if (myGraph==NULL) {
+    mySceneInput.closeFile();
+    fprintf(stderr, "Problem reading file\n");
+    return NULL;
+  }
+  mySceneInput.closeFile();
+  return myGraph;
+};
+
 void
 main(
   int argc,
   char ** argv )
 {
+
+  HWND window = SoWin::init( argv[0] );
+
+  SoListener::initClass();
+  SoSound::initClass();
+  SoAudioClip::initClass();
+  SoAudioClipStreaming::initClass();
+  SoAudioRenderAction::initClass();
+
+  SoAudioDevice audioDevice;
+  SbBool ret = audioDevice.init("OpenAL", "DirectSound3D");
+  if (!ret)
+  {
+    printf("audioDevice::init failed\n");
+  };
+
+  root = readFile("file.iv");
+
+  SoListener *listener;
+
+  root->addChild( camera = new SoPerspectiveCamera );
+  root->addChild(listener = new SoListener );
+
+
+  listener->orientation.connectFrom(&camera->orientation);
+  listener->position.connectFrom(&camera->position);
+
+	SbViewportRegion vp;
+	vp.setWindowSize(SbVec2s(400, 400));
+
+  SoWinRenderArea * viewer = new SoWinRenderArea( window );
+
+  viewer->setSceneGraph( root );
+
+	viewer->setViewportRegion(vp);
+//  camera->viewAll( node, vp);
+  camera->viewAll( root, vp);
+
+	SoTimerSensor *timerSensor;
+/*
+  timerSensor = new SoTimerSensor(timerSensorCallback, NULL);
+//	timerSensor->setInterval(1);
+	timerSensor->setInterval(SbTime(0, 1000*50));
+	timerSensor->schedule();
+*/
+  audioDevice.setSceneGraph(root);
+  audioDevice.setGLRenderAction(viewer->getGLRenderAction());
+  audioDevice.enable();
+
+//  SbAudioWorkerThread mt(user_callback);
+//  SbAudioWorkerThread mt(NULL);
+//  mt.start();
+
+  SoWriteAction writeAction;
+  writeAction.apply(root);
+
+  viewer->show();
+  SoWin::show( window );
+
+  MMRESULT mmres = joySetCapture(window, JOYSTICKID1, 20, TRUE);
+
+  SoWin::mainLoop();
+
+//  mt.stop();
+
+  joyReleaseCapture(mmres);
+
+  audioDevice.disable();
+
+//  closeoggfile();
+
+// fixme: do the deletion - but wait for mbm to fix sowin-bug
+//  delete viewer;
+
+//  getch();
+
+} // main()
+
+
+/*
+  root = readFile("file.iv");
+
+  SoListener *listener;
+  SoSound *sourcenode;
+//  SoAudioClip *buffernode;
+  SoAudioClipStreaming *buffernode;
+  SoAudioClip *clip2;
+  SoSound *source2;
+
+  root = new SoSeparator;
+
+  root->addChild( camera = new SoPerspectiveCamera );
+  root->addChild(listener = new SoListener );
+
+  root->addChild( new SoDirectionalLight );
+
+  SoShapeHints * hints = new SoShapeHints;
+  hints->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
+  hints->shapeType = SoShapeHints::SOLID;
+  hints->creaseAngle = 0.91f;
+  root->addChild( hints );
+  SoBaseColor * basecol = new SoBaseColor;
+  basecol->rgb.setValue( float(rand())/float(RAND_MAX),
+                         float(rand())/float(RAND_MAX),
+                         float(rand())/float(RAND_MAX) );
+  root->addChild( basecol );
+
+
+	SoNode *node;
+  SoSeparator *sep = new SoSeparator;
+
+  xf = new SoTransform;
+  xf->translation.setValue(-1.3, 0, 0);
+  
+  sep->addChild(new SoCone);
+  sep->addChild(xf);
+  sep->addChild(node=new SoCone);
+  sep->addChild(sourcenode = new SoSound);
+  
+  root->addChild(buffernode = new SoAudioClipStreaming);
+//  buffernode->setAsyncMode(TRUE);
+//  buffernode->setBufferInfo(4410, 3);
+//  buffernode->setBufferInfo(44100/100*3, 10); 
+//  buffernode->setBufferInfo((44100*30)/1000, 8); 
+  // ^^ 20010809 - if buffer*num == 1 sec, we will have jitter/loops at the beginning
+  // or "very round values) (0.1 sec, 0.2 sec, 
+  // I have no idea why this happens !!!
+//  buffernode->url.setValue("lyd1.wav");
+  buffernode->url.setValue("allways.ogg");
+//  buffernode->loop.setValue(TRUE);
+//  buffernode->loop.setValue(FALSE); 
+  buffernode->startTime.setValue(SbTime::getTimeOfDay() + SbTime(2));
+  buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
+
+  sourcenode->source.setValue(buffernode);
+  root->addChild(sep);
+
+//  openoggfile("allways.ogg");
+
+//    buffernode->setUserCallback(fill_callback, NULL);
+//  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
+//  buffernode->pitch.setValue(2.0f);
+
+//  root->addChild( node=new SoCone );
+//  add separator and add several nodes
+//  root->addChild( node=new SoListener );
+
+
+  SoSeparator *sep2 = new SoSeparator;
+  xf2 = new SoTransform;
+  xf2->translation.setValue(1.3, 0, 0);
+  sep2->addChild(xf2);
+  SoSphere *ball = new SoSphere();
+//  sep2->addChild(node=new SoSphere);
+  ball->radius = 0.3f;
+  sep2->addChild(ball);
+  sep2->addChild(source2 = new SoSound);
+  root->addChild(clip2 = new SoAudioClip);
+  clip2->url.setValue("lyd1.wav");
+  clip2->loop.setValue(TRUE);
+  clip2->startTime.setValue(SbTime::getTimeOfDay() + SbTime(1));
+  clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
+  source2->source.setValue(clip2);
+  root->addChild(sep2);
+
+
+  listener->orientation.connectFrom(&camera->orientation);
+  listener->position.connectFrom(&camera->position);
+
+
+	SbViewportRegion vp;
+	vp.setWindowSize(SbVec2s(400, 400));
+
+  SoWinRenderArea * viewer = new SoWinRenderArea( window );
+
+  viewer->setSceneGraph( root );
+
+	viewer->setViewportRegion(vp);
+  camera->viewAll( node, vp);
+
+	SoTimerSensor *timerSensor;
+	timerSensor = new SoTimerSensor(timerSensorCallback, NULL);
+//	timerSensor->setInterval(1);
+	timerSensor->setInterval(SbTime(0, 1000*50));
+	timerSensor->schedule();
+
+  audioDevice.setSceneGraph(root);
+  audioDevice.setGLRenderAction(viewer->getGLRenderAction());
+  audioDevice.enable();
+
+//  SbAudioWorkerThread mt(user_callback);
+//  SbAudioWorkerThread mt(NULL);
+//  mt.start();
+
+  SoWriteAction writeAction;
+  writeAction.apply(root);
+*/
+
+
 /*
   // open a wave file
   riff_t * file;
@@ -267,154 +484,3 @@ main(
 
   riff_file_close( file );
 */
-
-  HWND window = SoWin::init( argv[0] );
-
-  SoListener::initClass();
-  SoSound::initClass();
-  SoAudioClip::initClass();
-  SoAudioClipStreaming::initClass();
-  SoAudioRenderAction::initClass();
-
-  SoAudioDevice audioDevice;
-  SbBool ret = audioDevice.init("OpenAL", "DirectSound3D");
-  if (!ret)
-  {
-    printf("audioDevice::init failed\n");
-  };
-
-  SoListener *listener;
-  SoSound *sourcenode;
-//  SoAudioClip *buffernode;
-  SoAudioClipStreaming *buffernode;
-  SoAudioClip *clip2;
-  SoSound *source2;
-
-  root = new SoSeparator;
-
-  root->addChild( camera = new SoPerspectiveCamera );
-  root->addChild(listener = new SoListener );
-
-  root->addChild( new SoDirectionalLight );
-
-  SoShapeHints * hints = new SoShapeHints;
-  hints->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
-  hints->shapeType = SoShapeHints::SOLID;
-  hints->creaseAngle = 0.91f;
-  root->addChild( hints );
-  SoBaseColor * basecol = new SoBaseColor;
-  basecol->rgb.setValue( float(rand())/float(RAND_MAX),
-                         float(rand())/float(RAND_MAX),
-                         float(rand())/float(RAND_MAX) );
-  root->addChild( basecol );
-
-
-	SoNode *node;
-  SoSeparator *sep = new SoSeparator;
-
-  xf = new SoTransform;
-  xf->translation.setValue(-1.3, 0, 0);
-  
-  sep->addChild(new SoCone);
-  sep->addChild(xf);
-  sep->addChild(node=new SoCone);
-  sep->addChild(sourcenode = new SoSound);
-  
-  root->addChild(buffernode = new SoAudioClipStreaming);
-  buffernode->setAsyncMode(TRUE);
-//  buffernode->setBufferInfo(4410, 3);
-//  buffernode->setBufferInfo(44100/100*3, 10); 
-  buffernode->setBufferInfo(44100/10, 8); 
-  // ^^ 20010809 - if buffer*num == 1 sec, we will have jitter/loops at the beginning
-  // or "very round values) (0.1 sec, 0.2 sec, 
-  // I have no idea why this happens !!!
-//  buffernode->url.setValue("lyd1.wav");
-  buffernode->url.setValue("allways.ogg");
-//  buffernode->loop.setValue(TRUE);
-  buffernode->loop.setValue(FALSE); 
-  buffernode->startTime.setValue(SbTime::getTimeOfDay() + SbTime(2));
-  buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
-
-  sourcenode->source.setValue(buffernode);
-  root->addChild(sep);
-
-//  openoggfile("allways.ogg");
-
-//    buffernode->setUserCallback(fill_callback, NULL);
-//  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
-//  buffernode->pitch.setValue(2.0f);
-
-//  root->addChild( node=new SoCone );
-//  add separator and add several nodes
-//  root->addChild( node=new SoListener );
-
-
-  SoSeparator *sep2 = new SoSeparator;
-  xf2 = new SoTransform;
-  xf2->translation.setValue(1.3, 0, 0);
-  sep2->addChild(xf2);
-  SoSphere *ball = new SoSphere();
-//  sep2->addChild(node=new SoSphere);
-  ball->radius = 0.3f;
-  sep2->addChild(ball);
-  sep2->addChild(source2 = new SoSound);
-  root->addChild(clip2 = new SoAudioClip);
-  clip2->url.setValue("lyd1.wav");
-  clip2->loop.setValue(TRUE);
-  clip2->startTime.setValue(SbTime::getTimeOfDay() + SbTime(1));
-  clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
-  source2->source.setValue(clip2);
-  root->addChild(sep2);
-
-
-  listener->orientation.connectFrom(&camera->orientation);
-  listener->position.connectFrom(&camera->position);
-
-
-	SbViewportRegion vp;
-	vp.setWindowSize(SbVec2s(400, 400));
-
-  SoWinRenderArea * viewer = new SoWinRenderArea( window );
-
-  viewer->setSceneGraph( root );
-
-	viewer->setViewportRegion(vp);
-  camera->viewAll( node, vp);
-
-	SoTimerSensor *timerSensor;
-	timerSensor = new SoTimerSensor(timerSensorCallback, NULL);
-//	timerSensor->setInterval(1);
-	timerSensor->setInterval(SbTime(0, 1000*50));
-	timerSensor->schedule();
-
-  audioDevice.setSceneGraph(root);
-  audioDevice.setGLRenderAction(viewer->getGLRenderAction());
-  audioDevice.enable();
-
-//  SbAudioWorkerThread mt(user_callback);
-//  SbAudioWorkerThread mt(NULL);
-//  mt.start();
-
-  viewer->show();
-  SoWin::show( window );
-
-  MMRESULT mmres = joySetCapture(window, JOYSTICKID1, 20, TRUE);
-
-  SoWin::mainLoop();
-
-//  mt.stop();
-
-  joyReleaseCapture(mmres);
-
-  audioDevice.disable();
-
-//  closeoggfile();
-
-// fixme: do the deletion - but wait for mbm to fix sowin-bug
-//  delete viewer;
-
-//  getch();
-
-} // main()
-
-

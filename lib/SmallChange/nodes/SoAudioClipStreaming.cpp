@@ -37,10 +37,10 @@ SoAudioClipStreaming::SoAudioClipStreaming()
 
   SO_NODE_CONSTRUCTOR(SoAudioClipStreaming);
 
-  THIS->asyncMode = FALSE;
+//  THIS->asyncMode = FALSE;
+  THIS->asyncMode = TRUE;
   THIS->alBuffers = NULL;
-  THIS->numBuffers = 0;
-  this->setBufferInfo(0, 0);
+  this->setBufferInfo(44100/40, 7);
   THIS->usercallback = THIS->defaultCallbackWrapper;
   THIS->userdata = THIS;
 
@@ -50,6 +50,7 @@ SoAudioClipStreaming::SoAudioClipStreaming()
 #endif // HAVE_OGGVORBIS
 
   THIS->urlFileType = SoAudioClipStreamingP::AUDIO_UNKNOWN;
+  this->loop.setValue(FALSE); 
 };
 
 SoAudioClipStreaming::~SoAudioClipStreaming()
