@@ -943,7 +943,7 @@ SmScenery::set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closu
 {
   PRIVATE(this)->cbtexcb = callback;
   PRIVATE(this)->cbtexclosure = closure;
-  // FIXME: invalidate texture if attribute texture is currently enabled
+  this->refreshTextures(PRIVATE(this)->colormaptexid);
 }
 
 void 
