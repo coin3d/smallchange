@@ -101,12 +101,6 @@ public:
 
   void set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closure);
 
-  // culling callbacks
-  static int box_culling_pre_cb(void * action, const double * bmin, const double * bmax);
-  static void box_culling_post_cb(void * action);
-  static int ray_culling_pre_cb(void * action, const double * bmin, const double * bmax);
-  static void ray_culling_post_cb(void * action);
-
   // dynamic texture callbacks
   static uint32_t colortexture_cb(void * node, double * xypos, float elevation, double * spacing);
 

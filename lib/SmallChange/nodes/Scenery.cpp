@@ -53,6 +53,7 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/lists/SbStringList.h>
+#include <Inventor/SbLine.h>
 
 #include <Inventor/SoInput.h>
 
@@ -332,58 +333,6 @@ ok_to_use_bytevalue_normals(void)
   return !okflag;
 }
 
-static
-void *
-sc_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
-{
-  SoGLImage::Wrap WrapS, WrapT;
-  switch ( wraps ) {
-  case GL_CLAMP:
-    WrapS = SoGLImage::CLAMP;
-    break;
-  case GL_CLAMP_TO_EDGE:
-    WrapS = SoGLImage::CLAMP_TO_EDGE;
-    break;
-  default:
-    WrapS = SoGLImage::CLAMP;
-    break;
-  }
-  switch ( wrapt ) {
-  case GL_CLAMP:
-    WrapT = SoGLImage::CLAMP;
-    break;
-  case GL_CLAMP_TO_EDGE:
-    WrapT = SoGLImage::CLAMP_TO_EDGE;
-    break;
-  default:
-    WrapT = SoGLImage::CLAMP;
-    break;
-  }
-  SoGLImage * image = new SoGLImage;
-  image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
-  image->setData(data, SbVec2s(texw, texh), nc, WrapS, WrapT, q, hey, NULL);
-  return (void *) image;
-}
-
-static
-void
-sc_texture_activate(RenderState * state, void * imagehandle)
-{
-  assert(imagehandle);
-  SoGLImage * image = (SoGLImage *) imagehandle;
-  assert(state->state);
-  image->getGLDisplayList(state->state)->call(state->state);
-}
-
-static
-void
-sc_texture_release(void * imagehandle)
-{
-  assert(imagehandle);
-  SoGLImage * image = (SoGLImage *) imagehandle;
-  image->unref(NULL);
-}
-
 #define PRIVATE(obj) ((obj)->pimpl)
 #define PUBLIC(obj) ((obj)->api)
 
@@ -401,7 +350,6 @@ SmScenery::initClass(void)
     else {
       sc_set_use_bytenormals(FALSE);
     }
-    sc_set_texture_functions(sc_texture_construct, sc_texture_activate, sc_texture_release);
   }
   SO_NODE_INIT_CLASS(SmScenery, SoShape, "Shape");
 }
@@ -737,8 +685,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   PRIVATE(this)->renderstate.texisenabled = texwasenabled;
   PRIVATE(this)->renderstate.currtexid = 0;
-  PRIVATE(this)->renderstate.state = action->getState();
-  PRIVATE(this)->renderstate.action = action;
 
   sc_init_debug_info(&PRIVATE(this)->renderstate);
 
@@ -874,12 +820,23 @@ void
 SmScenery::rayPick(SoRayPickAction * action)
 {
   if (!sc_scenery_available()) { return; }
-  PRIVATE(this)->renderstate.state = action->getState();
-  PRIVATE(this)->renderstate.action = action;
+
+  action->setObjectSpace();
+  const SbLine & line = action->getLine();
+  const SbVec3f & raydir = line.getDirection();
+  const SbVec3f & raypos = line.getPosition();
+
+  PRIVATE(this)->renderstate.raypos[0] = raypos[0];
+  PRIVATE(this)->renderstate.raypos[1] = raypos[1];
+  PRIVATE(this)->renderstate.raypos[2] = raypos[2];
+  PRIVATE(this)->renderstate.raydir[0] = raydir[0];
+  PRIVATE(this)->renderstate.raydir[1] = raydir[1];
+  PRIVATE(this)->renderstate.raydir[2] = raydir[2];
+
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          SmScenery::ray_culling_pre_cb, &PRIVATE(this)->renderstate);
+                                          sc_ray_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SmScenery::ray_culling_post_cb, &PRIVATE(this)->renderstate);
+                                           sc_ray_culling_post_cb, &PRIVATE(this)->renderstate);
 
   inherited::rayPick(action); // just generate primitives
   
@@ -936,18 +893,35 @@ SmScenery::evaluate(SoAction * action)
   worldtolocal.multVecMatrix(campos, campos);
   PRIVATE(this)->currhotspot = campos;
 
-  PRIVATE(this)->renderstate.state = action->getState();
-  PRIVATE(this)->renderstate.action = action;
+
+ const SbViewVolume & vv = SoViewVolumeElement::get(state);
+ const SbMatrix & mm = SoModelMatrixElement::get(state);
+  SbMatrix imm = mm.inverse();
+          
+  SbPlane sbplanes[6];
+  vv.getViewVolumePlanes(sbplanes);
+  float * planes = (float *) malloc(sizeof(float)*6*4);
+  assert(planes);
+  int i;
+  for ( i = 0; i < 6; i++ ) {
+    sbplanes[i].transform(imm);
+    SbVec3f normal = sbplanes[i].getNormal();
+    planes[i*4+0] = normal[0];
+    planes[i*4+1] = normal[1];
+    planes[i*4+2] = normal[2];
+    planes[i*4+3] = sbplanes[i].getDistanceFromOrigin();
+  } 
+                      
+  PRIVATE(this)->renderstate.numclipplanes = 6;
+  PRIVATE(this)->renderstate.clipplanes = planes;
 
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          SmScenery::box_culling_pre_cb, &PRIVATE(this)->renderstate);
+                                          sc_plane_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
-  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
-                                         PRIVATE(this)->viewid,
+                                           sc_plane_culling_post_cb, &PRIVATE(this)->renderstate);
+  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                          NULL, NULL);
-  sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
-                                          PRIVATE(this)->viewid,
+  sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                           NULL, NULL);
   double hotspot[3];
   hotspot[0] = campos[0];
@@ -960,6 +934,9 @@ SmScenery::evaluate(SoAction * action)
                                           NULL, NULL);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            NULL, NULL);
+  free(PRIVATE(this)->renderstate.clipplanes);
+  PRIVATE(this)->renderstate.clipplanes = NULL;
+  PRIVATE(this)->renderstate.numclipplanes = 0;
 }
 
 void 
@@ -1472,6 +1449,7 @@ SceneryP::gen_cb(void * closure, const int x, const int y,
 /* ********************************************************************** */
 // CULLING
 
+#if 0
 // view volume box vs terrain block bounding box culling
 int
 SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
@@ -1545,6 +1523,7 @@ SmScenery::ray_culling_post_cb(void * closure)
   SoState * state = action->getState();
   state->pop();
 }
+#endif
 
 /* ********************************************************************** */
 // DYNAMIC TEXTURING

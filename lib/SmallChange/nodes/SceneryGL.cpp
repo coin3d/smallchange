@@ -605,8 +605,6 @@ sc_renderstate_construct(RenderState * state)
   state->debuglist = (void *) new SbList<float>;
   state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
   state->dotex = TRUE;
-  state->state = NULL;
-  state->action = NULL;
 
   state->vertexcount = 0;
   state->varray = NULL;

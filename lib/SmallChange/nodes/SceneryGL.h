@@ -68,10 +68,6 @@ struct RenderState {
   void * reusetexlist; // SbList<TexInfo *>
   void * tmplist;      // SbList<unsigned int>
   
-  // ugh, remove
-  SoState * state;     // for texture display lists
-  SoAction * action;   // for culling
-
   // debugging
   void * debuglist;    // SbList<float>
   int newtexcount;
