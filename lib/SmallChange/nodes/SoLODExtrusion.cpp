@@ -303,7 +303,7 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
         SbBool wasenabled = glIsEnabled(GL_LIGHTING);
         if (wasenabled) glDisable(GL_LIGHTING);
         glBegin(GL_LINE_STRIP);
-        while (accdist < ld1dist && accdist < ld2dist && i < spinelength-2) {
+        while (accdist < ld1dist && accdist < ld2dist && i < spinelength-1) {
           if( use_color )
             glColor3fv((const GLfloat*)colorv[i].getValue());
           glVertex3fv((const GLfloat*)sv[i].getValue());
