@@ -640,7 +640,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
 
 @BUILD_WITH_MSVC_TRUE@install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
 @BUILD_WITH_MSVC_TRUE@	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
-@BUILD_WITH_MSVC_TRUE@	for ext in dll pdb lib; do \
+@BUILD_WITH_MSVC_TRUE@	for ext in dll pdb; do \
 @BUILD_WITH_MSVC_TRUE@	  file="$$basename.$$ext"; \
 @BUILD_WITH_MSVC_TRUE@	  if test -s "$$file"; then \
 @BUILD_WITH_MSVC_TRUE@	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
