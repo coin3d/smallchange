@@ -210,18 +210,6 @@
 
 /* ********************************************************************** */
 
-class TexInfo {
-public:
-  TexInfo() {
-    this->image = NULL;
-  }
-  unsigned int texid;
-  SoGLImage * image;
-  int unusedcount;
-};
-
-/* ********************************************************************** */
-
 class SceneryP {
 public:
   SmScenery * api;
