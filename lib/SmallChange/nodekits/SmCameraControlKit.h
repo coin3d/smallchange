@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFEnum.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFVec3f.h>
 #include <SmallChange/basic.h>
 
 class SmCameraControlKitP;
@@ -71,6 +72,7 @@ public:
   SoSFFloat autoClippingValue;
   SoSFBool viewing;
   SoSFNode eventHandler;
+  SoSFVec3f viewUp;
 
 private:
   void setClippingPlanes(void);

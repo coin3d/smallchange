@@ -50,6 +50,7 @@
 #include <Inventor/system/gl.h>
 #include <float.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
+#include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 
 
 class SmCameraControlKitP {
@@ -96,6 +97,7 @@ SmCameraControlKit::SmCameraControlKit(void)
   SO_KIT_ADD_FIELD(autoClippingValue, (0.6f));
   SO_KIT_ADD_FIELD(viewing, (TRUE));
   SO_KIT_ADD_FIELD(eventHandler, (NULL));
+  SO_KIT_ADD_FIELD(viewUp, (0.0f, 1.0f, 0.0f));
 
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, VARIABLE_NEAR_PLANE);
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, CONSTANT_NEAR_PLANE);
