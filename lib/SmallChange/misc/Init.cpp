@@ -40,6 +40,7 @@
 #include <SmallChange/nodes/FrustumCamera.h>
 #include <SmallChange/nodes/SmScenery.h>
 #include <SmallChange/nodes/SmVertexArrayShape.h>
+#include <SmallChange/actions/SmToVertexArrayShapeAction.h>
 #include <SmallChange/actions/SoTweakAction.h>
 #include <SmallChange/actions/SoGenerateSceneGraphAction.h>
 #include <SmallChange/engines/Rot2Heading.h>
@@ -149,4 +150,5 @@ smallchange_init(void)
   SmRangeTranslate1Dragger::initClass();
 
   SmVertexArrayShape::initClass();
+  SmToVertexArrayShapeAction::initClass();
 }

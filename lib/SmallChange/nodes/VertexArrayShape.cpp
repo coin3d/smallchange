@@ -50,6 +50,7 @@
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/elements/SoGLLazyElement.h>
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbDict.h>
@@ -77,12 +78,15 @@ public:
 public:
   SmVertexArrayShape * master;
 
+  static SbBool is_little_endian;
+
   // needed when vertex buffer objects are used
   SbBool indexlistdirty;
   SbBool coordarraydirty;
   SbBool normalarraydirty;
   SbBool texcoordarraydirty;
   SbBool colorarraydirty;
+  SbList <uint32_t> littleendiancolor;
   SbList <int32_t> indexlist;
 
   SbDict vbodict; // Hash table holding the VBO ids for each GL context.
@@ -101,8 +105,10 @@ public:
   void updateVBOs(const cc_glglue * glue);
   void initializeVBO(const cc_glglue * glue);
   void setupCurrentContextVBOs(SoState * state);
-
+  void updateLittleEndianList(SoPackedColor * pc);
 };
+
+SbBool SmVertexArrayShapeP::is_little_endian;
 
 #define PRIVATE(obj) (obj)->pimpl
 #define PUBLIC(obj) (obj)->master
@@ -158,6 +164,14 @@ SmVertexArrayShape::initClass(void)
   if (first) {
     first = 0;
     SO_NODE_INIT_CLASS(SmVertexArrayShape, SoShape, "Shape");
+
+    union va_endiantest {
+      uint8_t bytes[2];
+      uint16_t test;
+    };
+    va_endiantest test;
+    test.test = 1;
+    SmVertexArrayShapeP::is_little_endian = test.bytes[0] == 1;
   } 
 }
 
@@ -312,7 +326,6 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
     this->texcoordarraydirty = FALSE;
   }
 
-  
   if (this->colorarraydirty) {
     SoNode * node = PUBLIC(this)->vertexColor.getValue();
     if (node && node->isOfType(SoBaseColor::getClassTypeId())) {
@@ -326,9 +339,16 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
     else if (node && node->isOfType(SoPackedColor::getClassTypeId())) {
       SoPackedColor * packedcolor = (SoPackedColor*) node;      
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->packedcolorvbo);
-      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, NULL);  
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, packedcolor->orderedRGBA.getNum() * sizeof(float), 
-                             packedcolor->orderedRGBA.getValues(0), GL_STATIC_DRAW);
+      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, NULL); 
+
+      const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
+      if (SmVertexArrayShapeP::is_little_endian) {
+        this->updateLittleEndianList(packedcolor);
+        pcptr = this->littleendiancolor.getArrayPtr();
+      }
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
+                             packedcolor->orderedRGBA.getNum() * sizeof(uint32_t), 
+                             pcptr, GL_STATIC_DRAW);
     }
     this->colorarraydirty = FALSE;
   }
@@ -430,9 +450,16 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
         cc_glglue_glColorPointer(glue, 3, GL_FLOAT, 0, 
                                  (GLvoid*) basecolor->rgb.getValues(0));
       }
-      else {
-        cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0,
-                                 (GLvoid*) packedcolor->orderedRGBA.getValues(0));
+      else { // packedcolor
+        const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
+        if (SmVertexArrayShapeP::is_little_endian) {
+          if (PRIVATE(this)->littleendiancolor.getLength() == 0) {
+            PRIVATE(this)->updateLittleEndianList(packedcolor);
+          }
+          pcptr = PRIVATE(this)->littleendiancolor.getArrayPtr();
+        }
+        cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0, 
+                                 (GLvoid*) pcptr);
       }
       cc_glglue_glEnableClientState(glue, GL_COLOR_ARRAY);
     }
@@ -517,6 +544,10 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
   if (normal) cc_glglue_glDisableClientState(glue, GL_NORMAL_ARRAY);
   if (basecolor || packedcolor) cc_glglue_glDisableClientState(glue, GL_COLOR_ARRAY);
   if (texcoord2 || texcoord3) cc_glglue_glDisableClientState(glue, GL_TEXTURE_COORD_ARRAY);  
+
+  if (basecolor || packedcolor) { 
+    SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
+  }
 
   SoGLCacheContextElement::shouldAutoCache(state, SoGLCacheContextElement::DONT_AUTO_CACHE);
   
@@ -691,6 +722,7 @@ SmVertexArrayShape::notify(SoNotList * l)
   }
   else if (f == &this->vertexColor) {
     PRIVATE(this)->colorarraydirty = TRUE;
+    PRIVATE(this)->littleendiancolor.truncate(0);
   }
   
 }
@@ -737,7 +769,19 @@ SmVertexArrayShapeP::updateIndexList(void)
     this->indexlist[lenidx + 2] = endvalue;
 
   } while (src < end);
+}
+
+void 
+SmVertexArrayShapeP::updateLittleEndianList(SoPackedColor * pc)
+{
+  this->littleendiancolor.truncate(0);
+  int n = pc->orderedRGBA.getNum();
+  const uint32_t * src = pc->orderedRGBA.getValues(0);
   
+  for (int i = 0; i < n; i++) {
+    uint32_t t = *src++;
+    this->littleendiancolor.append((t&0xff<<24) | ((t&0xff00)<<8) | ((t&0xff0000)>>8) | (t>>24));
+  }
 }
 
 #undef PRIVATE
