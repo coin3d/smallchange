@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "$(CODE_INSTALL)\include" /I "$(SDK_PTHREADS)\include" /I "$(CODE_CHECKOUT)\openal\win\AL" /I "$(CODE_CHECKOUT)\openal\win\ALc" /I "$(CODE_CHECKOUT)\openal\win\ALu" /I "$(CODE_CHECKOUT)\openal\win\ALut" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I "../lib/SmallChange" /I "$(CODE_INSTALL)\include" /I "$(SDK_PTHREADS)\include" /I "$(CODE_CHECKOUT)\openal\win\AL" /I "$(CODE_CHECKOUT)\openal\win\ALc" /I "$(CODE_CHECKOUT)\openal\win\ALu" /I "$(CODE_CHECKOUT)\openal\win\ALut" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
 # ADD RSC /l 0x414 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -86,24 +86,11 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\ALTools.cpp
+SOURCE=..\lib\SmallChange\misc\ALTools.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SbAudioWorkerThread.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\simple.cpp
-
-!IF  "$(CFG)" == "Simple - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Simple - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
+SOURCE=..\lib\SmallChange\misc\SbAudioWorkerThread.cpp
 # End Source File
 # Begin Source File
 
@@ -111,40 +98,27 @@ SOURCE=.\simple2.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\simple3.cpp
-
-!IF  "$(CFG)" == "Simple - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Simple - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
+SOURCE=..\lib\SmallChange\nodes\SoAudioClip.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioClip.cpp
+SOURCE=..\lib\SmallChange\nodes\SoAudioClipStreaming.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioClipStreaming.cpp
+SOURCE=..\lib\SmallChange\misc\SoAudioDevice.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioDevice.cpp
+SOURCE=..\lib\SmallChange\actions\SoAudioRenderAction.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioRenderAction.cpp
+SOURCE=..\lib\SmallChange\nodes\SoListener.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoListener.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SoSound.cpp
+SOURCE=..\lib\SmallChange\nodes\SoSound.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -152,55 +126,51 @@ SOURCE=.\SoSound.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\ALTools.h
+SOURCE=..\lib\SmallChange\misc\ALTools.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SbAudioWorkerThread.h
+SOURCE=..\lib\SmallChange\misc\SbAudioWorkerThread.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioClip.h
+SOURCE=..\lib\SmallChange\nodes\SoAudioClip.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioClipP.h
+SOURCE=..\lib\SmallChange\nodes\SoAudioClipP.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioClipStreaming.h
+SOURCE=..\lib\SmallChange\nodes\SoAudioClipStreaming.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioClipStreamingP.h
+SOURCE=..\lib\SmallChange\nodes\SoAudioClipStreamingP.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioDevice.h
+SOURCE=..\lib\SmallChange\misc\SoAudioDevice.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioDeviceP.h
+SOURCE=..\lib\SmallChange\misc\SoAudioDeviceP.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoAudioRenderAction.h
+SOURCE=..\lib\SmallChange\actions\SoAudioRenderAction.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoListener.h
+SOURCE=..\lib\SmallChange\nodes\SoListener.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoSound.h
+SOURCE=..\lib\SmallChange\nodes\SoSound.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoSoundP.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SoSoundscape.h
+SOURCE=..\lib\SmallChange\nodes\SoSoundP.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
