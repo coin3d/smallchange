@@ -114,7 +114,7 @@ sc_generate_elevation_line_texture(float distance,
     lines = (float) emphasis;
   }
 
-  float pixelsize = distance / (1024.0f / lines);
+  float pixelsize = distance / (float(texturesize) / lines);
 
   float pixelpos = 0.0f;
   // set elevation lines to black
