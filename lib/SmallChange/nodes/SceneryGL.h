@@ -1,15 +1,20 @@
-#ifndef SMALLCHANGE_SCENERYGL_H
-#define SMALLCHANGE_SCENERYGL_H
+#ifndef SS_SCENERYGL_H
+#define SS_SCENERYGL_H
+
+class SoState;
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#define SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS     (4)
+/* ********************************************************************** */
 
-typedef struct cc_glglue cc_glglue;
+typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
+typedef struct RenderState RenderState;
+typedef struct cc_hash cc_hash;
 
-typedef struct {
+struct RenderState {
+  // local block info
   float blocksize;
   double vspacing[2];
   double voffset[2];
@@ -22,38 +27,66 @@ typedef struct {
   // global info
   double bbmin[3];
   double bbmax[3];
+  int dotex;
 
   // elevation texture
   float etexscale;
   float etexoffset;
 
   // temporary
+  unsigned int currtexid;
   unsigned char * texdata;
   int texw, texh, texnc;
+  int texisenabled;
+
+  cc_hash * texhash;
+  void * reusetexlist; // SbList <TexInfo *>
+  void * tmplist; // SbList <unsigned int>
 
   // debugging
-  void * debuglist;
+  void * debuglist; // SbList<float> *
   int newtexcount;
-} RenderState;
 
-void sc_set_glglue_instance(const cc_glglue * glue);
+  SoState * state;
+};
 
-int sc_is_texturing_enabled(void);
-void sc_enable_texturing(void);
-void sc_disable_texturing(void);
+/* ********************************************************************** */
+/* initialize GL features */
 
-void sc_generate_elevation_line_texture(float distance, float offset, float thickness, int emphasis, uint8_t * buffer, int texturesize, float * texcoordscale, float * texcoordoffset);
+void sc_set_have_clamp_to_edge(int enable);
+void sc_set_use_byte_normals(int enable);
+
+void sc_set_glMultiTexCoord2f(void * fptr);
+
+/* ********************************************************************** */
+
+void sc_renderstate_construct(RenderState * state);
+void sc_renderstate_destruct(RenderState * state);
+
+void sc_mark_unused_textures(RenderState * state);
+void sc_delete_unused_textures(RenderState * state);
+void sc_delete_all_textures(RenderState * state);
+
+/* ********************************************************************** */
+
+/* rendering callbacks */
+int sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info);
+
+void sc_render_cb(void * closure, const int x, const int y,
+                  const int len, const unsigned int bitmask);
+void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
+                       const unsigned int bitmask_org);
+
+/* ********************************************************************** */
+
+void sc_generate_elevation_line_texture(float distance, float offset, float thickness, int emphasis, unsigned char * buffer, int components, int texturesize, float * texcoordscale, float * texcoordoffset);
 
 void sc_display_debug_info(float * campos, short * vpsize, void * debuglist);
 
-void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
-                       const unsigned int bitmask_org);
-void sc_render_cb(void * closure, const int x, const int y,
-                  const int len, const unsigned int bitmask);
-
+/* ********************************************************************** */
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /*! SMALLCHANGE_SCENERYGL_H */
+#endif /*! SS_SCENERYGL_H */

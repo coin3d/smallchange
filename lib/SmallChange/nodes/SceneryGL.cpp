@@ -28,113 +28,326 @@
 #include <assert.h>
 #include <stdlib.h> // atoi()
 
-#include <Inventor/SbBasic.h> // __COIN__
+#include <GL/gl.h>
 
-#ifndef __COIN__
-#error this part depends on some Coin-specific features
-#endif // __COIN__
-
-#include <Inventor/C/tidbits.h> // coin_getenv()
-#include <Inventor/system/gl.h>
-#include <Inventor/C/glue/gl.h>
+#include <Inventor/C/base/hash.h>
 #include <Inventor/lists/SbList.h>
-#include <Inventor/SbBox3f.h>
-#include <Inventor/errors/SoDebugError.h>
-#include <Inventor/actions/SoRayPickAction.h>
-#include <Inventor/actions/SoGLRenderAction.h>
-#include <Inventor/actions/SoCallbackAction.h>
-#include <Inventor/misc/SoState.h>
-#include <Inventor/elements/SoCullElement.h>
+#include <Inventor/misc/SoGLImage.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
 
 #include <SmallChange/nodes/SceneryGL.h>
 #include <SmallChange/misc/SceneryGlue.h>
 
 /* ********************************************************************** */
 
-static const cc_glglue * glglue = NULL;
-
-void
-sc_set_glglue_instance(const cc_glglue * glue)
-{
-  glglue = glue;
-}
-
-int
-sc_is_texturing_enabled(void)
-{
-  return glIsEnabled(GL_TEXTURE_2D);
-}
-
-void
-sc_enable_texturing(void)
-{
-  glEnable(GL_TEXTURE_2D);
-}
-
-void
-sc_disable_texturing(void)
-{
-  glDisable(GL_TEXTURE_2D);
-}
+#define MAX_UNUSED_COUNT 200
 
 /* ********************************************************************** */
 
-#define R 0
-#define G 1
-#define B 2
-#define A 3
+#ifndef GL_TEXTURE0
+#define GL_TEXTURE0                       0x84C0
+#endif /* !GL_TEXTURE0 */
+
+#ifndef GL_TEXTURE1
+#define GL_TEXTURE1                       0x84C1
+#endif /* !GL_TEXTURE1 */
+
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE                  0x812F
+#endif /* !GL_CLAMP_TO_EDGE */
+
+/* ********************************************************************** */
+
+#ifndef SS_SCENERY_H
+#define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
+#define ss_render_get_texture_measures sc_ssglue_render_get_texture_measures
+#define ss_render_get_texture_image sc_ssglue_render_get_texture_image
+#endif
+
+typedef void glMultiTexCoord2f_f(GLint unit, float fx, float fy);
+
+struct sc_GL {
+  glMultiTexCoord2f_f * glMultiTexCoord2f;
+  GLenum CLAMP_TO_EDGE;
+  int use_byte_normals;
+};
+
+static struct sc_GL GL = {
+  NULL,
+  GL_CLAMP,
+  TRUE
+};
+
+void
+sc_set_glMultiTexCoord2f(void * fptr)
+{
+  GL.glMultiTexCoord2f = (glMultiTexCoord2f_f *) fptr;
+}
+
+void
+sc_set_have_clamp_to_edge(int enable)
+{
+  if ( enable ) {
+    GL.CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
+  } else {
+    GL.CLAMP_TO_EDGE = GL_CLAMP;
+  }
+}
+
+void
+sc_set_use_byte_normals(int enable)
+{
+  if ( enable ) {
+    GL.use_byte_normals = TRUE;
+  } else {
+    GL.use_byte_normals = FALSE;
+  }
+}
+
+/* ********************************************************************** */
+/* texture management */
+
+static void sc_texture_hash_check_unused(unsigned long key, void * val, void * closure);
+static void sc_texture_hash_clear(unsigned long key, void * val, void * closure);
+static void sc_texture_hash_inc_unused(unsigned long key, void * val, void * closure);
+static void sc_texture_hash_add_all(unsigned long key, void * val, void * closure);
+
+class TexInfo {
+public:
+  TexInfo() {
+    this->image = NULL;
+  }
+  unsigned int texid;
+  SoGLImage * image;
+  int unusedcount;
+};
+
+void
+sc_renderstate_construct(RenderState * state)
+{
+  // construct lists
+  printf("helleu\n");
+  state->reusetexlist = (void *) new SbList<TexInfo *>;
+  state->tmplist = (void *) new SbList<unsigned int>;
+  state->debuglist = (void *) new SbList<float>;
+  state->texhash = cc_hash_construct(1024, 0.7f);
+}
+
+
+void
+sc_renderstate_destruct(RenderState * state)
+{
+  printf("goodbye\n");
+  // delete lists
+  if ( state->debuglist ) {
+    SbList<float> * list = (SbList<float> *) state->debuglist;
+    delete list;
+    state->debuglist = NULL;
+  }
+  if ( state->reusetexlist ) {
+    // FIXME: delete TexInfo objs as well?
+    SbList<TexInfo *> * list = (SbList<TexInfo *> *) state->reusetexlist;
+    delete list;
+    state->reusetexlist = NULL;
+  }
+  if ( state->tmplist ) {
+    SbList<unsigned int> * list = (SbList<unsigned int> *) state->tmplist;
+    delete list;
+    state->tmplist = NULL;
+  }
+  cc_hash_apply(state->texhash, sc_texture_hash_clear, NULL);
+  cc_hash_destruct(state->texhash);
+}
+
+SoGLImage *
+sc_find_reuse_texture(RenderState * state)
+{
+  void * tmp = NULL;
+  if (cc_hash_get(state->texhash, state->texid, &tmp)) {
+    TexInfo * tex = (TexInfo *) tmp;
+    assert(tex->image);
+    tex->unusedcount = 0;
+    return tex->image;
+  }
+  return NULL;
+}
+
+SoGLImage *
+sc_create_texture(RenderState * state)
+{
+  assert(state);
+  assert(state->texhash);
+  assert(state->reusetexlist);
+  TexInfo * tex = NULL;
+  SbList<TexInfo *> * reusetexlist = (SbList<TexInfo *> *) state->reusetexlist;
+  if ( reusetexlist->getLength() ) {
+    tex = reusetexlist->pop();
+  }
+  else {
+    tex = new TexInfo;
+    tex->image = new SoGLImage;
+    tex->image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
+  }
+  tex->texid = state->currtexid;
+  tex->unusedcount = 0;
+
+  (void) cc_hash_put(state->texhash, state->texid, tex);
+  return tex->image;
+}
+
+void
+sc_delete_unused_textures(RenderState * state)
+{
+  assert(state);
+  assert(state->tmplist);
+  assert(state->texhash);
+  assert(state->reusetexlist);
+  SbList<unsigned int> * tmplist = (SbList<unsigned int> *) state->tmplist;
+  tmplist->truncate(0);
+  cc_hash_apply(state->texhash, sc_texture_hash_check_unused, tmplist);
+  
+  int i;
+  for (i = 0; i < tmplist->getLength(); i++) {
+    void * tmp;
+    if (cc_hash_get(state->texhash, (*tmplist)[i], &tmp)) {
+      TexInfo * tex = (TexInfo *) tmp;
+      ((SbList<TexInfo *> *) state->reusetexlist)->push(tex);
+      (void) cc_hash_remove(state->texhash, (*tmplist)[i]);
+    }
+    else {
+      assert(0 && "huh");
+    }
+  }
+
+//   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
+//           cc_hash_get_num_elements(this->renderstate.texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
+
+  tmplist->truncate(0);
+}
+
+void
+sc_delete_all_textures(RenderState * state)
+{
+  assert(state);
+  assert(state->tmplist);
+  assert(state->texhash);
+  assert(state->reusetexlist);
+  SbList<unsigned int> * tmplist = (SbList<unsigned int> *) state->tmplist;
+  SbList<TexInfo *> * reusetexlist = (SbList<TexInfo *> *) state->reusetexlist;
+  tmplist->truncate(0);
+  cc_hash_apply(state->texhash, sc_texture_hash_add_all, tmplist);
+
+  int i;
+  for ( i = 0; i < tmplist->getLength(); i++ ) {
+    void * tmp;
+    if ( cc_hash_get(state->texhash, (*tmplist)[i], &tmp)) {
+      TexInfo * tex = (TexInfo *) tmp;
+      reusetexlist->push(tex);
+      (void) cc_hash_remove(state->texhash, (*tmplist)[i]);
+    }
+
+    else {
+      assert(0 && "huh");
+    }
+  }
+}
+
+void
+sc_mark_unused_textures(RenderState * state)
+{
+  cc_hash_apply(state->texhash, sc_texture_hash_inc_unused, NULL);
+}
+
+void
+sc_texture_hash_check_unused(unsigned long key, void * val, void * closure)
+{
+  TexInfo * tex = (TexInfo*) val;
+  if ( tex->unusedcount > MAX_UNUSED_COUNT ) {
+    SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
+    keylist->append(key);
+  }
+}
+
+void
+sc_texture_hash_clear(unsigned long key, void * val, void * closure)
+{
+  TexInfo * tex = (TexInfo *) val;
+  // safe to do this here since we'll never use this list again
+  assert(tex->image);
+  tex->image->unref(NULL);
+  delete tex;
+}
+
+void
+sc_texture_hash_add_all(unsigned long key, void * val, void * closure)
+{
+  TexInfo * tex = (TexInfo *) val;
+  SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
+  keylist->append(key);
+}
+
+void
+sc_texture_hash_inc_unused(unsigned long key, void * val, void * closure)
+{
+  TexInfo * tex = (TexInfo *) val;
+  tex->unusedcount++;
+}
+
+/* ********************************************************************** */
 
 void
 sc_generate_elevation_line_texture(float distance,
                                    float offset,
                                    float thickness,
                                    int emphasis,
-                                   uint8_t * buffer,
+                                   unsigned char * buffer,
+                                   int components,
                                    int texturesize,
                                    float * texcoordscale,
                                    float * texcoordoffset)
 {
   assert(distance > 0.0f);
   assert(thickness > 0.0f);
-  assert(SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS == 4);
+  assert(components > 0 && components <= 4);
+  assert(components == 4);
 
-  int i;
+  int i, j;
   // clear texture to white first
   for ( i = 0; i < texturesize; i++ ) {
-    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 255;
-    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 255;
-    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 255;
-    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+A] = 255;
+    for ( j = 0; j < components; j++ ) {
+      buffer[i*components+j] = 255;
+    }
   }
 
+  // in case of emphasis, the texture has to include N lines, not just 1
   float lines = 1.0f;
-  // FIXME:
-  if ( emphasis > 1 ) {
-    // the texture has to include N lines, not just 1
-    lines = (float) emphasis;
-  }
+  if ( emphasis > 1 ) lines = (float) emphasis;
 
-  float pixelsize = distance / (float(texturesize) / lines);
-
-  float pixelpos = 0.0f;
   // set elevation lines to black
+  float pixelsize = distance / (1024.0f / lines);
+  float pixelpos = 0.0f;
+  printf("lines: %g, pixelsize: %g, texturesize: %d\n", lines, pixelsize, texturesize);
   int bolds = 0;
   for ( i = 0; i < texturesize; i++ ) {
-    float pixelpos = i * pixelsize;
+    float pixelpos = float(i) * pixelsize;
     if ( (fabs(fmod(pixelpos, distance)) <= (thickness * 0.5f)) ||
          ((distance - fabs(fmod(pixelpos, distance))) < (thickness * 0.5f)) ) {
-      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 0;
-      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 0;
-      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 0;
-      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+A] = 255;
+      for ( j = 0; j < components; j++ ) {
+        buffer[i*components+j] = 0;
+      }
+      if ( (components == 2) || (components == 4) ) { // alpha channel
+        buffer[i*components+components-1] = 255;
+      }
     }
-    else if ( lines > 1.0f ) {
+    else if ( lines > 1.0f ) { /* emphasis is on */
       if ( (fabs(fmod(pixelpos, (lines * distance))) <= (thickness * 1.5f)) ||
            (((lines * distance) - fabs(fmod(pixelpos, (lines * distance)))) < (thickness * 1.5f)) ) {
-        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 0;
-        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 0;
-        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 0;
-        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+A] = 255;
+        for ( j = 0; j < components; j++ ) {
+          buffer[i*components+j] = 0;
+        }
+        if ( (components == 2) || (components == 4) ) {
+          buffer[i*components+components-1] = 255;
+        }
         bolds++;
       }
     }
@@ -220,44 +433,15 @@ sc_display_debug_info(float * campos, short * vpsize, void * debuglist)
 
 /* ********************************************************************** */
 
-// We provide the environment variable below to work around a bug in
-// the 3Dlabs OpenGL driver version 4.10.01.2105-2.16.0866: it doesn't
-// properly handle normals given in byte values (i.e. through
-// glNormal*b*()).
-//
-// This driver is fairly old, and 3Dlabs is more or less defunct now,
-// so we default to the faster (but bug-triggering) GL call.
-
-static inline const char *
-sm_getenv(const char * s)
-{
-#ifdef __COIN__
-  return coin_getenv(s);
-#else // other Inventor
-  return getenv(s);
-#endif
-}
-
-static inline SbBool
-ok_to_use_bytevalue_normals(void)
-{
-  static int okflag = -1;
-  if (okflag == -1) {
-    const char * env = sm_getenv("SM_SCENERY_NO_BYTENORMALS");
-    okflag = env && (atoi(env) > 0);
-  }
-  return !okflag;
-}
-
 inline void
 GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
   glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
   
-  if (state->etexscale != 0.0f) {
+  if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
     float val = (state->etexscale * elev) + state->etexoffset;
-    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
+    GL.glMultiTexCoord2f(GL_TEXTURE1, 0.0f, val);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
@@ -267,7 +451,7 @@ GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
 inline void
 GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
-  if ( ok_to_use_bytevalue_normals()) {
+  if ( GL.use_byte_normals ) {
     glNormal3bv((const GLbyte *)n);
   }
   else {
@@ -282,7 +466,7 @@ GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, con
 inline void
 GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
-  if ( ok_to_use_bytevalue_normals() ) {
+  if ( GL.use_byte_normals ) {
     glNormal3bv((const GLbyte *)n);
   }
   else {
@@ -291,9 +475,9 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
   }
   glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-  if (state->etexscale != 0.0f) {
+  if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
     float val = (state->etexscale * elev) + state->etexoffset;
-    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
+    GL.glMultiTexCoord2f(GL_TEXTURE1, 0.0f, val);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
@@ -302,76 +486,84 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
 
 /* ********************************************************************** */
 
-#define ELEVATION(x,y) elev[(y)*W+(x)]    
-
-void 
-sc_undefrender_cb(void * closure, const int x, const int y, const int len, 
-                  const unsigned int bitmask_org)
+int 
+sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
+  assert(sc_scenery_available());
+  assert(closure);
   RenderState * renderstate = (RenderState *) closure;
 
-  const signed char * normals = renderstate->normaldata;
-  const float * elev = renderstate->elevdata;
-  const int W = ((int) renderstate->blocksize) + 1;
+  ss_render_get_elevation_measures(info, 
+                                   renderstate->voffset,
+                                   renderstate->vspacing,
+                                   &renderstate->elevdata,
+                                   &renderstate->normaldata);
 
-  const signed char * ptr = sc_ssglue_render_get_undef_array(bitmask_org);
+  if ( renderstate->debuglist ) {
+    float ox = renderstate->voffset[0] / renderstate->bbmax[0];
+    float oy = renderstate->voffset[1] / renderstate->bbmax[1];
+    float sx = renderstate->vspacing[0] * renderstate->blocksize;
+    float sy = renderstate->vspacing[1] * renderstate->blocksize;
 
-  int numv = *ptr++;
-  int tx, ty;
+    sx /= renderstate->bbmax[0];
+    sy /= renderstate->bbmax[1];
 
-  if (normals && renderstate->texid == 0) {
-    int idx;
-#define SEND_VERTEX(state, x, y) \
-    idx = (y)*W + x; \
-    GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
-
-    while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
-      while (numv) { 
-        tx = x + *ptr++ * len;
-        ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
-        numv--;
-      }
-      numv = *ptr++;
-      glEnd();
-
-    }
-#undef SEND_VERTEX
+    ((SbList<float> *) renderstate->debuglist)->append(ox);
+    ((SbList<float> *) renderstate->debuglist)->append(oy);
+    ((SbList<float> *) renderstate->debuglist)->append(ox+sx);
+    ((SbList<float> *) renderstate->debuglist)->append(oy+sy);
   }
-  else if (normals) {
-    int idx;
-#define SEND_VERTEX(state, x, y) \
-    idx = (y)*W + x; \
-    GL_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
 
-    while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
-      while (numv) { 
-        tx = x + *ptr++ * len;
-        ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
-        numv--;
+  ss_render_get_texture_measures(info,
+                                 &renderstate->texid,
+                                 renderstate->toffset,
+                                 renderstate->tscale);
+  
+  if (renderstate->dotex && renderstate->texid) {
+    if (renderstate->texid != renderstate->currtexid) {
+      SoGLImage * image = sc_find_reuse_texture(renderstate);
+      if (!image) {
+        image = sc_create_texture(renderstate);
+        assert(image);      
+        ss_render_get_texture_image(info, renderstate->texid,
+                                    &renderstate->texdata,
+                                    &renderstate->texw,
+                                    &renderstate->texh,
+                                    &renderstate->texnc);
+
+        SoGLImage::Wrap clampmode = SoGLImage::CLAMP_TO_EDGE;
+        if ( GL.CLAMP_TO_EDGE == GL_CLAMP ) { clampmode = SoGLImage::CLAMP; }
+
+        SbVec2s size(renderstate->texw, renderstate->texh);
+        image->setData(renderstate->texdata,
+                       size, renderstate->texnc, 
+                       clampmode, clampmode, 0.9, 0, renderstate->state);
+        renderstate->newtexcount++;
       }
-      numv = *ptr++;
-      glEnd();
+      image->getGLDisplayList(renderstate->state)->call(renderstate->state);
+
+      renderstate->currtexid = renderstate->texid;
     }
-#undef SEND_VERTEX
-  }  
-  else {    
-    while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
-      while (numv) { 
-        tx = x + *ptr++ * len;
-        ty = y + *ptr++ * len;
-        GL_VERTEX(renderstate, tx, ty, ELEVATION(tx, ty));
-        numv--;
-      }
-      numv = *ptr++;
-      glEnd();
+    else {
+      //      fprintf(stderr,"reused tex\n");
+    }
+    if (!renderstate->texisenabled) {
+      glEnable(GL_TEXTURE_2D);
+      renderstate->texisenabled = TRUE;
     }
   }
+  else {
+    if (renderstate->texisenabled) {
+      glDisable(GL_TEXTURE_2D);
+      renderstate->texisenabled = FALSE;
+    }
+  }
+  return 1;
 }
+
+/* ********************************************************************** */
+
+#define ELEVATION(x,y) elev[(y)*W+(x)]    
 
 void 
 sc_render_cb(void * closure, const int x, const int y,
@@ -459,8 +651,78 @@ sc_render_cb(void * closure, const int x, const int y,
     }
     GL_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
     glEnd();
-#undef ELEVATION
   }
 }
+
+void 
+sc_undefrender_cb(void * closure, const int x, const int y, const int len, 
+                  const unsigned int bitmask_org)
+{
+  RenderState * renderstate = (RenderState *) closure;
+
+  const signed char * normals = renderstate->normaldata;
+  const float * elev = renderstate->elevdata;
+  const int W = ((int) renderstate->blocksize) + 1;
+
+  const signed char * ptr = sc_ssglue_render_get_undef_array(bitmask_org);
+
+  int numv = *ptr++;
+  int tx, ty;
+
+  if (normals && renderstate->texid == 0) {
+    int idx;
+#define SEND_VERTEX(state, x, y) \
+    idx = (y)*W + x; \
+    GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
+
+    while (numv) {
+      glBegin(GL_TRIANGLE_FAN);
+      while (numv) { 
+        tx = x + *ptr++ * len;
+        ty = y + *ptr++ * len;
+        SEND_VERTEX(renderstate, tx, ty);
+        numv--;
+      }
+      numv = *ptr++;
+      glEnd();
+
+    }
+#undef SEND_VERTEX
+  }
+  else if (normals) {
+    int idx;
+#define SEND_VERTEX(state, x, y) \
+    idx = (y)*W + x; \
+    GL_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
+
+    while (numv) {
+      glBegin(GL_TRIANGLE_FAN);
+      while (numv) { 
+        tx = x + *ptr++ * len;
+        ty = y + *ptr++ * len;
+        SEND_VERTEX(renderstate, tx, ty);
+        numv--;
+      }
+      numv = *ptr++;
+      glEnd();
+    }
+#undef SEND_VERTEX
+  }  
+  else {    
+    while (numv) {
+      glBegin(GL_TRIANGLE_FAN);
+      while (numv) { 
+        tx = x + *ptr++ * len;
+        ty = y + *ptr++ * len;
+        GL_VERTEX(renderstate, tx, ty, ELEVATION(tx, ty));
+        numv--;
+      }
+      numv = *ptr++;
+      glEnd();
+    }
+  }
+}
+
+#undef ELEVATION
 
 /* ********************************************************************** */

@@ -58,6 +58,7 @@
 
 #include <Inventor/misc/SoGLImage.h>
 #include <Inventor/C/glue/gl.h>
+#include <Inventor/C/tidbits.h>
 
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/SmScenery.h>
@@ -266,16 +267,6 @@ public:
   uint8_t * elevationlinesdata;
   int elevationlinestexturesize;
 
-  SbBool dotex;
-  SbBool texisenabled;
-  unsigned int currtexid;
-
-  SbList <TexInfo *> reusetexlist;
-  cc_hash * texhash;
-  SbList <unsigned int> tmplist;
-  SbList <float> debuglist;
-  int numnewtextures;
-
   SceneryP(void);
   void commonConstructor(void);
 
@@ -288,18 +279,6 @@ public:
   static void colortexsensor_cb(void * closure, SoSensor * sensor);
   static void old_colortexturesensor_cb(void * closure, SoSensor * sensor);
   static void elevationlinessensor_cb(void * closure, SoSensor * sensor);
-
-  // texture caching
-  SoGLImage * findReuseTexture(const unsigned int texid);
-  SoGLImage * createTexture(const unsigned int texid);
-  void deleteUnusedTextures(void);
-  static void hash_clear(unsigned long key, void * val, void * closure);
-  static void hash_inc_unused(unsigned long key, void * val, void * closure);
-  static void hash_add_all(unsigned long key, void * val, void * closure);
-  static void hash_check_unused(unsigned long key, void * val, void * closure);
-
-  // rendering
-  static int render_pre_cb(void * closure, ss_render_pre_cb_info * info);
 
   // generate primitives / raypick
   void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
@@ -323,9 +302,7 @@ SceneryP::SceneryP(void)
   facedetail(NULL), currhotspot(0.0f, 0.0f, 0.0f), curraction(NULL),
   currstate(NULL), viewid(-1), dummyimage(NULL),
   elevationlinesimage(NULL), elevationlinesdata(NULL),
-  elevationlinestexturesize(0),
-  dotex(FALSE), texisenabled(FALSE),
-  currtexid(0)
+  elevationlinestexturesize(0)
 {
   this->renderstate.bbmin[0] = 0.0;
   this->renderstate.bbmin[1] = 0.0;
@@ -336,6 +313,35 @@ SceneryP::SceneryP(void)
 }
 
 /* ********************************************************************** */
+
+// We provide the environment variable below to work around a bug in
+// the 3Dlabs OpenGL driver version 4.10.01.2105-2.16.0866: it doesn't
+// properly handle normals given in byte values (i.e. through
+// glNormal*b*()).
+//
+// This driver is fairly old, and 3Dlabs is more or less defunct now,
+// so we default to the faster (but bug-triggering) GL call.
+
+static inline const char *
+sm_getenv(const char * s)
+{
+#ifdef __COIN__
+  return coin_getenv(s);
+#else // other Inventor
+  return getenv(s);
+#endif
+}
+
+static inline SbBool
+ok_to_use_bytevalue_normals(void)
+{
+  static int okflag = -1;
+  if (okflag == -1) {
+    const char * env = sm_getenv("SM_SCENERY_NO_BYTENORMALS");
+    okflag = env && (atoi(env) > 0);
+  }
+  return !okflag;
+}
 
 #define PRIVATE(obj) ((obj)->pimpl)
 #define PUBLIC(obj) ((obj)->api)
@@ -348,6 +354,12 @@ SmScenery::initClass(void)
   first = FALSE;
   if (sc_scenery_available()) {
     sc_ssglue_initialize();
+    if ( ok_to_use_bytevalue_normals() ) {
+      sc_set_use_byte_normals(TRUE);
+    }
+    else {
+      sc_set_use_byte_normals(FALSE);
+    }
   }
   SO_NODE_INIT_CLASS(SmScenery, SoShape, "Shape");
 }
@@ -431,7 +443,6 @@ SmScenery::SmScenery(void)
   // FIXME: view-specific. Move to struct.
   PRIVATE(this)->pvertex = new SoPrimitiveVertex;
   PRIVATE(this)->facedetail = new SoFaceDetail;
-  PRIVATE(this)->texhash = cc_hash_construct(1024, 0.7f);
 }
 
 SmScenery::SmScenery(ss_system * system)
@@ -476,7 +487,6 @@ SmScenery::SmScenery(ss_system * system)
   // FIXME: view-specific. Move to struct.
   PRIVATE(this)->pvertex = new SoPrimitiveVertex;
   PRIVATE(this)->facedetail = new SoFaceDetail;
-  PRIVATE(this)->texhash = cc_hash_construct(1024, 0.7f);
 
   PRIVATE(this)->system = system;
 
@@ -553,6 +563,8 @@ SceneryP::commonConstructor(void)
 
   this->cbtexcb = SmScenery::colortexture_cb;
   this->cbtexclosure = PUBLIC(this);
+
+  sc_renderstate_construct(&this->renderstate);
 }
 
 SmScenery::~SmScenery(void)
@@ -572,8 +584,6 @@ SmScenery::~SmScenery(void)
 
   delete PRIVATE(this)->pvertex;
   delete PRIVATE(this)->facedetail;
-  cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_clear, NULL);
-  cc_hash_destruct(PRIVATE(this)->texhash);
   if (sc_scenery_available() &&
       (PRIVATE(this)->system != NULL) &&
       (PRIVATE(this)->viewid != -1)) {
@@ -589,6 +599,7 @@ SmScenery::~SmScenery(void)
     free(PRIVATE(this)->elevationlinesdata);
     PRIVATE(this)->elevationlinesdata = NULL;
   }
+  sc_renderstate_destruct(&PRIVATE(this)->renderstate);
   delete PRIVATE(this);
 }
 
@@ -630,21 +641,30 @@ SmScenery::GLRender(SoGLRenderAction * action)
     }
   }
 
+  SoState * state = action->getState();
+  const cc_glglue * gl = cc_glglue_instance(SoGLCacheContextElement::get(state));
+  assert(gl);
+
   if (PRIVATE(this)->firstGLRender) {
     // FIXME: this should not really be necessary, and should be
     // considered a work-around for a bug in the scenery SDK. 20031015 mortene.
     if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1)) {
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
+    if ( cc_glglue_has_multitexture(gl) ) {
+      sc_set_glMultiTexCoord2f(cc_glglue_getprocaddress("glMultiTexCoord2f"));
+    }
+    if ( cc_glglue_has_texture_edge_clamp(gl) ) {
+      sc_set_have_clamp_to_edge(TRUE);
+    }
     PRIVATE(this)->firstGLRender = FALSE;
   }
 
-  SoState * state = action->getState();
   SbVec2s vpsize = SoViewportRegionElement::get(state).getViewportSizePixels();
   state->push();
   
   float quality = SoTextureQualityElement::get(state);
-  PRIVATE(this)->dotex = quality > 0.0f;
+  PRIVATE(this)->renderstate.dotex = quality > 0.0f;
   SbVec3f campos = SoViewVolumeElement::get(state).getProjectionPoint();
 
   //  transform into local coordinate system
@@ -656,10 +676,11 @@ SmScenery::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
-  SbBool texwasenabled = sc_is_texturing_enabled();
+  SbBool texwasenabled = glIsEnabled(GL_TEXTURE_2D);
 
-  PRIVATE(this)->texisenabled = texwasenabled;
-  PRIVATE(this)->currtexid = 0;
+  PRIVATE(this)->renderstate.texisenabled = texwasenabled;
+  PRIVATE(this)->renderstate.currtexid = 0;
+  PRIVATE(this)->renderstate.state = action->getState();
 
   PRIVATE(this)->currhotspot = campos;
   PRIVATE(this)->curraction = action;
@@ -673,7 +694,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   // callback to initialize for each block
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                         SceneryP::render_pre_cb, this);
+                                         sc_render_pre_cb, &PRIVATE(this)->renderstate);
 
   // set up rendering callbacks
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -688,13 +709,10 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   sc_ssglue_view_set_hotspots(PRIVATE(this)->system, PRIVATE(this)->viewid, 1, hotspot); 
 
-  PRIVATE(this)->debuglist.truncate(0);
-  PRIVATE(this)->numnewtextures = 0;
+  // PRIVATE(this)->debuglist.truncate(0);
+  // PRIVATE(this)->numnewtextures = 0;
+  PRIVATE(this)->renderstate.newtexcount = 0;
 
-  int context = SoGLCacheContextElement::get(state);
-  const cc_glglue * gl = cc_glglue_instance(context);
-  assert(gl);
-  sc_set_glglue_instance(gl);
 
   SbBool didenabletexture1 = FALSE;
   float oldetexscale = PRIVATE(this)->renderstate.etexscale;
@@ -728,10 +746,10 @@ SmScenery::GLRender(SoGLRenderAction * action)
 //          this->debuglist.getLength()/4, this->numnewtextures);
   
   // texturing state could be changed during scenery rendering
-  SbBool texisenabled = sc_is_texturing_enabled();
+  SbBool texisenabled = glIsEnabled(GL_TEXTURE_2D);
   if (texisenabled != texwasenabled) {
-    if (texwasenabled) sc_enable_texturing();
-    else sc_disable_texturing();
+    if (texwasenabled) glEnable(GL_TEXTURE_2D);
+    else glDisable(GL_TEXTURE_2D);
   } 
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
 
@@ -746,7 +764,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
     campos[0] = (campos[0] / PRIVATE(this)->renderstate.bbmax[0]) - 0.5f;
     campos[1] = (campos[1] / PRIVATE(this)->renderstate.bbmax[1]) - 0.5f;
     state->push();
-    sc_display_debug_info(&campos[0], &vpsize[0], &PRIVATE(this)->debuglist);
+    // sc_display_debug_info(&campos[0], &vpsize[0], &PRIVATE(this)->debuglist);
     state->pop();
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
   }
@@ -805,7 +823,6 @@ SmScenery::evaluate(SoAction * action)
     if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1)) {
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
-    PRIVATE(this)->firstGLRender = FALSE;
   }
 
   if (PRIVATE(this)->system == NULL) return;
@@ -965,14 +982,14 @@ SmScenery::preFrame(void)
 {
   if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
   sc_ssglue_view_pre_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
-  cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_inc_unused, NULL);
+  sc_mark_unused_textures(&PRIVATE(this)->renderstate);
 }
 
 int 
 SmScenery::postFrame(void)
 {
   if (!sc_scenery_available() || !PRIVATE(this)->system) { return 0; }
-  PRIVATE(this)->deleteUnusedTextures();
+  sc_delete_unused_textures(&PRIVATE(this)->renderstate);
   return sc_ssglue_view_post_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
 }
 
@@ -1026,23 +1043,8 @@ void
 SmScenery::refreshTextures(const int id)
 {
   if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
-
   sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
-
-  PRIVATE(this)->tmplist.truncate(0);
-  cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_add_all, &PRIVATE(this)->tmplist);
-
-  for (int i = 0; i < PRIVATE(this)->tmplist.getLength(); i++) {
-    void * tmp;
-    if (cc_hash_get(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i], &tmp)) {
-      TexInfo * tex = (TexInfo *) tmp;
-      PRIVATE(this)->reusetexlist.push(tex);
-      (void) cc_hash_remove(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i]);
-    }
-    else {
-      assert(0 && "huh");
-    }
-  }
+  sc_delete_all_textures(&PRIVATE(this)->renderstate);
 }
 
 // *************************************************************************
@@ -1192,9 +1194,11 @@ SceneryP::elevationlinestexchange(void)
     return;
   }
 
+#define COMPONENTS 4
+
   if ( this->elevationlinesdata == NULL ) {
     this->elevationlinesdata = (uint8_t *)
-      malloc(this->elevationlinestexturesize * SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
+      malloc(this->elevationlinestexturesize * COMPONENTS);
     assert(this->elevationlinesdata);
   }
 
@@ -1205,30 +1209,25 @@ SceneryP::elevationlinestexchange(void)
 
   sc_generate_elevation_line_texture(dist, offset, thickness, emphasis,
                                      this->elevationlinesdata,
+                                     COMPONENTS,
                                      this->elevationlinestexturesize,
                                      &(this->renderstate.etexscale),
                                      &(this->renderstate.etexoffset));
 
   this->elevationlinesimage->setData(this->elevationlinesdata,
-      SbVec2s(1, this->elevationlinestexturesize), SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
+      SbVec2s(1, this->elevationlinestexturesize), COMPONENTS);
+
+#undef COMPONENTS
 }
 
 // *************************************************************************
 
-void 
-SceneryP::GEN_VERTEX(RenderState * state, const int x, const int y, const float elev)
-{
-  this->pvertex->setPoint(SbVec3f(x*state->vspacing[0] + state->voffset[0],
-                                  y*state->vspacing[1] + state->voffset[1],
-                                  elev));
-  PUBLIC(this)->shapeVertex(this->pvertex);
-}
-
+#if 0
 SoGLImage * 
 SceneryP::findReuseTexture(const unsigned int texid)
 {
   void * tmp = NULL;
-  if (cc_hash_get(this->texhash, texid, &tmp)) {
+  if (cc_hash_get(this->renderstate.texhash, texid, &tmp)) {
     TexInfo * tex = (TexInfo *) tmp;
     assert(tex->image);
     tex->unusedcount = 0;
@@ -1236,7 +1235,9 @@ SceneryP::findReuseTexture(const unsigned int texid)
   }
   return NULL;
 }
+#endif
 
+#if 0
 SoGLImage * 
 SceneryP::createTexture(const unsigned int texid)
 {
@@ -1249,26 +1250,28 @@ SceneryP::createTexture(const unsigned int texid)
     tex->image = new SoGLImage;
     tex->image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
   }
-  tex->texid = this->currtexid;
+  tex->texid = this->renderstate.currtexid;
   tex->unusedcount = 0;
 
-  (void) cc_hash_put(this->texhash, texid, tex);
+  (void) cc_hash_put(this->renderstate.texhash, texid, tex);
   return tex->image;
 }  
+#endif
 
+#if 0
 void 
 SceneryP::deleteUnusedTextures(void)
 {
   this->tmplist.truncate(0);
-  cc_hash_apply(this->texhash, SceneryP::hash_check_unused, &this->tmplist);
+  cc_hash_apply(this->renderstate.texhash, SceneryP::hash_check_unused, &this->tmplist);
 
   int i;
   for (i = 0; i < this->tmplist.getLength(); i++) {
     void * tmp;
-    if (cc_hash_get(this->texhash, this->tmplist[i], &tmp)) {
+    if (cc_hash_get(this->renderstate.texhash, this->tmplist[i], &tmp)) {
       TexInfo * tex = (TexInfo *) tmp;
-      this->reusetexlist.push(tex);
-      (void) cc_hash_remove(this->texhash, this->tmplist[i]);
+      ((SbList<TexInfo *> *) this->renderstate.reusetexlist)->push(tex);
+      (void) cc_hash_remove(this->renderstate.texhash, this->tmplist[i]);
     }
     else {
       assert(0 && "huh");
@@ -1276,11 +1279,13 @@ SceneryP::deleteUnusedTextures(void)
   }
 
 //   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
-//           cc_hash_get_num_elements(this->texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
+//           cc_hash_get_num_elements(this->renderstate.texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
 
   this->tmplist.truncate(0);
 }
+#endif
 
+#if 0
 void 
 SceneryP::hash_clear(unsigned long key, void * val, void * closure)
 {
@@ -1315,10 +1320,12 @@ SceneryP::hash_check_unused(unsigned long key, void * val, void * closure)
     keylist->append(key);
   }
 }
+#endif
 
 // *************************************************************************
 // RENDER
 
+#if 0
 int 
 SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
@@ -1406,9 +1413,19 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
   }
   return 1;
 }
+#endif
 
 // *************************************************************************
 // GENERATE PRIMITIVES
+
+void 
+SceneryP::GEN_VERTEX(RenderState * state, const int x, const int y, const float elev)
+{
+  this->pvertex->setPoint(SbVec3f(x*state->vspacing[0] + state->voffset[0],
+                                  y*state->vspacing[1] + state->voffset[1],
+                                  elev));
+  PUBLIC(this)->shapeVertex(this->pvertex);
+}
 
 int 
 SceneryP::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
