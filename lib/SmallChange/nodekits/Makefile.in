@@ -169,7 +169,8 @@ INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 SOURCES = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \
-	SmTooltipKit.cpp SmTooltipKit.h
+	SmTooltipKit.cpp SmTooltipKit.h \
+	SmWellLogKit.cpp SmWellLogKit.h
 
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -180,7 +181,8 @@ libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h \
+	$(top_srcdir)/lib/SmallChange/nodekits/SmWellKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -192,14 +194,14 @@ LIBRARIES = $(noinst_LIBRARIES)
 nodekits_lst_AR = $(AR) cru
 nodekits_lst_LIBADD =
 am__objects_1 = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT) \
-	SmTooltipKit.$(OBJEXT)
+	SmTooltipKit.$(OBJEXT) SmWellLogKit.$(OBJEXT)
 am_nodekits_lst_OBJECTS = $(am__objects_1)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libnodekits_la_LDFLAGS =
 libnodekits_la_LIBADD =
-am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo
+am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo SmWellLogKit.lo
 am_libnodekits_la_OBJECTS = $(am__objects_2)
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
@@ -210,6 +212,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/LegendKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltipKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltipKit.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmWellLogKit.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmWellLogKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoFEMKit.Plo ./$(DEPDIR)/SoFEMKit.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -233,7 +237,8 @@ DIST_COMMON = $(libnodekitsinc_HEADERS) Makefile.am Makefile.in
 SOURCES = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \
-	SmTooltipKit.cpp SmTooltipKit.h
+	SmTooltipKit.cpp SmTooltipKit.h \
+	SmWellLogKit.cpp SmWellLogKit.h
 
 
 all: all-am
@@ -270,6 +275,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LegendKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltipKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltipKit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmWellLogKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmWellLogKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoFEMKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoFEMKit.Po@am__quote@
 

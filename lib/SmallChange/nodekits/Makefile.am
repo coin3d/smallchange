@@ -9,7 +9,8 @@ endif
 SOURCES = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \
-	SmTooltipKit.cpp SmTooltipKit.h
+	SmTooltipKit.cpp SmTooltipKit.h \
+	SmWellLogKit.cpp SmWellLogKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
@@ -19,7 +20,8 @@ libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h \
+	$(top_srcdir)/lib/SmallChange/nodekits/SmWellKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
