@@ -27,6 +27,7 @@
 #include <Inventor/SoDB.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoCube.h>
 #include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/events/SoKeyboardEvent.h>
@@ -82,9 +83,11 @@ public:
       SmScenery * scenery = NULL;
       if ( saction->getPath() ) {
         scenery = (SmScenery *) saction->getPath()->getTail();
-        SbBool info = FALSE;
-        SbBool retval = FALSE;
-        if ( SO_KEY_PRESS_EVENT(ev, E) ) {
+      }
+      SbBool info = FALSE;
+      SbBool retval = FALSE;
+      if ( SO_KEY_PRESS_EVENT(ev, E) ) {
+        if ( scenery ) {
           if ( scenery->elevationLines.getValue() ) {
             scenery->elevationLines.setValue(FALSE);
           }
@@ -92,48 +95,62 @@ public:
             scenery->elevationLines.setValue(TRUE);
             info = TRUE;
           }
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, A) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, A) ) {
+        if ( scenery ) {
           scenery->elevationLineOffset =
             scenery->elevationLineOffset.getValue() + 10.0f;
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, Z) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, Z) ) {
+        if ( scenery ) {
           scenery->elevationLineOffset =
             scenery->elevationLineOffset.getValue() - 10.0f;
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, S) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, S) ) {
+        if ( scenery ) {
           scenery->elevationLineDistance =
             scenery->elevationLineDistance.getValue() * 2.0f;
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, X) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, X) ) {
+        if ( scenery ) {
           scenery->elevationLineDistance =
             scenery->elevationLineDistance.getValue() / 2.0f;
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, D) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, D) ) {
+        if ( scenery ) {
           scenery->elevationLineThickness =
             scenery->elevationLineThickness.getValue() + 0.5f;
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, C) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, C) ) {
+        if ( scenery ) {
           scenery->elevationLineThickness =
             scenery->elevationLineThickness.getValue() - 0.5f;
           if ( scenery->elevationLineThickness.getValue() < 0.5f ) {
             scenery->elevationLineThickness = 0.5f;
           }
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, F) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, F) ) {
+        if ( scenery ) {
           if ( scenery->elevationLineEmphasis.getValue() == 0 ) {
             scenery->elevationLineEmphasis.setValue(2);
           }
@@ -142,9 +159,11 @@ public:
               scenery->elevationLineEmphasis.getValue() + 1;
           }
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, V) ) {
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, V) ) {
+        if ( scenery ) {
           if ( scenery->elevationLineEmphasis.getValue() <= 2 ) {
             scenery->elevationLineEmphasis = 0;
           }
@@ -153,48 +172,57 @@ public:
               scenery->elevationLineEmphasis.getValue() - 1;
           }
           info = TRUE;
-          retval = TRUE;
         }
-        else if ( SO_KEY_PRESS_EVENT(ev, R) ) {
-          // R for reload scene graph - for memory leak checking
-          assert(appname && ivfile);
-          SoInput in;
-          SoSeparator * root = NULL;
-          if ( !in.openFile(ivfile) ) {
-            fprintf(stderr, "%s error: unable to open '%s'\n", appname, ivfile);
-          }
-          else {
-            root = SoDB::readAll(&in);
-          }
-          this->setSceneGraph(root);
-          retval = TRUE;
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, Q) ) {
+        // Q for clear scene graph
+        this->setSceneGraph(NULL);
+        retval = TRUE;
+      }
+      else if ( SO_KEY_PRESS_EVENT(ev, R) ) {
+        // R for reload scene graph - for memory leak checking
+        fprintf(stderr, "%s message: R received\n", appname);
+        assert(appname && ivfile);
+        SoInput in;
+        SoSeparator * root = NULL;
+        if ( !in.openFile(ivfile) ) {
+          fprintf(stderr, "%s error: unable to open '%s'\n", appname, ivfile);
         }
-        if ( (info == TRUE) && !scenery->elevationLines.getValue() ) {
-          info = FALSE;
-          retval = TRUE;
+        else {
+          root = SoDB::readAll(&in);
+          fprintf(stderr, "%s message: read scene (%p) from '%s'\n", appname, root, ivfile);
         }
-        else if ( SO_KEY_RELEASE_EVENT(ev, E) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, A) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, Z) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, S) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, X) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, D) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, C) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, F) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, V) ) { retval = TRUE; }
-        else if ( SO_KEY_RELEASE_EVENT(ev, R) ) { retval = TRUE; }
-        if ( info ) {
-          printf("---------------------------------------\n");
-          printf("line distance   : %g\n", scenery->elevationLineDistance.getValue());
-          printf("line offset     : %g\n", scenery->elevationLineOffset.getValue());
-          printf("line thickness  : %g\n", scenery->elevationLineThickness.getValue());
-          if ( scenery->elevationLineEmphasis.getValue() > 1 ) {
-            printf("emphasis on every %d. line\n", scenery->elevationLineEmphasis.getValue());
-          }
+        this->setSceneGraph(root);
+        this->viewAll();
+        retval = TRUE;
+      }
+      if ( (info == TRUE) && !scenery->elevationLines.getValue() ) {
+        info = FALSE;
+        retval = TRUE;
+      }
+      else if ( SO_KEY_RELEASE_EVENT(ev, E) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, A) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, Z) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, S) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, X) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, D) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, C) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, F) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, V) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, Q) ) { retval = TRUE; }
+      else if ( SO_KEY_RELEASE_EVENT(ev, R) ) { retval = TRUE; }
+      if ( info ) {
+        printf("---------------------------------------\n");
+        printf("line distance   : %g\n", scenery->elevationLineDistance.getValue());
+        printf("line offset     : %g\n", scenery->elevationLineOffset.getValue());
+        printf("line thickness  : %g\n", scenery->elevationLineThickness.getValue());
+        if ( scenery->elevationLineEmphasis.getValue() > 1 ) {
+          printf("emphasis on every %d. line\n", scenery->elevationLineEmphasis.getValue());
         }
-        if ( retval ) {
-          return retval;
-        }
+      }
+      if ( retval ) {
+        return retval;
       }
     }
     return So@Gui@ExaminerViewer::processSoEvent(ev);
