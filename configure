@@ -2817,7 +2817,7 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-for ac_header in windows.h unistd.h ctype.h
+for ac_header in windows.h unistd.h ctype.h sys/types.h dirent.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 echo "$as_me:2823: checking for $ac_header" >&5
@@ -8563,9 +8563,9 @@ eval "sim_ac_inventor_path=\"`echo "$OIVHOME" | sed -e 's%\\\\%\\/%g'`\""
 fi;
 
 if $sim_ac_want_inventor; then
-  sim_ac_save_CPPFLAGS="$CPPFLAGS";
-  sim_ac_save_LDFLAGS="$LDFLAGS";
-  sim_ac_save_LIBS="$LIBS";
+  sim_ac_save_CPPFLAGS="$CPPFLAGS"
+  sim_ac_save_LDFLAGS="$LDFLAGS"
+  sim_ac_save_LIBS="$LIBS"
 
 if $sim_ac_want_inventor; then
   sim_ac_inventor_image_save_CPPFLAGS="$CPPFLAGS"
@@ -8652,8 +8652,57 @@ fi
 
   # Let's at least test for "libInventor".
   sim_ac_inventor_chk_libs="-lInventor"
+  sim_ac_inventor_libs=UNRESOLVED
 
-  echo "$as_me:8656: checking the Open Inventor version" >&5
+  CPPFLAGS="$sim_ac_inventor_cppflags $CPPFLAGS"
+
+  echo "$as_me:8659: checking for Inventor/SbBasic.h" >&5
+echo $ECHO_N "checking for Inventor/SbBasic.h... $ECHO_C" >&6
+if test "${ac_cv_header_Inventor_SbBasic_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line 8665 "configure"
+#include "confdefs.h"
+#include <Inventor/SbBasic.h>
+_ACEOF
+if { (eval echo "$as_me:8669: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  egrep -v '^ *\+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:8675: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_cv_header_Inventor_SbBasic_h=yes
+else
+  echo "$as_me: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  ac_cv_header_Inventor_SbBasic_h=no
+fi
+rm -f conftest.err conftest.$ac_ext
+fi
+echo "$as_me:8694: result: $ac_cv_header_Inventor_SbBasic_h" >&5
+echo "${ECHO_T}$ac_cv_header_Inventor_SbBasic_h" >&6
+if test $ac_cv_header_Inventor_SbBasic_h = yes; then
+  sim_ac_sbbasic=true
+else
+  { echo "$as_me:8699: WARNING: header file Inventor/SbBasic.h not found" >&5
+echo "$as_me: WARNING: header file Inventor/SbBasic.h not found" >&2;}
+                   sim_ac_sbbasic=false
+fi
+
+  if $sim_ac_sbbasic; then
+  echo "$as_me:8705: checking the Open Inventor version" >&5
 echo $ECHO_N "checking the Open Inventor version... $ECHO_C" >&6
   # See if we can get the TGS_VERSION number for including a
   # check for inv{ver}.lib.
@@ -8667,16 +8716,16 @@ echo $ECHO_N "checking the Open Inventor version... $ECHO_C" >&6
 PeekInventorVersion: TGS_VERSION
 EOF
   if test x"$CPP" = x; then
-    { { echo "$as_me:8670: error: cpp not detected - aborting.  notify maintainer at coin-support@coin3d.org." >&5
+    { { echo "$as_me:8719: error: cpp not detected - aborting.  notify maintainer at coin-support@coin3d.org." >&5
 echo "$as_me: error: cpp not detected - aborting.  notify maintainer at coin-support@coin3d.org." >&2;}
    { (exit 1); exit 1; }; }
   fi
-  echo "$CPP $sim_ac_inventor_cppflags $CPPFLAGS conftest.c" >&5
-  tgs_version_line=`$CPP $sim_ac_inventor_cppflags $CPPFLAGS conftest.c 2>&5 | grep "^PeekInventorVersion"`
+  echo "$CPP $CPPFLAGS conftest.c" >&5
+  tgs_version_line=`$CPP $CPPFLAGS conftest.c 2>&5 | grep "^PeekInventorVersion"`
   if test x"$tgs_version_line" = x; then
     echo "second try..." >&5
-    echo "$CPP -DWIN32 $sim_ac_inventor_cppflags $CPPFLAGS conftest.c" >&5
-    tgs_version_line=`$CPP -DWIN32 $sim_ac_inventor_cppflags $CPPFLAGS conftest.c 2>&5 | grep "^PeekInventorVersion"`
+    echo "$CPP -DWIN32 $CPPFLAGS conftest.c" >&5
+    tgs_version_line=`$CPP -DWIN32 $CPPFLAGS conftest.c 2>&5 | grep "^PeekInventorVersion"`
   fi
   rm -f conftest.c
   tgs_version=`echo $tgs_version_line | cut -c22-24`
@@ -8688,16 +8737,15 @@ echo "$as_me: error: cpp not detected - aborting.  notify maintainer at coin-sup
   if test x"$tgs_version" != xTGS; then
     sim_ac_inventor_chk_libs="$sim_ac_inventor_chk_libs -linv$tgs_version$tgs_suffix"
     tgs_version_string=`echo $tgs_version | sed 's/\(.\)\(.\)\(.\)/\1.\2.\3/g'`
-    echo "$as_me:8691: result: TGS Open Inventor v$tgs_version_string" >&5
+    echo "$as_me:8740: result: TGS Open Inventor v$tgs_version_string" >&5
 echo "${ECHO_T}TGS Open Inventor v$tgs_version_string" >&6
   else
-    echo "$as_me:8694: result: probably SGI or older TGS Open Inventor" >&5
+    echo "$as_me:8743: result: probably SGI or older TGS Open Inventor" >&5
 echo "${ECHO_T}probably SGI or older TGS Open Inventor" >&6
   fi
 
-  echo "$as_me:8698: checking for Open Inventor library" >&5
+  echo "$as_me:8747: checking for Open Inventor library" >&5
 echo $ECHO_N "checking for Open Inventor library... $ECHO_C" >&6
-  sim_ac_inventor_libs=UNRESOLVED
 
   for sim_ac_iv_cppflags_loop in "" "-DWIN32"; do
     for sim_ac_iv_libcheck in $sim_ac_inventor_chk_libs; do
@@ -8706,7 +8754,7 @@ echo $ECHO_N "checking for Open Inventor library... $ECHO_C" >&6
         LDFLAGS="$sim_ac_inventor_ldflags $sim_ac_save_LDFLAGS"
         LIBS="$sim_ac_iv_libcheck $sim_ac_inventor_image_libs $sim_ac_save_LIBS"
         cat >conftest.$ac_ext <<_ACEOF
-#line 8709 "configure"
+#line 8757 "configure"
 #include "confdefs.h"
 #include <Inventor/SoDB.h>
 int
@@ -8718,16 +8766,16 @@ SoDB::init();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:8721: \"$ac_link\"") >&5
+if { (eval echo "$as_me:8769: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:8724: \$? = $ac_status" >&5
+  echo "$as_me:8772: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:8727: \"$ac_try\"") >&5
+  { (eval echo "$as_me:8775: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:8730: \$? = $ac_status" >&5
+  echo "$as_me:8778: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   sim_ac_inventor_libs="$sim_ac_iv_libcheck $sim_ac_inventor_image_libs"
                      sim_ac_inventor_cppflags="$sim_ac_iv_cppflags_loop $sim_ac_inventor_cppflags"
@@ -8740,27 +8788,35 @@ rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
     done
   done
 
+  if test "x$sim_ac_inventor_libs" != "xUNRESOLVED"; then
+    echo "$as_me:8792: result: $sim_ac_inventor_cppflags $sim_ac_inventor_ldflags $sim_ac_inventor_libs" >&5
+echo "${ECHO_T}$sim_ac_inventor_cppflags $sim_ac_inventor_ldflags $sim_ac_inventor_libs" >&6
+  else
+    echo "$as_me:8795: result: unavailable" >&5
+echo "${ECHO_T}unavailable" >&6
+  fi
+
+  fi # sim_ac_sbbasic = TRUE
+
   CPPFLAGS="$sim_ac_save_CPPFLAGS"
   LDFLAGS="$sim_ac_save_LDFLAGS"
   LIBS="$sim_ac_save_LIBS"
 
   if test "x$sim_ac_inventor_libs" != "xUNRESOLVED"; then
-    echo "$as_me:8748: result: $sim_ac_inventor_cppflags $sim_ac_inventor_ldflags $sim_ac_inventor_libs" >&5
-echo "${ECHO_T}$sim_ac_inventor_cppflags $sim_ac_inventor_ldflags $sim_ac_inventor_libs" >&6
+    :
 
     CPPFLAGS="$sim_ac_inventor_cppflags $CPPFLAGS"
     LDFLAGS="$sim_ac_inventor_ldflags $LDFLAGS"
     LIBS="$sim_ac_inventor_libs $LIBS"
 
   else
-    echo "$as_me:8756: result: unavailable" >&5
-echo "${ECHO_T}unavailable" >&6
-    { { echo "$as_me:8758: error: couldn't compile and link against Open Inventor" >&5
+    :
+    { { echo "$as_me:8814: error: couldn't compile and link against Open Inventor" >&5
 echo "$as_me: error: couldn't compile and link against Open Inventor" >&2;}
    { (exit 1); exit 1; }; }
   fi
 else
-  { { echo "$as_me:8763: error: couldn't compile and link against Open Inventor" >&5
+  { { echo "$as_me:8819: error: couldn't compile and link against Open Inventor" >&5
 echo "$as_me: error: couldn't compile and link against Open Inventor" >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -8805,7 +8861,7 @@ if $sim_ac_coin_desired; then
 
   # Extract the first word of "coin-config", so it can be a program name with args.
 set dummy coin-config; ac_word=$2
-echo "$as_me:8808: checking for $ac_word" >&5
+echo "$as_me:8864: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
 if test "${ac_cv_path_sim_ac_coin_configcmd+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -8822,7 +8878,7 @@ for ac_dir in $ac_dummy; do
   test -z "$ac_dir" && ac_dir=.
   if $as_executable_p "$ac_dir/$ac_word"; then
    ac_cv_path_sim_ac_coin_configcmd="$ac_dir/$ac_word"
-   echo "$as_me:8825: found $ac_dir/$ac_word" >&5
+   echo "$as_me:8881: found $ac_dir/$ac_word" >&5
    break
 fi
 done
@@ -8834,10 +8890,10 @@ fi
 sim_ac_coin_configcmd=$ac_cv_path_sim_ac_coin_configcmd
 
 if test -n "$sim_ac_coin_configcmd"; then
-  echo "$as_me:8837: result: $sim_ac_coin_configcmd" >&5
+  echo "$as_me:8893: result: $sim_ac_coin_configcmd" >&5
 echo "${ECHO_T}$sim_ac_coin_configcmd" >&6
 else
-  echo "$as_me:8840: result: no" >&5
+  echo "$as_me:8896: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi
 
@@ -8853,7 +8909,7 @@ fi
     sim_ac_coin_msvcrt=`$sim_ac_coin_configcmd --msvcrt`
     sim_ac_coin_datadir=`$sim_ac_coin_configcmd --datadir`
     sim_ac_coin_version=`$sim_ac_coin_configcmd --version`
-    echo "$as_me:8856: checking whether libCoin is available" >&5
+    echo "$as_me:8912: checking whether libCoin is available" >&5
 echo $ECHO_N "checking whether libCoin is available... $ECHO_C" >&6
 if test "${sim_cv_coin_avail+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -8871,7 +8927,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
       cat >conftest.$ac_ext <<_ACEOF
-#line 8874 "configure"
+#line 8930 "configure"
 #include "confdefs.h"
 #include <Inventor/SoDB.h>
 int
@@ -8883,16 +8939,16 @@ SoDB::init();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:8886: \"$ac_link\"") >&5
+if { (eval echo "$as_me:8942: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:8889: \$? = $ac_status" >&5
+  echo "$as_me:8945: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:8892: \"$ac_try\"") >&5
+  { (eval echo "$as_me:8948: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:8895: \$? = $ac_status" >&5
+  echo "$as_me:8951: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   sim_cv_coin_avail=true
 else
@@ -8912,12 +8968,12 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
       LIBS=$sim_ac_save_libs
 
 fi
-echo "$as_me:8915: result: $sim_cv_coin_avail" >&5
+echo "$as_me:8971: result: $sim_cv_coin_avail" >&5
 echo "${ECHO_T}$sim_cv_coin_avail" >&6
     sim_ac_coin_avail=$sim_cv_coin_avail
   else
     locations=`IFS=:; for p in $sim_ac_path; do echo " -> $p/coin-config"; done`
-    { echo "$as_me:8920: WARNING: cannot find 'coin-config' at any of these locations:
+    { echo "$as_me:8976: WARNING: cannot find 'coin-config' at any of these locations:
 $locations" >&5
 echo "$as_me: WARNING: cannot find 'coin-config' at any of these locations:
 $locations" >&2;}
@@ -8931,7 +8987,7 @@ if $sim_ac_coin_avail; then
     LIBS="$sim_ac_coin_libs $LIBS"
 
 else
-  { { echo "$as_me:8934: error: couldn't compile and link against Coin" >&5
+  { { echo "$as_me:8990: error: couldn't compile and link against Coin" >&5
 echo "$as_me: error: couldn't compile and link against Coin" >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -9168,7 +9224,7 @@ DEFS=-DHAVE_CONFIG_H
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files $CONFIG_STATUS"
-{ echo "$as_me:9171: creating $CONFIG_STATUS" >&5
+{ echo "$as_me:9227: creating $CONFIG_STATUS" >&5
 echo "$as_me: creating $CONFIG_STATUS" >&6;}
 cat >$CONFIG_STATUS <<_ACEOF
 #! $SHELL
@@ -9344,7 +9400,7 @@ cat >>$CONFIG_STATUS <<\EOF
     echo "$ac_cs_version"; exit 0 ;;
   --he | --h)
     # Conflict between --help and --header
-    { { echo "$as_me:9347: error: ambiguous option: $1
+    { { echo "$as_me:9403: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -9363,7 +9419,7 @@ Try \`$0 --help' for more information." >&2;}
     ac_need_defaults=false;;
 
   # This is an error.
-  -*) { { echo "$as_me:9366: error: unrecognized option: $1
+  -*) { { echo "$as_me:9422: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -9421,7 +9477,7 @@ do
   "lib/SmallChange/misc/Makefile" ) CONFIG_FILES="$CONFIG_FILES lib/SmallChange/misc/Makefile" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
-  *) { { echo "$as_me:9424: error: invalid argument: $ac_config_target" >&5
+  *) { { echo "$as_me:9480: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -9687,7 +9743,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:9690: creating $ac_file" >&5
+    { echo "$as_me:9746: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -9705,7 +9761,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:9708: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:9764: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -9718,7 +9774,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:9721: error: cannot find input file: $f" >&5
+           { { echo "$as_me:9777: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -9779,7 +9835,7 @@ for ac_file in : $CONFIG_HEADERS; do test "x$ac_file" = x: && continue
   * )   ac_file_in=$ac_file.in ;;
   esac
 
-  test x"$ac_file" != x- && { echo "$as_me:9782: creating $ac_file" >&5
+  test x"$ac_file" != x- && { echo "$as_me:9838: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
 
   # First look for the input files in the build tree, otherwise in the
@@ -9790,7 +9846,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:9793: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:9849: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -9803,7 +9859,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:9806: error: cannot find input file: $f" >&5
+           { { echo "$as_me:9862: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -9920,7 +9976,7 @@ cat >>$CONFIG_STATUS <<\EOF
   rm -f $tmp/in
   if test x"$ac_file" != x-; then
     if cmp -s $ac_file $tmp/config.h 2>/dev/null; then
-      { echo "$as_me:9923: $ac_file is unchanged" >&5
+      { echo "$as_me:9979: $ac_file is unchanged" >&5
 echo "$as_me: $ac_file is unchanged" >&6;}
     else
       ac_dir=`$as_expr X"$ac_file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \

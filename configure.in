@@ -76,7 +76,7 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_LANG_CPLUSPLUS
 
-AC_CHECK_HEADERS([windows.h unistd.h ctype.h])
+AC_CHECK_HEADERS([windows.h unistd.h ctype.h sys/types.h dirent.h])
 
 AM_INIT_AUTOMAKE(SmallChange, $VERSION)
 

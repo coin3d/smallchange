@@ -3,6 +3,9 @@
 /* Define if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
 
+/* Define if you have the <dirent.h> header file. */
+#undef HAVE_DIRENT_H
+
 /* Define if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -14,6 +17,9 @@
 
 /* pthread extensions available */
 #undef HAVE_PTHREAD
+
+/* Define if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
 
 /* Define if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

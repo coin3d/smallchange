@@ -310,7 +310,8 @@ SbBool SoAudioClip::isBufferOK()
 
 void SoAudioClip::setSubdirectories(const SbList<SbString> &subdirectories)
 {
-  for (int i = 0; i < SoAudioClip::subdirectories.getLength(); i++) {
+  int i;
+  for (i = 0; i < SoAudioClip::subdirectories.getLength(); i++) {
     delete SoAudioClip::subdirectories[i];
   }
   for (i = 0; i < subdirectories.getLength(); i++) {
