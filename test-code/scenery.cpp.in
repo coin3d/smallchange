@@ -182,7 +182,6 @@ public:
       }
       else if ( SO_KEY_PRESS_EVENT(ev, R) ) {
         // R for reload scene graph - for memory leak checking
-        fprintf(stderr, "%s message: R received\n", appname);
         assert(appname && ivfile);
         SoInput in;
         SoSeparator * root = NULL;
@@ -191,7 +190,6 @@ public:
         }
         else {
           root = SoDB::readAll(&in);
-          fprintf(stderr, "%s message: read scene (%p) from '%s'\n", appname, root, ivfile);
         }
         this->setSceneGraph(root);
         this->viewAll();
