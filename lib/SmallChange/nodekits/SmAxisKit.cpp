@@ -22,9 +22,6 @@
 \**************************************************************************/
 
 #include <Inventor/nodekits/SoShapeKit.h>
-#include <Inventor/nodes/SoCone.h>
-#include <Inventor/nodes/SoCube.h>
-#include <Inventor/nodes/SoCylinder.h>
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoSeparator.h>
@@ -32,6 +29,11 @@
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/nodes/SoLevelOfDetail.h>
 #include <Inventor/sensors/SoFieldSensor.h>
+#include <Inventor/nodes/SoLineSet.h>
+#include <Inventor/nodes/SoCoordinate3.h>
+#include <Inventor/nodes/SoScale.h>
+#include <Inventor/nodes/SoDrawStyle.h>
+#include <Inventor/nodes/SoCube.h>
 
 #include "SmAxisKit.h"
 
@@ -139,11 +141,12 @@ SmAxisKitP::generateLOD(void) const
 {
   SoLevelOfDetail * LODnode = new SoLevelOfDetail; 
   LODnode->screenArea.set1Value(0, 15000);
-  LODnode->screenArea.set1Value(1, 8000);
-  LODnode->screenArea.set1Value(2, 4000);
-  LODnode->screenArea.set1Value(3, 2000);  
+  LODnode->screenArea.set1Value(1, 10000);
+  LODnode->screenArea.set1Value(2, 8000);
+  LODnode->screenArea.set1Value(3, 4000);  
+  LODnode->screenArea.set1Value(4, 100);  
   
-  for (int i=0;i<4;++i) 
+  for (int i=0;i<5;++i) 
     LODnode->addChild(this->generateAxis(i));
 
   return LODnode;
@@ -152,40 +155,40 @@ SmAxisKitP::generateLOD(void) const
 SoSeparator *
 SmAxisKitP::setupMasterNodes(void) const
 {
-  // Setting up the nodes which are used for every LOD 
-  
+  // Setting up the nodes which are used for every LOD   
   float range = (PUBLIC(this)->axisRange.getValue()[1] - PUBLIC(this)->axisRange.getValue()[0]);
 
   // Axis
   SoSeparator * masterAxis = new SoSeparator;
   SoSeparator * sep1 = new SoSeparator;
-  SoCylinder * axisCylinder = new SoCylinder;
   SoTranslation * trans1 = new SoTranslation;
-  SoTranslation * trans2 = new SoTranslation;
-  SoCone * arrow = new SoCone;
+  SoTranslation * centerTrans = new SoTranslation;
   SoBaseColor * axisColor = new SoBaseColor;
-  SoBaseColor * arrowColor = new SoBaseColor;
-  SoComplexity * complexity1 = new SoComplexity;
 
-  axisCylinder->height.setValue(range);
-  axisCylinder->radius.setValue(0.5f);
-  axisCylinder->parts.setValue(SoCylinder::SIDES | SoCylinder::BOTTOM);
+  // Making an invisible axis out of a cube to make sure the LOD will
+  // work properly
+  SoDrawStyle * drawStyle = new SoDrawStyle;
+  drawStyle->style = SoDrawStyleElement::INVISIBLE;
+  SoCube * invisibleCube = new SoCube;
+  invisibleCube->width.setValue(range);
+
+  SoCoordinate3 * axisCoords = new SoCoordinate3;
+  SoLineSet * axisLine = new SoLineSet;  
+  axisLine->numVertices = 2;
+  axisCoords->point.set1Value(0, 0.0f, 0.0f, 0.0f);
+  axisCoords->point.set1Value(1, range, 0.0f, 0.0f);
+
   axisColor->rgb.setValue(1.0f, 1.0f, 1.0f);
-  arrow->bottomRadius.setValue(0.7f);
-  arrow->height.setValue(3.5f);
-  trans1->translation.setValue(0.0f, range/2, 0.0f);
-  trans2->translation.setValue(0.0f, 1.75f, 0.0f);
-  complexity1->value.setValue(0.2f);
-  arrowColor->rgb.connectFrom(&PUBLIC(this)->arrowColor);
+  trans1->translation.setValue(range/2, 0.0f, 0.0f);
+  centerTrans->translation.setValue(-range/2, 0.0f, 0.0f);
 
-  sep1->addChild(complexity1);
+  sep1->addChild(centerTrans);
   sep1->addChild(axisColor);
-  sep1->addChild(trans1);
-  sep1->addChild(axisCylinder);
-  sep1->addChild(trans1);
-  sep1->addChild(trans2);
-  sep1->addChild(arrowColor);
-  sep1->addChild(arrow);
+  sep1->addChild(axisCoords);
+  sep1->addChild(axisLine);
+
+  sep1->addChild(drawStyle);
+  sep1->addChild(invisibleCube);
     
   SoSeparator * axisnamesep = new SoSeparator;
   SoTranslation * trans3 = new SoTranslation;
@@ -196,9 +199,6 @@ SmAxisKitP::setupMasterNodes(void) const
     
   axisnamesep->addChild(axisColor);
   axisnamesep->addChild(trans1);
-  axisnamesep->addChild(trans1);
-  axisnamesep->addChild(trans2);
-  axisnamesep->addChild(trans3);
   axisnamesep->addChild(newaxisname);
 
   masterAxis->addChild(sep1);
@@ -213,31 +213,35 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoSeparator * root = new SoSeparator;
   float range = (PUBLIC(this)->axisRange.getValue()[1] - PUBLIC(this)->axisRange.getValue()[0]);
  
+  SoTranslation * centerTrans = new SoTranslation;
+  centerTrans->translation.setValue(-range/2, 0.0f, 0.0f);
+
   root->addChild(this->setupMasterNodes());
 
   // Markers
   SoSeparator * sep3 = new SoSeparator;
-  SoCube * marker1 = new SoCube;
-  SoCube * marker2 = new SoCube;
+  SoLineSet * marker1 = new SoLineSet;
+  SoLineSet * marker2 = new SoLineSet;
+  SoCoordinate3 * markerCoords1 = new SoCoordinate3;
+  SoCoordinate3 * markerCoords2 = new SoCoordinate3;
   SoTranslation * mtrans1 = new SoTranslation;
   SoTranslation * mtrans2 = new SoTranslation;
   SoBaseColor * markerColor = new SoBaseColor;
 
-  marker1->height.connectFrom(&PUBLIC(this)->markerWidth);
-  marker1->width.setValue(0.1f);
-  marker1->depth.setValue(0.7f);
-  
-  marker2->height.connectFrom(&PUBLIC(this)->markerWidth);
-  marker2->width.setValue(0.1f);
-  marker2->depth.setValue(1.2f);
+  markerCoords1->point.set1Value(0, 0.0f, 0.0f, 0.0f);
+  markerCoords1->point.set1Value(1, 0.0f, 0.2f, 0.0f);
+  markerCoords2->point.set1Value(0, 0.0f, 0.0f, 0.0f);
+  markerCoords2->point.set1Value(1, 0.0f, 0.4f, 0.0f);
 
-  mtrans1->translation.setValue(0.0f, PUBLIC(this)->markerInterval.getValue(), 0.0f);
-  mtrans2->translation.setValue(0.0f, 0.0f, 0.7f);
+  marker1->numVertices = 2;
+  marker2->numVertices = 2;
 
+  mtrans1->translation.setValue(PUBLIC(this)->markerInterval.getValue(), 0.0f, 0.0f);
+ 
   markerColor->rgb.setValue(1.0f, 1.0f, 0.7f);
 
+  sep3->addChild(centerTrans);
   sep3->addChild(markerColor);
-  sep3->addChild(mtrans2);
 
   int lodskipper = 0;
   SbBool skip;
@@ -262,13 +266,17 @@ SmAxisKitP::generateAxis(int LODlevel) const
     }
 
     if (counter == 5) {
-      if(!skip)
+      if (!skip) {
+        sep3->addChild(markerCoords2);
         sep3->addChild(marker2);
+      }
       counter = 0;
     } 
     else {
-      if(!skip)
+      if (!skip) {
+        sep3->addChild(markerCoords1);
         sep3->addChild(marker1);
+      }
     }
 
     sep3->addChild(mtrans1);
@@ -283,8 +291,11 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoTranslation * ttrans1 = new SoTranslation;
   SoTranslation * ttrans2 = new SoTranslation;
 
-  ttrans1->translation.setValue(0.0f, PUBLIC(this)->textInterval.getValue(), 0.0f);
-  ttrans2->translation.setValue(0.0f, 0.0f, 1.4f);  
+
+  ttrans1->translation.setValue(PUBLIC(this)->textInterval.getValue(), 0.0f, 0.0f);
+  ttrans2->translation.setValue(0.0f, 1.0f, 0.0f);  
+
+  textsep->addChild(centerTrans);
   textsep->addChild(ttrans2);
 
   SbString tmpstr;
@@ -307,6 +318,10 @@ SmAxisKitP::generateAxis(int LODlevel) const
         skip = TRUE;      
       break;
     case 3:
+      if ((lodskipper & 1) || (lodskipper & 2) || (lodskipper & 3))
+        skip = TRUE;      
+      break;
+    case 4:
       skip = TRUE;
       break;
     default:

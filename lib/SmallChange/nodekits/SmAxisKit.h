@@ -25,7 +25,7 @@
 \**************************************************************************/
 
 #include <Inventor/nodekits/SoBaseKit.h>
-#include <Inventor/fields/SoMFFloat.h>
+#include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFColor.h>
