@@ -3,33 +3,271 @@
 # This is the database file used by SoGenerateSceneGraphAction
 # when creating scene graphs.
 
-DEF BaseNode Separator {
-  Material { diffuseColor 0 1 0 }
-  RotationXYZ { axis X angle 1.57079 }
-  Cylinder { radius 0.2 height 0.04 }
+############################################################################
+
+DEF SceneGraphHeader Group {
+  OrthographicCamera {
+    viewportMapping ADJUST_CAMERA
+    position 0 -0.5 2.4773712
+    orientation 0 0 1  0
+    nearDistance 2.4549127
+    farDistance 2.4998698
+    aspectRatio 1
+    focalDistance 2.4773712
+    height 2.0523217
+  }
+  Complexity {
+    value 1
+    type SCREEN_SPACE
+    textureQuality 1
+  }
+  Texture2 {
+    filename "SceneGraphItems.png"
+    model DECAL
+  }
+# four by four matrix
+  Texture2Transform {
+    scaleFactor 0.25 0.25
+  }
 }
 
-DEF NodeNode Separator {
-  Material { diffuseColor 0 0 1 }
-  RotationXYZ { axis X angle 1.57079 }
-  Cylinder { radius 0.2 height 0.04 }
-}
+############################################################################
+# ConnectorStalk
+# ConnectorJoint
+# ConnectorBeginning
+# ConnectorEnd
+# ConnectorLeft
+# ConnectorRight
+# NodeStalk
 
-DEF GroupNode Separator {
-  Material { diffuseColor 1 1 1 }
-  RotationXYZ { axis X angle 1.57079 }
-  Cylinder { radius 0.2 height 0.04 }
-}
-
-DEF SeparatorNode Separator {
-  Material { diffuseColor 1 1 1 }
-#  Texture2 {
-#    filename "textures/separator.png"
-#    wrapS REPEAT
-#    wrapT REPEAT
-#    model DECAL
+DEF NodeStalk Separator {
+  Texture2 {} # disable texture
+  Material {
+    emissiveColor 0.8 0.8 0.0
+    diffuseColor 0.0 0.0 0.0
+  }
+  Translation {
+    translation 0.0 0.35 0.0
+  }
+  Cube {
+    width 0.04
+    height 0.3
+    depth 0.04
+  }
+#  Cylinder {
+#    height 0.5
+#    radius 0.02
 #  }
+}
+
+ 
+############################################################################
+
+DEF BaseNode Separator {
+  Texture2Transform { translation 0 3 }
   RotationXYZ { axis X angle 1.57079 }
   Cylinder { radius 0.2 height 0.04 }
 }
 
+DEF SeparatorNode WWWAnchor {
+  name "http://doc.coin3d.org/Coin/classSeparator.html"
+  Texture2Transform { translation 1 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF TransformSeparatorNode Separator {
+  Texture2Transform { translation 1 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF Coordinate3Node Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF Coordinate4Node Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF NormalNode Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF NormalBindingNode Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF ProfileNode Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF ProfileCoordinate2Node Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF ProfileCoordinate3Node Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF TextureCoordinate2Node Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF TextureCoordinate3Node Separator {
+  Texture2Transform { translation 2 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF BaseKitNode Separator {
+  Texture2Transform { translation 3 3 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF TransformationNode Separator {
+  Texture2Transform { translation 0 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF ShapeNode Separator {
+  Texture2Transform { translation 1 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+# sphere dingbat
+DEF BaseColorNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF ColorIndexNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF ComplexityNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF DrawStyleNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF EnvironmentNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF FontNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF LightModelNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF MaterialNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF MaterialBindingNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF MaterialIndexNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF PackedColorNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF Texture2Node Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF Texture2TransformNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF TextureCoordinateBindingNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF TextureCoordinateFunctionNode Separator {
+  Texture2Transform { translation 2 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF LightNode Separator {
+  Texture2Transform { translation 3 2 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF BlinkerNode Separator {
+  Texture2Transform { translation 1 1 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF CameraNode Separator {
+  Texture2Transform { translation 0 1 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+# FIXME:
+
+# * FileNode
+#   -> small separator with triangle below
+# * *ManipNode
+#   -> node with hand image
+
+############################################################################
