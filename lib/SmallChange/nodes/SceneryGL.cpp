@@ -117,7 +117,9 @@ struct sc_GL {
   glClientActiveTexture_f glClientActiveTexture;
 
   GLenum CLAMP_TO_EDGE;
-  int use_byte_normals;
+
+  int USE_BYTENORMALS;
+  int SUGGEST_BYTENORMALS;
 
   // features / extensions
   int HAVE_MULTITEXTURES;
@@ -127,25 +129,28 @@ struct sc_GL {
   int HAVE_OCCLUSIONTEST;
 };
 
-static struct sc_GL GL = {
-  NULL, // glMultiTexCoord2f
-  NULL, // glEnableClientState
-  NULL, // glDisableClientState
-  NULL, // glVertexPointer
-  NULL, // glNormalPointer
-  NULL, // glTexCoordPointer
-  NULL, // glDrawElements
-  NULL, // glDrawArrays
-  NULL, // glClientActiveTexture
+static
+struct sc_GL GL =
+{
+  NULL,     // glMultiTexCoord2f
+  NULL,     // glEnableClientState
+  NULL,     // glDisableClientState
+  NULL,     // glVertexPointer
+  NULL,     // glNormalPointer
+  NULL,     // glTexCoordPointer
+  NULL,     // glDrawElements
+  NULL,     // glDrawArrays
+  NULL,     // glClientActiveTexture
 
   GL_CLAMP, // clamp_to_edge
-  TRUE,     // use_byte_normals
+  TRUE,     // USE_BYTENORMALS
+  TRUE,     // SUGGEST_BYTENORMALS
 
-  FALSE,  // HAVE_MULTITEXTURES
-  FALSE,  // HAVE_VERTEXARRAYS
-  FALSE,  // SUGGEST_VERTEXARRAYS
-  FALSE,  // HAVE_NORMALMAPS
-  FALSE   // HAVE_OCCLUSIONTEST
+  FALSE,    // HAVE_MULTITEXTURES
+  FALSE,    // HAVE_VERTEXARRAYS
+  FALSE,    // SUGGEST_VERTEXARRAYS
+  FALSE,    // HAVE_NORMALMAPS
+  FALSE     // HAVE_OCCLUSIONTEST
 };
 
 void
@@ -222,12 +227,12 @@ sc_set_have_clamp_to_edge(int enable)
 }
 
 void
-sc_set_use_byte_normals(int enable)
+sc_set_use_bytenormals(int enable)
 {
   if ( enable ) {
-    GL.use_byte_normals = TRUE;
+    GL.USE_BYTENORMALS = TRUE;
   } else {
-    GL.use_byte_normals = FALSE;
+    GL.USE_BYTENORMALS = FALSE;
   }
 }
 
@@ -247,6 +252,12 @@ int
 sc_suggest_vertexarrays(void)
 {
   return GL.SUGGEST_VERTEXARRAYS;
+}
+
+int
+sc_suggest_bytenormals(void)
+{
+  return GL.SUGGEST_BYTENORMALS;
 }
 
 /* ********************************************************************** */
@@ -297,6 +308,11 @@ sc_probe_gl(int verbose)
 #ifdef __APPLE__
   GL.SUGGEST_VERTEXARRAYS = TRUE;
 #endif
+
+  if ( strcmp(vendor, "3Dlabs") == 0 ) {
+    // float normals doesn't bug where byte normals does
+    GL.SUGGEST_BYTENORMALS = FALSE;
+  }
 
   int major = 0, minor = 0;
   sscanf(version, "%d.%d", &major, &minor);
@@ -951,7 +967,7 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
 inline void
 GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
-  if ( GL.use_byte_normals ) {
+  if ( GL.USE_BYTENORMALS ) {
     glNormal3bv((const GLbyte *)n);
   }
   else {
@@ -1002,7 +1018,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
 inline void
 GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
-  if ( GL.use_byte_normals ) { glNormal3bv((const GLbyte *)n); }
+  if ( GL.USE_BYTENORMALS ) { glNormal3bv((const GLbyte *)n); }
   else {
     static const float factor = 1.0f/127.0f;
     glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);

@@ -396,10 +396,10 @@ SmScenery::initClass(void)
   if (sc_scenery_available()) {
     sc_ssglue_initialize();
     if ( ok_to_use_bytevalue_normals() ) {
-      sc_set_use_byte_normals(TRUE);
+      sc_set_use_bytenormals(TRUE);
     }
     else {
-      sc_set_use_byte_normals(FALSE);
+      sc_set_use_bytenormals(FALSE);
     }
     sc_set_texture_functions(sc_texture_construct, sc_texture_activate, sc_texture_release);
   }
@@ -709,6 +709,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
     } else {
       PRIVATE(this)->usevertexarrays = sc_suggest_vertexarrays();
     }
+    sc_set_use_bytenormals(sc_suggest_bytenormals());
 
     if ( cc_glglue_has_texture_edge_clamp(gl) ) {
       sc_set_have_clamp_to_edge(TRUE);
