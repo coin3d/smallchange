@@ -46,7 +46,8 @@
 // FIXME: not thread safe. Need one view per thread (use thread-local-storage).
 
 #define SS_IMPORT_XYZ 1
-#define SS_RTTEXTURE2D_TEST 0
+
+#define COLORMAPTEX_ENABLED 0
 
 SO_NODE_SOURCE(SmScenery);
 
@@ -264,11 +265,14 @@ SmScenery::GLRender(SoGLRenderAction * action)
   //  sc_ssglue_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, 400.0f);
 
   const int sequencelen = this->renderSequence.getNum();
+#if COLORMAPTEX_ENABLED
   if ( this->colorTexture.getValue() && this->colormaptexid != -1 ) {
     // FIXME: add runtime colortexture
     int localsequence[2] = { this->colormaptexid, 0 };
     sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 2, localsequence);
-  } else if ( sequencelen == 0 ) {
+  } else
+#endif
+  if ( sequencelen == 0 ) {
     sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 0, NULL);
   } else {
     this->renderSequence.enableNotify(FALSE);
@@ -695,18 +699,12 @@ SmScenery::filenamesensor_cb(void * data, SoSensor * sensor)
       (void)fprintf(stderr, "Unable to open SmScenery system '%s'\n", s.getString());
     }
     else {
-#if 0 && SS_RTTEXTURE2D_TEST
-      if ( (sc_ssglue_system_get_num_datasets(thisp->system) == 1) &&
-           (sc_ssglue_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
-        // only elevation data - fitting dataset to add runtime texture dataset to
-        // for testing purposes...
-        sc_ssglue_system_add_runtime_texture2d(thisp->system, 0, calctex_cb, thisp->system);
-      }
-#endif
+#if COLORMAPTEX_ENABLED
       if ( (sc_ssglue_system_get_num_datasets(thisp->system) > 0) &&
            (sc_ssglue_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
         thisp->colormaptexid = sc_ssglue_system_add_runtime_texture2d(thisp->system, 0, colortexgen_cb, thisp);
       }
+#endif
       sc_ssglue_system_get_object_box(thisp->system, thisp->bboxmin, thisp->bboxmax); 
       thisp->blocksize = sc_ssglue_system_get_blocksize(thisp->system);
       thisp->renderstate.blocksize = (float) (thisp->blocksize-1);
@@ -716,11 +714,14 @@ SmScenery::filenamesensor_cb(void * data, SoSensor * sensor)
       //      fprintf(stderr,"system: %p, viewid: %d\n", thisp->system, thisp->viewid);
 
       const int sequencelen = thisp->renderSequence.getNum();
+#if COLORMAPTEX_ENABLED
       if ( thisp->colorTexture.getValue() && thisp->colormaptexid != -1 ) {
         // FIXME: add runtime colortexture
         int localsequence[2] = { thisp->colormaptexid, 0 };
         sc_ssglue_view_set_render_sequence_a(thisp->system, thisp->viewid, 2, localsequence);
-      } else if ( sequencelen == 0 ) {
+      } else
+#endif
+      if ( sequencelen == 0 ) {
         sc_ssglue_view_set_render_sequence_a(thisp->system, thisp->viewid, 0, NULL);
       } else {
         thisp->renderSequence.enableNotify(FALSE);
