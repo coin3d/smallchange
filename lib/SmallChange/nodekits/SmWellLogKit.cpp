@@ -346,7 +346,7 @@ SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
   tooltip->description.set1Value(0, this->name.getValue());
   str.sprintf("Depth: %g", pos.mdepth);
   tooltip->description.set1Value(1, str);
-  str.sprintf("TVDSS: %g", -pos.tvdepth);
+  str.sprintf("TVDSS: %g", pos.tvdepth);
   tooltip->description.set1Value(2, str);
 
   if (lidx >= 0) {
@@ -1072,15 +1072,19 @@ SmWellLogKitP::updateList(void)
                         welldata[i][1],
                         welldata[i][2]);
     if (t[0] == undefval || t[1] == undefval || t[2] == undefval) continue;
+    pos.tvdepth = -t[2];
     t -= origin;
 
     pos.pos = SbVec3f((float) t[0], (float) t[1], (float) t[2]);
     
     pos.mdepth = PUBLIC(this)->getDepth(i);
-    pos.tvdepth = - t[2];
     pos.left = PUBLIC(this)->getLeftCurveData(i);
     pos.right = PUBLIC(this)->getRightCurveData(i);
     
+    // workarounf for some LAS files
+    if (SbAbs(pos.left-undefval) < 1.0f) pos.left = undefval;
+    if (SbAbs(pos.right-undefval) < 1.0f) pos.right= undefval;
+
     if (!this->poslist.getLength() || SbAbs(pos.mdepth-prevdepth) >= EPS) {
       this->poslist.append(pos);
       prevdepth = pos.mdepth;
