@@ -8,16 +8,19 @@ endif
 
 libengines_la_SOURCES = \
 	Rot2Heading.cpp Rot2Heading.h \
-	CubicSplineEngine.cpp CubicSplineEngine.h
+	CubicSplineEngine.cpp CubicSplineEngine.h \
+	InverseRotation.cpp InverseRotation.h
 
 engines_lst_SOURCES = \
 	Rot2Heading.cpp Rot2Heading.h \
-	CubicSplineEngine.cpp CubicSplineEngine.h
+	CubicSplineEngine.cpp CubicSplineEngine.h \
+	InverseRotation.cpp InverseRotation.h
 
 libenginesincdir = $(includedir)/SmallChange/engines
 libenginesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/engines/Rot2Heading.h \
-	$(top_srcdir)/lib/SmallChange/engines/CubicSplineEngine.h
+	$(top_srcdir)/lib/SmallChange/engines/CubicSplineEngine.h \
+	$(top_srcdir)/lib/SmallChange/engines/InverseRotation.h
 
 engines.lst: $(engines_lst_OBJECTS)
 	@echo "Linking $@..."; \
