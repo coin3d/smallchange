@@ -37,7 +37,6 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoDrawStyle.h>
-#include <Inventor/nodes/SoMaterialBinding.h>
 #include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoRotation.h>
@@ -49,7 +48,6 @@
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
-#include <SmallChange/nodes/DepthBuffer.h>
 #include <SmallChange/nodes/ViewportRegion.h>
 
 // used to store private (hidden) data members
@@ -97,27 +95,23 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   this->annotations.setDefault(TRUE);
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, topSeparator, camera, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(camera, SoPerspectiveCamera, FALSE, topSeparator, depthBuffer, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, FALSE, topSeparator, viewportRegion, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(cameraCallback, SoCallback, FALSE, topSeparator, camera, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(camera, SoPerspectiveCamera, FALSE, topSeparator, viewportRegion, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(viewportRegion, ViewportRegion, FALSE, topSeparator, drawstyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, lightmodel, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(lightmodel, SoLightModel, FALSE, topSeparator, matbinding, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(matbinding, SoMaterialBinding, FALSE, topSeparator, axessep, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(lightmodel, SoLightModel, FALSE, topSeparator, axessep, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(axessep, SoSeparator, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
 
   // Setup default values
-  SoCallback * cb = (SoCallback *)this->getAnyPart("callback", TRUE);
+  SoCallback * cb = (SoCallback *)this->getAnyPart("cameraCallback", TRUE);
   cb->setCallback(SmAxisDisplayKitP::callback_cb, PRIVATE(this));
-
-  DepthBuffer * db = (DepthBuffer *)this->getAnyPart("depthBuffer", TRUE);
-  db->enable = FALSE;
 
   ViewportRegion * vpr = (ViewportRegion *)this->getAnyPart("viewportRegion", TRUE);
   vpr->origin.setValue(1.0f, 0.0f);
   vpr->size.setValue(0.3f, 0.3f);
+  vpr->clearDepthBuffer = TRUE;
 
   SoDrawStyle *drawstyle = (SoDrawStyle *)this->getAnyPart("drawstyle", TRUE);
   drawstyle->lineWidth = 2;
@@ -149,15 +143,74 @@ SmAxisDisplayKit::initClass(void)
 }
 
 void 
+SmAxisDisplayKit::GLRender(SoGLRenderAction *action)
+{
+  if (!action->isRenderingDelayedPaths()) {
+    action->addDelayedPath(action->getCurPath()->copy());
+    return;
+  }
+  else {
+    SoState *state = action->getState();
+    state->push();
+    SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
+    inherited::GLRender(action);
+    state->pop();
+  }
+}
+
+void 
+SmAxisDisplayKit::handleEvent(SoHandleEventAction * action)
+{
+  inherited::handleEvent(action);
+}
+
+void 
 SmAxisDisplayKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SoCacheElement::invalidate(action->getState());
+  SoNode::getBoundingBox(action);
 }
 
 void 
 SmAxisDisplayKit::search(SoSearchAction * action)
 {
   SoNode::search(action);
+}
+
+void 
+SmAxisDisplayKit::callback(SoCallbackAction * action)
+{
+  SoNode::callback(action);
+}
+
+void 
+SmAxisDisplayKit::getMatrix(SoGetMatrixAction * action) 
+{ 
+  SoNode::getMatrix(action);
+}
+
+void 
+SmAxisDisplayKit::pick(SoPickAction * action) 
+{
+  SoNode::pick(action);
+}
+
+void
+SmAxisDisplayKit::rayPick(SoRayPickAction * action) 
+{ 
+  SoNode::rayPick(action);
+}
+
+void 
+SmAxisDisplayKit::audioRender(SoAudioRenderAction * action) 
+{
+  SoNode::audioRender(action);
+}
+
+void 
+SmAxisDisplayKit::getPrimitiveCount(SoGetPrimitiveCountAction * action) 
+{
+  SoNode::getPrimitiveCount(action);
 }
 
 // overloader to test when stuff changes in the API fields

@@ -40,13 +40,11 @@ class SMALLCHANGE_DLL_API SmAxisDisplayKit : public SoBaseKit
   SO_KIT_HEADER(SmAxisDisplayKit);
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
-  SO_KIT_CATALOG_ENTRY_HEADER(callback);
+  SO_KIT_CATALOG_ENTRY_HEADER(cameraCallback);
   SO_KIT_CATALOG_ENTRY_HEADER(camera);
-  SO_KIT_CATALOG_ENTRY_HEADER(depthBuffer);
   SO_KIT_CATALOG_ENTRY_HEADER(viewportRegion);
   SO_KIT_CATALOG_ENTRY_HEADER(drawstyle);
   SO_KIT_CATALOG_ENTRY_HEADER(lightmodel);
-  SO_KIT_CATALOG_ENTRY_HEADER(matbinding);
   SO_KIT_CATALOG_ENTRY_HEADER(axessep);
 
 public:
@@ -59,8 +57,17 @@ public:
   SmAxisDisplayKit(void);
 
   static void initClass(void);
+  virtual void GLRender(SoGLRenderAction * action);
+  virtual void handleEvent(SoHandleEventAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void search(SoSearchAction * action);
+  virtual void callback(SoCallbackAction * action);
+  virtual void getMatrix(SoGetMatrixAction * action);
+  virtual void pick(SoPickAction * action);
+  virtual void rayPick(SoRayPickAction * action);
+  virtual void audioRender(SoAudioRenderAction * action);
+  virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
+
 protected:
   virtual ~SmAxisDisplayKit();
   virtual void notify(SoNotList * l);
