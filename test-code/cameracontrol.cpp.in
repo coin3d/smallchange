@@ -18,7 +18,7 @@ int
 main(int argc, char ** argv )
 {
   if (argc == 1) {
-    fprintf(stderr,"Usage: cameracontrol <ivfile> [helicopter|examiner|sphere]\n");
+    fprintf(stderr,"Usage: cameracontrol <ivfile> [helicopter|examiner|sphere] [speed]\n");
     return -1;
   } 
   @WIDGET@ window = So@Gui@::init( argv[0] );
@@ -46,7 +46,10 @@ main(int argc, char ** argv )
 
   if (argc >= 3) {
     if (strcmp(argv[2], "helicopter") == 0) {
-      ck->eventHandler = new SmHelicopterEventHandler;
+      SmHelicopterEventHandler *helihandler;
+      ck->eventHandler = helihandler = new SmHelicopterEventHandler;
+      if (argc >= 4) 
+        helihandler->speed.setValue(atof(argv[3]));
     }
     else if (strcmp(argv[2], "examiner") == 0) {
       // the default. do nothing
