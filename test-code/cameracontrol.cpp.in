@@ -1,0 +1,61 @@
+#include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoDirectionalLight.h>
+#include <Inventor/nodes/SoPerspectiveCamera.h>
+
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/So@Gui@RenderArea.h>
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/nodekits/SmCameraControlKit.h>
+
+#include <stdio.h>
+
+// *************************************************************************
+
+int
+main(int argc, char ** argv )
+{
+  if (argc == 1) {
+    fprintf(stderr,"Usage: cameracontrol <ivfile>\n");
+    return -1;
+  } 
+  @WIDGET@ window = So@Gui@::init( argv[0] );
+  if (window == NULL) return -1;
+
+  smallchange_init();
+
+  SoInput * input = new SoInput;
+  SbBool ok = input->openFile(argv[1]);
+  if (!ok) {
+    fprintf(stderr,"Unable to open file.\n");
+    return -1;
+  }
+
+  SoSeparator *root = SoDB::readAll(input); 
+  if (!root) {
+    fprintf(stderr,"Unable to read file.\n");
+    return -1;
+  }
+  root->ref();
+
+  SmCameraControlKit * ck = new SmCameraControlKit;
+  ck->ref();
+  ck->setPart("scene", root);
+  SoCamera * camera = (SoCamera*) ck->getPart("camera", TRUE);
+  
+  So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
+  camera->viewAll(root, renderarea->getViewportRegion() );
+  renderarea->setSceneGraph(ck);
+  renderarea->setBackgroundColor( SbColor( 0.0f, 0.2f, 0.3f )  );
+  renderarea->show();
+
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
+
+  delete renderarea;
+  root->unref();
+  ck->unref();
+
+  return 0;
+} // main()
+
+// *************************************************************************
