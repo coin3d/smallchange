@@ -122,6 +122,7 @@ private:
   SbBool texisenabled;
   unsigned int currtexid;
   int colormaptexid;
+  SbBool firstGLRender;
 
   SoGLImage * findReuseTexture(const unsigned int texid);
   SoGLImage * createTexture(const unsigned int texid);

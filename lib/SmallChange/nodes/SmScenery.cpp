@@ -48,6 +48,9 @@
 #define SS_IMPORT_XYZ 1
 #define SS_RTTEXTURE2D_TEST 0
 
+// FIXME: not yet pimplified
+#define PRIVATE(obj) (obj)
+
 SO_NODE_SOURCE(SmScenery);
 
 SmScenery::SmScenery(void)
@@ -66,6 +69,7 @@ SmScenery::SmScenery(void)
   this->renderSequence.setNum(0);
   this->colorMap.setNum(0);
   this->colormaptexid = -1;
+  this->firstGLRender = TRUE;
 
   this->filenamesensor = new SoFieldSensor(filenamesensor_cb, this);
   this->filenamesensor->attach(&this->filename);
@@ -276,6 +280,13 @@ SmScenery::GLRender(SoGLRenderAction * action)
     sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, sequencelen, sequence);
     this->renderSequence.finishEditing();
     this->renderSequence.enableNotify(TRUE);
+  }
+
+  if ( PRIVATE(this)->firstGLRender ) {
+    if ( this->colorTexture.getValue() && (this->colormaptexid != -1) ) {
+      this->refreshTextures(this->colormaptexid);
+    }
+    PRIVATE(this)->firstGLRender = FALSE;
   }
 
   SoState * state = action->getState();
