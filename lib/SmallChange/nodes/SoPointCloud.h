@@ -17,7 +17,7 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFEnum.h>
 
-class COIN_DLL_API SoPointCloud : public SoNonIndexedShape {
+class SoPointCloud : public SoNonIndexedShape {
   typedef SoNonIndexedShape inherited;
 
   SO_NODE_HEADER(SoPointCloud);

@@ -23,13 +23,8 @@
 #include <assert.h>
 #include <stddef.h> // NULL definition
 
-#ifndef COIN_DLL_API
-#define COIN_DLL_API
-#endif
-
-
 template <class Type>
-class COIN_DLL_API SbList {
+class SbList {
   // Older compilers aren't too happy about const declarations in the
   // class definitions, so use the enum trick described by Scott
   // Meyers in "Effective C++".
