@@ -599,8 +599,14 @@ Scenery::colortexgen_cb(void * closure, double * pos, float elevation, double * 
   Scenery * thisp = (Scenery *) closure;
   float fac = (elevation - thisp->bboxmin[2]) / (thisp->bboxmax[2] - thisp->bboxmin[2]);
   int steps = ((thisp->colorMap.getNum() / 4) - 1); // four components
-  uint32_t abgr = 0xffffffff;
-  if ( steps > 0 ) {
+  uint32_t abgr = 0xffffffff; // no colors means white
+  if ( steps == 0 ) { // only one color given
+    int nr = (int) (SbClamp(thisp->colorMap[0], 0.0f, 1.0f) * 255.0);
+    int ng = (int) (SbClamp(thisp->colorMap[1], 0.0f, 1.0f) * 255.0);
+    int nb = (int) (SbClamp(thisp->colorMap[2], 0.0f, 1.0f) * 255.0);
+    int na = (int) (SbClamp(thisp->colorMap[3], 0.0f, 1.0f) * 255.0);
+    abgr = (na << 24) | (nb << 16) | (ng << 8) | nr;
+  } else if ( steps > 0 ) { // interpolate color
     int startcolidx = (int) floor(float(steps) * fac);
     float rest = (float(steps) * fac) - float(startcolidx);
     float r = thisp->colorMap[startcolidx * 4 + 0];
