@@ -107,7 +107,31 @@ public:
 
 #define PRIVATE(obj) obj->pimpl
 
+// *************************************************************************
+
+/*!
+  \var SoSFInt32 SmHQSphere::level
+
+  Decides the number of times each triangle in the tessellation of the
+  sphere is recursively subdivided into 4 new triangles. At level 1,
+  the sphere will be made from only 8 triangles.
+
+  The total number of triangles making up the sphere will therefore be
+
+  \verbatim
+  numtriangles = 8 * (4 ^ (level - 1))
+  \endverbatim
+
+  So be careful when increasing the \a level field value, as the
+  number of triangles making up the sphere will increase
+  exponentially.
+*/
+
+// *************************************************************************
+
 SO_NODE_SOURCE(SmHQSphere);
+
+// *************************************************************************
 
 /*!
   Constructor.
@@ -142,6 +166,8 @@ SmHQSphere::initClass()
     SO_NODE_INIT_CLASS(SmHQSphere, SoShape, "Shape");
   }
 }
+
+// *************************************************************************
 
 void 
 SmHQSphere::GLRender(SoGLRenderAction * action)
