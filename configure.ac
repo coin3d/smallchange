@@ -63,6 +63,10 @@ AC_DEFINE_UNQUOTED([SMALLCHANGE_VERSION], ["$SMALLCHANGE_VERSION"],
 # Miscellaneous options and initializations.
 
 smallchange_build_dir=`pwd`
+smallchange_src_dir=`cd $srcdir; pwd`
+
+AC_SUBST(smallchange_build_dir)
+AC_SUBST(smallchange_src_dir)
 
 # **************************************************************************
 #  Locate C++ compiler and set C++ as the default language to use
