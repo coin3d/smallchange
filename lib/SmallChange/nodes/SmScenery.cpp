@@ -775,6 +775,14 @@ SmScenery::getLoadRottger(void) const
   return 0.0f;
 }
 
+void
+SmScenery::getSceneryOffset(double * offset) const
+{
+  if (sc_scenery_available() && this->system) {
+    sc_ssglue_system_get_origo_world_position(this->system, offset);
+  }
+}
+
 void 
 SmScenery::refreshTextures(const int id)
 {

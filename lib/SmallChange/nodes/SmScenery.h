@@ -53,6 +53,7 @@ public:
   void setLoadRottger(const float c);
   float getLoadRottger(void) const;
   void refreshTextures(const int id);
+  void getSceneryOffset(double * offset) const;
 
   typedef struct {
     float blocksize;
