@@ -76,6 +76,7 @@
 #include <SmallChange/draggers/SmRangeTranslate1Dragger.h>
 #include <SmallChange/nodes/SmMarkerSet.h>
 #include <SmallChange/nodes/SmCoordinateSystem.h>
+#include <SmallChange/nodes/SmViewpointWrapper.h>
 
 void
 smallchange_init(void)
@@ -134,4 +135,5 @@ smallchange_init(void)
   SmToVertexArrayShapeAction::initClass();
 
   SmCoordinateSystem::initClass();
+  SmViewpointWrapper::initClass();
 }
