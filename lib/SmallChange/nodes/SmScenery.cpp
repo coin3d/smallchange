@@ -283,6 +283,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
   }
 
   if ( PRIVATE(this)->firstGLRender ) {
+    // FIXME: this should not really be necessary, and should be
+    // considered a work-around for a bug in the scenery SDK. 20031015 mortene.
     if ( this->colorTexture.getValue() && (this->colormaptexid != -1) ) {
       this->refreshTextures(this->colormaptexid);
     }
