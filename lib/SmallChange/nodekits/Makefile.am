@@ -6,18 +6,20 @@ else
 noinst_LTLIBRARIES = libnodekits.la
 endif
 
-libnodekits_la_SOURCES = \
+SOURCES = \
 	LegendKit.cpp LegendKit.h \
-	SoFEMKit.cpp SoFEMKit.h
+	SoFEMKit.cpp SoFEMKit.h \
+	SmTooltipKit.cpp SmTooltipKit.h
 
-nodekits_lst_SOURCES = \
-	LegendKit.cpp LegendKit.h \
-	SoFEMKit.cpp SoFEMKit.h
+libnodekits_la_SOURCES = $(SOURCES)
+
+nodekits_lst_SOURCES = $(SOURCES)
 
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
+	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
