@@ -23,7 +23,7 @@
 int clod_tricount;
 #endif
 
-static uint32_t color_cb(double val, void *)
+static uint32_t color_cb(double val)
 {
   if (val < 0.25) {
     val += 0.5f;
@@ -79,10 +79,10 @@ main(
     kit->smallTickSize = 4;
     kit->description.setNum(3);
     kit->description.set1Value(0, "Juba, juba, juba, juba");
-    kit->description.set1Value(1, "Juba, juba, juba, juba");
-    kit->description.set1Value(2, "Juba, juba, juba, juba");
+    kit->description.set1Value(1, "Juba2, juba2, juba2, juba2");
+    kit->description.set1Value(2, "Juba333, juba333, juba333, juba333");
     kit->setPosition(SbVec2s(20, 20));
-    kit->set("viewport", "pixelOrigin 10 10");
+    //    kit->set("viewport", "pixelOrigin 10 10");
     kit->descriptionOnTop = FALSE;
 
     SbString discrete("juba");
@@ -94,7 +94,8 @@ main(
         kit->addSmallTick(double(i)/double(16));
       }
     }
-    kit->setDiscreteMode(TRUE);
+    //    kit->setDiscreteMode(TRUE);
+    kit->enableBackground(FALSE);
   }
 
   SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer( window );
