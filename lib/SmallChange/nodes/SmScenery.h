@@ -130,13 +130,14 @@ public:
   void stripVerticals(int datasetid, float dropsize);
   void stripHorizontals(int datasetid, float maxskew);
 
+  void refreshTextures(const int id);
+
 protected:
   virtual ~SmScenery(void);
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
   virtual void evaluate(SoAction * action);
 
-  void refreshTextures(const int id);
 
 private:
   SmScenery(ss_system * system);
