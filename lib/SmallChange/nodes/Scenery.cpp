@@ -905,7 +905,6 @@ SmScenery::generatePrimitives(SoAction * action)
 {
   if (!sc_scenery_available()) { return; }
   if (PRIVATE(this)->system == NULL) return;
-  SoState * state = action->getState();
 
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                      SceneryP::gen_cb, this);
