@@ -5,6 +5,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct cc_glglue cc_glglue;
+
 typedef struct {
   float blocksize;
   double vspacing[2];
@@ -31,6 +33,8 @@ typedef struct {
   void * debuglist;
   int newtexcount;
 } RenderState;
+
+void sc_set_glglue_instance(const cc_glglue * glue);
 
 int sc_is_texturing_enabled(void);
 void sc_enable_texturing(void);

@@ -36,6 +36,7 @@
 
 #include <Inventor/C/tidbits.h> // coin_getenv()
 #include <Inventor/system/gl.h>
+#include <Inventor/C/glue/gl.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbBox3f.h>
 #include <Inventor/errors/SoDebugError.h>
@@ -49,6 +50,14 @@
 #include <SmallChange/misc/SceneryGlue.h>
 
 /* ********************************************************************** */
+
+static const cc_glglue * glglue = NULL;
+
+void
+sc_set_glglue_instance(const cc_glglue * glue)
+{
+  glglue = glue;
+}
 
 int
 sc_is_texturing_enabled(void)
@@ -180,12 +189,12 @@ GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
     glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                  state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
   } else {
-    glMultiTexCoord2f(GL_TEXTURE0,
-                      state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-                      state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE0,
+                                state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+                                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
     float val = (state->etexstretch * elev) + state->etexoffset;
     if ( val < 0.0f ) val = 0.0f - val;
-    glMultiTexCoord2f(GL_TEXTURE1, 0.0f, val);
+    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
@@ -221,9 +230,9 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                  state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
   } else {
-    glMultiTexCoord2f(GL_TEXTURE0,
-                      state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-                      state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE0,
+                                state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+                                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
     float val = (state->etexstretch * elev) + state->etexoffset;
 #if 0
     static int counter = 0;
@@ -231,7 +240,7 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     if ( (counter % 250) == 0 )
       fprintf(stderr, "offset: %f  elev: %f (%f)\n", state->etexoffset, elev, val);
 #endif
-    glMultiTexCoord2f(GL_TEXTURE1, 0.0f, val);
+    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
