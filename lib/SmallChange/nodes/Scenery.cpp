@@ -1440,7 +1440,9 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
       }
     }
     if (!PRIVATE(thisp)->system) {
-      (void)fprintf(stderr, "Unable to open SmScenery system '%s'\n", s.getString());
+      SoDebugError::post("SceneryP::filenamesensor_cb",
+                         "Unable to open SmScenery system '%s'",
+                         s.getString());
     }
     else {
       if ((sc_ssglue_system_get_num_datasets(PRIVATE(thisp)->system) > 0) &&
@@ -1821,7 +1823,7 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
       }
     } else {
       if ((thisp->colorElevation.getNum() * 4) != thisp->colorMap.getNum()) {
-        SoDebugError::postInfo("SmScenery::colortexture_cb", "size of colorElevation does not match size of colorMap");
+        SoDebugError::post("SmScenery::colortexture_cb", "size of colorElevation does not match size of colorMap");
         thisp->colorTexturing.setValue(SmScenery::DISABLED);
         return abgr;
       }
@@ -1889,7 +1891,7 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
       // distribute colors based on elevation value table
       const int max = thisp->colorElevation.getNum();
       if (((max + 1) * 4) != (thisp->colorMap.getNum())) {
-        SoDebugError::postInfo("SmScenery::colortexture_cb", "size of colorElevation does not match size of colorMap");
+        SoDebugError::post("SmScenery::colortexture_cb", "size of colorElevation does not match size of colorMap");
         thisp->colorTexturing.setValue(SmScenery::DISABLED);
         return abgr;
       }
