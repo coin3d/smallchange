@@ -39,6 +39,7 @@ public:
   virtual SbBool affectsState(void) const;
 
   SoMFVec2f range;
+  SoSFVec3f translation;
 
 protected:
   virtual ~SmRangeTranslate1DraggerKit();

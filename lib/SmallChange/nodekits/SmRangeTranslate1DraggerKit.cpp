@@ -34,6 +34,7 @@
 #include "SmRangeTranslate1DraggerKit.h"
 
 static void draggerCallback(void * classObject, SoDragger * dragger);
+static void translationChangedCallback(void * classObject, SoSensor * sensor);
 
 SO_KIT_SOURCE(SmRangeTranslate1DraggerKit);
 
@@ -68,6 +69,11 @@ SmRangeTranslate1DraggerKit::SmRangeTranslate1DraggerKit()
   SO_KIT_ADD_CATALOG_ENTRY(topSep, SoSeparator, TRUE, this, "", TRUE);
   SO_KIT_ADD_FIELD(range, (SbVec2f(0, 1.0f)));
   SO_KIT_INIT_INSTANCE();
+
+
+  PRIVATE(this)->draggerSensor = new SoFieldSensor(translationChangedCallback, PRIVATE(this));
+  PRIVATE(this)->draggerSensor->setPriority(0);
+  PRIVATE(this)->draggerSensor->attach(&this->translation);
 
   initSmRangeTranslate1Dragger();
   PRIVATE(this)->reshapeDragger();
@@ -227,6 +233,21 @@ draggerCallback(void * classObject, SoDragger * dragger)
     thisp->rearArrowSwitch->whichChild = SO_SWITCH_NONE;
   } 
   
+  thisp->draggerSensor->detach();
   tdragger->translation.setValue(tf);
+  thisp->master->translation.setValue(tf);
+  thisp->draggerSensor->attach(&thisp->master->translation);
 
+}
+
+static void 
+translationChangedCallback(void * classObject, SoSensor * sensor)
+{
+
+  SmRangeTranslate1DraggerKitP * thisp = (SmRangeTranslate1DraggerKitP *) classObject;
+  SoFieldSensor * fsens = (SoFieldSensor *) sensor;
+  SoSFVec3f * field = (SoSFVec3f *) fsens->getAttachedField();
+
+  thisp->dragger->translation.setValue(field->getValue());
+  
 }
