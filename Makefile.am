@@ -8,6 +8,9 @@ BUILT_SOURCES = \
 DISTCLEANFILES = \
 	smallchange-@CONFIG@.cfg
 
+m4datadir = $(datadir)/aclocal
+dist_m4data_DATA = cfg/smallchange.m4
+
 cfgdatadir = $(datadir)/Coin/conf
 cfgdata_DATA = smallchange-@CONFIG@.cfg
 
