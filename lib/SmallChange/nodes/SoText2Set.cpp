@@ -289,13 +289,34 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
     for (unsigned int i = 0; i < stringcnt; i++) {
 
-      // Cull each string.
+      SbVec3f nilpoint = this->position[i];
+      // transform to world coordinate system
+      mat.multVecMatrix(nilpoint, nilpoint);
+
+      // FIXME: should make this selection available in public API?
+      //
+      // Note that the View'EM application currently depends on the
+      // point-culling to be the default behavior.
+      //
+      // Note also that point-culling nullifies the implemented
+      // feature of having strings partially disappear on the
+      // left-side and top borders of the rendering canvas.
+      //
+      // 20031222 mortene.
+#if 1
+      // Frustum cull each string, checking just its position point.
+      const SbBox3f stringbbox(nilpoint, nilpoint);
+      // FIXME: there should be a
+      // SoCullElement::cullTest(..,SbVec3f,...) method. 20031222 mortene.
+      if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
+#else
+      // This culls versus the whole string, i.e. if just a single
+      // piece of the string is within the view volume (+ other
+      // clipping planes), the (full) string will be shown.
       const SbBox3f stringbbox = PRIVATE(this)->stringBBox(state, i);
       if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
+#endif
 
-      // Find nilpoint for this string
-      SbVec3f nilpoint = this->position[i];
-      mat.multVecMatrix(nilpoint, nilpoint);
       vv.projectToScreen(nilpoint, nilpoint);
       nilpoint[2] *= 2.0f;
       nilpoint[2] -= 1.0f;
