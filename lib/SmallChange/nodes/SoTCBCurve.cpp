@@ -37,10 +37,14 @@
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/details/SoLineDetail.h>
 
-// FIXME: need to include gl.h in a system-independent way. 20020612 mortene.
-#include <windows.h>
-#include <GL/gl.h>
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
 
+#if HAVE_WINDOWS_H
+#include <windows.h>
+#endif // HAVE_WINDOWS_H
+#include <GL/gl.h>
 
 
 /*!
@@ -139,7 +143,7 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
   if (numControlpoints.getValue() < 2) return;
 
 
-//---- Selecting coordinatesource
+  //---- Selecting coordinatesource
   const SbVec3f * coords;
   if (PRIVATE(this)->coordinateSrc == NULL) {
     const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
@@ -150,9 +154,9 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
     coords = PRIVATE(this)->coordinateSrc->getValues(0);
 
  
-//---- Converting coords/PRIVATE(this)->timestampSrc to standard float-arrays...
-//This baby could be optimized a lot... But maybe it's bad to assume
-//that the timestamps are a table of floats?
+  //---- Converting coords/PRIVATE(this)->timestampSrc to standard float-arrays...
+  //This baby could be optimized a lot... But maybe it's bad to assume
+  //that the timestamps are a table of floats?
   float (* c)[3] = new float[numControlpoints.getValue()][3];
   float * t      = new float[numControlpoints.getValue()];
 
@@ -172,7 +176,7 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
   }// for
 
 
-//---- Rendering...
+  //---- Rendering...
 
   // FIXME: I guess things like material, normals, texturecoords, drawstyle etc 
   // should be stuffed here somewhere.
@@ -223,7 +227,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
 {
   SoState * state = action->getState();
 
-//---- Selecting coordinatesource
+  //---- Selecting coordinatesource
   const SbVec3f * coords;
   if (PRIVATE(this)->coordinateSrc == NULL) {
     const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
@@ -234,7 +238,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
     coords = PRIVATE(this)->coordinateSrc->getValues(0);
 
   
-//---- Converting coords/PRIVATE(this)->timestampSrc to standard float-arrays...
+  //---- Converting coords/PRIVATE(this)->timestampSrc to standard float-arrays...
   float (* c)[3]  = new float[numControlpoints.getValue()][3];
   float * t       = new float[numControlpoints.getValue()];
 
@@ -255,7 +259,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
 
 
 
-//---- Generating...
+  //---- Generating...
 
   // FIXME: I guess things like material, normals, texturecoords, drawstyle etc 
   // should be stuffed here somewhere.
@@ -314,15 +318,15 @@ SoTCBCurve::generatePrimitives(SoAction * action)
 void
 SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
 {
-/*
-I'm not sure how accurate such a boundingbox must be, as this could
-be implemented very fast by using the controlpoints. But the curve will most
-likely run outside this box. 20020613 torbjorv
-*/
+  /*
+    I'm not sure how accurate such a boundingbox must be, as this could
+    be implemented very fast by using the controlpoints. But the curve will most
+    likely run outside this box. 20020613 torbjorv
+  */
 
   SoState * state = action->getState();
   
-//---- Selecting coordinatesource
+  //---- Selecting coordinatesource
   const SbVec3f * coords;
   if (PRIVATE(this)->coordinateSrc == NULL) {
     const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
@@ -355,7 +359,7 @@ likely run outside this box. 20020613 torbjorv
   }// for
 
 
-//---- Generating geometry...
+  //---- Generating geometry...
   float minx = c[0][0];
   float miny = c[0][1];
   float minz = c[0][2];
@@ -416,79 +420,79 @@ SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpo
   if (time < tStamps[0]) time = tStamps[0];
   if (time > tStamps[numControlpoints - 1]) time = tStamps[numControlpoints - 1];
 
-	int k1, k2;
-	int c1, c2;
-	float h1, h2, h3, h4;
-	float t, t2, t3;
+  int k1, k2;
+  int c1, c2;
+  float h1, h2, h3, h4;
+  float t, t2, t3;
 
-	float adj0, adj1;
-	float d10_x, d10_y, d10_z;
-	float dd0_x, dd0_y, dd0_z;
-	float ds1_x, ds1_y, ds1_z;
+  float adj0, adj1;
+  float d10_x, d10_y, d10_z;
+  float dd0_x, dd0_y, dd0_z;
+  float ds1_x, ds1_y, ds1_z;
 
-//---- Find object's position and angles...
+  //---- Find object's position and angles...
   if ( numControlpoints > 1 ) {
 
-	//---- Find segment...
-		k2 = 0;
-		c1 = numControlpoints - 1;
-		for (c2 = 0; c2 < c1; c2++)
-			if (tStamps[c2] <= time) k2++;
-		k1 = k2 - 1;
+    //---- Find segment...
+    k2 = 0;
+    c1 = numControlpoints - 1;
+    for (c2 = 0; c2 < c1; c2++)
+      if (tStamps[c2] <= time) k2++;
+    k1 = k2 - 1;
 
-	//---- Calculating t = (T - T0)/(T1 - T0)
-		t = (float)(time - (float)tStamps[k1])/(tStamps[k2] - tStamps[k1]);
+    //---- Calculating t = (T - T0)/(T1 - T0)
+    t = (float)(time - (float)tStamps[k1])/(tStamps[k2] - tStamps[k1]);
 
-		d10_x = coords[k2][0] - coords[k1][0];
+    d10_x = coords[k2][0] - coords[k1][0];
     d10_y = coords[k2][1] - coords[k1][1];
-		d10_z = coords[k2][2] - coords[k1][2];
+    d10_z = coords[k2][2] - coords[k1][2];
 
-		t2 = t*t;
-		t3 = t2*t;
+    t2 = t*t;
+    t3 = t2*t;
 
-	//---- Calculating some magic stuff...
-		h1 = 1.0 - (3*t2 - 2*t3);
-		h2 = 3*t2 - 2*t3;
-		h3 = t3 - 2*t2 + t;
-		h4 = t3 - t2;
+    //---- Calculating some magic stuff...
+    h1 = 1.0 - (3*t2 - 2*t3);
+    h2 = 3*t2 - 2*t3;
+    h3 = t3 - 2*t2 + t;
+    h4 = t3 - t2;
 
-		if (k1 != 0) 
+    if (k1 != 0) 
       adj0 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2] - tStamps[k1 - 1]);
-		if (k2 != (numControlpoints - 1)) 
+    if (k2 != (numControlpoints - 1)) 
       adj1 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2+1] - tStamps[k1]);
 
-	//---- Calculating TCB-values...
-		if (k1 == 0) {
-			dd0_x = d10_x;
-			dd0_y = d10_y;
-			dd0_z = d10_z;
-		}//if
-		else {
-			dd0_x = adj0*((coords[k1][0] - coords[k1 - 1][0]) + d10_x);
-			dd0_y = adj0*((coords[k1][1] - coords[k1 - 1][1]) + d10_y);
-			dd0_z = adj0*((coords[k1][2] - coords[k1 - 1][2]) + d10_z);
-	  }//else
+    //---- Calculating TCB-values...
+    if (k1 == 0) {
+      dd0_x = d10_x;
+      dd0_y = d10_y;
+      dd0_z = d10_z;
+    }//if
+    else {
+      dd0_x = adj0*((coords[k1][0] - coords[k1 - 1][0]) + d10_x);
+      dd0_y = adj0*((coords[k1][1] - coords[k1 - 1][1]) + d10_y);
+      dd0_z = adj0*((coords[k1][2] - coords[k1 - 1][2]) + d10_z);
+    }//else
 
-		if (k2 == (numControlpoints - 1)) {
-			ds1_x = d10_x;
-			ds1_y = d10_y;
-			ds1_z = d10_z;
-		}//if
-		else {
-			ds1_x = adj1*((coords[k2 + 1][0] - coords[k2][0]) + d10_x);
-			ds1_y = adj1*((coords[k2 + 1][1] - coords[k2][1]) + d10_y);
-			ds1_z = adj1*((coords[k2 + 1][2] - coords[k2][2]) + d10_z);
-		}//else
+    if (k2 == (numControlpoints - 1)) {
+      ds1_x = d10_x;
+      ds1_y = d10_y;
+      ds1_z = d10_z;
+    }//if
+    else {
+      ds1_x = adj1*((coords[k2 + 1][0] - coords[k2][0]) + d10_x);
+      ds1_y = adj1*((coords[k2 + 1][1] - coords[k2][1]) + d10_y);
+      ds1_z = adj1*((coords[k2 + 1][2] - coords[k2][2]) + d10_z);
+    }//else
 
-		x = coords[k1][0]*h1 + coords[k2][0]*h2 + dd0_x*h3 + ds1_x*h4;
-		y = coords[k1][1]*h1 + coords[k2][1]*h2 + dd0_y*h3 + ds1_y*h4;
-		z = coords[k1][2]*h1 + coords[k2][2]*h2 + dd0_z*h3 + ds1_z*h4;
-	}//if
-	else {
-		x = coords[0][0];
-		y = coords[0][1];
-		z = coords[0][2];
-	}//else if only one controlpoint...
+    x = coords[k1][0]*h1 + coords[k2][0]*h2 + dd0_x*h3 + ds1_x*h4;
+    y = coords[k1][1]*h1 + coords[k2][1]*h2 + dd0_y*h3 + ds1_y*h4;
+    z = coords[k1][2]*h1 + coords[k2][2]*h2 + dd0_z*h3 + ds1_z*h4;
+  }//if
+  else {
+    x = coords[0][0];
+    y = coords[0][1];
+    z = coords[0][2];
+  }//else if only one controlpoint...
 
 }//TCB
 
@@ -508,79 +512,79 @@ SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &t
 {
   if (vec.getNum() == 0) return;
 
-	int k1, k2;
-	int c1, c2;
-	float h1, h2, h3, h4;
-	float t, t2, t3;
+  int k1, k2;
+  int c1, c2;
+  float h1, h2, h3, h4;
+  float t, t2, t3;
 
-	float adj0, adj1;
-	float d10_x, d10_y, d10_z;
-	float dd0_x, dd0_y, dd0_z;
-	float ds1_x, ds1_y, ds1_z;
+  float adj0, adj1;
+  float d10_x, d10_y, d10_z;
+  float dd0_x, dd0_y, dd0_z;
+  float ds1_x, ds1_y, ds1_z;
 
-//---- Find object's position and angles...
+  //---- Find object's position and angles...
   if ( vec.getNum() > 1 ) {
 
-	//---- Find segment...
-		k2 = 0;
-		c1 = vec.getNum() - 1;
-		for (c2 = 0; c2 < c1; c2++)
-			if (timestamp[c2] <= time) k2++;
-		k1 = k2 - 1;
+    //---- Find segment...
+    k2 = 0;
+    c1 = vec.getNum() - 1;
+    for (c2 = 0; c2 < c1; c2++)
+      if (timestamp[c2] <= time) k2++;
+    k1 = k2 - 1;
 
-	//---- Calculating t = (T - T0)/(T1 - T0)
-		t = (time - timestamp[k1])/(timestamp[k2] - timestamp[k1]);
+    //---- Calculating t = (T - T0)/(T1 - T0)
+    t = (time - timestamp[k1])/(timestamp[k2] - timestamp[k1]);
 
-		d10_x = vec[k2][0] - vec[k1][0];
+    d10_x = vec[k2][0] - vec[k1][0];
     d10_y = vec[k2][1] - vec[k1][1];
-		d10_z = vec[k2][2] - vec[k1][2];
+    d10_z = vec[k2][2] - vec[k1][2];
 
-		t2 = t*t;
-		t3 = t2*t;
+    t2 = t*t;
+    t3 = t2*t;
 
-	//---- Calculating some magic stuff...
-		h1 = 1.0 - (3*t2 - 2*t3);
-		h2 = 3*t2 - 2*t3;
-		h3 = t3 - 2*t2 + t;
-		h4 = t3 - t2;
+    //---- Calculating some magic stuff...
+    h1 = 1.0 - (3*t2 - 2*t3);
+    h2 = 3*t2 - 2*t3;
+    h3 = t3 - 2*t2 + t;
+    h4 = t3 - t2;
 
-		if (k1 != 0) 
+    if (k1 != 0) 
       adj0 = (timestamp[k2] - timestamp[k1])/(timestamp[k2] - timestamp[k1 - 1]);
-		if (k2 != (vec.getNum() - 1)) 
+    if (k2 != (vec.getNum() - 1)) 
       adj1 = (timestamp[k2] - timestamp[k1])/(timestamp[k2+1] - timestamp[k1]);
 
-	//---- Calculating TCB-values...
-		if (k1 == 0) {
-			dd0_x = d10_x;
-			dd0_y = d10_y;
-			dd0_z = d10_z;
-		}//if
-		else {
-			dd0_x = adj0*((vec[k1][0] - vec[k1 - 1][0]) + d10_x);
-			dd0_y = adj0*((vec[k1][1] - vec[k1 - 1][1]) + d10_y);
-			dd0_z = adj0*((vec[k1][2] - vec[k1 - 1][2]) + d10_z);
-	  }//else
+    //---- Calculating TCB-values...
+    if (k1 == 0) {
+      dd0_x = d10_x;
+      dd0_y = d10_y;
+      dd0_z = d10_z;
+    }//if
+    else {
+      dd0_x = adj0*((vec[k1][0] - vec[k1 - 1][0]) + d10_x);
+      dd0_y = adj0*((vec[k1][1] - vec[k1 - 1][1]) + d10_y);
+      dd0_z = adj0*((vec[k1][2] - vec[k1 - 1][2]) + d10_z);
+    }//else
 
-		if (k2 == (vec.getNum() - 1)) {
-			ds1_x = d10_x;
-			ds1_y = d10_y;
-			ds1_z = d10_z;
-		}//if
-		else {
-			ds1_x = adj1*((vec[k2 + 1][0] - vec[k2][0]) + d10_x);
-			ds1_y = adj1*((vec[k2 + 1][1] - vec[k2][1]) + d10_y);
-			ds1_z = adj1*((vec[k2 + 1][2] - vec[k2][2]) + d10_z);
-		}//else
+    if (k2 == (vec.getNum() - 1)) {
+      ds1_x = d10_x;
+      ds1_y = d10_y;
+      ds1_z = d10_z;
+    }//if
+    else {
+      ds1_x = adj1*((vec[k2 + 1][0] - vec[k2][0]) + d10_x);
+      ds1_y = adj1*((vec[k2 + 1][1] - vec[k2][1]) + d10_y);
+      ds1_z = adj1*((vec[k2 + 1][2] - vec[k2][2]) + d10_z);
+    }//else
 
-		res[0] = vec[k1][0]*h1 + vec[k2][0]*h2 + dd0_x*h3 + ds1_x*h4;
-		res[1] = vec[k1][1]*h1 + vec[k2][1]*h2 + dd0_y*h3 + ds1_y*h4;
-		res[2] = vec[k1][2]*h1 + vec[k2][2]*h2 + dd0_z*h3 + ds1_z*h4;
-	}//if
-	else {
-		res[0] = vec[0][0];
-		res[1] = vec[0][1];
-		res[2] = vec[0][2];
-	}//else if only one controlpoint...
+    res[0] = vec[k1][0]*h1 + vec[k2][0]*h2 + dd0_x*h3 + ds1_x*h4;
+    res[1] = vec[k1][1]*h1 + vec[k2][1]*h2 + dd0_y*h3 + ds1_y*h4;
+    res[2] = vec[k1][2]*h1 + vec[k2][2]*h2 + dd0_z*h3 + ds1_z*h4;
+  }//if
+  else {
+    res[0] = vec[0][0];
+    res[1] = vec[0][1];
+    res[2] = vec[0][2];
+  }//else if only one controlpoint...
 
 }//TCB
 

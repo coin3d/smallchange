@@ -77,8 +77,13 @@
 #include <Inventor/details/SoTextDetail.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
 
-// FIXME: need to include gl.h in a system-independent way. 20020612 mortene.
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
+#if HAVE_WINDOWS_H
 #include <windows.h>
+#endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
 
 /*!
@@ -188,7 +193,11 @@ SoText2Set::GLRender(SoGLRenderAction *action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
+#if COIN_MAJOR_VERSION >= 2
+  SoGLLightModelElement::forceSend(state, SoLightModelElement::BASE_COLOR);
+#else // COIN_MAJOR_VERSION >= 2
   SoGLLightModelElement::getInstance(state)->forceSend(SoLightModelElement::BASE_COLOR);
+#endif // COIN_MAJOR_VERSION < 2
   const SbMatrix & mat = SoModelMatrixElement::get(state);
 
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
@@ -225,19 +234,19 @@ SoText2Set::GLRender(SoGLRenderAction *action)
 
     switch (this->justification.getValue()) {
 
-        case SoText2Set::LEFT:
-              xpos = (int)nilpoint[0];
-              break;
+    case SoText2Set::LEFT:
+      xpos = (int)nilpoint[0];
+      break;
 
 
-        case SoText2Set::RIGHT:
-              xpos = (int)nilpoint[0] - (width*8);
-              break;
+    case SoText2Set::RIGHT:
+      xpos = (int)nilpoint[0] - (width*8);
+      break;
 
 
-        case SoText2Set::CENTER:
-              xpos = (int)nilpoint[0] - (width*8)/2;
-              break;
+    case SoText2Set::CENTER:
+      xpos = (int)nilpoint[0] - (width*8)/2;
+      break;
     }//switch
 
     xpos += displacement.getValue()[0];
@@ -320,20 +329,20 @@ SoText2Set::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
     n3 = SbVec2f(screenpoint[0]-halfw, screenpoint[1] + fontsize[1]);
 
     switch (justification.getValue()) {
-      case SoText2Set::LEFT:
-        n0[0] += halfw;
-        n1[0] += halfw;
-        n2[0] += halfw;
-        n3[0] += halfw;
-        break;
-      case SoText2Set::RIGHT:
-        n0[0] -= halfw;
-        n1[0] -= halfw;
-        n2[0] -= halfw;
-        n3[0] -= halfw;
-        break;
-      case SoText2Set::CENTER:
-        break;
+    case SoText2Set::LEFT:
+      n0[0] += halfw;
+      n1[0] += halfw;
+      n2[0] += halfw;
+      n3[0] += halfw;
+      break;
+    case SoText2Set::RIGHT:
+      n0[0] -= halfw;
+      n1[0] -= halfw;
+      n2[0] -= halfw;
+      n3[0] -= halfw;
+      break;
+    case SoText2Set::CENTER:
+      break;
     }//switch
 
     // get distance from nilpoint to camera plane
@@ -420,20 +429,20 @@ SoText2Set::rayPick(SoRayPickAction * action)
     n3 = SbVec2f(screenpoint[0]-halfw, screenpoint[1] + fontsize[1]);
 
     switch (justification.getValue()) {
-      case SoText2Set::LEFT:
-        n0[0] += halfw;
-        n1[0] += halfw;
-        n2[0] += halfw;
-        n3[0] += halfw;
-        break;
-      case SoText2Set::RIGHT:
-        n0[0] -= halfw;
-        n1[0] -= halfw;
-        n2[0] -= halfw;
-        n3[0] -= halfw;
-        break;
-      case SoText2Set::CENTER:
-        break;
+    case SoText2Set::LEFT:
+      n0[0] += halfw;
+      n1[0] += halfw;
+      n2[0] += halfw;
+      n3[0] += halfw;
+      break;
+    case SoText2Set::RIGHT:
+      n0[0] -= halfw;
+      n1[0] -= halfw;
+      n2[0] -= halfw;
+      n3[0] -= halfw;
+      break;
+    case SoText2Set::CENTER:
+      break;
     }//switch
 
     // get distance from nilpoint to camera plane
@@ -521,3 +530,6 @@ SoText2Set::rayPick(SoRayPickAction * action)
 
 
 }//rayPick
+
+
+
