@@ -65,11 +65,54 @@
 #include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/SoPickedPoint.h>
+#include <Inventor/sensors/SoOneShotSensor.h>
+#include <Inventor/elements/SoViewportRegionElement.h>
 
 // *************************************************************************
 
+
+
+
+
 static int (*schemescriptcb)(const char *);
 static void (*schemefilecb)(const char *);
+
+
+class pc_sensordata {
+public:
+  PickCallback * nodeptr;
+  SoPath * path;
+  SbVec2s eventpos;
+  SbViewportRegion viewport;
+  SbBool mousepress;
+  int buttonnum;
+  SoPickedPoint * pickedpoint;
+
+  static void sensorCB(void * userdata, SoSensor * sensor) {
+    pc_sensordata * thisp = (pc_sensordata*) userdata;
+    thisp->nodeptr->current = thisp;
+
+//     fprintf(stderr,"callback: %d %d (%d %d)\n",
+//             thisp->mousepress, thisp->buttonnum, thisp->eventpos[0], thisp->eventpos[1]);
+
+
+    SbString schemeFile = thisp->nodeptr->schemeFile.getValue();
+    SbString schemeScript = thisp->nodeptr->schemeScript.getValue();
+    
+    thisp->nodeptr->cblist.invokeCallbacks(thisp->path);
+    if (schemeFile.getLength() > 0 && schemefilecb) 
+      schemefilecb(schemeFile.getString());
+    if (schemeScript.getLength() > 0 && schemescriptcb)
+      schemescriptcb(schemeScript.getString());
+    thisp->nodeptr->trigger.setValue();
+    
+    delete thisp->pickedpoint;
+    thisp->nodeptr->current = NULL;
+    delete sensor;
+    thisp->path->unref();
+    delete thisp;
+  }
+};
 
 SO_NODE_SOURCE(PickCallback);
 
@@ -91,10 +134,11 @@ PickCallback::PickCallback()
   SO_NODE_ADD_FIELD(trigger, ());
   SO_NODE_ADD_FIELD(objectSpacePickedPoint, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(worldSpacePickedPoint, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(delayTrigger, (TRUE));
   
   this->pickedpoint = NULL;
   this->buttonnum = 0;
-  this->curraction = NULL;
+  this->current = NULL;
 }
 
 
@@ -121,15 +165,12 @@ PickCallback::initClass(void)
 void
 PickCallback::handleEvent(SoHandleEventAction * action)
 {
-  this->curraction = action;
-
   if (!this->pickable.getValue()) {
     inherited::handleEvent(action);
     return;
   }
 
   const SoEvent *event = action->getEvent();
-  this->event = event;
 
   SbBool haltaction = FALSE;
 
@@ -169,25 +210,27 @@ PickCallback::handleEvent(SoHandleEventAction * action)
 const SoPickedPoint * 
 PickCallback::getCurrentPickedPoint(void) const
 {
+  if (this->current) {
+    return this->current->pickedpoint;
+  }
   return this->pickedpoint;
 }
-
-const SoEvent * 
-PickCallback::getCurrentEvent(void) const
-{
-  return this->event;
-}
-
 
 SbBool 
 PickCallback::isButton1(void) const
 {
+  if (this->current) {
+    return this->current->buttonnum == 1;
+  }
   return this->buttonnum == 1;
 }
 
 SbBool 
 PickCallback::isButton2(void) const
 {
+  if (this->current) {
+    return this->current->buttonnum == 2;
+  }
   return this->buttonnum == 2;
 }
 
@@ -223,32 +266,74 @@ PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
     if (path->containsPath(action->getCurPath())) {
       this->objectSpacePickedPoint = pp->getObjectPoint();
       this->worldSpacePickedPoint = pp->getPoint();
-      this->pickedpoint = pp;
       this->mousepress = mousepress;
-      this->cblist.invokeCallbacks(path);
-      if (schemeFile.getLength() > 0 && schemefilecb) 
-	schemefilecb(schemeFile.getString());
-      if (schemeScript.getLength() > 0 && schemescriptcb)
-        schemescriptcb(schemeScript.getString());
-      this->trigger.setValue();
-      this->pickedpoint = NULL;
-      return TRUE;
+      this->eventpos = action->getEvent()->getPosition();
+      this->viewport = SoViewportRegionElement::get(action->getState());
+      
+      if (this->delayTrigger.getValue()) {
+                
+        pc_sensordata * data = new pc_sensordata;
+        data->path = path->copy();
+        data->path->ref();
+        data->nodeptr = this;
+        data->eventpos = this->eventpos;
+        data->viewport = this->viewport;
+        data->mousepress = this->mousepress;
+        data->buttonnum = this->buttonnum;
+        data->pickedpoint = new SoPickedPoint(*pp);
+        SoOneShotSensor * sensor = new SoOneShotSensor(pc_sensordata::sensorCB, data);
+
+//         fprintf(stderr,"schedule: %d %d (%d %d)\n",
+//                 data->mousepress, data->buttonnum, data->eventpos[0], data->eventpos[1]);
+
+        sensor->setPriority(mousepress ? 999 : 1000);
+        sensor->schedule();
+        return TRUE;
+      }
+      else {
+        this->pickedpoint = new SoPickedPoint(*pp);
+        this->cblist.invokeCallbacks(path);
+        if (schemeFile.getLength() > 0 && schemefilecb) 
+          schemefilecb(schemeFile.getString());
+        if (schemeScript.getLength() > 0 && schemescriptcb)
+          schemescriptcb(schemeScript.getString());
+        this->trigger.setValue();
+        delete this->pickedpoint;
+        this->pickedpoint = NULL;
+        return TRUE;
+      }
     }
   }
   return FALSE;
 }
 
-SoHandleEventAction * 
-PickCallback::getCurrentAction(void) const
-{
-  return this->curraction;
-}
-
 SbBool 
 PickCallback::currentIsMouseDown(void) const
 {
-  return this->event && SO_MOUSE_PRESS_EVENT(this->event, ANY);
+  if (this->current) {
+    return this->current->mousepress;
+  }
+  return this->mousepress;
 }
+
+SbVec2s 
+PickCallback::getEventPosition(void) const
+{
+  if (this->current) {
+    return this->current->eventpos;
+  }
+  return this->eventpos;
+}
+
+const SbViewportRegion & 
+PickCallback::getEventViewportRegion(void) const
+{
+  if (this->current) {
+    return this->current->viewport;
+  }
+  return this->viewport;
+}
+
 
 void 
 PickCallback::setSchemeEvalFunctions(int (*scriptcb)(const char *),

@@ -31,6 +31,8 @@
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/lists/SoCallbackList.h>
+#include <Inventor/SbVec2s.h>
+#include <Inventor/SbViewportRegion.h>
 
 #include <SmallChange/basic.h>
 
@@ -47,7 +49,7 @@ class SMALLCHANGE_DLL_API PickCallback : public SoGroup {
 public:
   static void initClass(void);
   PickCallback(void);
-  
+
   SoSFBool pickable;
   SoSFTrigger trigger;
   SoSFBool onMousePress;
@@ -60,11 +62,10 @@ public:
 
   SoSFVec3f objectSpacePickedPoint;
   SoSFVec3f worldSpacePickedPoint;
+
+  SoSFBool delayTrigger;
   
   const SoPickedPoint * getCurrentPickedPoint(void) const;
-  const SoEvent * getCurrentEvent(void) const;
-  SoHandleEventAction * getCurrentAction(void) const;
-  SbBool currentIsMouseDown(void) const;
   SbBool isButton1(void) const;
   SbBool isButton2(void) const;
   
@@ -74,18 +75,28 @@ public:
   void addCallback(void (*callback)(void *, SoPath *), void * userdata);
   void removeCallback(void (*callback)(void *, SoPath *), void * userdata);
   
+  SbVec2s getEventPosition(void) const;
+  SbBool currentIsMouseDown(void) const;
+  const SbViewportRegion & getEventViewportRegion(void) const;
+
+  // obsoleted
+  // const SoEvent * getCurrentEvent(void) const;
+  // SoHandleEventAction * getCurrentAction(void) const;
+
 protected:
   virtual ~PickCallback();
   virtual void handleEvent(SoHandleEventAction * action);
 
 private:
+  friend class pc_sensordata;
   SbBool testPick(SoHandleEventAction * action, const SbBool mousepress);
   SoCallbackList cblist;
   const SoPickedPoint * pickedpoint;
-  const SoEvent * event;
-  SoHandleEventAction * curraction;
   SbBool mousepress;
   int buttonnum;
+  SbViewportRegion viewport;
+  SbVec2s eventpos;
+  pc_sensordata * current;
 };
 
 #endif // !PICKCALLBACK_H
