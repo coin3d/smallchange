@@ -19419,6 +19419,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
 
+CPPFLAGS="$CPPFLAGS -DSMALLCHANGE_INTERNAL"
+
 case $enable_static in
 yes | true)  SMALLCHANGE_STATIC=true;;
 *)           SMALLCHANGE_STATIC=false;;
