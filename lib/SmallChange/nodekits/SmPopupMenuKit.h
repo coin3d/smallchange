@@ -39,7 +39,7 @@ class SmPopupMenuKitP;
 class SoSensor;
 class SoPickedPoint;
 class SbViewportRegion;
-class SbVec3f;
+class SbVec2f;
 
 class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -91,7 +91,7 @@ protected:
 public:
   
   void setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & vp);
-  void setNormalizedPoint(const SbVec3f & npt);
+  void setNormalizedPosition(const SbVec2f & npt);
 
   void setViewportRegion(const SbViewportRegion & vp);
 

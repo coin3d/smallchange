@@ -101,7 +101,7 @@ class SmOpenSubData {
 public:
   SmPopupMenuKit * kit;
   SmPopupMenuKit * sub;
-  SbVec3f np;
+  SbVec2f np;
 };
 
 class SmPopupMenuKitP {
@@ -389,7 +389,7 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
       if (sub) {
         this->isActive = FALSE;
         activeitem = -1;
-        SbVec3f np(0.0f, 0.0f, 0.0f);
+        SbVec2f np;
         
         np[0] = event->getPosition()[0] / float (PRIVATE(this)->vp.getViewportSizePixels()[0]);
         np[1] = event->getPosition()[1] / float (PRIVATE(this)->vp.getViewportSizePixels()[1]);
@@ -509,7 +509,7 @@ SmPopupMenuKit::setViewportRegion(const SbViewportRegion & vp)
 }
 
 void
-SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
+SmPopupMenuKit::setNormalizedPosition(const SbVec2f & npt)
 {
   PRIVATE(this)->flipupdown = FALSE;
   PRIVATE(this)->flipleftright = FALSE;
@@ -518,7 +518,7 @@ SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
 
   do {  
     SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
-    t->translation = npt;
+    t->translation = SbVec3f(npt[0], npt[1], 0.0f);
     
     this->updateBackground();
     
@@ -538,7 +538,7 @@ SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
     
     j[0] += fof[0];
     j[1] += fof[1];
-    t->translation = npt + j;    
+    t->translation = SbVec3f(npt[0], npt[1], 0.0f) + j;    
     this->updateBackground();  
     
     // check if parts of the menu is outside the window
@@ -687,7 +687,7 @@ SmPopupMenuKit::opensub_cb(void * closure, SoSensor * s)
 
   //  fprintf(stderr,"open sub: %p %p\n", thisp, sub);
   
-  sub->setNormalizedPoint(data->np);
+  sub->setNormalizedPosition(data->np);
   sub->setParent(thisp);
   sub->visible = TRUE;
   sub->isActive = TRUE;

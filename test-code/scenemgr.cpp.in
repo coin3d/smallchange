@@ -112,12 +112,9 @@ mbevent_cb(void * userdata, SoEventCallback * node)
   if (SO_MOUSE_RELEASE_EVENT(e, BUTTON2)) {
     SmPopupMenuKit * kit = (SmPopupMenuKit*) userdata;
     if (!kit->visible.getValue()) {
-      SbVec3f np(0.0f, 0.0f, 0.0f);
-      np[0] = e->getNormalizedPosition(a->getViewportRegion())[0];
-      np[1] = e->getNormalizedPosition(a->getViewportRegion())[1];
       kit->visible = TRUE;
       kit->isActive = TRUE;
-      kit->setNormalizedPoint(np);
+      kit->setNormalizedPosition(e->getNormalizedPosition(a->getViewportRegion()));
     }
   }
 }
