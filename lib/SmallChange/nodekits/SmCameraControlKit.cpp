@@ -62,7 +62,6 @@ public:
   static void camera_update(void * closure, SoSensor * sensor);
   static void autoclip_update(void * closure, SoSensor * sensor);
   
-  SmEventHandler * eventhandler;
   SbBool viewing;
   SoSearchAction * searchaction;
   SoGetMatrixAction * matrixaction;
@@ -92,17 +91,11 @@ SmCameraControlKit::SmCameraControlKit(void)
   SO_KIT_CONSTRUCTOR(SmCameraControlKit);
 
   SO_KIT_ADD_FIELD(headlight, (TRUE));
-  SO_KIT_ADD_FIELD(type, (EXAMINER));
   SO_KIT_ADD_FIELD(autoClipping, (TRUE));
   SO_KIT_ADD_FIELD(autoClippingStrategy,(VARIABLE_NEAR_PLANE));
   SO_KIT_ADD_FIELD(autoClippingValue, (0.6f));
   SO_KIT_ADD_FIELD(viewing, (TRUE));
-
-  SO_KIT_DEFINE_ENUM_VALUE(Type, EXAMINER);
-  SO_KIT_DEFINE_ENUM_VALUE(Type, HELICOPTER);
-  SO_KIT_DEFINE_ENUM_VALUE(Type, PLANE);
-  SO_KIT_DEFINE_ENUM_VALUE(Type, SPHERE);
-  SO_KIT_SET_SF_ENUM_TYPE(type, Type);
+  SO_KIT_ADD_FIELD(eventHandler, (NULL));
 
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, VARIABLE_NEAR_PLANE);
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, CONSTANT_NEAR_PLANE);
@@ -117,7 +110,8 @@ SmCameraControlKit::SmCameraControlKit(void)
 
   SO_KIT_INIT_INSTANCE();
 
-  PRIVATE(this)->eventhandler = new SmExaminerEventHandler(this);
+  this->eventHandler = new SmExaminerEventHandler;
+  this->eventHandler.setDefault(TRUE);
   
   SoSwitch * sw = (SoSwitch*) this->getAnyPart("headlightSwitch", TRUE);
   sw->whichChild.connectFrom(&this->headlight);
@@ -135,7 +129,6 @@ SmCameraControlKit::~SmCameraControlKit(void)
   delete PRIVATE(this)->matrixaction;
   delete PRIVATE(this)->cameraupdatesensor;
   delete PRIVATE(this)->autoclippingsensor;
-  delete PRIVATE(this)->eventhandler;
   delete PRIVATE(this);
 }
 
@@ -154,25 +147,17 @@ void
 SmCameraControlKit::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
-  if (PRIVATE(this)->eventhandler) {
-    PRIVATE(this)->eventhandler->setViewportRegion(SoViewportRegionElement::get(state));
-  }
+  SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
+  if (eh) eh->setViewportRegion(SoViewportRegionElement::get(state));
   inherited::GLRender(action);
 }
 
 void 
 SmCameraControlKit::handleEvent(SoHandleEventAction * action)
 {
-  SoState * state = action->getState();
-
-  if (PRIVATE(this)->eventhandler && this->viewing.getValue()) {
-    if (!PRIVATE(this)->eventhandler->handleEvent(action)) {
-      inherited::handleEvent(action);
-    }
-  }
-  else {
-    inherited::handleEvent(action);
-  }
+  SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
+  if (eh) eh->handleEvent(action);
+  inherited::handleEvent(action);
 }
 
 void 
@@ -185,6 +170,11 @@ SmCameraControlKit::notify(SoNotList * list)
   }
   else if (f == &this->scene) {
     PRIVATE(this)->autoclippingsensor->schedule();
+  }
+  else if (f == &this->eventHandler) {
+    // FIXME: ugly, get rid of this, pederb 2003-09-30
+    SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
+    if (eh) eh->setCameraControlKit(this);
   }
   inherited::notify(list);
 }
@@ -204,7 +194,10 @@ SmCameraControlKit::setClippingPlanes(void)
   // graph specified by the user.
   if (camera == NULL) return;
 
-  const SbViewportRegion & vp = PRIVATE(this)->eventhandler->getViewportRegion();
+  // FIXME: ugly, pederb, 2003-09-30
+  SbViewportRegion vp(100,100);
+  SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();  
+  if (eh) vp = eh->getViewportRegion();
   
   SoNode * sceneroot = this->getPart("scene", TRUE);
   

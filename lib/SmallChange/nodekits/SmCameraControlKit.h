@@ -54,13 +54,6 @@ public:
   virtual void GLRender(SoGLRenderAction * action);
   virtual void handleEvent(SoHandleEventAction * action);
 
-  enum Type {
-    EXAMINER,
-    HELICOPTER,
-    PLANE,
-    SPHERE
-  };
-
   enum AutoClippingStrategy {
     VARIABLE_NEAR_PLANE,
     CONSTANT_NEAR_PLANE
@@ -73,11 +66,11 @@ protected:
   
 public:
   SoSFBool headlight;
-  SoSFEnum type;
   SoSFBool autoClipping;
   SoSFEnum autoClippingStrategy;
   SoSFFloat autoClippingValue;
   SoSFBool viewing;
+  SoSFNode eventHandler;
 
 private:
   void setClippingPlanes(void);
