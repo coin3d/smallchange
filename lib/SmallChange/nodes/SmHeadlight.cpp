@@ -35,6 +35,7 @@
 #include <Inventor/SbColor4f.h>
 #include <Inventor/SbVec4f.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/elements/SoEnvironmentElement.h>
 #include <Inventor/elements/SoGLLightIdElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
@@ -83,6 +84,25 @@ SmHeadlight::initClass(void)
     initialized = 1;
     SO_NODE_INIT_CLASS(SmHeadlight, SoLight, "Light");
   }
+}
+
+void
+SmHeadlight::callback(SoCallbackAction * action)
+{
+  if (!this->on.getValue()) return;
+
+  SoState * state = action->getState();
+
+  SbVec3f dir = - SoViewVolumeElement::get(state).getProjectionDirection();
+
+  // update internal light and pass it to SoLightElement
+  this->dummy->intensity = this->intensity.getValue();
+  this->dummy->color = this->color.getValue();
+  this->dummy->direction = -dir;
+
+  SoLightElement::add(state, dummy, SoModelMatrixElement::get(state) * 
+                      SoViewingMatrixElement::get(state));
+
 }
 
 // Doc from superclass.

@@ -38,6 +38,7 @@ public:
   SmHeadlight(void);
 
   virtual void GLRender(SoGLRenderAction * action);
+  virtual void callback(SoCallbackAction * action);
 
 protected:
   virtual ~SmHeadlight();
