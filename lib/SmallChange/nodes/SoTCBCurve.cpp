@@ -162,7 +162,7 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
     SbVec3f vec;
 
     for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-      TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
+      SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
       glVertex3f(vec[0], vec[1], vec[2]);
 
       time += timestep;
@@ -220,7 +220,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
       SbVec3f vec;
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-        TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
+        SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
         point.setValue(vec[0], vec[1], vec[2]);
 
         pv.setPoint(point);
@@ -275,7 +275,7 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
       SbVec3f vec;
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-        TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
+        SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
         glVertex3f(vec[0], vec[1], vec[2]);
 
         if (vec[0] < minx) minx = vec[0];
@@ -316,123 +316,9 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   may be used for general curvecalculations.
 */
 void
-SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpoints, float time, float &x, float &y, float &z)
-{
-  if (numControlpoints == 0) return;
-
-  if (time < tStamps[0]) time = tStamps[0];
-  if (time > tStamps[numControlpoints - 1]) time = tStamps[numControlpoints - 1];
-
-  int k1, k2;
-  int c1, c2;
-  float h1, h2, h3, h4;
-  float t, t2, t3;
-
-  float d10_x, d10_y, d10_z;
-  float dd0_x, dd0_y, dd0_z;
-  float ds1_x, ds1_y, ds1_z;
-
-  //---- Find object's position and angles...
-  if ( numControlpoints > 1 ) {
-
-    //---- Find segment...
-    k2 = 0;
-    c1 = numControlpoints - 1;
-    for (c2 = 0; c2 < c1; c2++)
-      if (tStamps[c2] <= time) k2++;
-    k1 = k2 - 1;
-
-    //---- Calculating t = (T - T0)/(T1 - T0)
-    t = (float)(time - (float)tStamps[k1])/(tStamps[k2] - tStamps[k1]);
-
-    d10_x = coords[k2][0] - coords[k1][0];
-    d10_y = coords[k2][1] - coords[k1][1];
-    d10_z = coords[k2][2] - coords[k1][2];
-
-    t2 = t*t;
-    t3 = t2*t;
-
-    //---- Calculating some magic stuff...
-    h1 = 1.0 - (3*t2 - 2*t3);
-    h2 = 3*t2 - 2*t3;
-    h3 = t3 - 2*t2 + t;
-    h4 = t3 - t2;
-
-    //---- Calculating TCB-values...
-    if (k1 == 0) {
-      dd0_x = d10_x;
-      dd0_y = d10_y;
-      dd0_z = d10_z;
-    }
-    else {
-      float adj0 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2] - tStamps[k1 - 1]);
-
-      dd0_x = adj0*((coords[k1][0] - coords[k1 - 1][0]) + d10_x);
-      dd0_y = adj0*((coords[k1][1] - coords[k1 - 1][1]) + d10_y);
-      dd0_z = adj0*((coords[k1][2] - coords[k1 - 1][2]) + d10_z);
-    }
-
-    if (k2 == (numControlpoints - 1)) {
-      ds1_x = d10_x;
-      ds1_y = d10_y;
-      ds1_z = d10_z;
-    }
-    else {
-      float adj1 = (float)(tStamps[k2] - tStamps[k1])/(tStamps[k2+1] - tStamps[k1]);
-
-      ds1_x = adj1*((coords[k2 + 1][0] - coords[k2][0]) + d10_x);
-      ds1_y = adj1*((coords[k2 + 1][1] - coords[k2][1]) + d10_y);
-      ds1_z = adj1*((coords[k2 + 1][2] - coords[k2][2]) + d10_z);
-    }
-
-    x = coords[k1][0]*h1 + coords[k2][0]*h2 + dd0_x*h3 + ds1_x*h4;
-    y = coords[k1][1]*h1 + coords[k2][1]*h2 + dd0_y*h3 + ds1_y*h4;
-    z = coords[k1][2]*h1 + coords[k2][2]*h2 + dd0_z*h3 + ds1_z*h4;
-  }
-  else {
-    x = coords[0][0];
-    y = coords[0][1];
-    z = coords[0][2];
-  }
-
-}
-
-/*!
-  Static function to interpolate values along a curve.
-
-  This function is based on the Lightwave SDK (ftp.newtek.com) and
-  calculates a TCB-type curve. Code for handling
-  continuity/tension/bias is removed (values = 1).  Quit ironic as
-  this is how the curve got it's name. :) The timestamp-table must be
-  sorted in increasing order. Timevalues specified outside the range
-  of timestamps will be clipped to the nearest value.
-
-  This function is totally independent of the rest of the class, and
-  may be used for general curvecalculations.
-*/
-void
-SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &time, SbVec3f &res)
-{
-  TCB(vec.getValues(0), timestamp, vec.getNum(), time, res);
-}
-
-/*!
-  Static function to interpolate values along a curve.
-
-  This function is based on the Lightwave SDK (ftp.newtek.com) and
-  calculates a TCB-type curve. Code for handling
-  continuity/tension/bias is removed (values = 1).  Quit ironic as
-  this is how the curve got it's name. :) The timestamp-table must be
-  sorted in increasing order. Timevalues specified outside the range
-  of timestamps will be clipped to the nearest value.
-
-  This function is totally independent of the rest of the class, and
-  may be used for general curvecalculations.
-*/
-void
 SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpoints, const SbTime &time, SbVec3f &res)
 {
-  if (numControlpoints == 0) return;
+  assert(numControlpoints > 0);
 
   int k1, k2;
   int c1, c2;

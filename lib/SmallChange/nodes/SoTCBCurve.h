@@ -45,13 +45,6 @@ public:
 
   int getLinesPerSegment(void);
 
-  static void TCB(const float coords[][3], const float tStamps[],
-                  int numControlPoints, float time,
-                  float &x, float &y, float &z);
-
-  static void TCB(const SoMFVec3f &vec, const SoMFTime &timestamp,
-                  const SbTime &time, SbVec3f &res);
-
   static void TCB(const SbVec3f * vec, const SoMFTime &timestamp,
                   int numControlpoints, const SbTime &time, SbVec3f &res);
 
