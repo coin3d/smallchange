@@ -41,9 +41,10 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
 
 # **************************************************************************
 
-install-exec-local:
+if BUILD_WITH_MSVC
+install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
-	for ext in dll pdb; do \
+	for ext in dll pdb lib; do \
 	  file="$$basename.$$ext"; \
 	  if test -s "$$file"; then \
 	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
@@ -51,6 +52,9 @@ install-exec-local:
 	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
 	  fi \
 	done
+else
+install-exec-local:
+endif
 
 install-data-local:
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
