@@ -90,7 +90,7 @@ sc_generate_elevation_line_texture(float distance,
                                    float thickness,
                                    int emphasis,
                                    uint8_t * buffer,
-                                   int buffersize,
+                                   int texturesize,
                                    float * texcoordscale,
                                    float * texcoordoffset)
 {
@@ -100,7 +100,7 @@ sc_generate_elevation_line_texture(float distance,
 
   int i;
   // clear texture to white first
-  for ( i = 0; i < buffersize; i++ ) {
+  for ( i = 0; i < texturesize; i++ ) {
     buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 255;
     buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 255;
     buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 255;
@@ -119,7 +119,7 @@ sc_generate_elevation_line_texture(float distance,
   float pixelpos = 0.0f;
   // set elevation lines to black
   int bolds = 0;
-  for ( i = 0; i < buffersize; i++ ) {
+  for ( i = 0; i < texturesize; i++ ) {
     float pixelpos = i * pixelsize;
     if ( (fabs(fmod(pixelpos, distance)) <= (thickness * 0.5f)) ||
          ((distance - fabs(fmod(pixelpos, distance))) < (thickness * 0.5f)) ) {

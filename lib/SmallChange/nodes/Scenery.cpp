@@ -264,6 +264,7 @@ public:
   SoGLImage * dummyimage;
   SoGLImage * elevationlinesimage;
   uint8_t * elevationlinesdata;
+  int elevationlinestexturesize;
 
   SbBool dotex;
   SbBool texisenabled;
@@ -549,6 +550,8 @@ SceneryP::commonConstructor(void)
   this->renderstate.etexscale = 0.0f;
   this->renderstate.etexoffset = 0.0f;
 
+  this->elevationlinestexturesize = 0;
+
   this->cbtexcb = SmScenery::colortexture_cb;
   this->cbtexclosure = PUBLIC(this);
 }
@@ -617,6 +620,16 @@ SmScenery::GLRender(SoGLRenderAction * action)
     this->renderSequence.enableNotify(TRUE);
   }
   // rendersequenceend
+
+  if ( PRIVATE(this)->elevationlinestexturesize == 0 ) {
+    GLint texturesize = 0;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texturesize);
+    // SoDebugError::postInfo("GLRender", "texture size: %d", texturesize);
+    PRIVATE(this)->elevationlinestexturesize = texturesize;
+    if ( this->elevationLines.getValue() != SmScenery::DISABLED ) {
+      PRIVATE(this)->elevationlinestexchange();
+    }
+  }
 
   if (PRIVATE(this)->firstGLRender) {
     // FIXME: this should not really be necessary, and should be
@@ -1176,10 +1189,13 @@ SceneryP::elevationlinestexchange(void)
     // this->elevationlinesimage->ref(); ???  unref() but no ref()?
     assert(this->elevationlinesimage);
   }
-  int buffersize = 2048; // FIXME:
+  if ( this->elevationlinestexturesize == 0 ) {
+    return;
+  }
+
   if ( this->elevationlinesdata == NULL ) {
     this->elevationlinesdata = (uint8_t *)
-      malloc(buffersize * SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
+      malloc(this->elevationlinestexturesize * SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
     assert(this->elevationlinesdata);
   }
 
@@ -1189,12 +1205,13 @@ SceneryP::elevationlinestexchange(void)
   int emphasis = PUBLIC(this)->elevationLineEmphasis.getValue();
 
   sc_generate_elevation_line_texture(dist, offset, thickness, emphasis,
-                                     this->elevationlinesdata, buffersize,
+                                     this->elevationlinesdata,
+                                     this->elevationlinestexturesize,
                                      &(this->renderstate.etexscale),
                                      &(this->renderstate.etexoffset));
 
   this->elevationlinesimage->setData(this->elevationlinesdata,
-      SbVec2s(1, buffersize), SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
+      SbVec2s(1, this->elevationlinestexturesize), SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
 }
 
 // *************************************************************************
