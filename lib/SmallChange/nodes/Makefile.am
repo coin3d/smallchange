@@ -28,7 +28,9 @@ libnodes_la_SOURCES = \
 	SoTCBCurve.cpp \
 	SoTCBCurve.h \
 	SoText2Set.cpp \
-	SoText2Set.h
+	SoText2Set.h \
+	SoPointCloud.cpp \
+	SoPointCloud.h
 
 nodes_lst_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
@@ -50,7 +52,9 @@ nodes_lst_SOURCES = \
 	SoTCBCurve.cpp \
 	SoTCBCurve.h \
 	SoText2Set.cpp \
-	SoText2Set.h
+	SoText2Set.h \
+	SoPointCloud.cpp \
+	SoPointCloud.h
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
@@ -64,7 +68,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h
+	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h
 	
 
 nodes.lst: $(nodes_lst_OBJECTS)
