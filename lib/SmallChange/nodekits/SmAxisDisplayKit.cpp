@@ -92,6 +92,7 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoDrawStyle.h>
+#include <Inventor/nodes/SoShapeHints.h>
 #include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoRotation.h>
@@ -155,7 +156,8 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(cameraCallback, SoCallback, FALSE, topSeparator, camera, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(camera, SoPerspectiveCamera, FALSE, topSeparator, viewportRegion, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(viewportRegion, ViewportRegion, FALSE, topSeparator, drawstyle, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, headlightNode, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, shapehints, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(shapehints, SoShapeHints, FALSE, topSeparator, headlightNode, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SmHeadlight, FALSE, topSeparator, axessep, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(axessep, SoSeparator, FALSE, topSeparator, "", FALSE);
 
@@ -172,6 +174,10 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
 
   SoDrawStyle *drawstyle = (SoDrawStyle *)this->getAnyPart("drawstyle", TRUE);
   drawstyle->lineWidth = 2;
+
+  SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapehints", TRUE);
+  sh->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
+  sh->shapeType = SoShapeHints::SOLID;
 
   SmHeadlight * hl = (SmHeadlight*) this->getAnyPart("headlightNode", TRUE);
   hl->on.connectFrom(&this->headlight);
