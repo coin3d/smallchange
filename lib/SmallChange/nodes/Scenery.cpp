@@ -698,10 +698,10 @@ SmScenery::GLRender(SoGLRenderAction * action)
     // just override defaults when probing - power-users can override later
     if ( !sc_found_multitexturing() ) {
       if ( this->elevationLines.getValue() ) {
-	// a better fix would be to have an internal flag on whether
-	// multitexturing was possible or not, and to combine both
-	// flags on whether to enable multitexturing 
-	this->elevationLines.setValue(FALSE);
+        // a better fix would be to have an internal flag on whether
+        // multitexturing was possible or not, and to combine both
+        // flags on whether to enable multitexturing 
+        this->elevationLines.setValue(FALSE);
       }
     }
     if ( !sc_found_vertexarrays() ) {
@@ -746,11 +746,32 @@ SmScenery::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->curraction = action;
   PRIVATE(this)->currstate = state;
 
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
+  const SbMatrix & mm = SoModelMatrixElement::get(state);
+  SbMatrix imm = mm.inverse();
+
+  SbPlane sbplanes[6];
+  vv.getViewVolumePlanes(sbplanes);
+  float * planes = (float *) malloc(sizeof(float)*6*4);
+  assert(planes);
+  int i;
+  for ( i = 0; i < 6; i++ ) {
+    sbplanes[i].transform(imm);
+    SbVec3f normal = sbplanes[i].getNormal();
+    planes[i*4+0] = normal[0];
+    planes[i*4+1] = normal[1];
+    planes[i*4+2] = normal[2];
+    planes[i*4+3] = sbplanes[i].getDistanceFromOrigin();
+  }
+  
+  PRIVATE(this)->renderstate.numclipplanes = 6;
+  PRIVATE(this)->renderstate.clipplanes = planes;
+
   // set up culling suitable for rendering
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          SmScenery::box_culling_pre_cb, &PRIVATE(this)->renderstate);
+                                          sc_plane_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
+                                           sc_plane_culling_post_cb, &PRIVATE(this)->renderstate);
 
   if ( PRIVATE(this)->usevertexarrays ) {
     sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -805,7 +826,13 @@ SmScenery::GLRender(SoGLRenderAction * action)
     PRIVATE(this)->renderstate.etexscale = 0.0f;
   }
   
+  PRIVATE(this)->renderstate.renderpass = TRUE;
   sc_ssglue_view_render(PRIVATE(this)->system, PRIVATE(this)->viewid);
+  PRIVATE(this)->renderstate.renderpass = FALSE;
+
+  PRIVATE(this)->renderstate.numclipplanes = 0;
+  PRIVATE(this)->renderstate.clipplanes = NULL;
+  free(planes);
 
   if (didenabletexture1) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
