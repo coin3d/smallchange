@@ -63,25 +63,17 @@
 #include <Inventor/details/SoLineDetail.h>
 #include <float.h>
 
-#define DEFAULT_SIZE 100.0f
-
-#define DEFAULT_TOPLOD_DISTANCE 10000.0f
-#define DEFAULT_LOD_DISTANCE 4000.0f
-#define EPS 0.1
-
+// struct used for storing data for each depth value
 typedef struct {
   SbVec3f pos;
   double mdepth;  // measured depth
   double tvdepth; // true vertical depth
-  double left;
-  double right;
-  SbName lith;
-  SbName fluid;
+  double left;  // curve data for the left side
+  double right; // curve data for the right side
 } well_pos;
 
 class SmWellLogKitP {
 public:  
-  
   SmWellLogKitP(SmWellLogKit * master)
     : master(master) { }
 
@@ -101,18 +93,13 @@ public:
 
   uint32_t find_col(const SbName & name);
   int find_colidx(const SbName & name);
-  int findIdx(const SbVec3f & pos);
-  int findIdx(const double depth);
   void updateList(void);
   void buildGeometry(void);
   void generateFaces(const SbVec3f & axis);
-  void mergeDepths(const SbList <double> & depthlist);
-  void reduce(void);
   void setLithOrFluid(const SbList <double> & limits,
                       const SbList <SbName> & names,
                       const SbBool islith);
   void convertDepth(const SbList <double> & data);
-  void fillInfo(SbString & str, int idx);
   static void callback_cb(void * userdata, SoAction * action);
 
   SoOneShotSensor * oneshot;
@@ -153,7 +140,10 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(lodDistance1, (50000.0f));
   SO_KIT_ADD_FIELD(lodDistance2, (100000.0f));
   SO_KIT_ADD_FIELD(wellRadius,(1.0f));
-  
+
+  SO_KIT_ADD_FIELD(leftColor, (0.3, 0.6, 0.8));
+  SO_KIT_ADD_FIELD(rightColor, (0.3, 0.6, 0.8));
+
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
   this->curveNames.setNum(0);
@@ -186,6 +176,7 @@ SmWellLogKit::SmWellLogKit(void)
 
   SO_KIT_INIT_INSTANCE();
 
+  // initialize parts to default values
   SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapeHints", TRUE);
   sh->vertexOrdering = SoShapeHints::CLOCKWISE;
   sh->shapeType = SoShapeHints::UNKNOWN_SHAPE_TYPE;
@@ -267,6 +258,10 @@ SmWellLogKit::handleEvent(SoHandleEventAction * action)
     }
   }
 
+  // FIXME: investigate SoLocation2Event to see if left mouse button
+  // has been released. Don't trust that we get a
+  // SoMouseButtonReleaseEvent. pederb, 2003-10-16
+
   if ((!tooltip->isActive.getValue() && SO_MOUSE_PRESS_EVENT(event, BUTTON1)) ||
       (tooltip->isActive.getValue() && event->isOfType(SoLocation2Event::getClassTypeId()))) {
     
@@ -287,8 +282,7 @@ SmWellLogKit::handleEvent(SoHandleEventAction * action)
         }
       }
     }
-  }
-  
+  }  
   if (handled) action->setHandled();
   else inherited::handleEvent(action);
 }
@@ -306,6 +300,7 @@ SmWellLogKit::readInstance(SoInput * in, unsigned short flags)
   return ret;
 }
 
+// linear search for depth index. Optimize?
 int 
 SmWellLogKit::findPickIdx(const SbVec3f & pos) const
 {
@@ -316,6 +311,7 @@ SmWellLogKit::findPickIdx(const SbVec3f & pos) const
   return n-1;
 }
 
+// fill in tooltip info for a picked depth index
 SbBool
 SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
 {
@@ -395,6 +391,7 @@ SmWellLogKit::getNumCurveValues(void) const
   return 0;
 }
 
+// returns the depth value for a depth index
 float 
 SmWellLogKit::getDepth(const int idx) const
 {
@@ -410,6 +407,7 @@ SmWellLogKit::getDepth(const int idx) const
   return 0.0f;
 }
 
+// returns the left curve value for a depth index
 float 
 SmWellLogKit::getLeftCurveData(const int idx) const
 {
@@ -424,6 +422,7 @@ SmWellLogKit::getLeftCurveData(const int idx) const
   return this->undefVal.getValue();
 }
 
+// returns the right curve value for a depth index
 float 
 SmWellLogKit::getRightCurveData(const int idx) const
 {
@@ -438,7 +437,7 @@ SmWellLogKit::getRightCurveData(const int idx) const
   return this->undefVal.getValue();
 }
 
-
+// overloader to test when stuff changes in the API fields
 void 
 SmWellLogKit::notify(SoNotList * l)
 {
@@ -446,17 +445,11 @@ SmWellLogKit::notify(SoNotList * l)
     SoField * f = l->getLastField();
     if (f) {
       SoFieldContainer * c = f->getContainer();
+      // test if a field in this nodekit changed, but only trigger on
+      // normal fields, not on part fields.
       if (c == this && f->getTypeId() != SoSFNode::getClassTypeId()) {
-        SbName name;
-        if (this->getFieldName(f, name)) {
-//           fprintf(stderr,"notify from field: %s\n",
-//                   name.getString());
-        }
+        // trigger a sensor that will recalculate all internal data
         PRIVATE(this)->oneshot->schedule();
-      }
-      else {
-//         fprintf(stderr,"notify from: %s\n",
-//                 c->getTypeId().getName().getString());
       }
     }
   }
@@ -480,8 +473,7 @@ SmWellLogKit::setDefaultOnNonWritingFields(void)
         f != &this->transform) {
       f->setDefault(TRUE);
     }
-  }
-  
+  }  
   inherited::setDefaultOnNonWritingFields();
 }
 
@@ -492,9 +484,14 @@ SmWellLogKit::setDefaultOnNonWritingFields(void)
 uint32_t 
 SmWellLogKitP::find_col(const SbName & name) 
 {
+  if (name == "left") {
+    return PUBLIC(this)->leftColor.getValue().getPackedValue();
+  }
+  if (name == "right") {
+    return PUBLIC(this)->rightColor.getValue().getPackedValue();
+  }
   int idx = find_colidx(name);
   if (idx < 0) {
-    //    myfprintf(stderr,"undef col: \"%s\"\n", name.getString());
     return 0x4477ccff;
   }
   return cm_col[idx];
@@ -549,6 +546,8 @@ SmWellLogKitP::callback_cb(void * userdata, SoAction * action)
     axis[2] = 0.0f;
     if (axis == SbVec3f(0.0f, 0.0f, 0.0f)) axis = SbVec3f(1.0f, 0.0f, 0.0f);
     else axis.normalize();
+
+    // FIXME: use an epsilon when comparing here?
     if (axis != thisp->prevaxis) {
       thisp->prevaxis = axis;
       thisp->generateFaces(axis);
@@ -556,123 +555,7 @@ SmWellLogKitP::callback_cb(void * userdata, SoAction * action)
   }
 }
 
-
-void
-SmWellLogKitP::fillInfo(SbString & str, int idx)
-{
-  if (idx < 0 || idx >= this->poslist.getLength()) return;
-
-  const well_pos & pos = this->poslist[idx];
-  
-  SbString left("UNDEFINED");
-  SbString right("UNDEFINED");
-  
-  if (pos.left != PUBLIC(this)->undefVal.getValue()) {
-    left.sprintf("%g", pos.left);
-  }
-  if (pos.right != PUBLIC(this)->undefVal.getValue()) {
-    right.sprintf("%g", pos.right);
-  }
-
-  str.sprintf("%s\n"
-              "Depth: %g\n"
-              "TVDSS: %g\n"
-              "Time:  %g\n"
-              "Left:  %s\n" // FIXME: replace with proper name
-              "Right: %s\n" // FIXME: replace with proper name
-              "Lith:  %s\n"
-              "Fluid: %s",
-              PUBLIC(this)->name.getValue().getString(),
-              pos.mdepth,
-              -pos.tvdepth,
-              -pos.pos[2],
-              left.getString(),
-              right.getString(),
-              pos.lith.getString(),
-              pos.fluid.getString());
-            
-}
-
-int
-SmWellLogKitP::findIdx(const SbVec3f & pos)
-{
-  int n = this->poslist.getLength();
-  for (int i = 0; i < n; i++) {
-    if (pos[2] > this->poslist[i].pos[2]) return i;
-  }
-  return n-1;
-}
-
-int
-SmWellLogKitP::findIdx(const double depth)
-{
-  int idx = this->poslist.getLength() / 2;
-  int len = this->poslist.getLength() / 2;
-
-  const well_pos * ptr = this->poslist.getArrayPtr();
-
-  while (len > 1) {
-    assert(idx >= 0 && idx < this->poslist.getLength());
-    len /= 2;
-    if (depth == ptr[idx].tvdepth) return idx;
-    if (depth < ptr[idx].tvdepth) {
-      idx -= len;
-    }
-    else {
-      if (idx == this->poslist.getLength()-1) return idx+1;
-      else if (depth < ptr[idx+1].tvdepth) return idx;
-      idx += len;
-    }
-  }
-  return idx;
-}
-
-
-void
-SmWellLogKitP::reduce(void)
-{
-
-  // FIXME: not properly implemented
-  SbList <well_pos> newlist(this->poslist.getLength());
-
-  int i, n = this->poslist.getLength();
-
-  const well_pos * src = this->poslist.getArrayPtr();
-
-  for (i = 0; i < n; i++) {
-    SbBool doadd = FALSE;
-    if (i == 0 || i == n-1) doadd = TRUE;
-    else {
-      if ((src[i-1].lith != src[i].lith) || (src[i].lith != src[i+1].lith)) doadd = TRUE;
-      if ((src[i-1].fluid != src[i].fluid) || (src[i].fluid != src[i+1].fluid)) doadd = TRUE;
-    }
-  }
-}
-
-
-void 
-SmWellLogKitP::setLithOrFluid(const SbList <double> & limits,
-                            const SbList <SbName> & names,
-                            const SbBool islith)
-{
-  int n = limits.getLength() / 2;
-
-  for (int i = 0; i < n; i++) {
-    int i0 = this->findIdx(limits[i*2]);
-    int i1 = this->findIdx(limits[i*2+1] - EPS);
-
-    if (i0 < 0 || i1 < 0 || i0 >= this->poslist.getLength()) {
-      //      myfprintf(stderr,"oops\n");
-    }
-
-    for (;i0 <= i1 && i0 < this->poslist.getLength(); i0++) {
-      if (islith) this->poslist[i0].lith = names[i];
-      else this->poslist[i0].fluid = names[i];
-    }
-  }
-}
-
-
+// generate faces facing the viewer
 void
 SmWellLogKitP::generateFaces(const SbVec3f & newaxis)
 {
@@ -681,9 +564,7 @@ SmWellLogKitP::generateFaces(const SbVec3f & newaxis)
   int i, n = this->poslist.getLength();
   coord->point.setNum(3*n);
   SbVec3f * dst = coord->point.startEditing();
- 
-  //  fprintf(stderr,"generate faces: %d\n", n);
- 
+  
   for (i = 0; i < n; i++) {
     dst[n+i] = this->poslist[i].pos + newaxis * this->leftoffset[i];
     dst[2*n+i] = this->poslist[i].pos - newaxis * this->rightoffset[i];
@@ -691,6 +572,7 @@ SmWellLogKitP::generateFaces(const SbVec3f & newaxis)
   coord->point.finishEditing();
 }
 
+// FIXME: should it be possible to configure the log function?
 static double log_func(double val)
 {
   if (val < 0.0) return -1.0;
@@ -792,8 +674,8 @@ SmWellLogKitP::buildGeometry(void)
   for (i = 0; i < n; i++) {
     dst[i] = this->poslist[i].pos;
     prev = dst[i];
-    col[i] = find_col(this->poslist[i].lith);
-    col[i+n] = find_col(this->poslist[i].fluid);
+    col[i] = find_col(SbName("left"));
+    col[i+n] = find_col(SbName("right"));
   }
 
   for (i = 0; i < n; i++) {
@@ -835,8 +717,6 @@ SmWellLogKitP::buildGeometry(void)
   for (i = 0; i < n-1; i++) {
     if (this->poslist[i].left != PUBLIC(this)->undefVal.getValue() &&
         this->poslist[i+1].left != PUBLIC(this)->undefVal.getValue()) {
-//       assert(this->poslist[i].left >= 0.0f);
-//       assert(this->poslist[i+1].left >= 0.0f);
 
       *dsti++ = i;
       *dsti++ = n+i;
@@ -847,8 +727,6 @@ SmWellLogKitP::buildGeometry(void)
     }
     if (this->poslist[i].right != PUBLIC(this)->undefVal.getValue() &&
         this->poslist[i+1].right != PUBLIC(this)->undefVal.getValue()) {
-//       assert(this->poslist[i].right >= 0.0f);
-//       assert(this->poslist[i+1].right >= 0.0f);
 
       *dsti++ = i;
       *dsti++ = i+1;
@@ -888,86 +766,10 @@ interpolate(well_pos & p, const well_pos & prev, const well_pos & next,
   p.right = prev.right;
   p.mdepth = prev.mdepth + (next.mdepth-prev.mdepth) * t;
   p.tvdepth = newdepth;
-
-  if (t <= 0.5) {
-    p.lith = prev.lith;
-    p.fluid = prev.fluid;
-  }
-  else {
-    p.lith = next.lith;
-    p.fluid = next.fluid;
-  }  
 }
 
-void 
-SmWellLogKitP::mergeDepths(const SbList <double> & depthlist)
-{
-  SbList <well_pos> newlist(this->poslist.getLength() + depthlist.getLength());
-  
-  int i = 0;
-  int j = 0;
-  int numi = this->poslist.getLength();
-  int numj = depthlist.getLength();
-
-  int cnt = 0;
-  //  myfprintf(stderr,"start merge: %s, %d %d...", this->name.getString(), numi, numj);
-  
-  while ((i < numi) && (j < numj)) {
-    double i0 = this->poslist[i].tvdepth;
-    double j0 = depthlist[j];
-
-    if (SbAbs(i0-j0) < EPS) {
-      if (i0 != j0) cnt++;
-      newlist.append(this->poslist[i]);
-      i++;
-      j++;
-    }
-    else if (i0 < j0) {
-      newlist.append(this->poslist[i]);
-      i++;
-    }
-    else { // j0 < i0
-      if (newlist.getLength() == 0) {
-        well_pos p = this->poslist[0];
-        p.tvdepth = depthlist[j];
-        newlist.append(p);
-      }
-      else {
-        well_pos prev = newlist[newlist.getLength()-1];
-        well_pos next = this->poslist[i];
-        well_pos p;
-
-        interpolate(p, prev, next, depthlist[j]);
-     
-        newlist.append(p);
-      }
-      j++;
-    } 
-  }
-  while (i < numi) {
-    newlist.append(this->poslist[i]);
-    i++;
-  }
-  
-  if (j < numj) {
-    //    myfprintf(stderr,"extra depth values found!\n");
-  }
-
-  this->poslist.truncate(0);
-  SbVec3f prev(0.0f, 0.0f, 0.0f);
-  double prevdepth = 0.0;
-  for (i = 0; i < newlist.getLength(); i++) {
-    if (i == 0 || (newlist[i].pos != prev && SbAbs(newlist[i].tvdepth-prevdepth) >= EPS)) {
-      this->poslist.append(newlist[i]);
-      prev = newlist[i].pos;
-      prevdepth = newlist[i].tvdepth;
-    }
-    else cnt++;
-  }
-  //  myfprintf(stderr,"finished: %d (%d skipped)\n", newlist.getLength(), cnt);
-}
-
-
+// time/depth interpolation function. Used when converting between
+// time and detph
 static float 
 time_depth_interpolate(double val, const SbList <double> & data)
 {
@@ -1000,7 +802,7 @@ time_depth_interpolate(double val, const SbList <double> & data)
 //             i0, i1, i,
 //            from[0], from[1], to[0], to[1]);
   }
-
+  
   //assert(fd > 0.0 && td > 0.0);
 
   double t = (val - from[0]) / fd;
@@ -1010,6 +812,7 @@ time_depth_interpolate(double val, const SbList <double> & data)
   return (float) (to[0] + t * td);
 }
 
+// convert between time and depth
 void 
 SmWellLogKitP::convertDepth(const SbList <double> & data)
 {
@@ -1022,6 +825,8 @@ SmWellLogKitP::convertDepth(const SbList <double> & data)
   }
 }
 
+// called when something has changed and the internal list needs to be
+// regenerated.
 void 
 SmWellLogKitP::oneshot_cb(void * closure, SoSensor * s)
 {
@@ -1036,6 +841,8 @@ SmWellLogKitP::oneshot_cb(void * closure, SoSensor * s)
   thisp->processingoneshot = FALSE;;
 }
 
+// need to be called when something changes in the input data. Will
+// generate a new list of well_pos structures.
 void
 SmWellLogKitP::updateList(void)
 {
@@ -1051,16 +858,14 @@ SmWellLogKitP::updateList(void)
   }
   
   UTMPosition * utm = (UTMPosition*) PUBLIC(this)->getAnyPart("utm", TRUE);
-
   const SbVec3d * welldata = PUBLIC(this)->wellCoord.getValues(0);
   
   SbVec3d origin = SbVec3d(welldata[0][0], welldata[0][1], 0.0);
+
+  // set origin to avoid floating point precision issues
   utm->utmposition = origin;
 
   well_pos pos;
-  pos.lith = SbName("UNDEFINED");
-  pos.fluid = SbName("UNDEFINED");
-
   int cnt = 0;
   double undefval = PUBLIC(this)->undefVal.getValue();
 
@@ -1081,22 +886,17 @@ SmWellLogKitP::updateList(void)
     pos.left = PUBLIC(this)->getLeftCurveData(i);
     pos.right = PUBLIC(this)->getRightCurveData(i);
     
-    // workarounf for some LAS files
+    // workaround for some LAS files that specifies an undef value,
+    // but use some other value instead
     if (SbAbs(pos.left-undefval) < 1.0f) pos.left = undefval;
     if (SbAbs(pos.right-undefval) < 1.0f) pos.right= undefval;
-
-    if (!this->poslist.getLength() || SbAbs(pos.mdepth-prevdepth) >= EPS) {
+    
+    if (!this->poslist.getLength() || SbAbs(pos.mdepth-prevdepth) >= 0.0) {
       this->poslist.append(pos);
       prevdepth = pos.mdepth;
-    }
-    else {
-      //myfprintf(stderr,"skipped depth becaused of EPS\n");
     }
   }
 }
 
 
 #undef PUBLIC
-#undef EPS
-#undef DEFAULT_SIZE
-#undef DEFAULT_LOD_DISTANCE

@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFString.h>
+#include <Inventor/fields/SoSFColor.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
@@ -84,6 +85,9 @@ public:
 
   SoSFInt32 leftCurveIndex;
   SoSFInt32 rightCurveIndex;
+  
+  SoSFColor leftColor;
+  SoSFColor rightColor;
 
   SoSFBool leftUseLog;
   SoSFBool rightUseLog;
