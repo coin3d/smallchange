@@ -1,0 +1,149 @@
+#include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoDirectionalLight.h>
+#include <Inventor/nodes/SoPerspectiveCamera.h>
+#include <Inventor/actions/SoSearchAction.h>
+
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/So@Gui@RenderArea.h>
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/nodekits/SmCameraControlKit.h>
+#include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
+#include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
+#include <SmallChange/eventhandlers/SmSphereEventHandler.h>
+#include <Inventor/nodes/SoRotation.h>
+#include <Inventor/nodes/SoEventCallback.h>
+#include <Inventor/events/SoKeyboardEvent.h>
+#include <SmallChange/misc/SmSceneManager.h>
+#include <stdio.h>
+
+
+static void 
+event_cb(void * userdata, SoEventCallback * node)
+{
+  SmSceneManager * scenemgr = (SmSceneManager*) userdata;
+  const SoEvent * e = node->getEvent();
+
+  if (SO_KEY_PRESS_EVENT(e, W)) {
+    scenemgr->setRenderMode(SmSceneManager::WIREFRAME);
+  }
+  else if (SO_KEY_PRESS_EVENT(e, A)) {
+    scenemgr->setRenderMode(SmSceneManager::AS_IS);
+  }
+  else if (SO_KEY_PRESS_EVENT(e, P)) {
+    scenemgr->setRenderMode(SmSceneManager::POINTS);
+  }
+  else if (SO_KEY_PRESS_EVENT(e, B)) {
+    scenemgr->setRenderMode(SmSceneManager::BOUNDING_BOX);
+  }
+  else if (SO_KEY_PRESS_EVENT(e, O)) {
+    scenemgr->setRenderMode(SmSceneManager::WIREFRAME_OVERLAY);
+  }
+  else if (SO_KEY_PRESS_EVENT(e, H)) {
+    scenemgr->setRenderMode(SmSceneManager::HIDDEN_LINE);
+  }
+  else if (SO_KEY_PRESS_EVENT(e, S)) {
+    if (scenemgr->getStereoMode() == SmSceneManager::RED_CYAN) {
+      scenemgr->setStereoMode(SmSceneManager::MONO);
+    }
+    else {
+      scenemgr->setStereoMode(SmSceneManager::RED_CYAN);
+    }
+  }
+}
+
+// *************************************************************************
+
+int
+main(int argc, char ** argv )
+{
+  if (argc == 1) {
+    fprintf(stderr,"Usage: scenemgr <ivfile> [helicopter|examiner|sphere] [speed]\n");
+    return -1;
+  } 
+  @WIDGET@ window = So@Gui@::init( argv[0] );
+  if (window == NULL) return -1;
+
+  smallchange_init();
+
+  SoInput * input = new SoInput;
+  SbBool ok = input->openFile(argv[1]);
+  if (!ok) {
+    fprintf(stderr,"Unable to open file.\n");
+    return -1;
+  }
+
+  SoSeparator *root = SoDB::readAll(input); 
+  if (!root) {
+    fprintf(stderr,"Unable to read file.\n");
+    return -1;
+  }
+  root->ref();
+
+  SmCameraControlKit * ck = NULL;
+  
+  SoSearchAction sa;
+  sa.setType(SmCameraControlKit::getClassTypeId());
+  sa.setInterest(SoSearchAction::FIRST);
+  sa.apply(root);
+  if (sa.getPath()) {
+    ck = (SmCameraControlKit*) sa.getPath()->getTail();
+    ck->ref();
+  }
+  else {
+    ck = new SmCameraControlKit;
+    ck->ref();
+    ck->viewUp = SbVec3f(0.0f, 1.0f, 0.0f);
+    ck->setPart("scene", root);
+  }
+  if (argc >= 3) {
+    if (strcmp(argv[2], "helicopter") == 0) {
+      SmHelicopterEventHandler *helihandler;
+      ck->eventHandler = helihandler = new SmHelicopterEventHandler;
+      if (argc >= 4) 
+        helihandler->speed.setValue(atof(argv[3]));
+    }
+    else if (strcmp(argv[2], "examiner") == 0) {
+      ck->eventHandler = new SmExaminerEventHandler;
+    } 
+    else if (strcmp(argv[2], "sphere") == 0) {
+      ck->eventHandler = new SmSphereEventHandler;
+    }
+    else {
+      fprintf(stderr,"Unknown event handler. Using examiner\n");
+    }
+  }
+
+  SoCamera * camera = (SoCamera*) ck->getPart("camera", TRUE);
+  
+  So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
+
+  // workaround for SoGui bug. The old SceneManager isn't deleted
+  renderarea->getSceneManager()->setRenderCallback(NULL, NULL);
+  renderarea->getSceneManager()->deactivate();
+
+  SmSceneManager * scenemgr = new SmSceneManager;
+  renderarea->setSceneManager(scenemgr);
+  scenemgr->activate();
+
+  SoEventCallback * ec = new SoEventCallback;
+  ec->addEventCallback(SoKeyboardEvent::getClassTypeId(), event_cb, scenemgr);
+  root->insertChild(ec, 0);
+
+  renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
+  renderarea->setSceneGraph(ck);
+  scenemgr->setCamera(scenemgr->getCamera()); // cache camera
+
+  renderarea->setBackgroundColor( SbColor( 0.0f, 0.2f, 0.3f )  );
+  renderarea->show();
+  So@Gui@::show( window );
+  ck->viewAll(renderarea->getViewportRegion());
+  So@Gui@::mainLoop();
+
+  delete renderarea;
+  root->unref();
+  ck->unref();
+
+  return 0;
+} // main()
+
+// *************************************************************************
