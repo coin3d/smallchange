@@ -712,6 +712,10 @@ LegendKit::fillImageAlpha(void)
 
 /*!
   Sets the callback used to decide the color per line in the image.
+
+  The user-provided callback should for each call return the RGBA
+  value encoded as a 32-bits value, for the value given by the first
+  argument to the callback.
 */
 void 
 LegendKit::setColorCB(uint32_t (*colorCB)(double, void*), void * userdata)
