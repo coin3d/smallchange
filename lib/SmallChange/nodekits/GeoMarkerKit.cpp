@@ -136,11 +136,15 @@ GeoMarkerKitP::selectionsensor_cb(void * closure, SoSensor * sensor)
   GeoMarkerKitP * thisp = (GeoMarkerKitP *) closure;
   assert(thisp->material != NULL);
   assert(PUBLIC(thisp) != NULL);
+  // notification on SmGeoMarkerKit::enabled will refresh anyways, and this
+  // callback triggers with priority 0
+  thisp->material->whichChild.enableNotify(FALSE);
   if ( PUBLIC(thisp)->selected.getValue() ) {
     thisp->material->whichChild.setValue(1);
   } else {
     thisp->material->whichChild.setValue(0);
   }
+  thisp->material->whichChild.enableNotify(TRUE);
 }
 
 // *************************************************************************
