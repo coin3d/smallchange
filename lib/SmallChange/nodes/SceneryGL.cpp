@@ -109,56 +109,6 @@ sc_set_use_byte_normals(int enable)
 /* ********************************************************************** */
 /* texture management */
 
-#if 0
-void *
-sc_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
-{
-  SoGLImage::Wrap WrapS, WrapT;
-  switch ( wraps ) {
-  case GL_CLAMP:
-    WrapS = SoGLImage::CLAMP;
-    break;
-  case GL_CLAMP_TO_EDGE:
-    WrapS = SoGLImage::CLAMP_TO_EDGE;
-    break;
-  default:
-    WrapS = SoGLImage::CLAMP;
-    break;
-  }
-  switch ( wrapt ) {
-  case GL_CLAMP:
-    WrapT = SoGLImage::CLAMP;
-    break;
-  case GL_CLAMP_TO_EDGE:
-    WrapT = SoGLImage::CLAMP_TO_EDGE;
-    break;
-  default:
-    WrapT = SoGLImage::CLAMP;
-    break;
-  }
-  SoGLImage * image = new SoGLImage;
-  image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
-  image->setData(data, SbVec2s(texw, texh), nc, WrapS, WrapT, q, hey, NULL);
-  return (void *) image;
-}
-
-void
-sc_texture_activate(RenderState * state, void * imagehandle)
-{
-  assert(imagehandle);
-  SoGLImage * image = (SoGLImage *) imagehandle;
-  image->getGLDisplayList(state->state)->call(state->state);
-}
-
-void
-sc_texture_release(void * imagehandle)
-{
-  assert(imagehandle);
-  SoGLImage * image = (SoGLImage *) imagehandle;
-  image->unref(NULL);
-}
-#endif
-
 static sc_texture_construct_f * texture_construct = NULL;
 static sc_texture_activate_f * texture_activate = NULL;
 static sc_texture_release_f * texture_release = NULL;
