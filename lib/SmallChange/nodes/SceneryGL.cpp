@@ -251,14 +251,10 @@ ok_to_use_bytevalue_normals(void)
 inline void
 GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
-  if ( state->etexscale == 0.0f ||
-       !cc_glglue_has_multitexture(glglue) ) {
-    glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-                 state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-  } else {
-    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE0,
-                                state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-                                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+               state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  
+  if (state->etexscale != 0.0f) {
     float val = (state->etexscale * elev) + state->etexoffset;
     if ( val < 0.0f ) val = 0.0f - val;
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
@@ -293,14 +289,9 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     static const float factor = 1.0f/127.0f;
     glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
   }
-  if ( state->etexscale == 0.0f ||
-       !cc_glglue_has_multitexture(glglue) ) {
-    glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-                 state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-  } else {
-    cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE0,
-                                state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-                                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+               state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  if (state->etexscale != 0.0f) {
     float val = (state->etexscale * elev) + state->etexoffset;
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
   }

@@ -342,9 +342,9 @@ void
 SmScenery::initClass(void)
 {
   static SbBool first = TRUE;
-  if ( !first ) { return; }
+  if (!first) { return; }
   first = FALSE;
-  if ( sc_scenery_available() ) {
+  if (sc_scenery_available()) {
     sc_ssglue_initialize();
   }
   SO_NODE_INIT_CLASS(SmScenery, SoShape, "Shape");
@@ -355,27 +355,27 @@ SO_NODE_SOURCE(SmScenery);
 SmScenery *
 SmScenery::createInstance(double * origo, double * spacing, int * elements, float * values, const float undefval)
 {
-  if ( !sc_scenery_available() ) { return NULL; }
+  if (!sc_scenery_available()) { return NULL; }
   ss_system * system = sc_ssglue_system_construct(1, origo, spacing, elements, values, undefval);
-  if ( !system ) { return NULL; }
+  if (!system) { return NULL; }
   return new SmScenery(system);
 }
 
 SmScenery *
 SmScenery::createInstance(const int cols, const int rows, double * xyzgrid, const float undefz)
 {
-  if ( !sc_scenery_available() ) { return NULL; }
+  if (!sc_scenery_available()) { return NULL; }
   ss_system * system = sc_ssglue_system_construct_rotated(1, cols, rows, xyzgrid, undefz);
-  if ( !system ) { return NULL; }
+  if (!system) { return NULL; }
   return new SmScenery(system);
 }
 
 SmScenery *
 SmScenery::createInstance(const int points, double * xyzvals, const float reach)
 {
-  if ( !sc_scenery_available() ) { return NULL; }
+  if (!sc_scenery_available()) { return NULL; }
   ss_system * system = sc_ssglue_system_construct_randomized(1, points, xyzvals, reach);
-  if ( !system ) { return NULL; }
+  if (!system) { return NULL; }
   return new SmScenery(system);
 }
 
@@ -495,10 +495,10 @@ SmScenery::SmScenery(ss_system * system)
   // FIXME: factor this piece of logic into separate function
   // setImplicitRenderSequence() or something similar
   const int sequencelen = this->renderSequence.getNum();
-  if ( (this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1 ) {
+  if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
     int localsequence[2] = { PRIVATE(this)->colormaptexid, 0 };
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 2, localsequence);
-  } else if ( sequencelen == 0 ) {
+  } else if (sequencelen == 0) {
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 0, NULL);
   } else {
     this->renderSequence.enableNotify(FALSE);
@@ -569,7 +569,7 @@ SmScenery::~SmScenery(void)
 
   if (sc_scenery_available() &&
       (PRIVATE(this)->system != NULL) &&
-      (PRIVATE(this)->viewid != -1) ) {
+      (PRIVATE(this)->viewid != -1)) {
     sc_ssglue_view_deallocate(PRIVATE(this)->system, PRIVATE(this)->viewid);
     sc_ssglue_system_close(PRIVATE(this)->system);
     PRIVATE(this)->viewid = -1;
@@ -578,11 +578,11 @@ SmScenery::~SmScenery(void)
   delete PRIVATE(this)->facedetail;
   cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_clear, NULL);
   cc_hash_destruct(PRIVATE(this)->texhash);
-  if ( PRIVATE(this)->elevationlinesimage ) {
+  if (PRIVATE(this)->elevationlinesimage) {
     PRIVATE(this)->elevationlinesimage->unref();
     PRIVATE(this)->elevationlinesimage = NULL;
   }
-  if ( PRIVATE(this)->elevationlinesdata ) {
+  if (PRIVATE(this)->elevationlinesdata) {
     delete PRIVATE(this)->elevationlinesdata;
     PRIVATE(this)->elevationlinesdata = NULL;
   }
@@ -594,19 +594,21 @@ SmScenery::~SmScenery(void)
 void 
 SmScenery::GLRender(SoGLRenderAction * action)
 {
-  if ( !sc_scenery_available() ) { return; }
-  if ( PRIVATE(this)->system == NULL ) { return; }
-  if ( !this->shouldGLRender(action) ) { return; }
+  if (!sc_scenery_available()) { return; }
+  if (PRIVATE(this)->system == NULL) { return; }
+  if (!this->shouldGLRender(action)) { return; }
 
   // rendersequence start
   const int sequencelen = this->renderSequence.getNum();
-  if ( (this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1 ) {
+  if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
     // FIXME: add runtime colortexture
     int localsequence[2] = { PRIVATE(this)->colormaptexid, 0 };
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 2, localsequence);
-  } else if ( sequencelen == 0 ) {
+  } 
+  else if (sequencelen == 0) {
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 0, NULL);
-  } else {
+  } 
+  else {
     this->renderSequence.enableNotify(FALSE);
     int * sequence = this->renderSequence.startEditing();
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, sequencelen, sequence);
@@ -615,10 +617,10 @@ SmScenery::GLRender(SoGLRenderAction * action)
   }
   // rendersequenceend
 
-  if ( PRIVATE(this)->firstGLRender ) {
+  if (PRIVATE(this)->firstGLRender) {
     // FIXME: this should not really be necessary, and should be
     // considered a work-around for a bug in the scenery SDK. 20031015 mortene.
-    if ( (this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1) ) {
+    if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1)) {
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
     PRIVATE(this)->firstGLRender = FALSE;
@@ -681,32 +683,40 @@ SmScenery::GLRender(SoGLRenderAction * action)
   assert(gl);
   sc_set_glglue_instance(gl);
 
-  if ( (PRIVATE(this)->renderstate.etexscale != 0.0f) &&
-       (PRIVATE(this)->elevationlinesimage != NULL) &&
-       cc_glglue_has_multitexture(gl) ) {
+  SbBool didenabletexture1 = FALSE;
+  float oldetexscale = PRIVATE(this)->renderstate.etexscale;
+  
+  if ((quality > 0.0f) &&
+      (PRIVATE(this)->renderstate.etexscale != 0.0f) &&
+      (PRIVATE(this)->elevationlinesimage != NULL) &&
+      cc_glglue_has_multitexture(gl)) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     glEnable(GL_TEXTURE_2D);
-    PRIVATE(this)->elevationlinesimage->getGLDisplayList(state)->call(state);
     cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
+    didenabletexture1 = TRUE;
   }
-
+  else {
+    // init to 0.0f so that texture coordinates are not sent for unit 1
+    PRIVATE(this)->renderstate.etexscale = 0.0f;
+  }
+  
   sc_ssglue_view_render(PRIVATE(this)->system, PRIVATE(this)->viewid);
 
-  if ( PRIVATE(this)->renderstate.etexscale != 0.0f &&
-       cc_glglue_has_multitexture(gl) ) {
+  if (didenabletexture1) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
-    SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
     glDisable(GL_TEXTURE_2D);
     cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
   }
-
+  // restore etexscale
+  PRIVATE(this)->renderstate.etexscale = oldetexscale;
+  
 //  fprintf(stderr,"num boxes: %d, new texs: %d\n",
 //          this->debuglist.getLength()/4, this->numnewtextures);
   
   // texturing state could be changed during scenery rendering
   SbBool texisenabled = sc_is_texturing_enabled();
-  if ( texisenabled != texwasenabled ) {
-    if ( texwasenabled ) sc_enable_texturing();
+  if (texisenabled != texwasenabled) {
+    if (texwasenabled) sc_enable_texturing();
     else sc_disable_texturing();
   } 
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
@@ -731,7 +741,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
 void 
 SmScenery::rayPick(SoRayPickAction * action)
 {
-  if ( !sc_scenery_available() ) { return; }
+  if (!sc_scenery_available()) { return; }
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                           SmScenery::ray_culling_pre_cb, action);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -756,15 +766,15 @@ SmScenery::evaluateS(void * userdata, SoCallbackAction * action, const SoNode * 
 void 
 SmScenery::evaluate(SoAction * action)
 {
-  if ( !sc_scenery_available() ) { return; }
+  if (!sc_scenery_available()) { return; }
 
   // rendersequence start
   const int sequencelen = this->renderSequence.getNum();
-  if ( (this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1 ) {
+  if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
     // FIXME: add runtime colortexture
     int localsequence[2] = { PRIVATE(this)->colormaptexid, 0 };
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 2, localsequence);
-  } else if ( sequencelen == 0 ) {
+  } else if (sequencelen == 0) {
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 0, NULL);
   } else {
     this->renderSequence.enableNotify(FALSE);
@@ -775,10 +785,10 @@ SmScenery::evaluate(SoAction * action)
   }
   // rendersequenceend
 
-  if ( PRIVATE(this)->firstGLRender ) {
+  if (PRIVATE(this)->firstGLRender) {
     // FIXME: this should not really be necessary, and should be
     // considered a work-around for a bug in the scenery SDK. 20031015 mortene.
-    if ( (this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1) ) {
+    if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1)) {
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
     PRIVATE(this)->firstGLRender = FALSE;
@@ -815,7 +825,7 @@ SmScenery::evaluate(SoAction * action)
 void 
 SmScenery::generatePrimitives(SoAction * action)
 {
-  if ( !sc_scenery_available() ) { return; }
+  if (!sc_scenery_available()) { return; }
   if (PRIVATE(this)->system == NULL) return;
   SoState * state = action->getState();
 
@@ -836,7 +846,7 @@ SmScenery::generatePrimitives(SoAction * action)
 void 
 SmScenery::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
-  if ( PRIVATE(this)->system == NULL ) return;  
+  if (PRIVATE(this)->system == NULL) return;  
   const RenderState & rs = PRIVATE(this)->renderstate;
   box.setBounds(rs.bbmin[0], rs.bbmin[1], rs.bbmin[2],
                 rs.bbmax[0], rs.bbmax[1], rs.bbmax[2]);
@@ -850,40 +860,40 @@ ss_system *
 readxyz(const char * filename)
 {
   FILE * fp = fopen(filename, "rb");
-  if ( !fp ) return NULL;
+  if (!fp) return NULL;
   int points = 0;
   int loop = TRUE;
-  while ( loop ) {
+  while (loop) {
     float fx, fy, fz;
-    if ( fscanf(fp, "%f %f %f", &fx, &fy, &fz) == 3 ) {
+    if (fscanf(fp, "%f %f %f", &fx, &fy, &fz) == 3) {
       points++;
     } else {
-      if ( !feof(fp) ) points = 0; // something fishy
+      if (!feof(fp)) points = 0; // something fishy
       fclose(fp);
       loop = FALSE;
     }
   }
-  if ( points < 2 ) return NULL;
+  if (points < 2) return NULL;
   fp = fopen(filename, "rb");
-  if ( !fp ) return NULL;
+  if (!fp) return NULL;
   float * values = (float *) malloc(points * 3 * sizeof(float));
   assert(values);
   loop = TRUE;
   points = 0;
-  while ( loop ) {
+  while (loop) {
     float fx, fy, fz;
-    if ( fscanf(fp, "%f %f %f", &fx, &fy, &fz) == 3 ) {
+    if (fscanf(fp, "%f %f %f", &fx, &fy, &fz) == 3) {
       values[points*3+0] = fx;
       values[points*3+1] = fy;
       values[points*3+2] = fz;
       points++;
     } else {
-      if ( !feof(fp) ) points = 0; // something fishy
+      if (!feof(fp)) points = 0; // something fishy
       fclose(fp);
       loop = FALSE;
     }
   }
-  if ( points < 2 ) {
+  if (points < 2) {
     free(values);
     return NULL;
   }
@@ -899,12 +909,12 @@ readxyz(const char * filename)
   double origo[2] = { values[0], values[1] };
 
   int i;
-  for ( i = 0; i < points; i++ ) {
+  for (i = 0; i < points; i++) {
     elevations[i] = values[3*i+2];
-    if ( deltay[0] == 0.0f && deltay[1] == 0.0f && i < (points - 1) ) {
+    if (deltay[0] == 0.0f && deltay[1] == 0.0f && i < (points - 1)) {
       float delta[2] = { values[3*(i+1)] - values[3*i], values[3*(i+1)+1] - values[3*i+1] };
       float dot = deltax[0] * delta[0] + deltax[1] * delta[1];
-      if ( dot < 0.0f ) {
+      if (dot < 0.0f) {
         deltay[0] = values[3*(i+1)] - values[0];
         deltay[1] = values[3*(i+1)+1] - values[1];
         dimension[0] = i + 1;
@@ -939,7 +949,7 @@ SmScenery::set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closu
 void 
 SmScenery::preFrame(void)
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
   sc_ssglue_view_pre_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
   cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_inc_unused, NULL);
 }
@@ -947,7 +957,7 @@ SmScenery::preFrame(void)
 int 
 SmScenery::postFrame(void)
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return 0; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return 0; }
   PRIVATE(this)->deleteUnusedTextures();
   return sc_ssglue_view_post_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
 }
@@ -955,14 +965,14 @@ SmScenery::postFrame(void)
 void 
 SmScenery::setBlockRottger(const float c)
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
   sc_ssglue_view_set_evaluate_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, 16.0f, c);
 }
 
 float
 SmScenery::getBlockRottger(void) const
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return 0.0f; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return 0.0f; }
   float C, c;
   sc_ssglue_view_get_evaluate_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, &C, &c);
   return c;
@@ -971,14 +981,14 @@ SmScenery::getBlockRottger(void) const
 void 
 SmScenery::setLoadRottger(const float c)
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
   sc_ssglue_view_set_load_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, 16.0f, c);
 }
 
 float
 SmScenery::getLoadRottger(void) const
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return 0.0f; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return 0.0f; }
   float C, c;
   sc_ssglue_view_get_load_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, &C, &c);
   return c;
@@ -1001,7 +1011,7 @@ SmScenery::getElevationRange(void) const
 void 
 SmScenery::refreshTextures(const int id)
 {
-  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return; }
+  if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
 
   sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
 
@@ -1027,12 +1037,12 @@ void
 SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
 {
   assert(closure);
-  if ( !sc_scenery_available() ) { return; }
+  if (!sc_scenery_available()) { return; }
 
   SmScenery * thisp = (SmScenery *) closure;
 
-  if ( PRIVATE(thisp)->system ) {
-    if ( PRIVATE(thisp)->viewid != -1 ) {
+  if (PRIVATE(thisp)->system) {
+    if (PRIVATE(thisp)->viewid != -1) {
       sc_ssglue_view_deallocate(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
     }
     sc_ssglue_system_close(PRIVATE(thisp)->system);
@@ -1046,14 +1056,14 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
   SbString s = thisp->filename.getValue();
   if (s.getLength()) {
 #if 0 && SS_IMPORT_XYZ
-    if ( s.find(".xyz") == (s.getLength() - 4) ) {
+    if (s.find(".xyz") == (s.getLength() - 4)) {
       PRIVATE(thisp)->system = readxyz(s.getString());
     }
 #endif
-    if ( !PRIVATE(thisp)->system ) {
+    if (!PRIVATE(thisp)->system) {
       int i;
-      for ( i = -1; (PRIVATE(thisp)->system == NULL) && (i < pathlist.getLength()); i++ ) {
-        if ( i == -1 ) {
+      for (i = -1; (PRIVATE(thisp)->system == NULL) && (i < pathlist.getLength()); i++) {
+        if (i == -1) {
           PRIVATE(thisp)->system = sc_ssglue_system_open(s.getString(), 1);
         } else {
           SbString path = *(pathlist[i]);
@@ -1067,8 +1077,8 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
       (void)fprintf(stderr, "Unable to open SmScenery system '%s'\n", s.getString());
     }
     else {
-      if ( (sc_ssglue_system_get_num_datasets(PRIVATE(thisp)->system) > 0) &&
-           (sc_ssglue_system_get_dataset_type(PRIVATE(thisp)->system, 0) == SS_ELEVATION_TYPE) ) {
+      if ((sc_ssglue_system_get_num_datasets(PRIVATE(thisp)->system) > 0) &&
+           (sc_ssglue_system_get_dataset_type(PRIVATE(thisp)->system, 0) == SS_ELEVATION_TYPE)) {
         PRIVATE(thisp)->colormaptexid = sc_ssglue_system_add_runtime_texture2d(PRIVATE(thisp)->system, 0, SceneryP::invokecolortexturecb, PRIVATE(thisp));
       }
       sc_ssglue_system_get_object_box(PRIVATE(thisp)->system, PRIVATE(thisp)->renderstate.bbmin, PRIVATE(thisp)->renderstate.bbmax); 
@@ -1080,10 +1090,10 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
       //      fprintf(stderr,"system: %p, viewid: %d\n", PRIVATE(thisp)->system, thisp->viewid);
 
       const int sequencelen = thisp->renderSequence.getNum();
-      if ( (thisp->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(thisp)->colormaptexid != -1 ) {
+      if ((thisp->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(thisp)->colormaptexid != -1) {
         int localsequence[2] = { PRIVATE(thisp)->colormaptexid, 0 };
         sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 2, localsequence);
-      } else if ( sequencelen == 0 ) {
+      } else if (sequencelen == 0) {
         sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 0, NULL);
       } else {
         thisp->renderSequence.enableNotify(FALSE);
@@ -1125,7 +1135,7 @@ SceneryP::old_colortexturesensor_cb(void * closure, SoSensor * sensor)
 {
   assert(closure);
   SmScenery * thisp = (SmScenery *) closure;
-  if ( thisp->colorTexture.getValue() ) {
+  if (thisp->colorTexture.getValue()) {
     thisp->colorTexturing.setValue(SmScenery::INTERPOLATED);
   }
   else {
@@ -1138,8 +1148,8 @@ SceneryP::elevationlinessensor_cb(void * closure, SoSensor * sensor)
 {
   assert(closure);
   SmScenery * thisp = (SmScenery *) closure;
-  if ( (thisp->elevationLines.getValue() != FALSE) &&
-       (thisp->elevationLineDistance.getValue() > 0.0f) ) {
+  if ((thisp->elevationLines.getValue() != FALSE) &&
+       (thisp->elevationLineDistance.getValue() > 0.0f)) {
     PRIVATE(thisp)->elevationlinestexchange();
   } else {
     PRIVATE(thisp)->renderstate.etexscale = 0.0f;
@@ -1151,7 +1161,7 @@ SceneryP::elevationlinessensor_cb(void * closure, SoSensor * sensor)
 void
 SceneryP::colormaptexchange(void)
 {
-  if ( this->colormaptexid != -1 ) {
+  if (this->colormaptexid != -1) {
     PUBLIC(this)->refreshTextures(this->colormaptexid);
   }
 }
@@ -1159,12 +1169,12 @@ SceneryP::colormaptexchange(void)
 void
 SceneryP::elevationlinestexchange(void)
 {
-  if ( this->elevationlinesimage == NULL ) {
+  if (this->elevationlinesimage == NULL) {
     this->elevationlinesimage = new SoGLImage;
     // this->elevationlinesimage->ref(); ???  unref() but no ref()?
     assert(this->elevationlinesimage);
   }
-  if ( this->elevationlinesdata == NULL ) {
+  if (this->elevationlinesdata == NULL) {
     this->elevationlinesdata = (uint8_t *)
       malloc(SM_SCENERY_ELEVATION_TEXTURE_SIZE *
              SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
@@ -1236,9 +1246,9 @@ SceneryP::deleteUnusedTextures(void)
   cc_hash_apply(this->texhash, SceneryP::hash_check_unused, &this->tmplist);
 
   int i;
-  for ( i = 0; i < this->tmplist.getLength(); i++ ) {
+  for (i = 0; i < this->tmplist.getLength(); i++) {
     void * tmp;
-    if ( cc_hash_get(this->texhash, this->tmplist[i], &tmp) ) {
+    if (cc_hash_get(this->texhash, this->tmplist[i], &tmp)) {
       TexInfo * tex = (TexInfo *) tmp;
       this->reusetexlist.push(tex);
       (void) cc_hash_remove(this->texhash, this->tmplist[i]);
@@ -1283,7 +1293,7 @@ void
 SceneryP::hash_check_unused(unsigned long key, void * val, void * closure)
 {  
   TexInfo * tex = (TexInfo*) val;
-  if ( tex->unusedcount > MAX_UNUSED_COUNT ) {
+  if (tex->unusedcount > MAX_UNUSED_COUNT) {
     SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
     keylist->append(key);
   }
@@ -1295,7 +1305,7 @@ SceneryP::hash_check_unused(unsigned long key, void * val, void * closure)
 int 
 SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
-  if ( !sc_scenery_available() ) { return 0; }
+  if (!sc_scenery_available()) { return 0; }
 
   SmScenery * thisp = (SmScenery *) closure; 
 
@@ -1327,10 +1337,10 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
                                         renderstate.toffset,
                                         renderstate.tscale);
   
-  if ( PRIVATE(thisp)->dotex && renderstate.texid ) {
-    if ( renderstate.texid != PRIVATE(thisp)->currtexid ) {
+  if (PRIVATE(thisp)->dotex && renderstate.texid) {
+    if (renderstate.texid != PRIVATE(thisp)->currtexid) {
       SoGLImage * image = PRIVATE(thisp)->findReuseTexture(renderstate.texid);
-      if ( !image ) {
+      if (!image) {
         image = PRIVATE(thisp)->createTexture(renderstate.texid);
         assert(image);      
         sc_ssglue_render_get_texture_image(info, renderstate.texid,
@@ -1342,7 +1352,7 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
         assert(renderstate.texnc == 4);
         uint32_t * dst = (uint32_t*) renderstate.texdata;
         unsigned char * ptr = renderstate.texdata;
-        for ( int i = 0; i < renderstate.texw*renderstate.texh; i++ ) {
+        for (int i = 0; i < renderstate.texw*renderstate.texh; i++) {
           *dst++ = (ptr[3]<<24)|(ptr[2]<<16)|(ptr[1]<<8)|0xff;
           ptr += 4;
         }
@@ -1361,13 +1371,13 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
     else {
       //      fprintf(stderr,"reused tex\n");
     }
-    if ( !PRIVATE(thisp)->texisenabled ) {
+    if (!PRIVATE(thisp)->texisenabled) {
       sc_enable_texturing();
       PRIVATE(thisp)->texisenabled = TRUE;
     }
   }
   else {
-    if ( PRIVATE(thisp)->texisenabled ) {
+    if (PRIVATE(thisp)->texisenabled) {
       sc_disable_texturing();
       PRIVATE(thisp)->texisenabled = FALSE;
     }
@@ -1492,15 +1502,15 @@ SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double 
   assert(closure);
   SoAction * action = (SoAction *) closure;
   assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
-         action->isOfType(SoCallbackAction::getClassTypeId()) );
+         action->isOfType(SoCallbackAction::getClassTypeId()));
 
   SoState * state = action->getState();
   state->push();
 
-  if ( SoCullElement::completelyInside(state) ) { return TRUE; }
+  if (SoCullElement::completelyInside(state)) { return TRUE; }
 
   SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
-  if ( !SoCullElement::cullBox(state, box, TRUE) ) { return TRUE; }
+  if (!SoCullElement::cullBox(state, box, TRUE)) { return TRUE; }
 
   return FALSE;
 }
@@ -1511,7 +1521,7 @@ SmScenery::box_culling_post_cb(void * closure)
   assert(closure);
   SoAction * action = (SoAction *) closure;
   assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
-         action->isOfType(SoCallbackAction::getClassTypeId()) );
+         action->isOfType(SoCallbackAction::getClassTypeId()));
 
   SoState * state = action->getState();
   state->pop();
@@ -1530,7 +1540,7 @@ SmScenery::ray_culling_pre_cb(void * closure, const double * bmin, const double 
   state->push();
 
   SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
-  if ( box.isEmpty() ) return FALSE;
+  if (box.isEmpty()) return FALSE;
   rpaction->setObjectSpace();
   return rpaction->intersect(box, TRUE);
 }
@@ -1558,28 +1568,28 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
 
   const RenderState & rs = PRIVATE(thisp)->renderstate;
   uint32_t abgr = 0xffffffff; // default color to white
-  if ( rs.bbmax[2] == rs.bbmin[2] ) return abgr;
+  if (rs.bbmax[2] == rs.bbmin[2]) return abgr;
 
-  if ( thisp->colorTexturing.getValue() == SmScenery::INTERPOLATED ) {
-    if ( thisp->colorElevation.getNum() == 0 ) {
+  if (thisp->colorTexturing.getValue() == SmScenery::INTERPOLATED) {
+    if (thisp->colorElevation.getNum() == 0) {
       // interpolate color table evenly over elevation range
       float fac = (elevation - rs.bbmin[2]) / (rs.bbmax[2] - rs.bbmin[2]);
       int steps = ((thisp->colorMap.getNum() / 4) - 1); // four components
-      if ( steps == 0 ) { // only one color given
+      if (steps == 0) { // only one color given
         int nr = (int) (SbClamp(thisp->colorMap[0], 0.0f, 1.0f) * 255.0f);
         int ng = (int) (SbClamp(thisp->colorMap[1], 0.0f, 1.0f) * 255.0f);
         int nb = (int) (SbClamp(thisp->colorMap[2], 0.0f, 1.0f) * 255.0f);
         int na = (int) (SbClamp(thisp->colorMap[3], 0.0f, 1.0f) * 255.0f);
         abgr = (na << 24) | (nb << 16) | (ng << 8) | nr;
       }
-      else if ( steps > 0 ) { // interpolate color
+      else if (steps > 0) { // interpolate color
         int startcolidx = (int) floor(float(steps) * fac);
         float rest = (float(steps) * fac) - float(startcolidx);
         float r = thisp->colorMap[startcolidx * 4 + 0];
         float g = thisp->colorMap[startcolidx * 4 + 1];
         float b = thisp->colorMap[startcolidx * 4 + 2];
         float a = thisp->colorMap[startcolidx * 4 + 3];
-        if ( rest > 0.0f ) {
+        if (rest > 0.0f) {
           assert(rest < 1.0f);
           float end_r = thisp->colorMap[startcolidx * 4 + 4];
           float end_g = thisp->colorMap[startcolidx * 4 + 5];
@@ -1597,7 +1607,7 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
         abgr = (na << 24) | (nb << 16) | (ng << 8) | nr;
       }
     } else {
-      if ( (thisp->colorElevation.getNum() * 4) != thisp->colorMap.getNum() ) {
+      if ((thisp->colorElevation.getNum() * 4) != thisp->colorMap.getNum()) {
         SoDebugError::postInfo("SmScenery::colortexture_cb", "size of colorElevation does not match size of colorMap");
         thisp->colorTexturing.setValue(SmScenery::DISABLED);
         return abgr;
@@ -1605,8 +1615,8 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
       // use elevation values to decide colors
       const int max = thisp->colorElevation.getNum();
       int i;
-      for ( i = 0; (i < max) && (elevation > thisp->colorElevation[i]); i++ ) { }
-      if ( i == 0 ) {
+      for (i = 0; (i < max) && (elevation > thisp->colorElevation[i]); i++) { }
+      if (i == 0) {
         // first color
         int nr = (int) (SbClamp(thisp->colorMap[0], 0.0f, 1.0f) * 255.0f);
         int ng = (int) (SbClamp(thisp->colorMap[1], 0.0f, 1.0f) * 255.0f);
@@ -1614,7 +1624,7 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
         int na = (int) (SbClamp(thisp->colorMap[3], 0.0f, 1.0f) * 255.0f);
         abgr = (na << 24) | (nb << 16) | (ng << 8) | nr;
       }
-      else if ( i == max ) {
+      else if (i == max) {
         // last color
         int nr = (int) (SbClamp(thisp->colorMap[(i-1)*4+0], 0.0f, 1.0f) * 255.0f);
         int ng = (int) (SbClamp(thisp->colorMap[(i-1)*4+1], 0.0f, 1.0f) * 255.0f);
@@ -1647,8 +1657,8 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
       }
     }
   }
-  else if ( thisp->colorTexturing.getValue() == SmScenery::DISCRETE ) {
-    if ( thisp->colorElevation.getNum() == 0 ) {
+  else if (thisp->colorTexturing.getValue() == SmScenery::DISCRETE) {
+    if (thisp->colorElevation.getNum() == 0) {
       // distribute colors evenly
       int colors = thisp->colorMap.getNum() / 4;
       int color = (int) floor(((elevation - rs.bbmin[2]) / ((rs.bbmax[2] - rs.bbmin[2]) * 1.00001)) * float(colors));
@@ -1665,14 +1675,14 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
     else {
       // distribute colors based on elevation value table
       const int max = thisp->colorElevation.getNum();
-      if ( ((max + 1) * 4) != (thisp->colorMap.getNum())) {
+      if (((max + 1) * 4) != (thisp->colorMap.getNum())) {
         SoDebugError::postInfo("SmScenery::colortexture_cb", "size of colorElevation does not match size of colorMap");
         thisp->colorTexturing.setValue(SmScenery::DISABLED);
         return abgr;
       }
       // use elevation values to decide colors
       int i;
-      for ( i = 1; (i <= max) && (elevation > thisp->colorElevation[i-1]); i++ ) { }
+      for (i = 1; (i <= max) && (elevation > thisp->colorElevation[i-1]); i++) { }
       i = i - 1;
       float r = thisp->colorMap[i * 4 + 0];
       float g = thisp->colorMap[i * 4 + 1];
@@ -1696,7 +1706,7 @@ SceneryP::invokecolortexturecb(void * closure, double * pos, float elevation, do
 {
   assert(closure);
   SceneryP * thisp = (SceneryP *) closure;
-  if ( thisp->cbtexcb ) {
+  if (thisp->cbtexcb) {
     return thisp->cbtexcb(thisp->cbtexclosure, pos, elevation, spacing);
   }
   else {
