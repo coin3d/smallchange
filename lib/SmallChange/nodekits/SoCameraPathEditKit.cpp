@@ -663,8 +663,7 @@ void SoCameraPathEditKit::updateDraggers()
 void SoCameraPathEditKit::insertPosition(int idx, const SbVec3f &pos)
 {
   //Avoid inserting beyond scope of array
-  if (idx > numControlpoints) idx = numControlpoints;
-  if (idx < 0) idx = 0;
+  assert(idx >= 0 && idx <= numControlpoints);
 
   // No timestamp specified, so let's calculate the midpoint between
   // the pre and post element of the one to insert
@@ -695,8 +694,7 @@ void SoCameraPathEditKit::insertPosition(int idx, const SbVec3f &pos)
 void SoCameraPathEditKit::insertOrientation(int idx, const SbVec3f &or)
 {
   //Avoid inserting beyond scope of array
-  if (idx > numControlpoints) idx = numControlpoints;
-  if (idx < 0) idx = 0;
+  assert(idx >= 0 && idx <= numControlpoints);
 
   // No timestamp specified, so let's calculate the midpoint between
   // the pre and post element of the one to insert
