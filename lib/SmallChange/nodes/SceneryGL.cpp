@@ -808,6 +808,15 @@ sc_default_texture_activate(RenderState * state, void * handle)
   assert(GL.glTexImage2D);
 
   GL.glBindTexture(GL_TEXTURE_2D, info->id);
+
+  // When texture has been passed to GL driver, it will be sufficient
+  // with just the glBindTexture() call on successive activations.
+  //
+  // FIXME: on some systems (with various GL drivers on MSWindows), we
+  // get a crash on the glTexImage2D() call below on the second
+  // invocation. That shouldn't happen as long as the info->data
+  // pointer is still valid (it might not be). Investigate
+  // why. 20040607 mortene.
   if (info->isbound) { return; }
 
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
