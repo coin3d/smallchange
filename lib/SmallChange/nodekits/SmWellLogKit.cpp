@@ -53,6 +53,13 @@
 
 */
 
+/*!
+  \var SoMFString SmWellLogKit::curveDescription
+
+  The description for each curve in the well log data.
+
+*/
+
 /*!  
   \var SoMFString SmWellLogKit::curveUnits 
   
@@ -317,6 +324,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
 
   SO_KIT_ADD_FIELD(curveNames, (""));
+  SO_KIT_ADD_FIELD(curveDescription, (""));
   SO_KIT_ADD_FIELD(curveUnits, (""));
   SO_KIT_ADD_FIELD(curveData, (0.0f));
   SO_KIT_ADD_FIELD(leftSize, (50.0f));
@@ -352,6 +360,8 @@ SmWellLogKit::SmWellLogKit(void)
   this->wellCoord.setDefault(TRUE);
   this->curveNames.setNum(0);
   this->curveNames.setDefault(TRUE);
+  this->curveDescription.setNum(0);
+  this->curveDescription.setDefault(TRUE);
   this->curveData.setNum(0);
   this->curveData.setDefault(TRUE);
   this->curveUnits.setNum(0);

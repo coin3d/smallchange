@@ -84,6 +84,7 @@ public:
   SoMFVec3d wellCoord;
   
   SoMFString curveNames;
+  SoMFString curveDescription;
   SoMFString curveUnits;
   SoMFFloat curveData;
   SoSFFloat leftSize;
