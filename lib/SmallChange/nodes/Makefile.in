@@ -196,7 +196,8 @@ SOURCES = \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
 	ColorGradient.cpp SmColorGradient.h \
-	SmCoordinateSystem.cpp SmCoordinateSystem.h
+	SmCoordinateSystem.cpp SmCoordinateSystem.h \
+	SmMarkerSet.cpp SmMarkerSet.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -231,7 +232,8 @@ libnodesinc_HEADERS = \
 	SmHeadlight.h \
 	SmVertexArrayShape.h \
 	SmColorGradient.h \
-	SmCoordinateSystem.h
+	SmCoordinateSystem.h \
+	SmMarkerSet.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -255,7 +257,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
 	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT) \
 	VertexArrayShape.$(OBJEXT) ColorGradient.$(OBJEXT) \
-	SmCoordinateSystem.$(OBJEXT)
+	SmCoordinateSystem.$(OBJEXT) SmMarkerSet.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -269,7 +271,8 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
 	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
 	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo \
-	VertexArrayShape.lo ColorGradient.lo SmCoordinateSystem.lo
+	VertexArrayShape.lo ColorGradient.lo SmCoordinateSystem.lo \
+	SmMarkerSet.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -302,6 +305,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmMarkerSet.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmMarkerSet.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Plo ./$(DEPDIR)/SmTooltip.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Po \
@@ -371,7 +376,8 @@ SOURCES = \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
 	ColorGradient.cpp SmColorGradient.h \
-	SmCoordinateSystem.cpp SmCoordinateSystem.h
+	SmCoordinateSystem.cpp SmCoordinateSystem.h \
+	SmMarkerSet.cpp SmMarkerSet.h
 
 
 all: all-am
@@ -436,6 +442,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmMarkerSet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmMarkerSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Plo@am__quote@
