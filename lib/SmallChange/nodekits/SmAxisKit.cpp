@@ -161,13 +161,12 @@ SmAxisKit::affectsState(void) const
 void 
 SmAxisKitP::generateLOD()
 {
-
-  SoLevelOfDetail * LODnode = new SoLevelOfDetail;
- 
-  LODnode->screenArea.set1Value(0, 2000);
-  LODnode->screenArea.set1Value(1, 1200);
-  LODnode->screenArea.set1Value(2, 300);
-  LODnode->screenArea.set1Value(3, 50);  
+   
+  SoLevelOfDetail * LODnode = new SoLevelOfDetail; 
+  LODnode->screenArea.set1Value(0, 15000);
+  LODnode->screenArea.set1Value(1, 8000);
+  LODnode->screenArea.set1Value(2, 4000);
+  LODnode->screenArea.set1Value(3, 2000);  
   
   for (int i=0;i<4;++i) 
     LODnode->addChild(this->generateAxis(i));
@@ -283,13 +282,9 @@ SmAxisKitP::generateAxis(int LODlevel)
         skip = TRUE;      
       break;
     case 2:
-      if ((lodskipper & 1) || (lodskipper & 2))
-        skip = TRUE;      
-      break;
     case 3:
-      skip = TRUE;
-      break;
     default:
+      skip = TRUE;
       break;
     }
 
@@ -306,6 +301,7 @@ SmAxisKitP::generateAxis(int LODlevel)
     sep3->addChild(mtrans1);
     pos += this->master->markerInterval[0];
     ++counter;
+    ++lodskipper;
   }
   root->addChild(sep3);
 
@@ -366,6 +362,13 @@ SmAxisKitP::generateAxis(int LODlevel)
 static void fieldsChangedCallback(void * classObject, SoSensor * sensor)
 {
   SmAxisKitP * thisp = (SmAxisKitP *) classObject;  // Fetch caller object
+
+  if (sensor == thisp->axisRangeSensor) {
+    // Special case. Must regenerate axis.
+    thisp->masterAxis->removeAllChildren();
+    thisp->setupMasterNodes();
+  }
+
   thisp->axisRoot->removeAllChildren();
   thisp->generateLOD();
 }
