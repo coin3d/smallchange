@@ -71,6 +71,7 @@ smallchange_build_dir=`pwd`
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
+AC_PROG_CXXCPP
 AC_LANG_CPLUSPLUS
 
 # **************************************************************************
