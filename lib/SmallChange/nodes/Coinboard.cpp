@@ -160,7 +160,11 @@ Coinboard::~Coinboard()
 void
 Coinboard::initClass()
 {
-  SO_NODE_INIT_CLASS(Coinboard, SoShape, "Shape");
+  static int first = 1;
+  if (first) {
+    first = 0;
+    SO_NODE_INIT_CLASS(Coinboard, SoShape, "Shape");
+  }
 }
 
 void

@@ -41,7 +41,11 @@ SO_ENGINE_SOURCE(Rot2Heading);
 void
 Rot2Heading::initClass(void)
 {
-  SO_ENGINE_INIT_CLASS(Rot2Heading, SoEngine, "Engine");
+  static int first = 1;
+  if (first) {
+    first = 0;
+    SO_ENGINE_INIT_CLASS(Rot2Heading, SoEngine, "Engine");
+  }
 }
 
 /*!

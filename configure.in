@@ -96,16 +96,16 @@ SIM_AC_CHECK_OPENAL([
 ])
 
 #  Check for OggVorbis
-SIM_AC_CHECK_OGGVORBIS([
-  CPPFLAGS="$CPPFLAGS $sim_ac_oggvorbis_cppflags"
-  LDFLAGS="$LDFLAGS $sim_ac_oggvorbis_ldflags"
-  LIBS="$sim_ac_oggvorbis_libs $LIBS"
-  AC_DEFINE(HAVE_OGGVORBIS, 1, [Ogg Vorbis extensions available])
-  SIM_AC_CONFIGURATION_SETTING([Ogg Vorbis support], [Yes])
-], [
-  AC_MSG_WARN([Streaming of Ogg Vorbis files unavailable])
-  SIM_AC_CONFIGURATION_SETTING([Ogg Vorbis support], [No])
-])
+#SIM_AC_CHECK_OGGVORBIS([
+#  CPPFLAGS="$CPPFLAGS $sim_ac_oggvorbis_cppflags"
+#  LDFLAGS="$LDFLAGS $sim_ac_oggvorbis_ldflags"
+#  LIBS="$sim_ac_oggvorbis_libs $LIBS"
+#  AC_DEFINE(HAVE_OGGVORBIS, 1, [Ogg Vorbis extensions available])
+#  SIM_AC_CONFIGURATION_SETTING([Ogg Vorbis support], [Yes])
+#], [
+#  AC_MSG_WARN([Streaming of Ogg Vorbis files unavailable])
+#  SIM_AC_CONFIGURATION_SETTING([Ogg Vorbis support], [No])
+#])
 
 
 #  Default to not building a shared library.
@@ -245,6 +245,8 @@ AC_OUTPUT([
         Makefile
         lib/Makefile
         lib/SmallChange/Makefile
+	lib/SmallChange/actions/Makefile
+	lib/SmallChange/misc/Makefile
 	lib/SmallChange/nodekits/Makefile
 	lib/SmallChange/nodes/Makefile
 	lib/SmallChange/elements/Makefile
