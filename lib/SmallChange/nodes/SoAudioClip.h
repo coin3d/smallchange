@@ -10,6 +10,7 @@
 
 class SoAudioClip : public SoNode
 {
+  typedef SoNode inherited;
   SO_NODE_HEADER(SoAudioClip);
 
   friend class SoSound;

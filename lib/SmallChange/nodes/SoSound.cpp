@@ -37,7 +37,8 @@ SO_NODE_SOURCE(SoSound);
 
 void SoSound::initClass()
 {
-  SO_NODE_INIT_CLASS(SoSound, SoNode, "Node");
+//  SO_NODE_INIT_CLASS(SoSound, SoNode, "Node");
+  SO_NODE_INTERNAL_INIT_CLASS(SoSound);
 };
 
 SoSound::SoSound() 
@@ -596,8 +597,7 @@ SoSoundP::sourceSensorCB(SoSensor *)
     return;
 
   SoAudioClip *audioClip = (SoAudioClip *)ITHIS->source.getValue();
-  // FIXME: use RTTI instead, to see what kind of node it is (might be a movietexture node)
-  // ... or perhaps OI has a convenience method for just that (SoNode::getNodeId ??)
+  // FIXME: use OI convenience method for checking node type before using
 
   if (audioClip == this->currentAudioClip)
     return; 

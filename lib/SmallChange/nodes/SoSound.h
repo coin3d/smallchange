@@ -18,6 +18,7 @@ class SbAsyncBuffer;
 class SoSound : 
   public SoNode
 {
+  typedef SoNode inherited;
   SO_NODE_HEADER(SoSound);
 
   friend class SoAudioRenderAction;

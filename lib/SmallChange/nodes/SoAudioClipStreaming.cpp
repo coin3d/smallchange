@@ -1,4 +1,4 @@
-#if HAVE_CONFIG_H
+#if HAVE_CONFIG_H 
 #include <config.h>
 #endif
 
@@ -27,7 +27,8 @@ SO_NODE_SOURCE(SoAudioClipStreaming);
 
 void SoAudioClipStreaming::initClass()
 {
-  SO_NODE_INIT_CLASS(SoAudioClipStreaming, SoNode, "Node");
+//  SO_NODE_INIT_CLASS(SoAudioClipStreaming, SoNode, "Node");
+  SO_NODE_INTERNAL_INIT_CLASS(SoAudioClipStreaming);
 };
 
 

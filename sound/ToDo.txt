@@ -39,3 +39,6 @@ When we started using the tariff code, (#include <ctypes.h>), we had to compile 
 sample using the (debug) multithreaded (not dll) code generation, and excluding the right std libraries accordingly
 
 Update : dropped #include <ctypes.h> from tariff.c, and everything works fine
+
+
+WIN32,_DEBUG,_CONSOLE,_MBCS,COIN_DLL,SIMAGE_DLL,SOWIN_DLL,HAVE_PTHREAD,SOAL_SUB

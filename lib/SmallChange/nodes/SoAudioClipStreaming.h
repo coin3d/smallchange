@@ -5,6 +5,7 @@
 
 class SoAudioClipStreaming : public SoAudioClip
 {
+  typedef SoAudioClip inherited;
   SO_NODE_HEADER(SoAudioClipStreaming);
 
   friend class SoSound;

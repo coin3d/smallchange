@@ -1,3 +1,27 @@
+// #define DOREAD 1
+
+
+/*
+
+  mulig ogg vorbis fix:
+  bygg static isteden ??
+
+  se bugliste, feil nr. 8 og 20
+
+  */
+
+/* debugging 
+#if     (defined(_MT) || defined(_DLL)) && !defined(_MAC)
+int * __cdecl _errno(void)
+{
+  return 0;
+};
+#define errno   (*_errno())
+#else   // ndef _MT && ndef _DLL 
+int errno;
+#endif  // _MT || _DLL 
+*/
+
 #include <math.h>
 #include <stdlib.h>
 #include <conio.h>
@@ -233,7 +257,8 @@ main(
     printf("audioDevice::init failed\n");
   };
 
-  root = readFile("file.iv");
+#ifdef DOREAD
+  root = readFile("file2.iv");
 
   SoListener *listener;
 
@@ -262,9 +287,112 @@ main(
 	timerSensor->setInterval(SbTime(0, 1000*50));
 	timerSensor->schedule();
 */
-  audioDevice.setSceneGraph(root);
-  audioDevice.setGLRenderAction(viewer->getGLRenderAction());
-  audioDevice.enable();
+
+#else
+  SoListener *listener;
+  SoSound *sourcenode;
+//  SoAudioClip *buffernode;
+  SoAudioClipStreaming *buffernode;
+  SoAudioClip *clip2;
+  SoSound *source2;
+
+  root = new SoSeparator;
+
+  root->addChild( camera = new SoPerspectiveCamera );
+  root->addChild(listener = new SoListener );
+
+  root->addChild( new SoDirectionalLight );
+
+  SoShapeHints * hints = new SoShapeHints;
+  hints->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
+  hints->shapeType = SoShapeHints::SOLID;
+  hints->creaseAngle = 0.91f;
+  root->addChild( hints );
+  SoBaseColor * basecol = new SoBaseColor;
+  basecol->rgb.setValue( float(rand())/float(RAND_MAX),
+                         float(rand())/float(RAND_MAX),
+                         float(rand())/float(RAND_MAX) );
+  root->addChild( basecol );
+
+
+	SoNode *node;
+  SoSeparator *sep = new SoSeparator;
+
+  xf = new SoTransform;
+  xf->translation.setValue(-1.3, 0, 0);
+  
+  sep->addChild(new SoCone);
+  sep->addChild(xf);
+  sep->addChild(node=new SoCone);
+  sep->addChild(sourcenode = new SoSound);
+  
+  root->addChild(buffernode = new SoAudioClipStreaming);
+//  buffernode->setAsyncMode(TRUE);
+//  buffernode->setBufferInfo(4410, 3);
+//  buffernode->setBufferInfo(44100/100*3, 10); 
+//  buffernode->setBufferInfo((44100*30)/1000, 8); 
+  // ^^ 20010809 - if buffer*num == 1 sec, we will have jitter/loops at the beginning
+  // or "very round values) (0.1 sec, 0.2 sec, 
+  // I have no idea why this happens !!!
+//  buffernode->url.setValue("lyd1.wav");
+  buffernode->url.setValue("allways.ogg");
+//  buffernode->loop.setValue(TRUE);
+//  buffernode->loop.setValue(FALSE); 
+  buffernode->startTime.setValue(SbTime::getTimeOfDay() + SbTime(2));
+  buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
+
+  sourcenode->source.setValue(buffernode);
+  root->addChild(sep);
+
+//  openoggfile("allways.ogg");
+
+//    buffernode->setUserCallback(fill_callback, NULL);
+//  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
+//  buffernode->pitch.setValue(2.0f);
+
+//  root->addChild( node=new SoCone );
+//  add separator and add several nodes
+//  root->addChild( node=new SoListener );
+
+
+  SoSeparator *sep2 = new SoSeparator;
+  xf2 = new SoTransform;
+  xf2->translation.setValue(1.3, 0, 0);
+  sep2->addChild(xf2);
+  SoSphere *ball = new SoSphere();
+//  sep2->addChild(node=new SoSphere);
+  ball->radius = 0.3f;
+  sep2->addChild(ball);
+  sep2->addChild(source2 = new SoSound);
+  root->addChild(clip2 = new SoAudioClip);
+  clip2->url.setValue("lyd1.wav");
+  clip2->loop.setValue(TRUE);
+//  clip2->loop.setValue(FALSE);
+  clip2->startTime.setValue(SbTime::getTimeOfDay() + SbTime(1));
+  clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
+  source2->source.setValue(clip2);
+  root->addChild(sep2);
+
+
+  listener->orientation.connectFrom(&camera->orientation);
+  listener->position.connectFrom(&camera->position);
+
+
+	SbViewportRegion vp;
+	vp.setWindowSize(SbVec2s(400, 400));
+
+  SoWinRenderArea * viewer = new SoWinRenderArea( window );
+
+  viewer->setSceneGraph( root );
+
+	viewer->setViewportRegion(vp);
+  camera->viewAll( node, vp);
+
+	SoTimerSensor *timerSensor;
+	timerSensor = new SoTimerSensor(timerSensorCallback, NULL);
+//	timerSensor->setInterval(1);
+	timerSensor->setInterval(SbTime(0, 1000*50));
+	timerSensor->schedule();
 
 //  SbAudioWorkerThread mt(user_callback);
 //  SbAudioWorkerThread mt(NULL);
@@ -272,6 +400,16 @@ main(
 
   SoWriteAction writeAction;
   writeAction.apply(root);
+
+#endif
+
+  audioDevice.setSceneGraph(root);
+  audioDevice.setGLRenderAction(viewer->getGLRenderAction());
+  audioDevice.enable();
+
+//  SbAudioWorkerThread mt(user_callback);
+//  SbAudioWorkerThread mt(NULL);
+//  mt.start();
 
   viewer->show();
   SoWin::show( window );

@@ -28,7 +28,8 @@ SO_NODE_SOURCE(SoAudioClip);
 
 void SoAudioClip::initClass()
 {
-  SO_NODE_INIT_CLASS(SoAudioClip, SoNode, "Node");
+  // SO_NODE_INIT_CLASS(SoAudioClip, SoNode, "Node");
+  SO_NODE_INTERNAL_INIT_CLASS(SoAudioClip);
 };
 
 SoAudioClip::SoAudioClip()
