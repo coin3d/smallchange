@@ -39,33 +39,57 @@ nodes_lst_SOURCES = $(SOURCES)
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
-	$(top_srcdir)/lib/SmallChange/nodes/AutoFile.h \
-	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
-	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
-	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmSwitchboard.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmSwitchboardOperator.h \
-	$(top_srcdir)/lib/SmallChange/nodes/PickSwitch.h \
-	$(top_srcdir)/lib/SmallChange/nodes/PickCallback.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SkyDome.h \
-	$(top_srcdir)/lib/SmallChange/nodes/CoinEnvironment.h \
-	$(top_srcdir)/lib/SmallChange/nodes/ShapeScale.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h \
-	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h \
-	$(top_srcdir)/lib/SmallChange/nodes/UTMCamera.h \
-	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
-	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmScenery.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmHQSphere.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmBillboardClipPlane.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmHeadlight.h
+	AutoFile.h \
+	ViewportRegion.h \
+	DepthBuffer.h \
+	Coinboard.h \
+	SmSwitchboard.h \
+	SmSwitchboardOperator.h \
+	PickSwitch.h \
+	PickCallback.h \
+	SkyDome.h \
+	CoinEnvironment.h \
+	ShapeScale.h \
+	SoText2Set.h \
+	SoTCBCurve.h \
+	SoPointCloud.h \
+	SoLODExtrusion.h \
+	FrustumCamera.h \
+	UTMCamera.h \
+	UTMPosition.h \
+	UTMCoordinate.h \
+	SmTooltip.h \
+	SmScenery.h \
+	SmHQSphere.h \
+	SmBillboardClipPlane.h \
+	SmHeadlight.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
 	rm -f $@; \
 	for i in $(nodes_lst_OBJECTS); do echo $$i >>$@; done
+
+install-libnodesincHEADERS: $(libnodesinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@if test x"$(libnodesinc_HEADERS)" = x""; then :; else \
+	  echo " $(mkinstalldirs) $(DESTDIR)$(libnodesincdir)"; \
+	  $(mkinstalldirs) $(DESTDIR)$(libnodesincdir); \
+	fi
+	@list='$(libnodesinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  src="$$d$$p"; dst="$(DESTDIR)$(libnodesincdir)/$$f"; \
+	  if cmp -s "$$src" "$$dst"; then :; else \
+	    echo " $(INSTALL_HEADER) $$src $$dst"; \
+	    $(INSTALL_HEADER) "$$src" "$$dst" || exit 1; \
+	  fi \
+	done
+	@list='$(ObsoletedHeaders)'; for f in $$list; do \
+	  file="$(DESTDIR)$(libnodesincdir)/$$f"; \
+	  if test -x "$$file"; then \
+	    echo " rm -f $$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done; \
+	:
 

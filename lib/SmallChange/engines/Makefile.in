@@ -182,9 +182,9 @@ engines_lst_SOURCES = \
 
 libenginesincdir = $(includedir)/SmallChange/engines
 libenginesinc_HEADERS = \
-	$(top_srcdir)/lib/SmallChange/engines/Rot2Heading.h \
-	$(top_srcdir)/lib/SmallChange/engines/CubicSplineEngine.h \
-	$(top_srcdir)/lib/SmallChange/engines/SmInverseRotation.h
+	Rot2Heading.h \
+	CubicSplineEngine.h \
+	SmInverseRotation.h
 
 subdir = lib/SmallChange/engines
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -319,15 +319,6 @@ distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
 libenginesincHEADERS_INSTALL = $(INSTALL_HEADER)
-install-libenginesincHEADERS: $(libenginesinc_HEADERS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(libenginesincdir)
-	@list='$(libenginesinc_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(libenginesincHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libenginesincdir)/$$f"; \
-	  $(libenginesincHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libenginesincdir)/$$f; \
-	done
 
 uninstall-libenginesincHEADERS:
 	@$(NORMAL_UNINSTALL)
@@ -396,7 +387,6 @@ top_distdir = ../../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/../../../lib/SmallChange/engines
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -518,6 +508,30 @@ engines.lst: $(engines_lst_OBJECTS)
 	@echo "Linking $@..."; \
 	rm -f $@; \
 	for i in $(engines_lst_OBJECTS); do echo $$i >>$@; done
+
+install-libenginesincHEADERS: $(libenginesinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@if test x"$(libenginesinc_HEADERS)" = x""; then :; else \
+	  echo " $(mkinstalldirs) $(DESTDIR)$(libenginesincdir)"; \
+	  $(mkinstalldirs) $(DESTDIR)$(libenginesincdir); \
+	fi
+	@list='$(libenginesinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  src="$$d$$p"; dst="$(DESTDIR)$(libenginesincdir)/$$f"; \
+	  if cmp -s "$$src" "$$dst"; then :; else \
+	    echo " $(INSTALL_HEADER) $$src $$dst"; \
+	    $(INSTALL_HEADER) "$$src" "$$dst" || exit 1; \
+	  fi \
+	done
+	@list='$(ObsoletedHeaders)'; for f in $$list; do \
+	  file="$(DESTDIR)$(libenginesincdir)/$$f"; \
+	  if test -x "$$file"; then \
+	    echo " rm -f $$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done; \
+	:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -18,12 +18,36 @@ engines_lst_SOURCES = \
 
 libenginesincdir = $(includedir)/SmallChange/engines
 libenginesinc_HEADERS = \
-	$(top_srcdir)/lib/SmallChange/engines/Rot2Heading.h \
-	$(top_srcdir)/lib/SmallChange/engines/CubicSplineEngine.h \
-	$(top_srcdir)/lib/SmallChange/engines/SmInverseRotation.h
+	Rot2Heading.h \
+	CubicSplineEngine.h \
+	SmInverseRotation.h
 
 engines.lst: $(engines_lst_OBJECTS)
 	@echo "Linking $@..."; \
 	rm -f $@; \
 	for i in $(engines_lst_OBJECTS); do echo $$i >>$@; done
+
+install-libenginesincHEADERS: $(libenginesinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@if test x"$(libenginesinc_HEADERS)" = x""; then :; else \
+	  echo " $(mkinstalldirs) $(DESTDIR)$(libenginesincdir)"; \
+	  $(mkinstalldirs) $(DESTDIR)$(libenginesincdir); \
+	fi
+	@list='$(libenginesinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  src="$$d$$p"; dst="$(DESTDIR)$(libenginesincdir)/$$f"; \
+	  if cmp -s "$$src" "$$dst"; then :; else \
+	    echo " $(INSTALL_HEADER) $$src $$dst"; \
+	    $(INSTALL_HEADER) "$$src" "$$dst" || exit 1; \
+	  fi \
+	done
+	@list='$(ObsoletedHeaders)'; for f in $$list; do \
+	  file="$(DESTDIR)$(libenginesincdir)/$$f"; \
+	  if test -x "$$file"; then \
+	    echo " rm -f $$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done; \
+	:
 

@@ -41,8 +41,8 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
 
 # **************************************************************************
 
-libSmallChange@SUFFIX@incdir = $(includedir)/SmallChange
-libSmallChange@SUFFIX@inc_HEADERS = basic.h
+libSmallChangeincdir = $(includedir)/SmallChange
+libSmallChangeinc_HEADERS = basic.h
 
 # **************************************************************************
 
@@ -95,4 +95,28 @@ uninstall-local:
 	    rmdir "$$dir"; \
 	  fi \
 	done
+
+install-libSmallChangeincHEADERS: $(libSmallChangeinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@if test x"$(libSmallChangeinc_HEADERS)" = x""; then :; else \
+	  echo " $(mkinstalldirs) $(DESTDIR)$(libSmallChangeincdir)"; \
+	  $(mkinstalldirs) $(DESTDIR)$(libSmallChangeincdir); \
+	fi
+	@list='$(libSmallChangeinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  src="$$d$$p"; dst="$(DESTDIR)$(libSmallChangeincdir)/$$f"; \
+	  if cmp -s "$$src" "$$dst"; then :; else \
+	    echo " $(INSTALL_HEADER) $$src $$dst"; \
+	    $(INSTALL_HEADER) "$$src" "$$dst" || exit 1; \
+	  fi \
+	done
+	@list='$(ObsoletedHeaders)'; for f in $$list; do \
+	  file="$(DESTDIR)$(libSmallChangeincdir)/$$f"; \
+	  if test -x "$$file"; then \
+	    echo " rm -f $$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done; \
+	:
 

@@ -23,17 +23,42 @@ nodekits_lst_SOURCES = $(SOURCES)
 
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
-	$(srcdir)/LegendKit.h \
-	$(srcdir)/SoFEMKit.h \
-	$(srcdir)/SmTooltipKit.h \
-	$(srcdir)/SmWellLogKit.h \
-	$(srcdir)/SmCameraControlKit.h \
-	$(srcdir)/SmGeoMarkerKit.h \
-	$(srcdir)/SmNormalsKit.h \
-	$(srcdir)/SmAxisDisplayKit.h \
-	$(srcdir)/SmAxisKit.h
+	LegendKit.h \
+	SoFEMKit.h \
+	SmTooltipKit.h \
+	SmWellLogKit.h \
+	SmCameraControlKit.h \
+	SmGeoMarkerKit.h \
+	SmNormalsKit.h \
+	SmAxisDisplayKit.h \
+	SmAxisKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
 	rm -f $@; \
 	for i in $(nodekits_lst_OBJECTS); do echo $$i >>$@; done
+
+install-libnodekitsincHEADERS: $(libnodekitsinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@if test x"$(libnodekitsinc_HEADERS)" = x""; then :; else \
+	  echo " $(mkinstalldirs) $(DESTDIR)$(libnodekitsincdir)"; \
+	  $(mkinstalldirs) $(DESTDIR)$(libnodekitsincdir); \
+	fi
+	@list='$(libnodekitsinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  src="$$d$$p"; dst="$(DESTDIR)$(libnodekitsincdir)/$$f"; \
+	  if cmp -s "$$src" "$$dst"; then :; else \
+	    echo " $(INSTALL_HEADER) $$src $$dst"; \
+	    $(INSTALL_HEADER) "$$src" "$$dst" || exit 1; \
+	  fi \
+	done
+	@list='$(ObsoletedHeaders)'; for f in $$list; do \
+	  file="$(DESTDIR)$(libnodekitsincdir)/$$f"; \
+	  if test -x "$$file"; then \
+	    echo " rm -f $$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done; \
+	:
+

@@ -193,8 +193,8 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD = \
 
 
 # **************************************************************************
-libSmallChange@SUFFIX@incdir = $(includedir)/SmallChange
-libSmallChange@SUFFIX@inc_HEADERS = basic.h
+libSmallChangeincdir = $(includedir)/SmallChange
+libSmallChangeinc_HEADERS = basic.h
 subdir = lib/SmallChange
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
@@ -231,7 +231,7 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 DIST_SOURCES = \
 	$(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES) \
 	$(libSmallChange@SUFFIX@_la_SOURCES)
-HEADERS = $(libSmallChange@SUFFIX@inc_HEADERS)
+HEADERS = $(libSmallChangeinc_HEADERS)
 
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
@@ -239,8 +239,8 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	all-recursive install-data-recursive install-exec-recursive \
 	installdirs-recursive install-recursive uninstall-recursive \
 	check-recursive installcheck-recursive
-DIST_COMMON = $(libSmallChange@SUFFIX@inc_HEADERS) Makefile.am \
-	Makefile.in basic.h.in
+DIST_COMMON = $(libSmallChangeinc_HEADERS) Makefile.am Makefile.in \
+	basic.h.in
 DIST_SUBDIRS = $(SUBDIRS)
 SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES) $(libSmallChange@SUFFIX@_la_SOURCES)
 
@@ -330,23 +330,14 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-libSmallChange@SUFFIX@incHEADERS_INSTALL = $(INSTALL_HEADER)
-install-libSmallChange@SUFFIX@incHEADERS: $(libSmallChange@SUFFIX@inc_HEADERS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(libSmallChange@SUFFIX@incdir)
-	@list='$(libSmallChange@SUFFIX@inc_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(libSmallChange@SUFFIX@incHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f"; \
-	  $(libSmallChange@SUFFIX@incHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f; \
-	done
+libSmallChangeincHEADERS_INSTALL = $(INSTALL_HEADER)
 
-uninstall-libSmallChange@SUFFIX@incHEADERS:
+uninstall-libSmallChangeincHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(libSmallChange@SUFFIX@inc_HEADERS)'; for p in $$list; do \
+	@list='$(libSmallChangeinc_HEADERS)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f"; \
-	  rm -f $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(libSmallChangeincdir)/$$f"; \
+	  rm -f $(DESTDIR)$(libSmallChangeincdir)/$$f; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -522,7 +513,7 @@ check: check-recursive
 all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(libdir) $(DESTDIR)$(libSmallChange@SUFFIX@incdir)
+	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(libdir) $(DESTDIR)$(libSmallChangeincdir)
 
 install: install-recursive
 install-exec: install-exec-recursive
@@ -566,8 +557,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-data-local \
-	install-libSmallChange@SUFFIX@incHEADERS
+install-data-am: install-data-local install-libSmallChangeincHEADERS
 
 install-exec-am: install-exec-local install-libLIBRARIES \
 	install-libLTLIBRARIES
@@ -596,8 +586,8 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-info-am uninstall-libLIBRARIES \
-	uninstall-libLTLIBRARIES \
-	uninstall-libSmallChange@SUFFIX@incHEADERS uninstall-local
+	uninstall-libLTLIBRARIES uninstall-libSmallChangeincHEADERS \
+	uninstall-local
 
 uninstall-info: uninstall-info-recursive
 
@@ -611,7 +601,7 @@ uninstall-info: uninstall-info-recursive
 	install-data-recursive install-exec install-exec-am \
 	install-exec-local install-exec-recursive install-info \
 	install-info-am install-info-recursive install-libLIBRARIES \
-	install-libLTLIBRARIES install-libSmallChange@SUFFIX@incHEADERS \
+	install-libLTLIBRARIES install-libSmallChangeincHEADERS \
 	install-man install-recursive install-strip installcheck \
 	installcheck-am installdirs installdirs-am \
 	installdirs-recursive maintainer-clean maintainer-clean-generic \
@@ -620,9 +610,8 @@ uninstall-info: uninstall-info-recursive
 	pdf pdf-am pdf-recursive ps ps-am ps-recursive tags \
 	tags-recursive uninstall uninstall-am uninstall-info-am \
 	uninstall-info-recursive uninstall-libLIBRARIES \
-	uninstall-libLTLIBRARIES \
-	uninstall-libSmallChange@SUFFIX@incHEADERS uninstall-local \
-	uninstall-recursive
+	uninstall-libLTLIBRARIES uninstall-libSmallChangeincHEADERS \
+	uninstall-local uninstall-recursive
 
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
@@ -686,6 +675,30 @@ uninstall-local:
 	    rmdir "$$dir"; \
 	  fi \
 	done
+
+install-libSmallChangeincHEADERS: $(libSmallChangeinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@if test x"$(libSmallChangeinc_HEADERS)" = x""; then :; else \
+	  echo " $(mkinstalldirs) $(DESTDIR)$(libSmallChangeincdir)"; \
+	  $(mkinstalldirs) $(DESTDIR)$(libSmallChangeincdir); \
+	fi
+	@list='$(libSmallChangeinc_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  src="$$d$$p"; dst="$(DESTDIR)$(libSmallChangeincdir)/$$f"; \
+	  if cmp -s "$$src" "$$dst"; then :; else \
+	    echo " $(INSTALL_HEADER) $$src $$dst"; \
+	    $(INSTALL_HEADER) "$$src" "$$dst" || exit 1; \
+	  fi \
+	done
+	@list='$(ObsoletedHeaders)'; for f in $$list; do \
+	  file="$(DESTDIR)$(libSmallChangeincdir)/$$f"; \
+	  if test -x "$$file"; then \
+	    echo " rm -f $$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done; \
+	:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
