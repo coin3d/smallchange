@@ -461,6 +461,12 @@ SoFEMKit::getBoundingBox(SoGetBoundingBoxAction * action)
   inherited::getBoundingBox(action);
 }
 
+/*!
+  Method needed for thread safe rendering. If multiple threads are used to
+  render a scene graph containing this nodekit, you must set the threadSafe
+  field to TRUE, and use an SoCallbackAction to call this method before 
+  rendering the scene graph.
+*/
 void
 SoFEMKit::preRender(SoAction * action)
 {
