@@ -25,7 +25,7 @@
 \**************************************************************************/
 
 #include <Inventor/nodes/SoSubNode.h>
-#include <Inventor/nodes/SoLight.h>
+#include <Inventor/nodes/SoDirectionalLight.h>
 #include <SmallChange/basic.h>
 
 class SMALLCHANGE_DLL_API SmHeadlight : public SoLight {
@@ -41,6 +41,9 @@ public:
 
 protected:
   virtual ~SmHeadlight();
+  
+private:
+  SoDirectionalLight * dummy;
 };
 
 #endif // !SMALLCHANGE_HEADLIGHT_H

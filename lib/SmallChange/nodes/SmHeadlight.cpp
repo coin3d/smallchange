@@ -38,6 +38,9 @@
 #include <Inventor/elements/SoEnvironmentElement.h>
 #include <Inventor/elements/SoGLLightIdElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoViewingMatrixElement.h>
+#include <Inventor/elements/SoLightElement.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -58,6 +61,9 @@ SO_NODE_SOURCE(SmHeadlight);
 SmHeadlight::SmHeadlight(void)
 {
   SO_NODE_CONSTRUCTOR(SmHeadlight);
+  // needed to pass a standard light source to SoLightElement
+  this->dummy = new SoDirectionalLight;
+  this->dummy->ref();
 }
 
 /*!
@@ -65,6 +71,7 @@ SmHeadlight::SmHeadlight(void)
 */
 SmHeadlight::~SmHeadlight()
 {
+  this->dummy->unref();
 }
 
 // Doc from superclass.
@@ -120,4 +127,13 @@ SmHeadlight::GLRender(SoGLRenderAction * action)
   glLightf(light, GL_CONSTANT_ATTENUATION, 1);
   glLightf(light, GL_LINEAR_ATTENUATION, 0);
   glLightf(light, GL_QUADRATIC_ATTENUATION, 0);
+
+  // update internal light and pass it to SoLightElement
+  this->dummy->intensity = this->intensity.getValue();
+  this->dummy->color = this->color.getValue();
+  this->dummy->direction = -dir;
+
+  SoLightElement::add(state, dummy, SoModelMatrixElement::get(state) * 
+                      SoViewingMatrixElement::get(state));
+
 }
