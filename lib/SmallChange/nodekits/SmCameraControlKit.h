@@ -62,6 +62,9 @@ public:
 
 protected:
 
+  virtual SbBool setAnyPart(const SbName & partname, SoNode * from,
+                            SbBool anypart = TRUE);
+  
   virtual void notify(SoNotList * list);
   virtual ~SmCameraControlKit();
   

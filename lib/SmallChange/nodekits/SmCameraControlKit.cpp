@@ -164,6 +164,30 @@ SmCameraControlKit::handleEvent(SoHandleEventAction * action)
   }
 }
 
+SbBool 
+SmCameraControlKit::setAnyPart(const SbName & partname, SoNode * from,
+                               SbBool anypart)
+{
+  inherited::setAnyPart(partname, from, anypart);
+  if (partname == "scene") {
+    SoSearchAction sa;
+    sa.setInterest(SoSearchAction::FIRST);
+    sa.setType(SoCamera::getClassTypeId());
+    sa.apply(from);
+    if (sa.getPath()) {
+      SoFullPath * p = (SoFullPath*) sa.getPath();
+      SoCamera * cam = (SoCamera*) p->getTail();
+      SoNode * parent = p->getNodeFromTail(1);
+      if (parent->isOfType(SoGroup::getClassTypeId())) {
+        cam->ref();
+        SoGroup * g = (SoGroup*) parent;
+        g->removeChild(cam);
+        SoBaseKit::setAnyPart("camera", cam, TRUE);
+      }
+    }
+  }
+}
+
 void 
 SmCameraControlKit::notify(SoNotList * list)
 {
