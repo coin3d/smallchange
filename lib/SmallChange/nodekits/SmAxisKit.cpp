@@ -194,7 +194,7 @@ SmAxisKitP::setupMasterNodes(void) const
     
   SoSeparator * axisnamesep = new SoSeparator;
   SoTranslation * nameTrans = new SoTranslation;
-  nameTrans->translation.setValue((range/2)*1.05f, 0.0f, 0.0f);
+  nameTrans->translation.setValue((SbAbs(range)/2)*1.05f, 0.0f, 0.0f);
 
   SoText2 * newaxisname = new SoText2;  
   newaxisname->string.connectFrom(&PUBLIC(this)->axisName);
@@ -214,7 +214,13 @@ SmAxisKitP::generateAxis(int LODlevel) const
 
   SoSeparator * root = new SoSeparator;
   float range = (PUBLIC(this)->axisRange.getValue()[1] - PUBLIC(this)->axisRange.getValue()[0]);
- 
+  SbBool rangeDecreasing = FALSE;
+  if (range < 0)
+    rangeDecreasing = TRUE;
+
+  range = SbAbs(range);
+
+
   SoTranslation * centerTrans = new SoTranslation;
   centerTrans->translation.setValue(-range/2, 0.0f, 0.0f);
 
@@ -295,10 +301,13 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoSeparator * textsep = new SoSeparator;
   SoTranslation * ttrans1 = new SoTranslation;
   SoTranslation * ttrans2 = new SoTranslation;
-
   ttrans1->translation.setValue(PUBLIC(this)->textInterval.getValue(), 0.0f, 0.0f);
   ttrans2->translation.setValue(0.0f, PUBLIC(this)->markerHeight.getValue() * 2.2f, 0.0f);  
 
+  SoBaseColor * markerTextColor = new SoBaseColor;
+  markerTextColor->rgb.setValue(0.7f, 0.7f, 0.7f);
+  
+  textsep->addChild(markerTextColor);
   textsep->addChild(centerTrans);
   textsep->addChild(ttrans2);
 
@@ -306,7 +315,9 @@ SmAxisKitP::generateAxis(int LODlevel) const
   const char * tmptext = (tmpstr.sprintf("%%.%df", PUBLIC(this)->digits.getValue())).getString();  
   pos = 0.0f;
   lodskipper = 0;
-  
+  float markerValue = 0;
+
+
   while (pos <= range) {
 
     skip = FALSE;
@@ -334,13 +345,20 @@ SmAxisKitP::generateAxis(int LODlevel) const
     
     SbString mtext;
     SoText2 * markerText = new SoText2;
-    markerText->string.setValue(mtext.sprintf(tmptext, (pos + PUBLIC(this)->axisRange.getValue()[0])));
+    markerText->string.setValue(mtext.sprintf(tmptext, (markerValue + PUBLIC(this)->axisRange.getValue()[0])));
 
     if (!skip) 
       textsep->addChild(markerText);
     textsep->addChild(ttrans1);
 
     pos += PUBLIC(this)->textInterval.getValue();
+
+    if (rangeDecreasing)
+      markerValue -= PUBLIC(this)->textInterval.getValue();
+    else
+      markerValue += PUBLIC(this)->textInterval.getValue();
+
+
     ++lodskipper;
 
   }
