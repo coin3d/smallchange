@@ -27,6 +27,7 @@
 #include <Inventor/nodekits/SoSubKit.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/SbVec3f.h>
 
 class SoFEMKitP;
 class SbColor;
