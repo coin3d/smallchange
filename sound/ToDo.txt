@@ -1,0 +1,13 @@
+
+
+* Flyttet til SimWiki
+
+
+E:\sdk\OpenALCreative\Include,
+
+E:\Users\thammer\Code\Checkout\openal\include
+
+E:\Users\thammer\Code\Checkout\openal\win\AL
+E:\Users\thammer\Code\Checkout\openal\win\ALc
+E:\Users\thammer\Code\Checkout\openal\win\ALu
+E:\Users\thammer\Code\Checkout\openal\win\ALt
