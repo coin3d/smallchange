@@ -55,6 +55,10 @@
 #include <misc/SbAudioWorkerThread.h>
 
 
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
+
+
 SoSeparator * root;
 SoPerspectiveCamera * camera;
 SoTransform *xf;
@@ -68,7 +72,8 @@ static void timerSensorCallback(void *data, SoSensor *)
   SbVec3f cpos;
   cpos=xf->translation.getValue();
   cpos.getValue(x, y, z);
-  x=x+0.3;
+//  x=x+0.3;
+  x=x+0.03;
   xf->translation.setValue(x, y, z);
 }
 
@@ -77,6 +82,70 @@ int user_callback(void *userdata)
   printf(".");
   return 1;
 }
+
+FILE *oggfile;
+OggVorbis_File vf;
+int current_section;
+
+// #include <io.h>
+// #include <fcntl.h>
+
+void openoggfile(char *filename)
+{
+  oggfile = fopen(filename, "rb");
+  if (oggfile == NULL)
+  {
+      fprintf(stderr,"Unknown file.\n");
+      exit(1);
+  }
+//  _setmode( _fileno( stdin ), _O_BINARY );
+
+  if(ov_open(oggfile, &vf, NULL, 0) < 0) {
+//  if(ov_open(stdin, &vf, NULL, 0) < 0) {
+      fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");
+      exit(1);
+  }
+
+  /* Throw the comments plus a few lines about the bitstream we're
+     decoding */
+  {
+    char **ptr=ov_comment(&vf,-1)->user_comments;
+    vorbis_info *vi=ov_info(&vf,-1);
+    while(*ptr){
+      fprintf(stderr,"%s\n",*ptr);
+      ++ptr;
+    }
+    fprintf(stderr,"\nBitstream is %d channel, %ldHz\n",vi->channels,vi->rate);
+    fprintf(stderr,"\nDecoded length: %ld samples\n",
+	    (long)ov_pcm_total(&vf,-1));
+    fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);
+  }
+
+
+};
+
+void closeoggfile()
+{
+  ov_clear(&vf);
+  fclose(oggfile);
+};
+
+static SbBool fill_from_ogg_callback(void *buffer, int length, void *userdata)
+{
+  int numread = 0;
+  int ret;
+  char *ptr = (char *)buffer;
+  while (numread<length*2)
+  {
+    ret=ov_read(&vf, ptr+numread, length*2-numread, 0, 2, 1, &current_section);
+    numread+=ret;
+    if (ret == 0)
+      return FALSE;
+  };
+
+  return TRUE;
+};
+
 
 static SbBool fill_callback(void *buffer, int length, void *userdata)
 {
@@ -184,12 +253,21 @@ main(
   root->addChild(buffernode = new SoAudioClipStreaming);
 //  buffernode->setAsyncMode(FALSE);
   buffernode->setAsyncMode(TRUE);
-  buffernode->setBufferInfo(4410, 4);
+//  buffernode->setBufferInfo(4410, 3);
+  buffernode->setBufferInfo(44100/100*3, 10); 
+  // ^^ 20010809 - if buffer*num == 1 sec, we will have jitter/loops at the beginning
+  // or "very round values) (0.1 sec, 0.2 sec, 
+  // I have no idea why this happens !!!
 //  buffernode->url.setValue("lyd1.wav");
 //  buffernode->loop.setValue(TRUE);
-  buffernode->loop.setValue(FALSE);
+  buffernode->loop.setValue(FALSE); 
+  buffernode->startTime.setValue(SbTime::getTimeOfDay() + SbTime(2));
   buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
-  buffernode->setUserCallback(fill_callback, NULL);
+
+  openoggfile("allways.ogg");
+
+  //  buffernode->setUserCallback(fill_callback, NULL);
+  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
 //  buffernode->pitch.setValue(2.0f);
 
   sourcenode->source.setValue(buffernode);
@@ -215,7 +293,8 @@ main(
 
 	SoTimerSensor *timerSensor;
 	timerSensor = new SoTimerSensor(timerSensorCallback, NULL);
-	timerSensor->setInterval(1);
+//	timerSensor->setInterval(1);
+	timerSensor->setInterval(SbTime(0, 1000*500));
 	timerSensor->schedule();
 
   audioDevice.setSceneGraph(root);
@@ -239,6 +318,8 @@ main(
   joyReleaseCapture(mmres);
 
   audioDevice.disable();
+
+  closeoggfile();
 
 // fixme: do the deletion - but wait for mbm to fix sowin-bug
 //  delete viewer;

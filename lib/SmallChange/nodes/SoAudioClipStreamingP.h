@@ -24,7 +24,7 @@ public:
   SbBool startPlaying(SbBool force = FALSE);
 
   SbBool asyncMode;
-  ALuint *streamingBuffers;
+  ALuint *alBuffers;
   int bufferSize;
   int numBuffers;
 
