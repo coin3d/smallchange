@@ -97,6 +97,7 @@
 #include <Inventor/SbString.h>
 #include <Inventor/SbBox2s.h>
 #include <Inventor/misc/SoGlyph.h>
+#include <Inventor/elements/SoClipPlaneElement.h>
 
 #include "../misc/SbList.h"
 
@@ -294,6 +295,9 @@ SoText2Set::GLRender(SoGLRenderAction * action)
   SbVec3f center;
   this->computeBBox(action, box, center);
 
+  const SoClipPlaneElement * clipelem = (const SoClipPlaneElement*)
+    SoClipPlaneElement::getInstance(state);
+
   if (!SoCullElement::cullTest(state, box, SbBool(TRUE))) {
     SoMaterialBundle mb(action);
     mb.sendFirst();
@@ -357,12 +361,21 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     for (unsigned int i = 0; i < counter; i++) {
 
       const unsigned int index = PRIVATE(this)->textdistancelist[i].index;
-      SbVec3f nilpoint;
+      SbVec3f nilpoint, worldnil;
       if (index < (unsigned int)this->position.getNum())
         nilpoint = this->position[index];
       else
         nilpoint = SbVec3f(0 ,0, 0); // Default position
-           
+
+      mat.multVecMatrix(nilpoint, worldnil);
+      projmatrix.multVecMatrix(nilpoint, nilpoint);
+      // check near/far plane and skip if in front/behind
+      if (nilpoint[2] < -1.0f || nilpoint[2] > 1.0f) continue;
+      nilpoint[0] = (nilpoint[0] + 1.0f) * 0.5f * vpsize[0];
+      nilpoint[1] = (nilpoint[1] + 1.0f) * 0.5f * vpsize[1];      
+      float xpos = nilpoint[0];
+      float ypos = nilpoint[1];
+
       // FIXME: should make this selection available in public API?
       //
       // Note that the View'EM application currently depends on the
@@ -373,25 +386,23 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       // left-side and top borders of the rendering canvas.
       //
       // 20031222 mortene.
-#if 1      
+#if 0      
       // Frustum cull each string, checking just its position point.
       const SbBox3f stringbbox(nilpoint, nilpoint);
       // FIXME: there should be a SoCullElement::cullTest(..,SbVec3f,...) 
       // method. 20031222 mortene.
       if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
 #else
-      // This culls versus the whole string, i.e. if just a single
-      // piece of the string is within the view volume (+ other
-      // clipping planes), the (full) string will be shown.
-      const SbBox3f stringbbox = PRIVATE(this)->stringBBox(state, index);
-      if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
-#endif
-      
-      projmatrix.multVecMatrix(nilpoint, nilpoint);
-      nilpoint[0] = (nilpoint[0] + 1.0f) * 0.5f * vpsize[0];
-      nilpoint[1] = (nilpoint[1] + 1.0f) * 0.5f * vpsize[1];      
-      float xpos = nilpoint[0];
-      float ypos = nilpoint[1];
+      // point-clip against clipping planes, but not view volume (this is
+      // important for ViewEM)
+      const SbBox3f stringbbox(worldnil, worldnil);
+      int j;
+      for (j = 0; j < clipelem->getNum(); j++) {
+        const SbPlane & p = clipelem->get(j, TRUE);
+        if (!p.isInHalfSpace(worldnil)) break;
+      }
+      if (j < clipelem->getNum()) continue;
+#endif      
 
       const unsigned int charcnt = this->string[index].getLength();
       switch (PRIVATE(this)->getJustification(index)) {
