@@ -33,7 +33,10 @@
 #include <SoWinLeaveScope.h>
 #endif // win
 
-class DepthBuffer : public SoNode {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API DepthBuffer : public SoNode {
   typedef SoNode inherited;
 
   SO_NODE_HEADER(DepthBuffer);

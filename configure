@@ -19424,16 +19424,6 @@ yes | true)  SMALLCHANGE_STATIC=true;;
 *)           SMALLCHANGE_STATIC=false;;
 esac
 
-# Cut off any attempt to use SmallChange as a dynamic link library.
-# This is done as we don't support building as a DLL under MSWindows
-# yet (we don't export any of the symbols with __declspec(), for
-# instance). -mortene.
-case $enable_shared in
-yes | true)  { { echo "$as_me:$LINENO: error: SmallChange should not be built as a shared library." >&5
-echo "$as_me: error: SmallChange should not be built as a shared library." >&2;}
-   { (exit 1); exit 1; }; } ;;
-esac
-
 echo "$as_me:$LINENO: checking for strcasecmp() function" >&5
 echo $ECHO_N "checking for strcasecmp() function... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
@@ -20328,7 +20318,7 @@ exec_prefix=$sim_ac_save_exec_prefix
 # unset sim_ac_eval_uniq
 
 
-                                                                                                    ac_config_files="$ac_config_files Makefile lib/Makefile lib/SmallChange/Makefile lib/SmallChange/actions/Makefile lib/SmallChange/misc/Makefile lib/SmallChange/nodekits/Makefile lib/SmallChange/nodes/Makefile lib/SmallChange/elements/Makefile lib/SmallChange/engines/Makefile lib/SmallChange/draggers/Makefile"
+                                                                                                              ac_config_files="$ac_config_files Makefile lib/Makefile lib/SmallChange/Makefile lib/SmallChange/actions/Makefile lib/SmallChange/misc/Makefile lib/SmallChange/nodekits/Makefile lib/SmallChange/nodes/Makefile lib/SmallChange/elements/Makefile lib/SmallChange/engines/Makefile lib/SmallChange/draggers/Makefile lib/SmallChange/basic.h"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -20908,6 +20898,7 @@ do
   "lib/SmallChange/elements/Makefile" ) CONFIG_FILES="$CONFIG_FILES lib/SmallChange/elements/Makefile" ;;
   "lib/SmallChange/engines/Makefile" ) CONFIG_FILES="$CONFIG_FILES lib/SmallChange/engines/Makefile" ;;
   "lib/SmallChange/draggers/Makefile" ) CONFIG_FILES="$CONFIG_FILES lib/SmallChange/draggers/Makefile" ;;
+  "lib/SmallChange/basic.h" ) CONFIG_FILES="$CONFIG_FILES lib/SmallChange/basic.h" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

@@ -29,7 +29,10 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFInt32.h>
 
-class PickSwitch : public SoSwitch {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API PickSwitch : public SoSwitch {
   typedef SoSwitch inherited;
 
   SO_NODE_HEADER(PickSwitch);

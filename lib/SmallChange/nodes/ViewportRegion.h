@@ -35,9 +35,12 @@
 #include <SoWinLeaveScope.h>
 #endif // win
 
+#include <SmallChange/basic.h>
+
 class ViewportRegionP;
 
-class ViewportRegion : public SoNode {
+
+class SMALLCHANGE_DLL_API ViewportRegion : public SoNode {
   typedef SoNode inherited;
 
   SO_NODE_HEADER(ViewportRegion);

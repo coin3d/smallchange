@@ -28,7 +28,10 @@
 #include <Inventor/fields/SoMFBool.h>
 #include <Inventor/nodes/SoSubNode.h>
 
-class Switchboard : public SoGroup {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API Switchboard : public SoGroup {
   typedef SoGroup inherited;
   SO_NODE_HEADER(Switchboard);
 

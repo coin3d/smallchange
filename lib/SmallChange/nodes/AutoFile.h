@@ -30,7 +30,10 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
 
-class AutoFile : public SoFile {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API AutoFile : public SoFile {
   typedef SoFile inherited;
 
   SO_NODE_HEADER(AutoFile);

@@ -31,7 +31,10 @@
 #include <SoWinLeaveScope.h>
 #endif // win
 
-class GLDepthBufferElement : public SoElement {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API GLDepthBufferElement : public SoElement {
   typedef SoElement inherited;
 
   SO_ELEMENT_HEADER(GLDepthBufferElement);

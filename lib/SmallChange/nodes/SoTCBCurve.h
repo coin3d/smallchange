@@ -28,8 +28,10 @@
 #include <Inventor/fields/SoMFTime.h>
 #include <Inventor/fields/SoSFInt32.h>
 
+#include <SmallChange/basic.h>
 
-class SoTCBCurve : public SoShape
+
+class SMALLCHANGE_DLL_API SoTCBCurve : public SoShape
 {
   typedef SoShape inherited;
 

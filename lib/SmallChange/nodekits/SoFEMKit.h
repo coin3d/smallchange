@@ -29,13 +29,16 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/SbVec3f.h>
 
+#include <SmallChange/basic.h>
+
 class SoFEMKitP;
 class SbColor;
 class SbPlane;
 class SoSensor;
 class SbVec3f;
 
-class SoFEMKit : public SoBaseKit {
+
+class SMALLCHANGE_DLL_API SoFEMKit : public SoBaseKit {
   typedef SoBaseKit inherited;
 
   SO_KIT_HEADER(SoFEMKit);

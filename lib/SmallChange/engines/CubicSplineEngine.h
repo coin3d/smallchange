@@ -41,7 +41,10 @@
 #include <Inventor/lists/SbList.h>
 #include <SmallChange/misc/SbCubicSpline.h>
 
-class CubicSplineEngine : public SoEngine {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API CubicSplineEngine : public SoEngine {
   typedef SoEngine inherited;
   
   SO_ENGINE_HEADER(CubicSplineEngine);

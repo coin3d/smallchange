@@ -30,7 +30,10 @@
 #include <Inventor/fields/SoSFEnum.h>
 #include <Inventor/elements/SoEnvironmentElement.h>
 
-class CoinEnvironment : public SoNode {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API CoinEnvironment : public SoNode {
   typedef SoNode inherited;
 
   SO_NODE_HEADER(CoinEnvironment);

@@ -1,5 +1,4 @@
-
-INCLUDES = -I$(top_srcdir)/lib
+INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 
 if BUILD_WITH_MSVC
 noinst_LIBRARIES = engines.lst

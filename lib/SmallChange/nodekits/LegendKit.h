@@ -37,12 +37,15 @@
 #include <SoWinLeaveScope.h>
 #endif // win
 
+#include <SmallChange/basic.h>
+
 class SbViewport;
 class SoState;
 class SbColor;
 class SbVec2s;
 
-class LegendKit : public SoBaseKit {
+
+class SMALLCHANGE_DLL_API LegendKit : public SoBaseKit {
   typedef SoBaseKit inherited;
 
   SO_KIT_HEADER(LegendKit);

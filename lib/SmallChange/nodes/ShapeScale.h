@@ -29,12 +29,15 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFBool.h>
 
+#include <SmallChange/basic.h>
+
 class SbViewport;
 class SoState;
 class SbColor;
 class SbVec2s;
 
-class ShapeScale : public SoBaseKit {
+
+class SMALLCHANGE_DLL_API ShapeScale : public SoBaseKit {
   typedef SoBaseKit inherited;
 
   SO_KIT_HEADER(ShapeScale);

@@ -34,7 +34,10 @@
 #include <SoWinLeaveScope.h>
 #endif // win
 
-class Rot2Heading : public SoEngine {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API Rot2Heading : public SoEngine {
   typedef SoEngine inherited;
   
   SO_ENGINE_HEADER(Rot2Heading);

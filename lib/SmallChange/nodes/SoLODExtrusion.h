@@ -34,7 +34,10 @@
 #include <Inventor/fields/SoMFColor.h>
 #include <Inventor/fields/SoMFRotation.h>
 
-class SoLODExtrusion : public SoShape
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API SoLODExtrusion : public SoShape
 {
   typedef SoShape inherited;
   SO_NODE_HEADER(SoLODExtrusion);

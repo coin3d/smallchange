@@ -28,7 +28,10 @@
 #include <Inventor/nodes/SoCamera.h>
 #include <Inventor/fields/SoSFFloat.h>
 
-class FrustumCamera : public SoCamera {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API FrustumCamera : public SoCamera {
   typedef SoCamera inherited;
 
   SO_NODE_HEADER(FrustumCamera);

@@ -33,8 +33,10 @@
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/fields/SoSFInt32.h>
 
+#include <SmallChange/basic.h>
 
-class SoCameraPathEditKit : public SoBaseKit
+
+class SMALLCHANGE_DLL_API SoCameraPathEditKit : public SoBaseKit
 {
   typedef SoBaseKit inherited;
 

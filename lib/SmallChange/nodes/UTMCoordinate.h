@@ -28,9 +28,12 @@
 #include <Inventor/fields/SoMFVec3f.h>
 #include <Inventor/lists/SbList.h>
 
+#include <SmallChange/basic.h>
+
 class SoState;
 
-class UTMCoordinate : public SoNode {
+
+class SMALLCHANGE_DLL_API UTMCoordinate : public SoNode {
   typedef SoNode inherited;
 
   SO_NODE_HEADER(UTMCoordinate);

@@ -31,11 +31,14 @@
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/lists/SoCallbackList.h>
 
+#include <SmallChange/basic.h>
+
 class SoPath;
 class SoPickedPoint;
 class SoEvent;
 
-class PickCallback : public SoGroup {
+
+class SMALLCHANGE_DLL_API PickCallback : public SoGroup {
   typedef SoGroup inherited;
 
   SO_NODE_HEADER(PickCallback);

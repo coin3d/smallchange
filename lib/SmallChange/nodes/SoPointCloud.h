@@ -31,7 +31,10 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFEnum.h>
 
-class SoPointCloud : public SoNonIndexedShape {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API SoPointCloud : public SoNonIndexedShape {
   typedef SoNonIndexedShape inherited;
 
   SO_NODE_HEADER(SoPointCloud);

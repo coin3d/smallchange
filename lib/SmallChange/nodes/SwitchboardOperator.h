@@ -29,7 +29,10 @@
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/events/SoKeyboardEvent.h>
 
-class SwitchboardOperator : public Switchboard {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API SwitchboardOperator : public Switchboard {
   typedef Switchboard inherited;
   SO_NODE_HEADER(SwitchboardOperator);
 

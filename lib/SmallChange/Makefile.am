@@ -41,6 +41,11 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
 
 # **************************************************************************
 
+libSmallChangeincdir = $(includedir)/SmallChange
+libSmallChangeinc_HEADERS = basic.h
+
+# **************************************************************************
+
 if BUILD_WITH_MSVC
 install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \

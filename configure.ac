@@ -119,14 +119,6 @@ yes | true)  SMALLCHANGE_STATIC=true;;
 *)           SMALLCHANGE_STATIC=false;;
 esac
 
-# Cut off any attempt to use SmallChange as a dynamic link library.
-# This is done as we don't support building as a DLL under MSWindows
-# yet (we don't export any of the symbols with __declspec(), for
-# instance). -mortene.
-case $enable_shared in
-yes | true)  AC_MSG_ERROR([SmallChange should not be built as a shared library.]) ;;
-esac
-
 AC_MSG_CHECKING([for strcasecmp() function])
 AC_TRY_LINK([
 #include <string.h>
@@ -236,6 +228,8 @@ AC_OUTPUT([
 	lib/SmallChange/elements/Makefile
 	lib/SmallChange/engines/Makefile
 	lib/SmallChange/draggers/Makefile
+
+	lib/SmallChange/basic.h
 ])
 
 SIM_AC_CONFIGURATION_SETTING([Install prefix], [$prefix])

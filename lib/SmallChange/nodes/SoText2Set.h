@@ -32,7 +32,10 @@
 #include <Inventor/SbVec3f.h>
 #include <Inventor/SbBox3f.h>
 
-class SoText2Set : public SoShape
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API SoText2Set : public SoShape
 {
   typedef SoShape inherited;
 

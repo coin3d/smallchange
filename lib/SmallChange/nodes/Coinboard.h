@@ -37,9 +37,12 @@
 #include <SoWinLeaveScope.h>
 #endif // win
 
+#include <SmallChange/basic.h>
+
 class SbMatrix;
 
-class Coinboard : public SoShape {
+
+class SMALLCHANGE_DLL_API Coinboard : public SoShape {
   typedef SoShape inherited;
 
   SO_NODE_HEADER(Coinboard);

@@ -29,7 +29,10 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
 
-class SkyDome : public SoShape {
+#include <SmallChange/basic.h>
+
+
+class SMALLCHANGE_DLL_API SkyDome : public SoShape {
   typedef SoShape inherited;
 
   SO_NODE_HEADER(Coinboard);
