@@ -33,7 +33,9 @@ SOURCES = \
 	UTMPosition.cpp \
 	UTMPosition.h \
 	UTMCoordinate.cpp \
-	UTMCoordinate.h
+	UTMCoordinate.h \
+	SmTooltip.cpp \
+	SmTooltip.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
@@ -59,7 +61,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCamera.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
-	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h
+	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -193,7 +193,9 @@ SOURCES = \
 	UTMPosition.cpp \
 	UTMPosition.h \
 	UTMCoordinate.cpp \
-	UTMCoordinate.h
+	UTMCoordinate.h \
+	SmTooltip.cpp \
+	SmTooltip.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -220,7 +222,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCamera.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
-	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h
+	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -240,7 +243,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
 	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
-	UTMCoordinate.$(OBJEXT)
+	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -252,7 +255,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
-	UTMCoordinate.lo
+	UTMCoordinate.lo SmTooltip.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -273,7 +276,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Po ./$(DEPDIR)/SkyDome.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po ./$(DEPDIR)/SmTooltip.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoPointCloud.Plo \
@@ -339,7 +343,9 @@ SOURCES = \
 	UTMPosition.cpp \
 	UTMPosition.h \
 	UTMCoordinate.cpp \
-	UTMCoordinate.h
+	UTMCoordinate.h \
+	SmTooltip.cpp \
+	SmTooltip.h
 
 
 all: all-am
@@ -390,6 +396,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoPointCloud.Plo@am__quote@
