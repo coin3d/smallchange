@@ -651,12 +651,34 @@ Scenery::setBlockRottger(const float c)
   }
 }
 
+float
+Scenery::getBlockRottger(void) const
+{
+  if (sc_scenery_available() && this->system) {
+    float C, c;
+    sc_ssglue_view_get_evaluate_rottger_parameters(this->system, this->viewid, &C, &c);
+    return c;
+  }
+  return 0.0f;
+}
+
 void 
 Scenery::setLoadRottger(const float c)
 {
   if (sc_scenery_available() && this->system) {
     sc_ssglue_view_set_load_rottger_parameters(this->system, this->viewid, 16.0f, c);
   }
+}
+
+float
+Scenery::getLoadRottger(void) const
+{
+  if (sc_scenery_available() && this->system) {
+    float C, c;
+    sc_ssglue_view_get_load_rottger_parameters(this->system, this->viewid, &C, &c);
+    return c;
+  }
+  return 0.0f;
 }
 
 void 

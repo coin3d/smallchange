@@ -44,7 +44,9 @@ public:
   int postFrame(void);
 
   void setBlockRottger(const float c);
+  float getBlockRottger(void) const;
   void setLoadRottger(const float c);
+  float getLoadRottger(void) const;
   void refreshTextures(const int id);
 
   typedef struct {
