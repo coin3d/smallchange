@@ -1309,7 +1309,9 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
            (sc_ssglue_system_get_dataset_type(PRIVATE(thisp)->system, 0) == SS_ELEVATION_TYPE)) {
         PRIVATE(thisp)->colormaptexid = sc_ssglue_system_add_runtime_texture2d(PRIVATE(thisp)->system, 0, SceneryP::invokecolortexturecb, PRIVATE(thisp));
       }
-      sc_ssglue_system_get_object_box(PRIVATE(thisp)->system, PRIVATE(thisp)->renderstate.bbmin, PRIVATE(thisp)->renderstate.bbmax); 
+      //  sc_ssglue_system_get_object_box(PRIVATE(thisp)->system, PRIVATE(thisp)->renderstate.bbmin, PRIVATE(thisp)->renderstate.bbmax); 
+      sc_ssglue_system_get_elevation_data_box(PRIVATE(thisp)->system, 0 /* FIXME: elev dataset */, 
+                                              PRIVATE(thisp)->renderstate.bbmin, PRIVATE(thisp)->renderstate.bbmax); 
       PRIVATE(thisp)->blocksize = sc_ssglue_system_get_blocksize(PRIVATE(thisp)->system);
       PRIVATE(thisp)->renderstate.blocksize = (float) (PRIVATE(thisp)->blocksize-1);
       PRIVATE(thisp)->viewid = sc_ssglue_view_allocate(PRIVATE(thisp)->system);
