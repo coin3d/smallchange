@@ -1,0 +1,17 @@
+Debug
+Release
+Makefile
+bin
+cfg
+libtool
+config.status
+config.log
+smallchange-default.cfg
+stamp-*
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.ncb
+*.plg
+*.opt
