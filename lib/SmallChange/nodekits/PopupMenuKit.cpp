@@ -147,6 +147,7 @@ public:
   float backgroundright;
   
   int activeitem;
+  int submenumarkeridx;
 
   SmPopupMenuKit * getSubMenu(const int idx) {
     if (idx < master->itemData.getNum()) {
@@ -168,6 +169,7 @@ public:
   }
 
   void buildTextScenegraph(void);
+  static int addSubmenuMarker(); // Creates a right-pointing arrow
 
 };
 
@@ -291,6 +293,10 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   PRIVATE(this)->isactivesensor->attach(&this->isActive);
   PRIVATE(this)->padding = SbVec3f(7, 7, 1);
   PRIVATE(this)->triggerscriptsensor = new SoOneShotSensor(trigger_cb, this);
+
+  // Create a new better-looking submenu marker
+  PRIVATE(this)->submenumarkeridx = SmPopupMenuKitP::addSubmenuMarker();
+
 }
 
 /*!
@@ -404,9 +410,11 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
     if (pp) {
       SbVec3f p = pp->getObjectPoint();
       p[1] -= PRIVATE(this)->backgroundmenulow;
+      p[1] += (PRIVATE(this)->padding[1] + 2.0f) /  PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] *= PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] /= PRIVATE(this)->fontsize * this->spacing.getValue();
       
+
       if (this->itemList.getNum()) {
         int idx = (int) p[1];
         activeitem = (this->itemList.getNum()-1) - idx;
@@ -725,7 +733,7 @@ SmPopupMenuKit::isactive_cb(void * closure, SoSensor * s)
   
   if (thisp->isActive.getValue()) {
     mat->transparency = 0.0f;
-    mat->diffuseColor = SbColor(0.8f, 0.8f, 0.8f);
+    mat->diffuseColor = SbColor(0.6f, 0.6f, 0.6f);
   }
   else {
     mat->transparency = 0.3f;
@@ -833,11 +841,9 @@ SmPopupMenuKitP::buildTextScenegraph()
   SoTranslation * texttrans = new SoTranslation;
   texttrans->translation.setValue(0, -spacing, 0);
   SoTranslation * tagtrans = new SoTranslation;
-  tagtrans->translation.setValue(- 9.0f / pixelsize[0], ((this->fontsize-1) / 2.0f) / pixelsize[1], 0);
+  tagtrans->translation.setValue(- 5.0f / pixelsize[0], ((this->fontsize-1) / 2.0f) / pixelsize[1], 0);
   SoMarkerSet * tagmarker = new SoMarkerSet;
   tagmarker->markerIndex.setValue(SoMarkerSet::SQUARE_FILLED_5_5);
-  SoMarkerSet * untagmarker = new SoMarkerSet;
-  untagmarker->markerIndex.setValue(SoMarkerSet::SQUARE_LINE_7_7);
 
   SbList <SoSeparator *> lineseparatorlist;
   SbList <SoSeparator *> submenuitemlist;
@@ -889,7 +895,7 @@ SmPopupMenuKitP::buildTextScenegraph()
   SoFaceSet * fs = (SoFaceSet*) PUBLIC(this)->getAnyPart("backgroundShape", TRUE);
   fs->numVertices = 0;  
   SbVec3f submenubulletpad(0,0,0);
-  if (submenuitemlist.getLength() > 0) submenubulletpad= SbVec3f(9.0f/pixelsize[0], 0.0f, 0.0f);  
+  if (submenuitemlist.getLength() > 0) submenubulletpad = SbVec3f(6.0f / pixelsize[0], 0.0f, 0.0f);  
   this->bba.setViewportRegion(this->vp);
   this->bba.apply(p);
   SbBox3f bb = this->bba.getBoundingBox();
@@ -917,9 +923,9 @@ SmPopupMenuKitP::buildTextScenegraph()
     
     // Add submenu markers
     SoMarkerSet * marker = new SoMarkerSet;
-    marker->markerIndex.setValue(SoMarkerSet::DIAMOND_FILLED_9_9);
+    marker->markerIndex.setValue(this->submenumarkeridx);
     SoTranslation * trans = new SoTranslation;
-    trans->translation.setValue(sepwidth - (9.0f / pixelsize[0]), 
+    trans->translation.setValue(sepwidth - (6.0f / pixelsize[0]), 
                                 ((this->fontsize - 4.5f)/2.0f) / pixelsize[1], 
                                 0);
     
@@ -937,22 +943,26 @@ SmPopupMenuKitP::buildTextScenegraph()
   // Add a menu title
   if (PUBLIC(this)->menuTitle.getValue().getLength() != 0) {
     SoSeparator * textsep = new SoSeparator;
+
     SoFont * menufont = (SoFont *) PUBLIC(this)->getAnyPart("textFont", TRUE);
     SoFont * titlefont = new SoFont;
     titlefont->size.setValue(menufont->size.getValue());
     titlefont->name.setValue("Verdana:Bold:Italic");
+
     SoTranslation * trans = new SoTranslation;
     trans->translation.setValue(0, spacing, 0); 
+
     SoBaseColor * graycolor = new SoBaseColor;
     graycolor->rgb.setValue(0.2f, 0.2f, 0.2f);
-    SoBaseColor * whitecolor = new SoBaseColor;
-    whitecolor->rgb.setValue(1.0f, 1.0f, 1.0f);
     SoText2 * title = new SoText2;
     title->string = PUBLIC(this)->menuTitle.getValue();
     textsep->addChild(trans);
     textsep->addChild(titlefont);
     textsep->addChild(graycolor);
     textsep->addChild(title);
+
+    SoBaseColor * whitecolor = new SoBaseColor;
+    whitecolor->rgb.setValue(1.0f, 1.0f, 1.0f);
     SoTranslation * pixelshift = new SoTranslation;
     pixelshift->translation.setValue(-1.0f/pixelsize[0], 1.0f/pixelsize[1], 0);
     textsep->addChild(pixelshift);
@@ -1066,6 +1076,42 @@ SmPopupMenuKit::setSchemeEvalFunctions(int (*scriptcb)(const char *),
   schemescriptcb = scriptcb;
   schemefilecb = filecb;
 }
+
+int
+SmPopupMenuKitP::addSubmenuMarker()
+{
+
+  const int WIDTH = 6;
+  const int HEIGHT = 6;
+  const int BYTEWIDTH = (WIDTH + 7) / 2;
+  
+  const char submenu_marker[WIDTH * HEIGHT + 1] = {
+    "oo    "
+    "oooo  "
+    "ooooo*"
+    "ooooo*"
+    "oooo  "
+    "oo    " };
+
+  int byteidx = 0;
+  unsigned char bitmapbytes[BYTEWIDTH * HEIGHT];
+  for (int h = 0; h < HEIGHT; h++) {
+    unsigned char bits = 0;
+    for (int w = 0; w < WIDTH; w++) {
+      if (submenu_marker[(h * WIDTH) + w] != ' ') { bits |= (0x80 >> (w % 8)); }
+      if ((((w + 1) % 8) == 0) || (w == WIDTH - 1)) {
+        bitmapbytes[byteidx++] = bits;
+        bits = 0;
+      }
+    }
+  }
+
+  int MYAPP_ARROW_IDX = SoMarkerSet::getNumDefinedMarkers(); // add at end
+  SoMarkerSet::addMarker(MYAPP_ARROW_IDX, SbVec2s(WIDTH, HEIGHT),
+                         bitmapbytes, FALSE, TRUE);  
+  return MYAPP_ARROW_IDX;
+}
+
 
 #undef PRIVATE
 #undef PUBLIC
