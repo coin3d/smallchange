@@ -33,6 +33,7 @@
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbViewVolume.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoDrawStyle.h>
@@ -47,6 +48,7 @@
 #include <Inventor/nodes/SoLightModel.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <SmallChange/nodes/DepthBuffer.h>
 #include <SmallChange/nodes/ViewportRegion.h>
 
@@ -153,14 +155,8 @@ SmAxisDisplayKit::initClass(void)
 void 
 SmAxisDisplayKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
-  // the kit has changed but the sensor has not triggered
-  // yet. Calculate manually and unschedule() so that we get the
-  // correct bounding box.
-  if (PRIVATE(this)->oneshot->isScheduled()) {
-    PRIVATE(this)->oneshot->unschedule();
-    SmAxisDisplayKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
-  }
-  inherited::getBoundingBox(action);
+  SoCacheElement::invalidate(action->getState());
+  SoNode::getBoundingBox(action);
 }
 
 // overloader to test when stuff changes in the API fields
