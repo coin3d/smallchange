@@ -251,7 +251,8 @@ main(
 //  buffernode->setAsyncMode(FALSE);
   buffernode->setAsyncMode(TRUE);
 //  buffernode->setBufferInfo(4410, 3);
-  buffernode->setBufferInfo(44100/100*3, 10); 
+//  buffernode->setBufferInfo(44100/100*3, 10); 
+  buffernode->setBufferInfo(44100/10, 8); 
   // ^^ 20010809 - if buffer*num == 1 sec, we will have jitter/loops at the beginning
   // or "very round values) (0.1 sec, 0.2 sec, 
   // I have no idea why this happens !!!

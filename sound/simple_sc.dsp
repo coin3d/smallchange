@@ -78,7 +78,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL)\lib\SmallChange1.lib $(SDK_PTHREADS)\lib\pthreadVC.lib $(SDK_OGGVORBIS)\lib\vorbisfile_static_d.lib $(SDK_OGGVORBIS)\lib\vorbis_static_d.lib $(SDK_OGGVORBIS)\lib\ogg_static_d.lib $(CODE_INSTALL)\lib\Coin0.lib $(CODE_INSTALL)\lib\SoWin0.lib $(CODE_CHECKOUT)\openal\win\Alut\Debug\ALut.lib $(CODE_CHECKOUT)\openal\win\OpenAL32\Debug\OpenAL32.lib winmm.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL)\lib\SmallChange1.lib $(SDK_PTHREADS)\lib\pthread.lib $(SDK_OGGVORBIS)\lib\vorbisfile_static_d.lib $(SDK_OGGVORBIS)\lib\vorbis_static_d.lib $(SDK_OGGVORBIS)\lib\ogg_static_d.lib $(CODE_INSTALL)\lib\Coin0.lib $(CODE_INSTALL)\lib\SoWin0.lib winmm.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
