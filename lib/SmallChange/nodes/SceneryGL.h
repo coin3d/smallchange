@@ -22,7 +22,7 @@ typedef struct {
   double bbmax[3];
 
   // elevation texture
-  float etexstretch;
+  float etexscale;
   float etexoffset;
 
   // temporary
@@ -39,6 +39,8 @@ void sc_set_glglue_instance(const cc_glglue * glue);
 int sc_is_texturing_enabled(void);
 void sc_enable_texturing(void);
 void sc_disable_texturing(void);
+
+void sc_generate_elevation_line_texture(float distance, float offset, float thickness, int emphasis, uint8_t * buffer, float * texcoordscale, float * texcoordoffset);
 
 void sc_display_debug_info(float * campos, short * vpsize, void * debuglist);
 

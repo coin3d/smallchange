@@ -188,6 +188,14 @@
 */
 
 /*!
+  \var SoSFFloat SmScenery::elevationLineThickness
+  \brief Make elevation lines this thick.
+
+  The math is not correct for this feature yet.
+*/
+
+
+/*!
   \var SoSFShort SmScenery::elevationLineEmphasis
   \brief Emphasize every Nth elevation line.
 
@@ -227,6 +235,8 @@ public:
   SoFieldSensor * elevationtexsensor;
   SoFieldSensor * elevationdistsensor;
   SoFieldSensor * elevationoffsensor;
+  SoFieldSensor * elevationthicknesssensor;
+  SoFieldSensor * elevationemphasissensor;
 
   SmSceneryTexture2CB * cbtexcb;
   void * cbtexclosure;
@@ -251,6 +261,7 @@ public:
 
   SoGLImage * dummyimage;
   SoGLImage * elevationlinesimage;
+  uint8_t * elevationlinesdata;
 
   SbBool dotex;
   SbBool texisenabled;
@@ -303,11 +314,12 @@ SceneryP::SceneryP(void)
 : api(NULL), filenamesensor(NULL), blocksensor(NULL), loadsensor(NULL),
   colormapsensor(NULL), colortexturesensor(NULL), colorelevationsensor(NULL),
   elevationtexsensor(NULL), elevationdistsensor(NULL), elevationoffsensor(NULL),
+  elevationthicknesssensor(NULL), elevationemphasissensor(NULL),
   cbtexcb(NULL), cbtexclosure(NULL),
   system(NULL), blocksize(0), pvertex(NULL), colormaptexid(-1), firstGLRender(TRUE),
   facedetail(NULL), currhotspot(0.0f, 0.0f, 0.0f), curraction(NULL),
   currstate(NULL), viewid(-1), dummyimage(NULL),
-  elevationlinesimage(NULL),
+  elevationlinesimage(NULL), elevationlinesdata(NULL),
   dotex(FALSE), texisenabled(FALSE),
   currtexid(0)
 {
@@ -378,6 +390,7 @@ SmScenery::SmScenery(void)
   SO_NODE_ADD_FIELD(elevationLines, (FALSE));
   SO_NODE_ADD_FIELD(elevationLineDistance, (100.0f));
   SO_NODE_ADD_FIELD(elevationLineOffset, (0.0f));
+  SO_NODE_ADD_FIELD(elevationLineThickness, (1.0f));
   SO_NODE_ADD_FIELD(elevationLineEmphasis, (0));
 
   SO_NODE_ADD_FIELD(visualDebug, (FALSE));
@@ -428,6 +441,7 @@ SmScenery::SmScenery(ss_system * system)
   SO_NODE_ADD_FIELD(elevationLines, (FALSE));
   SO_NODE_ADD_FIELD(elevationLineDistance, (100.0f));
   SO_NODE_ADD_FIELD(elevationLineOffset, (0.0f));
+  SO_NODE_ADD_FIELD(elevationLineThickness, (1.0f));
   SO_NODE_ADD_FIELD(elevationLineEmphasis, (0));
 
   SO_NODE_ADD_FIELD(visualDebug, (FALSE));
@@ -475,8 +489,14 @@ SceneryP::commonConstructor(void)
   this->elevationoffsensor = new SoFieldSensor(SceneryP::elevationlinessensor_cb, PUBLIC(this));
   this->elevationoffsensor->attach(&PUBLIC(this)->elevationLineOffset);
 
+  this->elevationthicknesssensor = new SoFieldSensor(SceneryP::elevationlinessensor_cb, PUBLIC(this));
+  this->elevationthicknesssensor->attach(&PUBLIC(this)->elevationLineThickness);
+
+  this->elevationemphasissensor = new SoFieldSensor(SceneryP::elevationlinessensor_cb, PUBLIC(this));
+  this->elevationemphasissensor->attach(&PUBLIC(this)->elevationLineEmphasis);
+
   // elevation texture test
-  this->renderstate.etexstretch = 0.0f;
+  this->renderstate.etexscale = 0.0f;
   this->renderstate.etexoffset = 0.0f;
 
   this->cbtexcb = SmScenery::colortexture_cb;
@@ -494,6 +514,8 @@ SmScenery::~SmScenery(void)
   delete PRIVATE(this)->elevationtexsensor;
   delete PRIVATE(this)->elevationdistsensor;
   delete PRIVATE(this)->elevationoffsensor;
+  delete PRIVATE(this)->elevationthicknesssensor;
+  delete PRIVATE(this)->elevationemphasissensor;
 
   if (sc_scenery_available() && PRIVATE(this)->system) {
     sc_ssglue_view_deallocate(PRIVATE(this)->system, PRIVATE(this)->viewid);
@@ -506,6 +528,10 @@ SmScenery::~SmScenery(void)
   if ( PRIVATE(this)->elevationlinesimage ) {
     PRIVATE(this)->elevationlinesimage->unref();
     PRIVATE(this)->elevationlinesimage = NULL;
+  }
+  if ( PRIVATE(this)->elevationlinesdata ) {
+    delete PRIVATE(this)->elevationlinesdata;
+    PRIVATE(this)->elevationlinesdata = NULL;
   }
   delete PRIVATE(this);
 }
@@ -602,18 +628,17 @@ SmScenery::GLRender(SoGLRenderAction * action)
   assert(gl);
   sc_set_glglue_instance(gl);
 
-  if ( (PRIVATE(this)->renderstate.etexstretch != 0.0f) &&
+  if ( (PRIVATE(this)->renderstate.etexscale != 0.0f) &&
        (PRIVATE(this)->elevationlinesimage != NULL) ) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     glEnable(GL_TEXTURE_2D);
     PRIVATE(this)->elevationlinesimage->getGLDisplayList(state)->call(state);
     cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
-    PRIVATE(this)->renderstate.etexoffset = this->elevationLineOffset.getValue() / 100.0f;
   }
 
   sc_ssglue_view_render(PRIVATE(this)->system, PRIVATE(this)->viewid);
 
-  if ( PRIVATE(this)->renderstate.etexstretch != 0.0f ) {
+  if ( PRIVATE(this)->renderstate.etexscale != 0.0f ) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
     glDisable(GL_TEXTURE_2D);
@@ -1040,11 +1065,9 @@ SceneryP::elevationlinessensor_cb(void * closure, SoSensor * sensor)
   SmScenery * thisp = (SmScenery *) closure;
   if ( (thisp->elevationLines.getValue() != FALSE) &&
        (thisp->elevationLineDistance.getValue() > 0.0f) ) {
-    float fac = (0.01f / 1024.0f) * thisp->elevationLineDistance.getValue();
-    PRIVATE(thisp)->renderstate.etexstretch = fac;
     PRIVATE(thisp)->elevationlinestexchange();
   } else {
-    PRIVATE(thisp)->renderstate.etexstretch = 0.0f;
+    PRIVATE(thisp)->renderstate.etexscale = 0.0f;
   }
 }
 
@@ -1064,32 +1087,24 @@ SceneryP::elevationlinestexchange(void)
   if ( this->elevationlinesimage == NULL ) {
     this->elevationlinesimage = new SoGLImage;
     // this->elevationlinesimage->ref(); ???  unref() but no ref()?
+    assert(this->elevationlinesimage);
   }
-  assert(this->elevationlinesimage);
-#define ELTS 1024
-#define COMP 4
-#define R 0
-#define G 1
-#define B 2
-#define A 3
-  uint8_t * bytes = (uint8_t *) malloc(ELTS * COMP);
-  int i;
-  for ( i = 0; i < ELTS; i++ ) {
-    bytes[i*COMP+R] = 255;
-    bytes[i*COMP+G] = 255;
-    bytes[i*COMP+B] = 255;
-    bytes[i*COMP+A] = 255;
+  if ( this->elevationlinesdata == NULL ) {
+    this->elevationlinesdata = (uint8_t *) malloc(1024 * 4); // size is hardcoded for now
+    assert(this->elevationlinesdata);
   }
-  for ( i = 0; i < ELTS; i++ ) {
-    if ( ((i % 64) == 0) || (((i+1) % 64) == 0) ) {
-      bytes[i*COMP+R] = 0;
-      bytes[i*COMP+G] = 0;
-      bytes[i*COMP+B] = 0;
-      bytes[i*COMP+A] = 255;
-    }
-  }
-  this->elevationlinesimage->setData(bytes, SbVec2s(1, ELTS), COMP);
-  // free(bytes);
+
+  float dist = PUBLIC(this)->elevationLineDistance.getValue();
+  float offset = PUBLIC(this)->elevationLineOffset.getValue();
+  float thickness = PUBLIC(this)->elevationLineThickness.getValue();
+  int emphasis = PUBLIC(this)->elevationLineEmphasis.getValue();
+
+  sc_generate_elevation_line_texture(dist, offset, thickness, emphasis,
+                                     this->elevationlinesdata,
+                                     &(this->renderstate.etexscale),
+                                     &(this->renderstate.etexoffset));
+
+  this->elevationlinesimage->setData(this->elevationlinesdata, SbVec2s(1, 1024), 4);
 }
 
 // *************************************************************************

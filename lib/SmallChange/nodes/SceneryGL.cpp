@@ -79,6 +79,77 @@ sc_disable_texturing(void)
 
 /* ********************************************************************** */
 
+#define ELEMENTS    (1024)
+#define COMPONENTS     (4)
+
+#define R 0
+#define G 1
+#define B 2
+#define A 3
+
+void
+sc_generate_elevation_line_texture(float distance,
+                                   float offset,
+                                   float thickness,
+                                   int emphasis,
+                                   uint8_t * buffer,
+                                   float * texcoordscale,
+                                   float * texcoordoffset)
+{
+  assert(distance > 0.0f);
+  assert(thickness > 0.0f);
+
+  int i;
+  // clear texture to white first
+  for ( i = 0; i < ELEMENTS; i++ ) {
+    buffer[i*COMPONENTS+R] = 255;
+    buffer[i*COMPONENTS+G] = 255;
+    buffer[i*COMPONENTS+B] = 255;
+    buffer[i*COMPONENTS+A] = 255;
+  }
+
+  float lines = 1.0f;
+  // FIXME:
+  if ( emphasis > 1 ) {
+    // the texture has to include N lines, not just 1
+    lines = (float) emphasis;
+  }
+
+  float pixelsize = distance / (1024.0f / lines);
+
+  float pixelpos = 0.0f;
+  // set elevation lines to black
+  int bolds = 0;
+  for ( i = 0; i < ELEMENTS; i++ ) {
+    float pixelpos = i * pixelsize;
+    if ( (fabs(fmod(pixelpos, distance)) <= (thickness * 0.5f)) ||
+         ((distance - fabs(fmod(pixelpos, distance))) < (thickness * 0.5f)) ) {
+      buffer[i*COMPONENTS+R] = 0;
+      buffer[i*COMPONENTS+G] = 0;
+      buffer[i*COMPONENTS+B] = 0;
+      buffer[i*COMPONENTS+A] = 255;
+    }
+    else if ( lines > 1.0f ) {
+      if ( (fabs(fmod(pixelpos, (lines * distance))) <= (thickness * 1.5f)) ||
+           (((lines * distance) - fabs(fmod(pixelpos, (lines * distance)))) < (thickness * 1.5f)) ) {
+        buffer[i*COMPONENTS+R] = 0;
+        buffer[i*COMPONENTS+G] = 0;
+        buffer[i*COMPONENTS+B] = 0;
+        buffer[i*COMPONENTS+A] = 255;
+        bolds++;
+      }
+    }
+  }
+
+  *texcoordscale = 1.0f / (lines * distance);
+  *texcoordoffset = offset * (*texcoordscale);
+}
+
+#undef ELEMENTS
+#undef COMPONENTS
+
+/* ********************************************************************** */
+
 void
 sc_display_debug_info(float * campos, short * vpsize, void * debuglist)
 {
@@ -185,14 +256,14 @@ ok_to_use_bytevalue_normals(void)
 inline void
 GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
-  if ( state->etexstretch == 0.0f ) {
+  if ( state->etexscale == 0.0f ) {
     glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                  state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
   } else {
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE0,
                                 state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                                 state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-    float val = (state->etexstretch * elev) + state->etexoffset;
+    float val = (state->etexscale * elev) + state->etexoffset;
     if ( val < 0.0f ) val = 0.0f - val;
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
   }
@@ -226,20 +297,14 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     static const float factor = 1.0f/127.0f;
     glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
   }
-  if ( state->etexstretch == 0.0f ) {
+  if ( state->etexscale == 0.0f ) {
     glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                  state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
   } else {
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE0,
                                 state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                                 state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-    float val = (state->etexstretch * elev) + state->etexoffset;
-#if 0
-    static int counter = 0;
-    counter++;
-    if ( (counter % 250) == 0 )
-      fprintf(stderr, "offset: %f  elev: %f (%f)\n", state->etexoffset, elev, val);
-#endif
+    float val = (state->etexscale * elev) + state->etexoffset;
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),

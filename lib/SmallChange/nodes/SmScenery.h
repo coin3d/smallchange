@@ -73,6 +73,7 @@ public:
   SoSFFloat elevationLineDistance;
   SoSFFloat elevationLineOffset;
   SoSFShort elevationLineEmphasis;
+  SoSFFloat elevationLineThickness;
 
   SoSFBool visualDebug;
 
