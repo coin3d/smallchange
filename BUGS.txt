@@ -26,4 +26,20 @@
 
     20031215 mortene.
 
+    UPDATE: Parts of this bug should have been fixed now. See bug #002
+    for info about the remaining issues.
+
+    20040206 handegar.
+
+=====================================================================
+
+002 SoText2Set crates too small bounding boxes for rotated strings
+
+    The bounding box will not come out right when a string has an
+    justification != RIGHT and an extreme rotation (about 90+
+    degrees). Some parts of the string will then be outside the
+    bounding box, leading to incorrect culling.
+
+    20040206 handegar
+
 =====================================================================
