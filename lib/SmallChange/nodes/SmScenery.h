@@ -56,6 +56,8 @@ public:
   static SmScenery * createInstance(const int cols, const int rows, double * xyzgrid, const float undefz = 999999.0f);
   static SmScenery * createInstance(const int points, double * xyzvals, const float reach = -1.0f);
 
+  static SmScenery * createCrossAndLineInstance(double * min, double * spacing, int * elements);
+
   SmScenery(void);
 
   SoSFString filename;
@@ -108,6 +110,21 @@ public:
   static SoCallbackAction::Response evaluateS(void * userdata, SoCallbackAction * action, const SoNode * node);
 
   SbBool getElevation(const double x, const double y, float & elev);
+
+  void getSpacingForLodlevel(int lodlevel, double * spacing) const;
+  float getUndefElevationValue(void) const;
+  int addElevationDataset(const char * name);
+  int addMaterialDataset(const char * name, uint32_t color);
+  int deleteElevationDataset(int datasetid);
+  void setCrossAndLineElevationData(int datasetid, int lodlevel, int startcross, int startline, int numcross, int numline, float * elevationvalues);
+
+  void changeDatasetProximity(int datasetid, int numdatasets, int * datasets, float epsilon, float newval);
+  void cullDatasetAbove(int datasetid, int numdatasets, int * datasets, float distance);
+  void cullDatasetBelow(int datasetid, int numdatasets, int * datasets, float distance);
+  void oversampleDataset(int datasetid);
+  void smoothDataset(int datasetid);
+  void stripVerticals(int datasetid, float dropsize);
+  void stripHorizontals(int datasetid, float maxskew);
 
 protected:
   virtual ~SmScenery(void);

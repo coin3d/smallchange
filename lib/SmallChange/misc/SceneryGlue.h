@@ -36,14 +36,15 @@ extern "C" {
 
 /*************************************************************************/
 
-#define SS_RENDER_BIT_WEST  (0x0010)
-#define SS_RENDER_BIT_SOUTH (0x0020)
-#define SS_RENDER_BIT_EAST  (0x0040)
-#define SS_RENDER_BIT_NORTH (0x0080)
+#define SS_RENDER_BIT_WEST   (0x0010)
+#define SS_RENDER_BIT_SOUTH  (0x0020)
+#define SS_RENDER_BIT_EAST   (0x0040)
+#define SS_RENDER_BIT_NORTH  (0x0080)
 
-#define SS_ELEVATION_TYPE        (1)
-#define SS_TEXTURE_TYPE          (2)
-#define SS_USE_RESIDENT_ONLY  0x0001
+#define SS_ELEVATION_TYPE         (1)
+#define SS_TEXTURE_TYPE           (2)
+
+#define SS_USE_RESIDENT_ONLY (0x0001)
 
 /*************************************************************************/
 
@@ -63,6 +64,7 @@ typedef uint32_t ss_rttexture2d_cb(void * closure, double * pos, float elevation
 int sc_scenery_available(void);
 
 int sc_ssglue_initialize(void);
+ss_system * sc_ssglue_system_create_for_cross_and_line(int maxviews, double * minpos, double * spacing, int * minelements);
 ss_system * sc_ssglue_system_open(const char * filename, int maxviews);
 void sc_ssglue_system_close(ss_system * system);
 
@@ -98,11 +100,10 @@ int sc_ssglue_system_add_runtime_texture2d(ss_system * system,
                                            int dataset,
                                            ss_rttexture2d_cb * callback,
                                            void * closure);
+int sc_ssglue_system_add_runtime_texture0d(ss_system * system, uint32_t abgr);
 
 int sc_ssglue_system_get_blocksize(ss_system * system);
 
-int sc_ssglue_system_get_dataset_type(ss_system * system, int id);
-int sc_ssglue_system_get_num_datasets(ss_system * system);
 void sc_ssglue_system_get_origo_world_position(ss_system * system, double * coordinates);
 void sc_ssglue_system_get_object_box(ss_system * system, double * bbmin, double * bbmax);
 void sc_ssglue_system_get_elevation_data_box(ss_system * system, int id, double * bbmin, double * bbmax);
@@ -145,14 +146,41 @@ void sc_ssglue_view_set_render_pre_callback(ss_system * system, int viewid,
                                             void * closure);
 
 void sc_ssglue_view_set_render_post_callback(ss_system * system, int viewid,
-					     ss_render_block_cb * postcb,
-					     void * closure);
+                                            ss_render_block_cb * postcb,
+                                            void * closure);
 
 void sc_ssglue_view_set_undef_render_callback(ss_system * system, int viewid,
                                               ss_render_cb * cb,
                                               void * closure);
 void sc_ssglue_view_set_render_sequence_a(ss_system * system, int viewid,
                                           int num, int * sequence);
+
+int sc_ssglue_system_get_num_datasets(ss_system * system);
+int sc_ssglue_system_get_datasetid(ss_system * system, int datasetindex);
+int sc_ssglue_system_has_dataset(ss_system * system, int datasetid);
+int sc_ssglue_system_get_dataset_type(ss_system * system, int datasetid);
+int sc_ssglue_system_get_dataset_name(ss_system * system, int datasetid, int maxchars, char * name);
+int sc_ssglue_system_add_dataset(ss_system * system, int type, const char * name, int flags);
+int sc_ssglue_system_delete_dataset(ss_system * system, int datasetid);
+
+void sc_ssglue_system_set_dataset_cross_and_line_data(ss_system * handle, int dataset,
+                                                      int lodlevel, int flags,
+                                                      int startcross, int startline,
+                                                      int numcross, int numline,
+                                                      float * crosslineelevation);
+float sc_ssglue_system_get_undef_elevation(ss_system * system);
+void sc_ssglue_system_get_spacing_for_lodlevel(ss_system * system, int lodlevel, double * spacing);
+
+void sc_ssglue_system_change_dataset_proximity(ss_system * handle, int datasetid, int numdatasets, int * datasets, float epsilon, float newval);
+
+void sc_ssglue_system_cull_dataset_above(ss_system * handle, int datasetid, int numdatasets, int * datasets, float distance);
+void sc_ssglue_system_cull_dataset_below(ss_system * handle, int datasetid, int numdatasets, int * datasets, float distance);
+
+void sc_ssglue_system_oversample_dataset(ss_system * handle, int datasetid);
+void sc_ssglue_system_smooth_dataset(ss_system * handle, int datasetid);
+void sc_ssglue_system_strip_verticals(ss_system * handle, int datasetid, float dropsize);
+void sc_ssglue_system_strip_horizontals(ss_system * handle, int datasetid, float maxskew);
+
 int sc_ssglue_system_get_elevation(ss_system * system, 
                                    int numdatasets, int * datasets,
                                    int numpoints, double * points,
