@@ -10,18 +10,23 @@ libactions_la_SOURCES = \
 	SoGenerateSceneGraphAction.cpp \
 	SoGenerateSceneGraphAction.h \
 	SoTweakAction.cpp \
-	SoTweakAction.h
+	SoTweakAction.h \
+	SmToVertexArrayShapeAction.h \
+	ToVertexArrayShapeAction.cpp
 
 actions_lst_SOURCES = \
 	SoGenerateSceneGraphAction.cpp \
 	SoGenerateSceneGraphAction.h \
 	SoTweakAction.cpp \
-	SoTweakAction.h
+	SoTweakAction.h \
+	SmToVertexArrayShapeAction.h \
+	ToVertexArrayShapeAction.cpp
 
 libactionsincdir = $(includedir)/SmallChange/actions
 libactionsinc_HEADERS = \
 	SoGenerateSceneGraphAction.h \
-	SoTweakAction.h
+	SoTweakAction.h \
+	SmToVertexArrayShapeAction.h
 
 actions.lst: $(actions_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -1628,22 +1628,57 @@ else
 fi;
 
 
+sim_ac_full_builddir=`pwd`
+sim_ac_full_srcdir=`cd $srcdir; pwd`
+if test -z "`echo $sim_ac_full_srcdir | tr -cd ' '`"; then :; else
+  { echo "$as_me:$LINENO: WARNING: Detected space character in the path leading up to the Coin source directory - this will probably cause random problems later. You are advised to move the Coin source directory to another location." >&5
+echo "$as_me: WARNING: Detected space character in the path leading up to the Coin source directory - this will probably cause random problems later. You are advised to move the Coin source directory to another location." >&2;}
+
+if test x"${sim_ac_configuration_warnings+set}" = x"set"; then
+  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|Detected space character in the path leading up to the Coin source directory - this will probably cause random problems later. You are advised to move the Coin source directory to another location."
+else
+  sim_ac_configuration_warnings="Detected space character in the path leading up to the Coin source directory - this will probably cause random problems later. You are advised to move the Coin source directory to another location."
+fi
+
+fi
+if test -z "`echo $sim_ac_full_builddir | tr -cd ' '`"; then :; else
+  { echo "$as_me:$LINENO: WARNING: Detected space character in the path leading up to the Coin build directory - this will probably cause random problems later. You are advised to move the Coin build directory to another location." >&5
+echo "$as_me: WARNING: Detected space character in the path leading up to the Coin build directory - this will probably cause random problems later. You are advised to move the Coin build directory to another location." >&2;}
+
+if test x"${sim_ac_configuration_warnings+set}" = x"set"; then
+  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|Detected space character in the path leading up to the Coin build directory - this will probably cause random problems later. You are advised to move the Coin build directory to another location."
+else
+  sim_ac_configuration_warnings="Detected space character in the path leading up to the Coin build directory - this will probably cause random problems later. You are advised to move the Coin build directory to another location."
+fi
+
+fi
+
+
+
 
 
 : ${BUILD_WITH_MSVC=false}
 if $sim_ac_try_msvc; then
-  sim_ac_wrapmsvc=`cd $ac_aux_dir; pwd`/wrapmsvc.exe
   if test -z "$CC" -a -z "$CXX"; then
-    if $sim_ac_wrapmsvc >/dev/null 2>&1; then
+    sim_ac_wrapmsvc=`cd $ac_aux_dir; pwd`/wrapmsvc.exe
+    echo "$as_me:$LINENO: sim_ac_wrapmsvc=$sim_ac_wrapmsvc" >&5
+    echo "$as_me:$LINENO: checking setup for wrapmsvc.exe" >&5
+echo $ECHO_N "checking setup for wrapmsvc.exe... $ECHO_C" >&6
+    if $sim_ac_wrapmsvc >&5 2>&5; then
 
 
       CC=$sim_ac_wrapmsvc
       CXX=$sim_ac_wrapmsvc
       export CC CXX
       BUILD_WITH_MSVC=true
+      echo "$as_me:$LINENO: result: working" >&5
+echo "${ECHO_T}working" >&6
     else
       case $host in
       *-cygwin)
+        echo "$as_me:$LINENO: result: not working" >&5
+echo "${ECHO_T}not working" >&6
+
 echo >&2 ""
 
 
@@ -1670,6 +1705,10 @@ echo >&2 ""
 echo "$as_me: error: aborting" >&2;}
    { (exit 1); exit 1; }; }
  ;;
+      *)
+        echo "$as_me:$LINENO: result: not working (as expected)" >&5
+echo "${ECHO_T}not working (as expected)" >&6
+        ;;
       esac
     fi
   fi
@@ -4761,7 +4800,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4764 "configure"' > conftest.$ac_ext
+  echo '#line 4803 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5372,7 +5411,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5375:" \
+echo "$as_me:5414:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6383,11 +6422,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6386: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6425: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6390: \$? = $ac_status" >&5
+   echo "$as_me:6429: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -6615,11 +6654,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6618: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6657: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6622: \$? = $ac_status" >&5
+   echo "$as_me:6661: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -6682,11 +6721,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6685: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6724: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:6689: \$? = $ac_status" >&5
+   echo "$as_me:6728: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8694,7 +8733,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8697 "configure"
+#line 8736 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8792,7 +8831,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8795 "configure"
+#line 8834 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10926,11 +10965,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:10929: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:10968: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:10933: \$? = $ac_status" >&5
+   echo "$as_me:10972: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -10993,11 +11032,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:10996: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11035: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11000: \$? = $ac_status" >&5
+   echo "$as_me:11039: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12236,7 +12275,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 12239 "configure"
+#line 12278 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12334,7 +12373,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 12337 "configure"
+#line 12376 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13156,11 +13195,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13159: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13198: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13163: \$? = $ac_status" >&5
+   echo "$as_me:13202: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -13223,11 +13262,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13226: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13265: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13230: \$? = $ac_status" >&5
+   echo "$as_me:13269: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15163,11 +15202,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15166: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15205: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15170: \$? = $ac_status" >&5
+   echo "$as_me:15209: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -15395,11 +15434,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15398: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15437: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15402: \$? = $ac_status" >&5
+   echo "$as_me:15441: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -15462,11 +15501,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15465: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15504: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15469: \$? = $ac_status" >&5
+   echo "$as_me:15508: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17474,7 +17513,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 17477 "configure"
+#line 17516 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17572,7 +17611,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 17575 "configure"
+#line 17614 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18645,8 +18684,12 @@ fi;
 # 20020104 larsa
 if test x"$enable_symbols" = x"no"; then
   # CPPFLAGS="`echo $CPPFLAGS | sed 's/-g\>//'`"
-  CFLAGS="`echo $CFLAGS | sed 's/-g\>//'`"
-  CXXFLAGS="`echo $CXXFLAGS | sed 's/-g\>//'`"
+  CFLAGS="`echo $CFLAGS | sed 's/ -g //'`"
+  CFLAGS="`echo $CFLAGS | sed 's/^-g//'`"
+  CFLAGS="`echo $CFLAGS | sed 's/-g$//'`"
+  CXXFLAGS="`echo $CXXFLAGS | sed 's/ -g //'`"
+  CXXFLAGS="`echo $CXXFLAGS | sed 's/^-g//'`"
+  CXXFLAGS="`echo $CXXFLAGS | sed 's/-g$//'`"
 fi
 
 
@@ -18746,7 +18789,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in _exception_flag=-fno-exceptions or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   _exception_flag=-fno-exceptions
 else
@@ -18814,7 +18857,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in _exception_flag=-fno-handle-exceptions or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   _exception_flag=-fno-handle-exceptions
 else
@@ -18887,8 +18930,8 @@ fi;
 
 if test x"$enable_warnings" = x"yes"; then
 
-  for sim_ac_try_warning_option in \
-    "-W" "-Wall" "-Wno-unused" "-Wno-multichar" "-Woverloaded-virtual"; do
+  for sim_ac_try_cc_warning_option in \
+    "-W" "-Wall" "-Wno-unused" "-Wno-multichar"; do
 
     if test x"$GCC" = x"yes"; then
 
@@ -18900,11 +18943,11 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-echo "$as_me:$LINENO: checking whether $CC accepts $sim_ac_try_warning_option" >&5
-echo $ECHO_N "checking whether $CC accepts $sim_ac_try_warning_option... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking whether $CC accepts $sim_ac_try_cc_warning_option" >&5
+echo $ECHO_N "checking whether $CC accepts $sim_ac_try_cc_warning_option... $ECHO_C" >&6
 
 sim_ac_save_cppflags=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $sim_ac_try_warning_option"
+CPPFLAGS="$CPPFLAGS $sim_ac_try_cc_warning_option"
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -18944,9 +18987,9 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in CFLAGS="$CFLAGS $sim_ac_try_warning_option" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
-  CFLAGS="$CFLAGS $sim_ac_try_warning_option"
+  CFLAGS="$CFLAGS $sim_ac_try_cc_warning_option"
 else
   :
 fi
@@ -18959,7 +19002,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
     fi
+  done
 
+  for sim_ac_try_cxx_warning_option in \
+    "-W" "-Wall" "-Wno-unused" "-Wno-multichar" "-Woverloaded-virtual"; do
     if test x"$GXX" = x"yes"; then
 
 
@@ -18970,11 +19016,11 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-echo "$as_me:$LINENO: checking whether $CXX accepts $sim_ac_try_warning_option" >&5
-echo $ECHO_N "checking whether $CXX accepts $sim_ac_try_warning_option... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking whether $CXX accepts $sim_ac_try_cxx_warning_option" >&5
+echo $ECHO_N "checking whether $CXX accepts $sim_ac_try_cxx_warning_option... $ECHO_C" >&6
 
 sim_ac_save_cppflags=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $sim_ac_try_warning_option"
+CPPFLAGS="$CPPFLAGS $sim_ac_try_cxx_warning_option"
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -19014,9 +19060,9 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in CXXFLAGS="$CXXFLAGS $sim_ac_try_warning_option" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
-  CXXFLAGS="$CXXFLAGS $sim_ac_try_warning_option"
+  CXXFLAGS="$CXXFLAGS $sim_ac_try_cxx_warning_option"
 else
   :
 fi
@@ -19092,7 +19138,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in CFLAGS="$CFLAGS -fullwarn" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   CFLAGS="$CFLAGS -fullwarn"
 else
@@ -19163,7 +19209,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in CXXFLAGS="$CXXFLAGS -fullwarn" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   CXXFLAGS="$CXXFLAGS -fullwarn"
 else
@@ -19262,7 +19308,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in CFLAGS="$CFLAGS $sim_ac_bogus_warnings" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   CFLAGS="$CFLAGS $sim_ac_bogus_warnings"
 else
@@ -19332,7 +19378,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in CXXFLAGS="$CXXFLAGS $sim_ac_bogus_warnings" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   CXXFLAGS="$CXXFLAGS $sim_ac_bogus_warnings"
 else
@@ -19375,19 +19421,28 @@ echo "$as_me:$LINENO: checking if user is simian" >&5
 echo $ECHO_N "checking if user is simian... $ECHO_C" >&6
 case `hostname -d 2>/dev/null || domainname 2>/dev/null || hostname` in
 *.sim.no | sim.no )
-  echo "$as_me:$LINENO: result: probably" >&5
-echo "${ECHO_T}probably" >&6
   sim_ac_simian=true
-  :
   ;;
 * )
-  echo "$as_me:$LINENO: result: probably not" >&5
-echo "${ECHO_T}probably not" >&6
-  sim_ac_simian=false
-  :
+  if grep -ls "domain.*sim\\.no" /etc/resolv.conf >/dev/null; then
+    sim_ac_simian=true
+    :
+  else
+    sim_ac_simian=false
+    :
+  fi
   ;;
 esac
 
+if $sim_ac_simian; then
+  echo "$as_me:$LINENO: result: probably" >&5
+echo "${ECHO_T}probably" >&6
+  :
+else
+  echo "$as_me:$LINENO: result: probably not" >&5
+echo "${ECHO_T}probably not" >&6
+  :
+fi
 
 
 
@@ -19467,7 +19522,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -fno-builtin" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -fno-builtin"
 else
@@ -19534,7 +19589,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -fno-builtin" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -fno-builtin"
 else
@@ -19603,7 +19658,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -fno-for-scope" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -fno-for-scope"
 else
@@ -19671,7 +19726,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -finline-functions" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -finline-functions"
 else
@@ -19738,7 +19793,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -finline-functions" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -finline-functions"
 else
@@ -19756,6 +19811,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
     if $sim_ac_simian; then
       if $sim_ac_source_release; then :; else
       # break build on warnings, except for in official source code releases
+        if test x"$enable_werror" = x"no"; then :; else
 
 
 
@@ -19809,7 +19865,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Werror" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Werror"
 else
@@ -19876,7 +19932,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Werror" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Werror"
 else
@@ -19890,6 +19946,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+        fi
       fi
     fi
 
@@ -19947,7 +20004,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wreturn-type" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wreturn-type"
 else
@@ -20014,7 +20071,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wreturn-type" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wreturn-type"
 else
@@ -20082,7 +20139,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wchar-subscripts" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wchar-subscripts"
 else
@@ -20149,7 +20206,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wchar-subscripts" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wchar-subscripts"
 else
@@ -20217,7 +20274,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wparentheses" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wparentheses"
 else
@@ -20284,7 +20341,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wparentheses" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wparentheses"
 else
@@ -20358,7 +20415,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /WX" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /WX"
 else
@@ -20425,7 +20482,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /WX" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /WX"
 else
@@ -20496,7 +20553,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /W3" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /W3"
 else
@@ -20563,7 +20620,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /W3" or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /W3"
 else
@@ -21556,7 +21613,7 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "$as_me:$LINENO: result: $sim_ac_accept_result" >&5
 echo "${ECHO_T}$sim_ac_accept_result" >&6
 CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in sim_ac_use_framework_option=true or .
+# This need to go last, in case CPPFLAGS is modified in arg 2 or arg 3.
 if test $sim_ac_accept_result = yes; then
   sim_ac_use_framework_option=true
 else

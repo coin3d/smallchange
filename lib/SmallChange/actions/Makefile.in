@@ -172,20 +172,25 @@ libactions_la_SOURCES = \
 	SoGenerateSceneGraphAction.cpp \
 	SoGenerateSceneGraphAction.h \
 	SoTweakAction.cpp \
-	SoTweakAction.h
+	SoTweakAction.h \
+	SmToVertexArrayShapeAction.h \
+	ToVertexArrayShapeAction.cpp
 
 
 actions_lst_SOURCES = \
 	SoGenerateSceneGraphAction.cpp \
 	SoGenerateSceneGraphAction.h \
 	SoTweakAction.cpp \
-	SoTweakAction.h
+	SoTweakAction.h \
+	SmToVertexArrayShapeAction.h \
+	ToVertexArrayShapeAction.cpp
 
 
 libactionsincdir = $(includedir)/SmallChange/actions
 libactionsinc_HEADERS = \
 	SoGenerateSceneGraphAction.h \
-	SoTweakAction.h
+	SoTweakAction.h \
+	SmToVertexArrayShapeAction.h
 
 subdir = lib/SmallChange/actions
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -197,14 +202,14 @@ LIBRARIES = $(noinst_LIBRARIES)
 actions_lst_AR = $(AR) cru
 actions_lst_LIBADD =
 am_actions_lst_OBJECTS = SoGenerateSceneGraphAction.$(OBJEXT) \
-	SoTweakAction.$(OBJEXT)
+	SoTweakAction.$(OBJEXT) ToVertexArrayShapeAction.$(OBJEXT)
 actions_lst_OBJECTS = $(am_actions_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libactions_la_LDFLAGS =
 libactions_la_LIBADD =
 am_libactions_la_OBJECTS = SoGenerateSceneGraphAction.lo \
-	SoTweakAction.lo
+	SoTweakAction.lo ToVertexArrayShapeAction.lo
 libactions_la_OBJECTS = $(am_libactions_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -213,7 +218,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/SoGenerateSceneGraphAction.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoGenerateSceneGraphAction.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoTweakAction.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SoTweakAction.Po
+@AMDEP_TRUE@	./$(DEPDIR)/SoTweakAction.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ToVertexArrayShapeAction.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/ToVertexArrayShapeAction.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -269,6 +276,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoGenerateSceneGraphAction.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoTweakAction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoTweakAction.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ToVertexArrayShapeAction.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ToVertexArrayShapeAction.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
