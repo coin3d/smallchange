@@ -1171,15 +1171,15 @@ SceneryP::colormaptexchange(void)
 void
 SceneryP::elevationlinestexchange(void)
 {
-  if (this->elevationlinesimage == NULL) {
+  if ( this->elevationlinesimage == NULL ) {
     this->elevationlinesimage = new SoGLImage;
     // this->elevationlinesimage->ref(); ???  unref() but no ref()?
     assert(this->elevationlinesimage);
   }
-  if (this->elevationlinesdata == NULL) {
+  int buffersize = 2048; // FIXME:
+  if ( this->elevationlinesdata == NULL ) {
     this->elevationlinesdata = (uint8_t *)
-      malloc(SM_SCENERY_ELEVATION_TEXTURE_SIZE *
-             SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
+      malloc(buffersize * SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
     assert(this->elevationlinesdata);
   }
 
@@ -1189,13 +1189,12 @@ SceneryP::elevationlinestexchange(void)
   int emphasis = PUBLIC(this)->elevationLineEmphasis.getValue();
 
   sc_generate_elevation_line_texture(dist, offset, thickness, emphasis,
-                                     this->elevationlinesdata,
+                                     this->elevationlinesdata, buffersize,
                                      &(this->renderstate.etexscale),
                                      &(this->renderstate.etexoffset));
 
   this->elevationlinesimage->setData(this->elevationlinesdata,
-      SbVec2s(1, SM_SCENERY_ELEVATION_TEXTURE_SIZE),
-      SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
+      SbVec2s(1, buffersize), SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
 }
 
 // *************************************************************************
