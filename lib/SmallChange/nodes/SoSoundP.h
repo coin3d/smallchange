@@ -1,0 +1,35 @@
+#ifdef SOAL_SUB
+#include <AL/altypes.h>
+#else
+#include <altypes.h>
+#endif
+
+#include "SbAudioWorkerThread.h"
+
+class SoSoundP
+{
+public:
+  SoSoundP(SoSound * interfaceptr) : ifacep(interfaceptr) {};
+  SoSound *ifacep;
+
+  static void sourceSensorCBWrapper(void *, SoSensor *);
+  void sourceSensorCB(SoSensor *);
+
+  SbBool stopPlaying(SbBool force = FALSE);
+  SbBool startPlaying(SbBool force = FALSE);
+
+  class SoFieldSensor * sourcesensor;
+  ALuint sourceId;
+  class SoAudioClip *currentAudioClip;
+  SbBool isStreaming;
+  SbBool asyncStreamingMode;
+
+  static void timercb(void * data, SoSensor *);
+  SoTimerSensor * timersensor;
+  SbAudioWorkerThread *workerThread;
+  short int *audioBuffer;
+
+  static int threadCallbackWrapper(void *userdata);
+  int threadCallback();
+  int fillBuffers();
+};
