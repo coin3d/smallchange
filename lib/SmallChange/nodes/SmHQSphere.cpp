@@ -41,6 +41,7 @@
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <stddef.h>
 #include <string.h>
+#include <Inventor/SbBasic.h> // COIN_MAJOR_VERSION, COIN_MINOR_VERSION
 
 #include "../misc/SbList.h"
 
@@ -207,8 +208,13 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
     glScalef(r, r, r);
   }
 
+  SbBool varray = FALSE;
+#if (COIN_MAJOR_VERSION > 2) || ((COIN_MAJOR_VERSION == 2) && (COIN_MINOR_VERSION > 1))
   const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));  
-  if (cc_glglue_has_vertex_array(glue)) {
+  varray = cc_glglue_has_vertex_array(glue);
+#endif // Coin version >= 2.2 
+  if (varray) {
+#if (COIN_MAJOR_VERSION > 2) || ((COIN_MAJOR_VERSION==2) && (COIN_MINOR_VERSION > 1))
     cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 
                               (GLvoid*) pts);
     cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
@@ -229,6 +235,7 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
     if (sendNormals) cc_glglue_glDisableClientState(glue, GL_NORMAL_ARRAY);
     if (doTextures) cc_glglue_glDisableClientState(glue, GL_TEXTURE_COORD_ARRAY);
     SoGLCacheContextElement::shouldAutoCache(state, SoGLCacheContextElement::DONT_AUTO_CACHE);
+#endif // Coin version >= 2.2 
   }
   else {
     glBegin(GL_TRIANGLES);
