@@ -323,7 +323,7 @@ LegendKit::LegendKit(void)
   SO_KIT_ADD_FIELD(threadSafe, (FALSE));
   
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(viewport, ViewportRegion, TRUE, this, resetTransform, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(viewport, ViewportRegion, TRUE, topSeparator, resetTransform, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, TRUE, topSeparator, lightModel, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topSeparator, camera, TRUE);
