@@ -1,15 +1,11 @@
 #include <math.h>
 #include <stdlib.h>
+#include <conio.h>
 
-#ifdef SOAL_SUB
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alut.h>
-#else
-#include <al.h>
-#include <alc.h>
-#include <alut.h>
-#endif
+
 
 #include <Inventor/Win/SoWin.h>
 #include <Inventor/Win/viewers/SoWinExaminerViewer.h>
@@ -45,14 +41,14 @@
 #include <config.h>
 #endif
 
-#include <nodes/SoListener.h>
-#include <nodes/SoSound.h>
-#include <nodes/SoAudioClip.h>
-#include <nodes/SoAudioClipStreaming.h>
-#include <misc/SoAudioDevice.h>
-#include <misc/ALTools.h>
+#include <SmallChange/nodes/SoListener.h>
+#include <SmallChange/nodes/SoSound.h>
+#include <SmallChange/nodes/SoAudioClip.h>
+#include <SmallChange/nodes/SoAudioClipStreaming.h>
+#include <SmallChange/misc/SoAudioDevice.h>
+#include <SmallChange/misc/ALTools.h>
 
-#include <misc/SbAudioWorkerThread.h>
+#include <SmallChange/misc/SbAudioWorkerThread.h>
 
 
 #include <vorbis/codec.h>
@@ -323,6 +319,8 @@ main(
 
 // fixme: do the deletion - but wait for mbm to fix sowin-bug
 //  delete viewer;
+
+//  getch();
 
 } // main()
 

@@ -7,7 +7,7 @@
 #include <Inventor/fields/SoSfNode.h>
 #include <Inventor/fields/SoSfBool.h>
 
-#include <actions/SoAudioRenderAction.h>
+#include <SmallChange/actions/SoAudioRenderAction.h>
 
 class SoTimerSensor;
 

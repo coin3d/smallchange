@@ -1,20 +1,15 @@
-#include <nodes/SoListener.h>
+#include <SmallChange/nodes/SoListener.h>
 
-#include <actions/SoAudioRenderAction.h>
+#include <SmallChange/actions/SoAudioRenderAction.h>
 
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/errors/SoDebugError.h>
 
-#ifdef SOAL_SUB
 #include <AL/al.h>
 #include <AL/altypes.h>
-#else
-#include <al.h>
-#include <altypes.h>
-#endif
 
-#include <misc/ALTools.h>
+#include <SmallChange/misc/ALTools.h>
 
 SO_NODE_SOURCE(SoListener);
 

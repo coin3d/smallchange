@@ -28,15 +28,9 @@ V SoAudioDevice + contexts. se main() i simple2
 #include <math.h>
 #include <stdlib.h>
 
-#ifdef SOAL_SUB
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alut.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <AL/alut.h>
-#endif
 
 //#define NUM_BUFFERS 1	// Number of buffers to be Generated
 //ALuint	g_Buffers[NUM_BUFFERS];		// Array of Buffer IDs

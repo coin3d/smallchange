@@ -1,16 +1,12 @@
-#include <nodes/SoAudioClipStreaming.h>
+#include <SmallChange/nodes/SoAudioClipStreaming.h>
 
 #include <Inventor/errors/SoDebugError.h>
 
-#ifdef SOAL_SUB
 #include <AL/al.h>
-#else
-#include <al.h>
-#endif
 
-#include <misc/ALTools.h>
-#include <nodes/SoAudioClipP.h>
-#include <nodes/SoAudioClipStreamingP.h>
+#include <SmallChange/misc/ALTools.h>
+#include <SmallChange/nodes/SoAudioClipP.h>
+#include <SmallChange/nodes/SoAudioClipStreamingP.h>
 
 #undef THIS
 #define THIS this->soaudioclipstreaming_impl
@@ -45,6 +41,8 @@ SoAudioClipStreaming::~SoAudioClipStreaming()
 {
   // fixme: we cannot delete until the thread has stopped
   // which means the SoSound must be deleted first ...
+
+  printf("~SoAudioClipStreaming()\n");
 
   if (this->soaudioclip_impl->bufferId != NULL)
     delete[] THIS->alBuffers;

@@ -1,21 +1,15 @@
-#include <nodes/SoAudioClip.h>
+#include <SmallChange/nodes/SoAudioClip.h>
 
 #include <Inventor/errors/SoDebugError.h>
 
-#ifdef SOAL_SUB
 #include <AL/altypes.h>
 #include <AL/al.h>
 #include <AL/alut.h>
-#else
-#include <al.h>
-#include <alut.h>
-#include <altypes.h>
-#endif
 
 #include <string.h>
 
-#include <misc/ALTools.h>
-#include <nodes/SoAudioClipP.h>
+#include <SmallChange/misc/ALTools.h>
+#include <SmallChange/nodes/SoAudioClipP.h>
 
 #undef THIS
 #define THIS this->soaudioclip_impl
@@ -63,6 +57,7 @@ SoAudioClip::SoAudioClip()
 
 SoAudioClip::~SoAudioClip()
 {
+  printf("~SoAudioClip()\n");
   if (alIsBuffer(THIS->bufferId))
 	  alDeleteBuffers(1, &THIS->bufferId);
 
@@ -110,19 +105,51 @@ SbBool SoAudioClipP::loadUrl(void)
 		return FALSE;
 	}
 
-	ALsizei size,freq;
-	ALenum	format;
-	ALvoid	*data;
-	ALboolean loop;
-
 /*
+#ifdef SOAL_SUB
+
   ALsizei format;
   ALsizei size;
   ALsizei bits;
   ALsizei freq;
 
   void *data; //  = (void *) new char[44100*10*2];
+
+	// Load .wav
+//  alutLoadWAVFile(const_cast<ALbyte *>(str), &format, &data, &size, &freq, &loop);
+	alutLoadWAV(str, &data, &format, &size, &bits, &freq);
+	if ((error = alGetError()) != AL_NO_ERROR)
+	{
+    char errstr[256];
+		SoDebugError::postWarning("SoAudioClipP::loadUrl",
+                              "Couldn't load file %s. %s",
+//                              text.getString(), 
+                              str, 
+                              GetALErrorString(errstr, error));
+		return FALSE;
+	}
+
+	// Copy wav data into buffer
+	alBufferData(this->bufferId, format, data, size, freq);
+	if ((error = alGetError()) != AL_NO_ERROR)
+	{
+    char errstr[256];
+		SoDebugError::postWarning("SoAudioClipP::loadUrl",
+                              "alBufferData failed for data read from file %s. %s",
+//                              text.getString(),
+                              str,
+                              GetALErrorString(errstr, error));
+		return FALSE;
+	}
+
+#else
 */
+
+  ALsizei size,freq;
+	ALenum	format;
+	ALvoid	*data;
+	ALboolean loop;
+
 	// Load .wav
   alutLoadWAVFile(const_cast<ALbyte *>(str), &format, &data, &size, &freq, &loop);
 //	alutLoadWAV(str, &data, &format, &size, &bits, &freq);

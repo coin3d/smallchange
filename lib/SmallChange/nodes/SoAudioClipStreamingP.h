@@ -1,14 +1,8 @@
 
 
-#ifdef SOAL_SUB
 #include <AL/altypes.h>
 #include <AL/al.h>
 #include <AL/alut.h>
-#else
-#include <al.h>
-#include <alut.h>
-#include <altypes.h>
-#endif
 
 class SoAudioClipStreamingP
 {

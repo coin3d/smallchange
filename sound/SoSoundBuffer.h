@@ -6,11 +6,7 @@
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/fields/SoMFString.h>
 
-#ifdef SOAL_SUB
 #include <AL/altypes.h>
-#else
-#include <AL/altypes.h>
-#endif
 
 class SoSoundBuffer : public SoNode
 {

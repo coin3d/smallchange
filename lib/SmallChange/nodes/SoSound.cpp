@@ -1,23 +1,18 @@
-#include <nodes/SoSound.h>
+#include <SmallChange/nodes/SoSound.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 
-#ifdef SOAL_SUB
 #include <AL/altypes.h>
 #include <AL/al.h>
-#else
-#include <altypes.h>
-#include <al.h>
-#endif
 
-#include <misc/ALTools.h>
-#include <nodes/SoAudioClip.h>
-#include <nodes/SoAudioClipP.h>
-#include <nodes/SoAudioClipStreaming.h>
-#include <nodes/SoAudioClipStreamingP.h>
+#include <SmallChange/misc/ALTools.h>
+#include <SmallChange/nodes/SoAudioClip.h>
+#include <SmallChange/nodes/SoAudioClipP.h>
+#include <SmallChange/nodes/SoAudioClipStreaming.h>
+#include <SmallChange/nodes/SoAudioClipStreamingP.h>
 
 //#include "SbAsyncBuffer.h"
 
@@ -26,7 +21,7 @@
 
 #include <math.h>
 
-#include "SoSoundP.h"
+#include "SmallChange/nodes/SoSoundP.h"
 
 #undef THIS
 #define THIS this->sosound_impl
@@ -93,6 +88,7 @@ SoSound::SoSound()
 
 SoSound::~SoSound()
 {
+  printf("~SoSound()\n");
   delete THIS->sourcesensor;
 
   THIS->stopPlaying(TRUE);
@@ -292,12 +288,19 @@ int SoSoundP::fillBuffers()
   //  SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->source.getValue();
   SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
 	// Get status
-	alGetSourcei(this->sourceId, AL_BUFFERS_PROCESSED, &processed);
+#ifdef _WIN32
+  alGetSourcei(this->sourceId, AL_BUFFERS_PROCESSED, &processed);
+#else
+  alGetSourceiv(this->sourceId, AL_BUFFERS_PROCESSED, &processed);
+#endif
 
   // for debugging
 	ALint			queued;
+#ifdef _WIN32
 	alGetSourcei(this->sourceId, AL_BUFFERS_QUEUED, &queued);
-
+#else
+	alGetSourceiv(this->sourceId, AL_BUFFERS_QUEUED, &queued);
+#endif
 //  printf("Processed: %d, Queued: %d\n", processed, queued);
 
 
@@ -360,7 +363,11 @@ int SoSoundP::fillBuffers()
   // fast enough, so the source has plaued the last buffer in the queue and changed state from playing to stopped.
 
 	ALint			state;
+#ifdef _WIN32
 	alGetSourcei(this->sourceId, AL_SOURCE_STATE, &state);
+#else
+	alGetSourceiv(this->sourceId, AL_SOURCE_STATE, &state);
+#endif
   if (state != AL_PLAYING)
   {
     if (state == AL_STOPPED)

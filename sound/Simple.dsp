@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "../lib/SmallChange" /I "$(CODE_INSTALL)\include" /I "$(SDK_PTHREADS)\include" /I "$(CODE_CHECKOUT)\openal\win\AL" /I "$(CODE_CHECKOUT)\openal\win\ALc" /I "$(CODE_CHECKOUT)\openal\win\ALu" /I "$(CODE_CHECKOUT)\openal\win\ALut" /I "$(SDK_OGGVORBIS)\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "../lib" /I "$(CODE_INSTALL)\include" /I "$(SDK_PTHREADS)\include" /I "$(CODE_CHECKOUT)\openal\include" /I "$(SDK_OGGVORBIS)\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /D "SOAL_SUB" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
 # ADD RSC /l 0x414 /d "_DEBUG"
 BSC32=bscmake.exe

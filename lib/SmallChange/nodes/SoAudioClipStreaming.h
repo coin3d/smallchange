@@ -1,7 +1,7 @@
 #ifndef COIN_SOAUDIOCLIPSTREAMING_H
 #define COIN_SOAUDIOCLIPSTREAMING_H
 
-#include <nodes/SoAudioClip.h>
+#include <SmallChange/nodes/SoAudioClip.h>
 
 class SoAudioClipStreaming : public SoAudioClip
 {

@@ -1,10 +1,6 @@
-#ifdef SOAL_SUB
 #include <AL/altypes.h>
-#else
-#include <altypes.h>
-#endif
 
-#include <misc/SbAudioWorkerThread.h>
+#include <SmallChange/misc/SbAudioWorkerThread.h>
 
 class SoSoundP
 {

@@ -11,3 +11,8 @@ E:\Users\thammer\Code\Checkout\openal\win\AL
 E:\Users\thammer\Code\Checkout\openal\win\ALc
 E:\Users\thammer\Code\Checkout\openal\win\ALu
 E:\Users\thammer\Code\Checkout\openal\win\ALt
+
+
+
+#includes:
+../lib/SmallChange,$(CODE_INSTALL)\include,$(SDK_PTHREADS)\include,$(CODE_CHECKOUT)\openal\win\AL,$(CODE_CHECKOUT)\openal\win\ALc,$(CODE_CHECKOUT)\openal\win\ALu,$(CODE_CHECKOUT)\openal\win\ALut,$(SDK_OGGVORBIS)\include
