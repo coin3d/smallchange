@@ -511,6 +511,8 @@ void SoSound::audioRender(SoAudioRenderAction *action)
     ALint looping = FALSE;
 #ifdef _WIN32 // FIXME: hack to compile under Linux, pederb 2001-12-01
     alGetSourcei(THIS->sourceId,AL_LOOPING, &looping);
+#else
+    alGetSourceiv(THIS->sourceId, AL_LOOPING, &looping);
 #endif
     if ((error = alGetError()) != AL_NO_ERROR)
     {
