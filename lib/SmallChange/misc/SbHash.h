@@ -161,6 +161,28 @@ public:
     }
   }
 
+  void makeKeyList(SbList<Key> & l) const {
+    unsigned int i;
+    for ( i = 0; i < this->size; i++ ) {
+      SbHashEntry<Type, Key> * entry = this->buckets[i];
+      while (entry) {
+        l.append(entry->key);
+        entry = entry->next;
+      }
+    }
+  }
+
+  void makeObjectList(SbList<Type> & l) const {
+    unsigned int i;
+    for ( i = 0; i < this->size; i++ ) {
+      SbHashEntry<Type, Key> * entry = this->buckets[i];
+      while (entry) {
+        l.append(entry->obj);
+        entry = entry->next;
+      }
+    }
+  }
+
   unsigned int getNumElements(void) const { return this->elements; }
 
   void setHashFunc(SbHashFunc * func) { this->hashfunc = func; }
