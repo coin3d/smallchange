@@ -74,7 +74,7 @@ if $sim_ac_smallchange_desired; then
 
   AC_PATH_PROG(sim_ac_smallchange_configcmd, smallchange-config, false, $sim_ac_path)
 
-  if ! test "X$sim_ac_smallchange_configcmd" = "Xfalse"; then
+  if test "X$sim_ac_smallchange_configcmd" = "Xfalse"; then :; else
     test -n "$CONFIG" &&
       $sim_ac_smallchange_configcmd --alternate=$CONFIG >/dev/null 2>/dev/null &&
       sim_ac_smallchange_configcmd="$sim_ac_smallchange_configcmd --alternate=$CONFIG"

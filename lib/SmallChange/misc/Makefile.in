@@ -183,18 +183,21 @@ EXTRA_DIST = \
 
 libmisc_la_SOURCES = \
 	Init.cpp Init.h \
-	SbCubicSpline.cpp SbCubicSpline.h
+	SbCubicSpline.cpp SbCubicSpline.h \
+	SceneManager.cpp SmSceneManager.h
 
 
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
-	SbCubicSpline.cpp SbCubicSpline.h
+	SbCubicSpline.cpp SbCubicSpline.h \
+	SceneManager.cpp SmSceneManager.h
 
 
 libmiscincdir = $(includedir)/SmallChange/misc
 libmiscinc_HEADERS = \
 	Init.h \
-	SbCubicSpline.h
+	SbCubicSpline.h \
+	SmSceneManager.h
 
 subdir = lib/SmallChange/misc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -205,13 +208,14 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 misc_lst_AR = $(AR) cru
 misc_lst_LIBADD =
-am_misc_lst_OBJECTS = Init.$(OBJEXT) SbCubicSpline.$(OBJEXT)
+am_misc_lst_OBJECTS = Init.$(OBJEXT) SbCubicSpline.$(OBJEXT) \
+	SceneManager.$(OBJEXT)
 misc_lst_OBJECTS = $(am_misc_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libmisc_la_LDFLAGS =
 libmisc_la_LIBADD =
-am_libmisc_la_OBJECTS = Init.lo SbCubicSpline.lo
+am_libmisc_la_OBJECTS = Init.lo SbCubicSpline.lo SceneManager.lo
 libmisc_la_OBJECTS = $(am_libmisc_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -219,7 +223,9 @@ depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Init.Plo ./$(DEPDIR)/Init.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Po
+@AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -275,6 +281,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SbCubicSpline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SbCubicSpline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneManager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneManager.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)

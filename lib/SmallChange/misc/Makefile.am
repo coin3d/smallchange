@@ -16,16 +16,19 @@ endif
 
 libmisc_la_SOURCES = \
 	Init.cpp Init.h \
-	SbCubicSpline.cpp SbCubicSpline.h
+	SbCubicSpline.cpp SbCubicSpline.h \
+	SceneManager.cpp SmSceneManager.h
 
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
-	SbCubicSpline.cpp SbCubicSpline.h
+	SbCubicSpline.cpp SbCubicSpline.h \
+	SceneManager.cpp SmSceneManager.h
 
 libmiscincdir = $(includedir)/SmallChange/misc
 libmiscinc_HEADERS = \
 	Init.h \
-	SbCubicSpline.h
+	SbCubicSpline.h \
+	SmSceneManager.h
 
 misc.lst: $(misc_lst_OBJECTS)
 	@echo "Linking $@..."; \
