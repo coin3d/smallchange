@@ -364,15 +364,20 @@ SoText2Set::rayPick(SoRayPickAction * action)
   state->push();
   action->setObjectSpace();
   SbVec3f v0, v1, v2, v3;
+
   for (int stringidx=0; stringidx < this->string.getNum(); stringidx++) {
     THIS->getQuad(state, v0, v1, v2, v3, stringidx);
-    if (v0 == v1 || v0 == v3) return; // empty
+
+    if (v0 == v1 || v0 == v3) 
+      return; // empty
     
     SbVec3f isect;
     SbVec3f bary;
     SbBool front;
     SbBool hit = action->intersect(v0, v1, v2, isect, bary, front);
-    if (!hit) hit = action->intersect(v0, v2, v3, isect, bary, front);
+
+    if (!hit) 
+      hit = action->intersect(v0, v2, v3, isect, bary, front);
     
     if (hit && action->isBetweenPlanes(isect)) {
       // FIXME: account for pivot point position in quad. preng 2003-04-01.
@@ -398,6 +403,7 @@ SoText2Set::rayPick(SoRayPickAction * action)
       float bbheight = (float)(maxy - miny);
       float charleft, charright, charbottom, chartop;
       SbVec2s thissize, thispos;
+
       for (int i=0; i<strlength; i++) {
         THIS->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
         charleft = (THIS->positions[stringidx][i][0] - minx) / bbwidth;
@@ -417,7 +423,6 @@ SoText2Set::rayPick(SoRayPickAction * action)
       if (charidx >= 0 && charidx < strlength) { // we have a hit!
         SoPickedPoint * pp = action->addIntersection(isect);
         if (pp) {
-          // SoDebugError::postInfo("SoText2Set::rayPick", "picked char %d in '%s'", charidx, this->string[stringidx].getString());
           SoTextDetail * detail = new SoTextDetail;
           detail->setStringIndex(stringidx);
           detail->setCharacterIndex(charidx);
@@ -468,6 +473,7 @@ SoText2SetP::flushGlyphCache(const SbBool unrefglyphs)
   if (this->glyphs && validarraydims > 0) {
     free(this->stringwidth);
     free(this->stringheight);
+
     for (int i=0; i<this->linecnt; i++) {
       if (validarraydims == 2) {
         if (unrefglyphs) {
@@ -481,11 +487,13 @@ SoText2SetP::flushGlyphCache(const SbBool unrefglyphs)
       }
       free(this->glyphs[i]);
     }
+
     free(this->positions);
     free(this->charbboxes);
     free(this->glyphs);
     this->bboxes.truncate(0);
   }
+
   this->glyphs = NULL;
   this->positions = NULL;
   this->charbboxes = NULL;
@@ -521,11 +529,14 @@ void
 SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
                   SbVec3f & v2, SbVec3f & v3, int stringidx)
 {
-  assert (stringidx < this->textnode->position.getNum());
-  
+
+  int posindex = stringidx;
+  if (posindex > this->textnode->position.getNum())
+    posindex = this->textnode->position.getNum() - 1;
+    
   this->buildGlyphCache(state);
   
-  SbVec3f nilpoint = this->textnode->position[stringidx];
+  SbVec3f nilpoint = this->textnode->position[posindex];
   const SbMatrix & mat = SoModelMatrixElement::get(state);
   mat.multVecMatrix(nilpoint, nilpoint);
 
@@ -553,7 +564,12 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   
   float halfw = (maxx - minx) / (float)2.0;
   float halfh = (maxy - miny) / (float)2.0;
-  switch (this->textnode->justification[stringidx]) {
+
+  int justificationindex = stringidx;
+  if (justificationindex > this->textnode->justification.getNum())
+    justificationindex = this->textnode->justification.getNum() - 1;
+
+  switch (this->textnode->justification[justificationindex]) {
   case SoText2Set::LEFT:
     n0[0] += halfw;
     n1[0] += halfw;
@@ -628,6 +644,7 @@ SoText2SetP::shouldBuildGlyphCache(SoState * state)
     return SbBool(FALSE);
   if (this->dirty)
     return SbBool(TRUE);
+
   SbName curfontname = SoFontNameElement::get(state);
   float curfontsize = SoFontSizeElement::get(state);
   SbBool fonthaschanged = (this->prevfontname != curfontname 
@@ -645,6 +662,7 @@ SoText2SetP::findBitmapBBox(unsigned char * buf, SbVec2s & size)
   int idx;
   int bytewidth = size[0] >> 3;
   unsigned char mask;
+
   for (int y=0; y<size[1]; y++) {
     for (int byte=0; byte<bytewidth; byte++) {
       for (int bit=0; bit<8; bit++) {
@@ -659,13 +677,16 @@ SoText2SetP::findBitmapBBox(unsigned char * buf, SbVec2s & size)
       }
     }
   }
+
   return SbVec2s(maxx, maxy);
 }
 
 int
 SoText2SetP::buildGlyphCache(SoState * state)
 {
+
   if (this->shouldBuildGlyphCache(state)) {
+
     SoText2Set * t = this->textnode;
     const char * s;
     int len, i;
@@ -677,8 +698,11 @@ SoText2SetP::buildGlyphCache(SoState * state)
     SbBox2s stringbox;
     unsigned char * bmbuf;
     
+    // FIXME: This leads to incorrect support for the use of "<font>:Italic"
+    // or "<font>:Bold Italic" etc.(20031008 handegar)
     curfontname = SoFontNameElement::get(state);
     curfontsize = SoFontSizeElement::get(state);
+
     this->prevfontname = curfontname;
     this->prevfontsize = curfontsize;
     this->flushGlyphCache(FALSE);
@@ -690,21 +714,27 @@ SoText2SetP::buildGlyphCache(SoState * state)
     this->charbboxes = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
     this->stringwidth = (int *)malloc(this->linecnt*sizeof(int));
     this->stringheight = (int *)malloc(this->linecnt*sizeof(int));
+
     memset(this->glyphs, 0, this->linecnt*sizeof(SoGlyph*));
     memset(this->positions, 0, this->linecnt*sizeof(SbVec2s*));
     memset(this->charbboxes, 0, this->linecnt*sizeof(SbVec2s*));
     memset(this->stringwidth, 0, this->linecnt*sizeof(int));
     memset(this->stringheight, 0, this->linecnt*sizeof(int));
+
     this->validarraydims = 1;
     penpos[0] = 0;
     penpos[1] = 0;
     advance = penpos;
     kerning = penpos;
+
     for (i=0; i<this->linecnt; i++) {
+
       s = t->string[i].getString();
       stringbox.makeEmpty();
       rotation = t->rotation[i];
+
       if ((len = strlen(s)) > 0) {
+
         this->glyphs[i] = (SoGlyph **)malloc(len*sizeof(SoGlyph*));
         this->positions[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
         this->charbboxes[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
@@ -712,15 +742,18 @@ SoText2SetP::buildGlyphCache(SoState * state)
         memset(this->positions[i], 0, len*sizeof(SbVec2s));
         memset(this->charbboxes[i], 0, len*sizeof(SbVec2s));
         this->validarraydims = 2;
+
         for (int j=0; j<len; j++) {
           idx = (unsigned char)s[j];
           this->glyphs[i][j] = (SoGlyph *)(SoGlyph::getGlyph(state, idx, SbVec2s(0,0), rotation));
+
           if (!this->glyphs[i][j]) {
             this->flushGlyphCache(FALSE);
             this->useglyphcache = FALSE;
             SoDebugError::postWarning("SoText2Set::buildGlyphCache", "unable to build glyph cache for '%s'", s);
             return -1;
           }
+
           bmbuf = this->glyphs[i][j]->getBitmap(thissize, thispos, SbBool(FALSE));
           this->charbboxes[i][j] = this->findBitmapBBox( bmbuf, thissize);
           
@@ -731,19 +764,27 @@ SoText2SetP::buildGlyphCache(SoState * state)
             kerning = SbVec2s(0,0);
             advance = SbVec2s(0,0);
           }
+
           penpos = penpos + advance + kerning;
           this->positions[i][j] = penpos + thispos + SbVec2s(0, -thissize[1]);
           stringbox.extendBy(this->positions[i][j]);
           stringbox.extendBy(this->positions[i][j] + thissize);
         }
+
         // FIXME: incorrect for rotated texts, use stringbox width and height instead!
         this->stringwidth[i] = this->positions[i][len-1][0] + thissize[0];
         this->stringheight[i] = this->positions[i][len-1][1] + thissize[1];
         this->bboxes.append(stringbox);
         penpos = SbVec2s(0, 0);
+
+        // FIXME: Incorrect bbox for glyphs like 'g' and 'q'
+        // etc. Should use the same techniques as SoText2 instead to
+        // solve all these problems. (20031008 handegar)
+
       }
     }
   }
+
   this->dirty = FALSE;
   return 0;
 }
