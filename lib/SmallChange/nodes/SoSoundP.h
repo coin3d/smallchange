@@ -4,7 +4,7 @@
 #include <altypes.h>
 #endif
 
-#include "SbAudioWorkerThread.h"
+#include <misc/SbAudioWorkerThread.h>
 
 class SoSoundP
 {

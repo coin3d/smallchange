@@ -1,4 +1,4 @@
-#include "SoAudioClipStreaming.h"
+#include <nodes/SoAudioClipStreaming.h>
 
 #include <Inventor/errors/SoDebugError.h>
 
@@ -8,9 +8,9 @@
 #include <al.h>
 #endif
 
-#include "ALTools.h"
-#include "SoAudioClipP.h"
-#include "SoAudioClipStreamingP.h"
+#include <misc/ALTools.h>
+#include <nodes/SoAudioClipP.h>
+#include <nodes/SoAudioClipStreamingP.h>
 
 #undef THIS
 #define THIS this->soaudioclipstreaming_impl

@@ -1,4 +1,4 @@
-#include "SoSound.h"
+#include <nodes/SoSound.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
@@ -13,11 +13,11 @@
 #include <al.h>
 #endif
 
-#include "ALTools.h"
-#include "SoAudioClip.h"
-#include "SoAudioClipP.h"
-#include "SoAudioClipStreaming.h"
-#include "SoAudioClipStreamingP.h"
+#include <misc/ALTools.h>
+#include <nodes/SoAudioClip.h>
+#include <nodes/SoAudioClipP.h>
+#include <nodes/SoAudioClipStreaming.h>
+#include <nodes/SoAudioClipStreamingP.h>
 
 //#include "SbAsyncBuffer.h"
 

@@ -1,6 +1,6 @@
-#include "SoListener.h"
+#include <nodes/SoListener.h>
 
-#include "SoAudioRenderAction.h"
+#include <actions/SoAudioRenderAction.h>
 
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -14,7 +14,7 @@
 #include <altypes.h>
 #endif
 
-#include "ALTools.h"
+#include <misc/ALTools.h>
 
 SO_NODE_SOURCE(SoListener);
 

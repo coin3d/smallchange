@@ -1,4 +1,4 @@
-#include "SoAudioClip.h"
+#include <nodes/SoAudioClip.h>
 
 #include <Inventor/errors/SoDebugError.h>
 
@@ -14,9 +14,8 @@
 
 #include <string.h>
 
-#include "ALTools.h"
-
-#include "SoAudioClipP.h"
+#include <misc/ALTools.h>
+#include <nodes/SoAudioClipP.h>
 
 #undef THIS
 #define THIS this->soaudioclip_impl
