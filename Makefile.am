@@ -5,6 +5,10 @@ SUBDIRS = bin lib
 BUILT_SOURCES = \
 	smallchange-@CONFIG@.cfg
 
+CLEANFILES = \
+	smallchange1.dsp \
+	smallchange1.dsw
+
 DISTCLEANFILES = \
 	smallchange-@CONFIG@.cfg
 

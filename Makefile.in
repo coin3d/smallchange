@@ -172,6 +172,11 @@ BUILT_SOURCES = \
 	smallchange-@CONFIG@.cfg
 
 
+CLEANFILES = \
+	smallchange1.dsp \
+	smallchange1.dsw
+
+
 DISTCLEANFILES = \
 	smallchange-@CONFIG@.cfg
 
@@ -564,6 +569,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
