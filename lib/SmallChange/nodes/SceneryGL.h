@@ -81,21 +81,25 @@ struct RenderState {
 /* GL setup */
 
 void sc_set_use_byte_normals(int enable); // for buggy GL drivers (3Dlabs)
+void sc_set_have_clamp_to_edge(int enable); // GL 1.x feature
 
-void sc_set_have_clamp_to_edge(int enable);      // GL 1.x feature
+void sc_probe_gl(int verbose); // automatic setup of the below features
 
-void sc_set_glEnableClientState(void * fptr);    // GL 1.2 feature
-void sc_set_glDisableClientState(void * fptr);   // GL 1.2 feature
-void sc_set_glVertexPointer(void * fptr);        // GL 1.2 feature
-void sc_set_glNormalPointer(void * fptr);        // GL 1.2 feature
-void sc_set_glTexCoordPointer(void * fptr);      // GL 1.2 feature
-void sc_set_glDrawElements(void * fptr);         // GL 1.2 feature
-void sc_set_glDrawArrays(void * fptr);           // GL 1.2 feature
+/* don't use the following methods unless completely necessary */
+void sc_set_glEnableClientState(void * fptr);    // GL 1.1 feature
+void sc_set_glDisableClientState(void * fptr);   // GL 1.1 feature
+void sc_set_glVertexPointer(void * fptr);        // GL 1.1 feature
+void sc_set_glNormalPointer(void * fptr);        // GL 1.1 feature
+void sc_set_glTexCoordPointer(void * fptr);      // GL 1.1 feature
+void sc_set_glDrawElements(void * fptr);         // GL 1.1 feature
+void sc_set_glDrawArrays(void * fptr);           // GL 1.1 feature
 
 void sc_set_glMultiTexCoord2f(void * fptr);      // GL 1.3 feature
 void sc_set_glClientActiveTexture(void * fptr);  // GL 1.3 feature?
 
-void sc_probe_gl(int verbose); // automatic setup of the above features
+int sc_found_multitexturing(void);
+int sc_found_vertexarrays(void);
+int sc_suggest_vertexarrays(void);
 
 /* ********************************************************************** */
 /* texture management */

@@ -118,6 +118,13 @@ struct sc_GL {
 
   GLenum CLAMP_TO_EDGE;
   int use_byte_normals;
+
+  // features / extensions
+  int HAVE_MULTITEXTURES;
+  int HAVE_VERTEXARRAYS;
+  int SUGGEST_VERTEXARRAYS;
+  int HAVE_NORMALMAPS;
+  int HAVE_OCCLUSIONTEST;
 };
 
 static struct sc_GL GL = {
@@ -132,7 +139,13 @@ static struct sc_GL GL = {
   NULL, // glClientActiveTexture
 
   GL_CLAMP, // clamp_to_edge
-  TRUE  // use_byte_normals
+  TRUE,     // use_byte_normals
+
+  FALSE,  // HAVE_MULTITEXTURES
+  FALSE,  // HAVE_VERTEXARRAYS
+  FALSE,  // SUGGEST_VERTEXARRAYS
+  FALSE,  // HAVE_NORMALMAPS
+  FALSE   // HAVE_OCCLUSIONTEST
 };
 
 void
@@ -218,6 +231,24 @@ sc_set_use_byte_normals(int enable)
   }
 }
 
+int
+sc_found_multitexturing(void)
+{
+  return GL.HAVE_MULTITEXTURES;
+}
+
+int
+sc_found_vertexarrays(void)
+{
+  return GL.HAVE_VERTEXARRAYS;
+}
+
+int
+sc_suggest_vertexarrays(void)
+{
+  return GL.SUGGEST_VERTEXARRAYS;
+}
+
 /* ********************************************************************** */
 
 #ifdef HAVE_WINDOWS_H
@@ -255,61 +286,104 @@ sc_probe_gl(int verbose)
   APP_HANDLE_TYPE handle = APP_HANDLE();
   void * ptr = NULL;
 
-  // FIXME: probe GL for extensions
+  // probe GL for extensions
+  const char * vendor = (const char *) glGetString(GL_VENDOR);
+  const char * version = (const char *) glGetString(GL_VERSION);
 
-  // multi-texturing
-  GL_PROC_SEARCH(ptr, glMultiTexCoord2f);
-  if ( verbose ) printf("PROBE: glMultiTexCoord2f = %p\n", ptr);
-  assert(ptr);
-  sc_set_glMultiTexCoord2f(ptr);
-
-  // multi-texturing + vertex-arrays
-  GL_PROC_SEARCH(ptr, glClientActiveTexture);
-  if ( verbose ) printf("PROBE: glClientActiveTexture = %p\n", ptr);
-  assert(ptr);
-  sc_set_glClientActiveTexture(ptr);
-
-  if ( verbose ) printf("multi-texturing installed\n");
-
-  // vertex arrays
-  GL_PROC_SEARCH(ptr, glEnableClientState);
-  if ( verbose ) printf("PROBE: glEnableClientState = %p\n", ptr);
-  assert(ptr);
-  sc_set_glEnableClientState(ptr);
-
-  GL_PROC_SEARCH(ptr, glDisableClientState);
-  if ( verbose ) printf("PROBE: glDisableClientState = %p\n", ptr);
-  assert(ptr);
-  sc_set_glDisableClientState(ptr);
-
-  GL_PROC_SEARCH(ptr, glVertexPointer);
-  if ( verbose ) printf("PROBE: glVertexPointer = %p\n", ptr);
-  assert(ptr);
-  sc_set_glVertexPointer(ptr);
-
-  GL_PROC_SEARCH(ptr, glNormalPointer);
-  if ( verbose ) printf("PROBE: glNormalPointer = %p\n", ptr);
-  assert(ptr);
-  sc_set_glNormalPointer(ptr);
-
-  GL_PROC_SEARCH(ptr, glTexCoordPointer);
-  if ( verbose ) printf("PROBE: glTexCoordPointer = %p\n", ptr);
-  assert(ptr);
-  sc_set_glTexCoordPointer(ptr);
-
-  GL_PROC_SEARCH(ptr, glDrawElementsARB);
-  if ( verbose ) printf("PROBE: glDrawElements = %p\n", ptr);
-#if 0
-  assert(ptr);
-  sc_set_glDrawElements(ptr);
+  if ( strcmp(vendor, "ATI Technologies Inc.") == 0 ) {
+    // vertex arrays are less buggy than other rendering techniques
+    GL.SUGGEST_VERTEXARRAYS = TRUE;
+  }
+#ifdef __APPLE__
+  GL.SUGGEST_VERTEXARRAYS = TRUE;
 #endif
 
-  GL_PROC_SEARCH(ptr, glDrawArrays);
-  if ( verbose ) printf("PROBE: glDrawArrays = %p\n", ptr);
-  assert(ptr);
-  sc_set_glDrawArrays(ptr);
+  int major = 0, minor = 0;
+  sscanf(version, "%d.%d", &major, &minor);
+  assert(major >= 1); // forget about major
+  if ( verbose ) printf("PROBE: GL version %d.%d\n", major, minor);
 
-  if ( verbose ) printf("vertex-arrays installed\n");
+  const char * exts = (const char *) glGetString(GL_EXTENSIONS);
+  // if ( verbose ) printf("PROBE: extensions: \"%s\"\n", exts);
+
+  if ( (minor >= 3) || strstr(exts, "GL_ARB_multitexture ") ) {
+    // multi-texturing is available frmo OpenGL 1.3 and up
+    GL.HAVE_MULTITEXTURES = TRUE;
+  }
+
+  if ( (minor >= 1) || strstr(exts, "GL_ARB_vertex_array ") ) {
+    // vertex arrays are available in OpenGL 1.1 and up
+    GL.HAVE_VERTEXARRAYS = TRUE;
+  } else {
+    GL.SUGGEST_VERTEXARRAYS = FALSE;
+  }
+
+  if ( (minor >= 10) || strstr(exts, "GL_whatever_normal_maps ") ) {
+    GL.HAVE_NORMALMAPS = TRUE;
+  }
+
+  if ( (minor >= 10) || strstr(exts, "GL_HP_occlusion_test ") ) {
+    GL.HAVE_OCCLUSIONTEST = TRUE;
+  }
+
+  if ( GL.HAVE_MULTITEXTURES ) {
+    GL_PROC_SEARCH(ptr, glMultiTexCoord2f);
+    if ( verbose ) printf("PROBE: glMultiTexCoord2f = %p\n", ptr);
+    assert(ptr);
+    sc_set_glMultiTexCoord2f(ptr);
+
+    // multi-texturing + vertex-arrays
+    GL_PROC_SEARCH(ptr, glClientActiveTexture);
+    if ( verbose ) printf("PROBE: glClientActiveTexture = %p\n", ptr);
+    assert(ptr);
+    sc_set_glClientActiveTexture(ptr);
+    if ( verbose ) printf("multi-texturing installed\n");
+  }
+  else {
+    if ( verbose ) printf("no multi-texturing\n");
+  }
+
+  if ( GL.HAVE_VERTEXARRAYS ) {
+    GL_PROC_SEARCH(ptr, glEnableClientState);
+    if ( verbose ) printf("PROBE: glEnableClientState = %p\n", ptr);
+    assert(ptr);
+    sc_set_glEnableClientState(ptr);
+
+    GL_PROC_SEARCH(ptr, glDisableClientState);
+    if ( verbose ) printf("PROBE: glDisableClientState = %p\n", ptr);
+    assert(ptr);
+    sc_set_glDisableClientState(ptr);
+
+    GL_PROC_SEARCH(ptr, glVertexPointer);
+    if ( verbose ) printf("PROBE: glVertexPointer = %p\n", ptr);
+    assert(ptr);
+    sc_set_glVertexPointer(ptr);
+
+    GL_PROC_SEARCH(ptr, glNormalPointer);
+    if ( verbose ) printf("PROBE: glNormalPointer = %p\n", ptr);
+    assert(ptr);
+    sc_set_glNormalPointer(ptr);
+
+    GL_PROC_SEARCH(ptr, glTexCoordPointer);
+    if ( verbose ) printf("PROBE: glTexCoordPointer = %p\n", ptr);
+    assert(ptr);
+    sc_set_glTexCoordPointer(ptr);
+
+    GL_PROC_SEARCH(ptr, glDrawElements);
+    if ( verbose ) printf("PROBE: glDrawElements = %p\n", ptr);
+    assert(ptr);
+    sc_set_glDrawElements(ptr);
+
+    GL_PROC_SEARCH(ptr, glDrawArrays);
+    if ( verbose ) printf("PROBE: glDrawArrays = %p\n", ptr);
+    assert(ptr);
+    sc_set_glDrawArrays(ptr);
+
+    if ( verbose ) printf("vertex-arrays installed\n");
+  }
+  else {
+    if ( verbose ) printf("no vertex-arrays\n");
+  }
     
   APP_HANDLE_CLOSE(handle);
 }
@@ -1454,7 +1528,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   assert(GL.glVertexPointer != NULL);
   assert(GL.glNormalPointer != NULL);
   assert(GL.glTexCoordPointer != NULL);
-  // assert(GL.glDrawElements != NULL);
+  assert(GL.glDrawElements != NULL);
   assert(GL.glDrawArrays != NULL);
 
   // Set up textures before rendering - we delayed this because some blocks have
