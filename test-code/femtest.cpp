@@ -21,9 +21,11 @@ setup_fem(SoFEMKit * fem)
     for (y = 0; y < YSIZE; y++) {
       for (x = 0; x < XSIZE; x++) {
         fem->addNode(NODEIDX(x,y,z), SbVec3f(x, y, z));
+#if 0 // enable to set node color
         fem->setNodeColor(NODEIDX(x,y,z), SbColor(float(x)/XSIZE,
                                                   float(y)/YSIZE,
                                                   float(z)/ZSIZE));
+#endif // node color
       }
     }
   }
