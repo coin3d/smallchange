@@ -139,6 +139,31 @@
   The radius of the well.
 */
 
+/*!
+  SoMFString SmWellLogKit::topsNames
+
+  A list of "tops" strings that should be displayed along the well
+  bore at the depths given in topsDepths.
+*/
+
+/*!
+  SoMFFloat SmWellLogKit::topsDepths
+
+  The list of depths where the topsNames should be displayed.
+*/
+
+/*!
+  SoSFColor SmWellLogKit::topsColor
+
+  The color of the topsNames strings.
+*/
+
+/*!
+  SoSFColor SmWellLogKit::topsSize
+
+  The fonts size (=world space height of characters) the topsNames strings.
+*/
+
 #include "SmWellLogKit.h"
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
@@ -164,6 +189,12 @@
 #include <Inventor/nodes/SoTransform.h>
 #include <Inventor/nodes/SoCamera.h>
 #include <Inventor/nodes/SoCallback.h>
+#include <Inventor/nodes/SoFontStyle.h>
+#include <Inventor/nodes/SoSphere.h>
+#include <Inventor/nodes/SoTranslation.h>
+#include <Inventor/nodes/SoRotation.h>
+#include <Inventor/nodes/SoText3.h>
+#include <Inventor/VRMLnodes/SoVRMLBillboard.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/elements/SoCacheElement.h>
@@ -173,6 +204,7 @@
 #include <Inventor/events/SoLocation2Event.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/details/SoLineDetail.h>
+#include <Inventor/engines/SoCalculator.h>
 #include <float.h>
 
 // struct used for storing data for each depth value
@@ -203,10 +235,13 @@ public:
   SbVec3f prevaxis;
   SbBool processingoneshot;
 
+  SoCalculator *radiusEngine;
+
   uint32_t find_col(const SbName & name);
   int find_colidx(const SbName & name);
   void updateList(void);
   void buildGeometry(void);
+  void buildTopsSceneGraph(void);
   void generateFaces(const SbVec3f & axis);
   void setLithOrFluid(const SbList <double> & limits,
                       const SbList <SbName> & names,
@@ -256,6 +291,11 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(leftColor, (0.3, 0.6, 0.8));
   SO_KIT_ADD_FIELD(rightColor, (0.3, 0.6, 0.8));
 
+  SO_KIT_ADD_FIELD(topsDepths, (NULL));
+  SO_KIT_ADD_FIELD(topsNames, (NULL));
+  SO_KIT_ADD_FIELD(topsColor, (0.8, 0.4, 0.4));
+  SO_KIT_ADD_FIELD(topsSize, (10.0f));
+
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
   this->curveNames.setNum(0);
@@ -264,6 +304,10 @@ SmWellLogKit::SmWellLogKit(void)
   this->curveData.setDefault(TRUE);
   this->curveUnits.setNum(0);
   this->curveUnits.setDefault(TRUE);
+  this->topsDepths.setNum(0);
+  this->topsDepths.setDefault(TRUE);
+  this->topsNames.setNum(0);
+  this->topsNames.setDefault(TRUE);
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(tooltip, SmTooltipKit, FALSE, topSeparator, utm, TRUE);
@@ -276,7 +320,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, lightModel, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, pickStyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, FALSE, topLodGroup, lod, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(lod, SoLOD, FALSE, topLodGroup, "", TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(lod, SoLOD, FALSE, topLodGroup, topsSep, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lodSeparator, SoSeparator, FALSE, lod, info, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, lodSeparator, materialBinding, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(materialBinding, SoMaterialBinding, FALSE, lodSeparator, faceSetColor, FALSE);
@@ -284,6 +328,10 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(coord, SoCoordinate3, FALSE, lodSeparator, faceSet, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(faceSet, SoIndexedFaceSet, FALSE, lodSeparator, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(info, SoInfo, FALSE, lod, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(topsSep, SoSeparator, FALSE, topLodGroup, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(topsFontStyle, SoFontStyle, FALSE, topsSep, topsBaseColor, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(topsBaseColor, SoBaseColor, FALSE, topsSep, topsList, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(topsList, SoSeparator, FALSE, topsSep, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(topInfo, SoInfo, FALSE, topLod, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
@@ -316,10 +364,27 @@ SmWellLogKit::SmWellLogKit(void)
 
   SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
   cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
+
+  //FIXME: Connect from new fields (kintel)
+  SoBaseColor *topsBaseColor = (SoBaseColor *)this->getAnyPart("topsBaseColor", TRUE);
+  topsBaseColor->rgb.connectFrom(&this->topsColor);
+  
+  SoFontStyle *topsFontStyle = (SoFontStyle *)this->getAnyPart("topsFontStyle", TRUE);
+  topsFontStyle->size.connectFrom(&this->topsSize);
+
+  PRIVATE(this)->radiusEngine = new SoCalculator;
+  PRIVATE(this)->radiusEngine->ref();
+  PRIVATE(this)->radiusEngine->a.connectFrom(&this->wellRadius);
+  PRIVATE(this)->radiusEngine->b.connectFrom(&this->topsSize);
+  PRIVATE(this)->radiusEngine->expression.set1Value(0, "oa = a*1.2");
+  PRIVATE(this)->radiusEngine->expression.set1Value(1, "oA[0] = a*1.4");
+  PRIVATE(this)->radiusEngine->expression.set1Value(2, "oA[1] = -b/2");
+  PRIVATE(this)->radiusEngine->expression.set1Value(3, "oA[2] = a*1.2");
 }
 
 SmWellLogKit::~SmWellLogKit(void)
 {
+  PRIVATE(this)->radiusEngine->unref();
   delete PRIVATE(this)->oneshot;
   delete PRIVATE(this);
 }
@@ -583,16 +648,16 @@ SmWellLogKit::notify(SoNotList * l)
 void 
 SmWellLogKit::setDefaultOnNonWritingFields(void)
 {
-  SoFieldList fl;
-  (void) this->getFields(fl);
-  for (int i = 0; i < fl.getLength(); i++) {
-    SoField * f = fl[i];
-    if (f->isOfType(SoSFNode::getClassTypeId()) &&
-        f != &this->transform) {
-      f->setDefault(TRUE);
-    }
-  }  
-  inherited::setDefaultOnNonWritingFields();
+//   SoFieldList fl;
+//   (void) this->getFields(fl);
+//   for (int i = 0; i < fl.getLength(); i++) {
+//     SoField * f = fl[i];
+//     if (f->isOfType(SoSFNode::getClassTypeId()) &&
+//         f != &this->transform) {
+//       f->setDefault(TRUE);
+//     }
+//   }  
+//   inherited::setDefaultOnNonWritingFields();
 }
 
 #undef PRIVATE
@@ -860,6 +925,61 @@ SmWellLogKitP::buildGeometry(void)
   ifs->materialIndex.finishEditing();
 }
 
+/*!
+  Rebuilds the tops scene graph (the graph under the topsList node)
+*/
+void
+SmWellLogKitP::buildTopsSceneGraph(void)
+{
+  SoSeparator *topsList = 
+    (SoSeparator *)PUBLIC(this)->getAnyPart("topsList", TRUE);
+  topsList->removeAllChildren();
+
+  const SbString *strings = PUBLIC(this)->topsNames.getValues(0);
+  for (int i=0;i<PUBLIC(this)->topsNames.getNum();i++) {
+    SoSeparator *top = new SoSeparator;
+    SoTranslation *toppos = new SoTranslation;
+    SoSphere *sphere = new SoSphere;
+    SoTranslation *textpos = new SoTranslation;
+    SoVRMLBillboard *billboard = new SoVRMLBillboard;
+    SoText3 *text = new SoText3;
+
+    float depth;
+    if (PUBLIC(this)->topsDepths.getNum() <= i) 
+      depth = -PUBLIC(this)->topsDepths[PUBLIC(this)->topsDepths.getNum()-1];
+    else 
+      depth = -PUBLIC(this)->topsDepths[i];
+
+    const SbVec3d *wcoords = PUBLIC(this)->wellCoord.getValues(0);
+    int numdepths = PUBLIC(this)->wellCoord.getNum();
+    int j;
+    for (j=0;j<numdepths;j++) {
+      if (wcoords[j][2] <= depth) {
+        j++;
+        break;
+      }
+    }
+    if (j==0) j = 1;
+    UTMPosition *utm = (UTMPosition *)PUBLIC(this)->getAnyPart("utm", TRUE);
+    toppos->translation.setValue(wcoords[j-1][0]-utm->utmposition.getValue()[0],
+                                 wcoords[j-1][1]-utm->utmposition.getValue()[1],
+                                 depth);
+
+    sphere->radius.connectFrom(&this->radiusEngine->oa);
+
+    textpos->translation.connectFrom(&this->radiusEngine->oA);
+
+    text->string.setValue(strings[i]);
+
+    top->addChild(toppos);
+    top->addChild(sphere);
+    top->addChild(billboard);
+    billboard->addChild(textpos);
+    billboard->addChild(text);
+    topsList->addChild(top);
+  }
+}
+
 static void
 interpolate(well_pos & p, const well_pos & prev, const well_pos & next,
             double newdepth)
@@ -954,6 +1074,7 @@ SmWellLogKitP::oneshot_cb(void * closure, SoSensor * s)
   thisp->prevaxis = SbVec3f(0.0f, 0.0f, 0.0f);
   thisp->updateList();
   thisp->buildGeometry();
+  thisp->buildTopsSceneGraph();
   thisp->generateFaces(SbVec3f(1.0f, 0.0f, 0.0f));
   if (thisp->oneshot->isScheduled()) thisp->oneshot->unschedule();
   thisp->processingoneshot = FALSE;;

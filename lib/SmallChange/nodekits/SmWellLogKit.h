@@ -67,6 +67,10 @@ class SMALLCHANGE_DLL_API SmWellLogKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(faceSet);
   SO_KIT_CATALOG_ENTRY_HEADER(info);
+  SO_KIT_CATALOG_ENTRY_HEADER(topsSep);
+  SO_KIT_CATALOG_ENTRY_HEADER(topsFontStyle);
+  SO_KIT_CATALOG_ENTRY_HEADER(topsBaseColor);
+  SO_KIT_CATALOG_ENTRY_HEADER(topsList);
   SO_KIT_CATALOG_ENTRY_HEADER(topInfo);
   
 public:
@@ -95,6 +99,11 @@ public:
   SoSFFloat lodDistance1;
   SoSFFloat lodDistance2;
   SoSFFloat wellRadius;
+
+  SoMFFloat topsDepths;
+  SoMFString topsNames;
+  SoSFColor topsColor;
+  SoSFFloat topsSize;
 
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void handleEvent(SoHandleEventAction * action);
