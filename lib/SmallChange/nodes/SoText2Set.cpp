@@ -81,9 +81,12 @@
 #include <config.h>
 #endif // HAVE_CONFIG_H
 
-#if HAVE_WINDOWS_H
+
+//FIXME: These lines didn't compile with msvs...? torbjorv 07052002
+/*#if HAVE_WINDOWS_H
 #include <windows.h>
-#endif // HAVE_WINDOWS_H
+#endif // HAVE_WINDOWS_H*/
+#include <windows.h>
 #include <GL/gl.h>
 
 /*!
@@ -151,6 +154,12 @@ SoText2Set::SoText2Set(void)
 
   SO_NODE_ADD_FIELD(strings, (""));
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
+  SO_NODE_ADD_FIELD(displacement, (0.0f, 0.0f));
+    
+  SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
+  SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
+  SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
+  SO_NODE_SET_SF_ENUM_TYPE(justification, Justification);
 }//Constructor
 
 
@@ -170,8 +179,11 @@ SoText2Set::~SoText2Set()
 void
 SoText2Set::initClass(void)
 {
-  SO_NODE_INIT_CLASS(SoText2Set, SoShape, "Shape");
+  static int first = 0;
+  if (first == 1) return;
+  first = 1;
 
+  SO_NODE_INIT_CLASS(SoText2Set, SoShape, "Shape");
 }
 
 
