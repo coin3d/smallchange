@@ -146,10 +146,8 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
 
 class SoText2SetP {
 public:
-  SoText2SetP(SoText2Set * textnode) : textnode(textnode) {}
+  SoText2SetP(SoText2Set * master) : master(master) { }
 
-  SoText2Set * textnode;
-  
   SoGlyph *** glyphs;
   SbVec2s ** positions;
   int * stringwidth;
@@ -160,27 +158,29 @@ public:
   int validarraydims;
   SbName prevfontname;
   float prevfontsize;
-  SbBool useglyphcache;
   SbBool hasbuiltglyphcache;
   SbBool dirty;
   
-public:
+  SbBox3f stringBBox(SoState * s, unsigned int stringidx);
   void getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
-               SbVec3f & v2, SbVec3f & v3, int stringidx);
+               SbVec3f & v2, SbVec3f & v3, unsigned int stringidx);
+
   void flushGlyphCache(const SbBool unrefglyphs);
-  int buildGlyphCache(SoState * state);
+  void buildGlyphCache(SoState * state);
   SbBool shouldBuildGlyphCache(SoState * state);
   void dumpGlyphCache();
   void dumpBuffer(unsigned char * buffer, SbVec2s size, SbVec2s pos);
 
+private:
+  SoText2Set * master;
 };
 
 // *************************************************************************
 
 #undef PRIVATE
-#define PRIVATE(obj) obj->pimpl
+#define PRIVATE(obj) ((obj)->pimpl)
 #undef PUBLIC
-#define PUBLIC(obj) obj->textnode
+#define PUBLIC(obj) ((obj)->master)
 
 SO_NODE_SOURCE(SoText2Set);
 
@@ -200,7 +200,6 @@ SoText2Set::SoText2Set(void)
   PRIVATE(this)->bboxes.truncate(0);
   PRIVATE(this)->prevfontname = SbName("");
   PRIVATE(this)->prevfontsize = 0.0;
-  PRIVATE(this)->useglyphcache = TRUE;
   PRIVATE(this)->hasbuiltglyphcache = FALSE;
   PRIVATE(this)->dirty = TRUE;
   
@@ -256,76 +255,74 @@ SoText2Set::GLRender(SoGLRenderAction * action)
   }
 
   // Render using SoGlyphs
-  if (PRIVATE(this)->buildGlyphCache(state) == 0) {
-    SbBox3f box;
-    SbVec3f center;
-    // FIXME: cull per string, not for the entire node. preng 2003-03-27.
-    this->computeBBox(action, box, center);
-    if (!SoCullElement::cullTest(state, box, SbBool(TRUE))) {
-      SoMaterialBundle mb(action);
-      mb.sendFirst();
-      SbVec3f nilpoint;
-      const SbMatrix & mat = SoModelMatrixElement::get(state);
-      const SbViewVolume & vv = SoViewVolumeElement::get(state);
-      const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-      const SbVec2s vpsize = vp.getViewportSizePixels();
-      // Set new state.
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glLoadIdentity();
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix();
-      glLoadIdentity();
-      glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
-      glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+  PRIVATE(this)->buildGlyphCache(state);
+
+  SbBox3f box;
+  SbVec3f center;
+  // FIXME: cull per string, not for the entire node. preng 2003-03-27.
+  this->computeBBox(action, box, center);
+  if (!SoCullElement::cullTest(state, box, SbBool(TRUE))) {
+    SoMaterialBundle mb(action);
+    mb.sendFirst();
+    const SbMatrix & mat = SoModelMatrixElement::get(state);
+    const SbViewVolume & vv = SoViewVolumeElement::get(state);
+    const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+    const SbVec2s vpsize = vp.getViewportSizePixels();
+    // Set new state.
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
       
-      // Find number of strings to render
-      //
-      // FIXME: this is not good, just silently ignoring "extra"
-      // items. Should warn, then use default values for too short
-      // arrays. 20031215 mortene.
-      int stringcnt = this->string.getNum();
-      stringcnt = SbMin(stringcnt, this->position.getNum());
-      stringcnt = SbMin(stringcnt, this->rotation.getNum());
-      stringcnt = SbMin(stringcnt, this->justification.getNum());
+    // Find number of strings to render
+    const unsigned int stringcnt = this->string.getNum();
+    // FIXME: this is not good, just asserting. Should warn, then use
+    // default values for too short arrays. 20031215 mortene.
+    assert(stringcnt == (unsigned int)this->position.getNum());
+    assert(stringcnt == (unsigned int)this->rotation.getNum());
+    assert(stringcnt == (unsigned int)this->justification.getNum());
 
-      for (int i = 0; i < stringcnt; i++) {
-        // Find nilpoint for this string
-        nilpoint = this->position[i];
-        mat.multVecMatrix(nilpoint, nilpoint);
-        vv.projectToScreen(nilpoint, nilpoint);
-        nilpoint[2] *= 2.0f;
-        nilpoint[2] -= 1.0f;
-        nilpoint[0] = nilpoint[0] * float(vpsize[0]);
-        nilpoint[1] = nilpoint[1] * float(vpsize[1]);
-        float xpos = nilpoint[0];
-        float ypos = nilpoint[1];
+    for (unsigned int i = 0; i < stringcnt; i++) {
+      // Find nilpoint for this string
+      SbVec3f nilpoint = this->position[i];
+      mat.multVecMatrix(nilpoint, nilpoint);
+      vv.projectToScreen(nilpoint, nilpoint);
+      nilpoint[2] *= 2.0f;
+      nilpoint[2] -= 1.0f;
+      nilpoint[0] = nilpoint[0] * float(vpsize[0]);
+      nilpoint[1] = nilpoint[1] * float(vpsize[1]);
+      float xpos = nilpoint[0];
+      float ypos = nilpoint[1];
         
-        const unsigned int charcnt = this->string[i].getLength();
-        switch (this->justification[i]) {
-        case SoText2Set::LEFT:
-          // No action
-          break;
-        case SoText2Set::RIGHT:
-          xpos -= PRIVATE(this)->stringwidth[i];
-          ypos -= PRIVATE(this)->positions[i][charcnt-1][1];
-          break;
-        case SoText2Set::CENTER:
-          xpos -= PRIVATE(this)->stringwidth[i]/2.0f;
-          ypos -= PRIVATE(this)->stringheight[i]/2.0f;
-          break;
-        }
+      const unsigned int charcnt = this->string[i].getLength();
+      switch (this->justification[i]) {
+      case SoText2Set::LEFT:
+        // No action
+        break;
+      case SoText2Set::RIGHT:
+        xpos -= PRIVATE(this)->stringwidth[i];
+        ypos -= PRIVATE(this)->positions[i][charcnt-1][1];
+        break;
+      case SoText2Set::CENTER:
+        xpos -= PRIVATE(this)->stringwidth[i]/2.0f;
+        ypos -= PRIVATE(this)->stringheight[i]/2.0f;
+        break;
+      }
 
-        for (unsigned int i2 = 0; i2 < charcnt; i2++) {
-          SbVec2s thispos;
-          SbVec2s thissize;
-          unsigned char * buffer = PRIVATE(this)->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
+      for (unsigned int i2 = 0; i2 < charcnt; i2++) {
+        SbVec2s thispos;
+        SbVec2s thissize;
+        unsigned char * buffer = PRIVATE(this)->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
 
-          int ix = thissize[0];
-          int iy = thissize[1];
-          SbVec2s position = PRIVATE(this)->positions[i][i2];
-          float fx = (float)position[0];
-          float fy = (float)position[1];
+        int ix = thissize[0];
+        int iy = thissize[1];
+        SbVec2s position = PRIVATE(this)->positions[i][i2];
+        float fx = (float)position[0];
+        float fy = (float)position[1];
 
 #define RENDER_TEXT(offx, offy) \
         do { \
@@ -342,40 +339,39 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           if (buffer) glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer); \
         } while (0);
 
-          if (outline) {
-            // FIXME: should it be possible to specify colors for
-            // outline and base color? pederb, 2003-12-12
-            glColor3f(0.0f, 0.0f, 0.0f);
-            RENDER_TEXT(-1,-1);            
-            RENDER_TEXT(0,-1);            
-            RENDER_TEXT(1,-1);            
-            RENDER_TEXT(1,0);            
-            RENDER_TEXT(1,1);            
-            RENDER_TEXT(0,1);            
-            RENDER_TEXT(-1,1);            
-            RENDER_TEXT(-1,0);            
-            glColor3f(1.0f, 1.0f, 1.0f);
-            RENDER_TEXT(0,0);
-          }
-          else {
-            RENDER_TEXT(0,0);
-          }
+        if (outline) {
+          // FIXME: should it be possible to specify colors for
+          // outline and base color? pederb, 2003-12-12
+          glColor3f(0.0f, 0.0f, 0.0f);
+          RENDER_TEXT(-1,-1);            
+          RENDER_TEXT(0,-1);            
+          RENDER_TEXT(1,-1);            
+          RENDER_TEXT(1,0);            
+          RENDER_TEXT(1,1);            
+          RENDER_TEXT(0,1);            
+          RENDER_TEXT(-1,1);            
+          RENDER_TEXT(-1,0);            
+          glColor3f(1.0f, 1.0f, 1.0f);
+          RENDER_TEXT(0,0);
+        }
+        else {
+          RENDER_TEXT(0,0);
         }
       }
+    }
       
 #undef RENDER_TEXT
 
-      glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-      // Pop old GL state.
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+    // Pop old GL state.
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
   }
   
   state->pop();
-
+  
   if (outline) {
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
     glPopAttrib(); // pop depth func
@@ -390,21 +386,29 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
 
 // doc in super
+//
+// This will cause a cache dependency on the view volume, model matrix
+// and viewport.
 void
 SoText2Set::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
-  SbVec3f v0, v1, v2, v3;
-  // this will cause a cache dependency on the view volume,
-  // model matrix and viewport.
   box.makeEmpty();
-  for (int i=0; i<this->string.getNum(); i++) {
-    PRIVATE(this)->getQuad(action->getState(), v0, v1, v2, v3, i);
-    box.extendBy(v0);
-    box.extendBy(v1);
-    box.extendBy(v2);
-    box.extendBy(v3);
+  for (unsigned int i = 0; i < (unsigned int)this->string.getNum(); i++) {
+    box.extendBy(PRIVATE(this)->stringBBox(action->getState(), i));
   }
   center = box.getCenter();
+}
+
+SbBox3f
+SoText2SetP::stringBBox(SoState * s, unsigned int stringidx)
+{
+  SbVec3f v[4];
+  this->getQuad(s, v[0], v[1], v[2], v[3], stringidx);
+
+  SbBox3f box;
+  box.makeEmpty();
+  for (unsigned int i = 0; i < 4; i++) { box.extendBy(v[i]); }
+  return box;
 }
 
 // doc in super
@@ -419,11 +423,11 @@ SoText2Set::rayPick(SoRayPickAction * action)
   action->setObjectSpace();
   SbVec3f v0, v1, v2, v3;
 
-  for (int stringidx=0; stringidx < this->string.getNum(); stringidx++) {
+  for (unsigned int stringidx = 0; stringidx < (unsigned int)this->string.getNum(); stringidx++) {
     PRIVATE(this)->getQuad(state, v0, v1, v2, v3, stringidx);
 
     if (v0 == v1 || v0 == v3) 
-      return; // empty
+      continue; // empty
     
     SbVec3f isect;
     SbVec3f bary;
@@ -532,7 +536,7 @@ SoText2SetP::flushGlyphCache(const SbBool unrefglyphs)
     for (int i=0; i<this->linecnt; i++) {
       if (validarraydims == 2) {
         if (unrefglyphs) {
-          for (int j=0; j<this->textnode->string[i].getLength(); j++) {
+          for (int j=0; j<PUBLIC(this)->string[i].getLength(); j++) {
             if (this->glyphs[i][j])
               this->glyphs[i][j]->unref();
           }
@@ -568,9 +572,9 @@ SoText2SetP::dumpGlyphCache()
     for (int i=0; i<this->linecnt; i++) {
       fprintf(stderr,"  stringwidth[%d]=%d\n", i, this->stringwidth[i]);
       fprintf(stderr,"  stringheight[%d]=%d\n", i, this->stringheight[i]);
-      fprintf(stderr,"  string[%d]=%s\n", i, this->textnode->string[i].getString());
+      fprintf(stderr,"  string[%d]=%s\n", i, PUBLIC(this)->string[i].getString());
       if (validarraydims == 2) {
-        for (int j = 0; j < (int) strlen(this->textnode->string[i].getString()); j++) {
+        for (int j = 0; j < (int) strlen(PUBLIC(this)->string[i].getString()); j++) {
           fprintf(stderr,"    glyph[%d][%d]=%p\n", i, j, this->glyphs[i][j]);
           fprintf(stderr,"    position[%d][%d]=(%d, %d)\n", i, j, this->positions[i][j][0], this->positions[i][j][1]);
         }
@@ -582,16 +586,13 @@ SoText2SetP::dumpGlyphCache()
 // Calculates a quad around the text in 3D.
 void
 SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
-                  SbVec3f & v2, SbVec3f & v3, int stringidx)
+                     SbVec3f & v2, SbVec3f & v3, unsigned int stringidx)
 {
-
-  int posindex = stringidx;
-  if (posindex > this->textnode->position.getNum())
-    posindex = this->textnode->position.getNum() - 1;
+  assert(stringidx < (unsigned int)PUBLIC(this)->position.getNum());
     
   this->buildGlyphCache(state);
   
-  SbVec3f nilpoint = this->textnode->position[posindex];
+  SbVec3f nilpoint = PUBLIC(this)->position[stringidx];
 
   const SbMatrix & mat = SoModelMatrixElement::get(state);
   mat.multVecMatrix(nilpoint, nilpoint);
@@ -624,10 +625,10 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   float halfh = (maxy - miny) / (float)2.0;
 
   int justificationindex = stringidx;
-  if (justificationindex > this->textnode->justification.getNum())
-    justificationindex = this->textnode->justification.getNum() - 1;
+  if (justificationindex > PUBLIC(this)->justification.getNum())
+    justificationindex = PUBLIC(this)->justification.getNum() - 1;
 
-  switch (this->textnode->justification[justificationindex]) {
+  switch (PUBLIC(this)->justification[justificationindex]) {
   case SoText2Set::LEFT:
     n0[0] += halfw;
     n1[0] += halfw;
@@ -697,138 +698,123 @@ SbBool
 SoText2SetP::shouldBuildGlyphCache(SoState * state)
 {
   if (!this->hasbuiltglyphcache)
-    return SbBool(TRUE);
-  if (!this->useglyphcache)
-    return SbBool(FALSE);
+    return TRUE;
   if (this->dirty)
-    return SbBool(TRUE);
+    return TRUE;
 
   SbName curfontname = SoFontNameElement::get(state);
   float curfontsize = SoFontSizeElement::get(state);
   SbBool fonthaschanged = (this->prevfontname != curfontname 
                            || this->prevfontsize != curfontsize);
-  if (fonthaschanged)
-    return fonthaschanged;
-  return SbBool(FALSE);
+  return fonthaschanged;
 }
 
 
-int
+void
 SoText2SetP::buildGlyphCache(SoState * state)
 {
+  if (!this->shouldBuildGlyphCache(state)) { return; }
 
-  if (this->shouldBuildGlyphCache(state)) {
+  const char * s;
+  int len;
+  SbVec2s thissize, thispos;
+  unsigned int idx;
+  SbName curfontname;
+  float curfontsize;
+  float rotation;
+  SbBox2s stringbox;
+  unsigned char * bmbuf;
+  float advancex, advancey;
 
-    SoText2Set * t = this->textnode;
-    const char * s;
-    int len;
-    SbVec2s thissize, thispos;
-    unsigned int idx;
-    SbName curfontname;
-    float curfontsize;
-    float rotation;
-    SbBox2s stringbox;
-    unsigned char * bmbuf;
-    float advancex, advancey;
+  SbBool outline = PUBLIC(this)->renderOutline.getValue();
 
-    SbBool outline = PUBLIC(this)->renderOutline.getValue();
+  // FIXME: Must add same support for font naming as for
+  // SoText2/3. I.e the use of "<font>:Italic" or "<font>:Bold
+  // Italic" etc. (20031008 handegar)
+  curfontname = SoFontNameElement::get(state);
+  curfontsize = SoFontSizeElement::get(state);
 
-    // FIXME: Must add same support for font naming as for
-    // SoText2/3. I.e the use of "<font>:Italic" or "<font>:Bold
-    // Italic" etc. (20031008 handegar)
-    curfontname = SoFontNameElement::get(state);
-    curfontsize = SoFontSizeElement::get(state);
+  this->prevfontname = curfontname;
+  this->prevfontsize = curfontsize;
+  this->flushGlyphCache(FALSE);
+  this->hasbuiltglyphcache = SbBool(TRUE);
+  this->linecnt = PUBLIC(this)->string.getNum();
+  this->validarraydims = 0;
+  this->glyphs = (SoGlyph ***)malloc(this->linecnt*sizeof(SoGlyph*));
+  this->positions = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
+  this->charbboxes = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
+  this->stringwidth = (int *)malloc(this->linecnt*sizeof(int));
+  this->stringheight = (int *)malloc(this->linecnt*sizeof(int));
 
-    this->prevfontname = curfontname;
-    this->prevfontsize = curfontsize;
-    this->flushGlyphCache(FALSE);
-    this->hasbuiltglyphcache = SbBool(TRUE);
-    this->linecnt = t->string.getNum();
-    this->validarraydims = 0;
-    this->glyphs = (SoGlyph ***)malloc(this->linecnt*sizeof(SoGlyph*));
-    this->positions = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
-    this->charbboxes = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
-    this->stringwidth = (int *)malloc(this->linecnt*sizeof(int));
-    this->stringheight = (int *)malloc(this->linecnt*sizeof(int));
+  memset(this->glyphs, 0, this->linecnt*sizeof(SoGlyph*));
+  memset(this->positions, 0, this->linecnt*sizeof(SbVec2s*));
+  memset(this->charbboxes, 0, this->linecnt*sizeof(SbVec2s*));
+  memset(this->stringwidth, 0, this->linecnt*sizeof(int));
+  memset(this->stringheight, 0, this->linecnt*sizeof(int));
 
-    memset(this->glyphs, 0, this->linecnt*sizeof(SoGlyph*));
-    memset(this->positions, 0, this->linecnt*sizeof(SbVec2s*));
-    memset(this->charbboxes, 0, this->linecnt*sizeof(SbVec2s*));
-    memset(this->stringwidth, 0, this->linecnt*sizeof(int));
-    memset(this->stringheight, 0, this->linecnt*sizeof(int));
+  this->validarraydims = 1;
 
-    this->validarraydims = 1;
+  for (int i=0; i<this->linecnt; i++) {
 
-    for (int i=0; i<this->linecnt; i++) {
+    s = PUBLIC(this)->string[i].getString();
+    stringbox.makeEmpty();
+    rotation = PUBLIC(this)->rotation[i];
 
-      s = t->string[i].getString();
-      stringbox.makeEmpty();
-      rotation = t->rotation[i];
+    if ((len = strlen(s)) > 0) {
 
-      if ((len = strlen(s)) > 0) {
+      this->glyphs[i] = (SoGlyph **)malloc(len*sizeof(SoGlyph*));
+      this->positions[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
+      this->charbboxes[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
+      memset(this->glyphs[i], 0, len*sizeof(SoGlyph*));
+      memset(this->positions[i], 0, len*sizeof(SbVec2s));
+      memset(this->charbboxes[i], 0, len*sizeof(SbVec2s));
+      this->validarraydims = 2;
 
-        this->glyphs[i] = (SoGlyph **)malloc(len*sizeof(SoGlyph*));
-        this->positions[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
-        this->charbboxes[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
-        memset(this->glyphs[i], 0, len*sizeof(SoGlyph*));
-        memset(this->positions[i], 0, len*sizeof(SbVec2s));
-        memset(this->charbboxes[i], 0, len*sizeof(SbVec2s));
-        this->validarraydims = 2;
+      SbVec2s penpos(0, 0);
 
-        SbVec2s penpos(0, 0);
+      for (int j=0; j<len; j++) {
+        idx = (unsigned char)s[j];
+        this->glyphs[i][j] = (SoGlyph *)(SoGlyph::getGlyph(state, idx, SbVec2s(0,0), rotation));
+        assert(this->glyphs[i][j]);
 
-        for (int j=0; j<len; j++) {
-          idx = (unsigned char)s[j];
-          this->glyphs[i][j] = (SoGlyph *)(SoGlyph::getGlyph(state, idx, SbVec2s(0,0), rotation));
+        this->glyphs[i][j]->getBitmap(thissize, thispos, FALSE);
+        SbVec2s advance(this->glyphs[i][j]->getAdvance());
+        if (outline) advance[0] += 1;
 
-          if (!this->glyphs[i][j]) {
-            this->flushGlyphCache(FALSE);
-            this->useglyphcache = FALSE;
-            SoDebugError::postWarning("SoText2Set::buildGlyphCache", "unable to build glyph cache for '%s'", s);
-            return -1;
-          }
+        SbVec2s kerning;
 
-          this->glyphs[i][j]->getBitmap(thissize, thispos, FALSE);
-          SbVec2s advance(this->glyphs[i][j]->getAdvance());
-          if (outline) advance[0] += 1;
-
-          SbVec2s kerning;
-
-          if (j > 0) 
-            kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
-          else 
-            kerning = SbVec2s(0,0);
+        if (j > 0) 
+          kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
+        else 
+          kerning = SbVec2s(0,0);
           
-          this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
+        this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
     
-          SbVec2s pos = penpos +
-            SbVec2s((short) thispos[0], (short) thispos[1]) +
-            SbVec2s(0, (short) -thissize[1]);
+        SbVec2s pos = penpos +
+          SbVec2s((short) thispos[0], (short) thispos[1]) +
+          SbVec2s(0, (short) -thissize[1]);
 
-          stringbox.extendBy(pos);
-          stringbox.extendBy(pos + SbVec2s(advance[0] + kerning[0] + thissize[0], thissize[1]));
+        stringbox.extendBy(pos);
+        stringbox.extendBy(pos + SbVec2s(advance[0] + kerning[0] + thissize[0], thissize[1]));
 
-          this->positions[i][j] = pos;
+        this->positions[i][j] = pos;
 
-          penpos += advance + kerning;
+        penpos += advance + kerning;
 	  
-        }
-	
-	this->stringwidth[i] = stringbox.getMax()[0] - stringbox.getMin()[0];
-        this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];       
-        this->bboxes.append(stringbox);
-
-        // FIXME: Incorrect bbox for glyphs like 'g' and 'q'
-        // etc. Should use the same techniques as SoText2 instead to
-        // solve all these problems. (20031008 handegar)
-
       }
+	
+      this->stringwidth[i] = stringbox.getMax()[0] - stringbox.getMin()[0];
+      this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];       
+      this->bboxes.append(stringbox);
+
+      // FIXME: Incorrect bbox for glyphs like 'g' and 'q'
+      // etc. Should use the same techniques as SoText2 instead to
+      // solve all these problems. (20031008 handegar)
+
     }
   }
 
   this->dirty = FALSE;
-  return 0;
 }
 
 #undef PUBLIC
-
