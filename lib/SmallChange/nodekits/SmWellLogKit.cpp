@@ -136,7 +136,13 @@
 /*!
   SoSFFloat SmWellLogKit::wellRadius
 
-  The radius of the well.
+  The radius of the well bore.
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::wellRadius
+
+  The color of the well bore.
 */
 
 /*!
@@ -286,7 +292,9 @@ SmWellLogKit::SmWellLogKit(void)
 
   SO_KIT_ADD_FIELD(lodDistance1, (50000.0f));
   SO_KIT_ADD_FIELD(lodDistance2, (100000.0f));
-  SO_KIT_ADD_FIELD(wellRadius,(1.0f));
+
+  SO_KIT_ADD_FIELD(wellRadius, (1.0f));
+  SO_KIT_ADD_FIELD(wellColor, (0.7, 0.7, 0.7));
 
   SO_KIT_ADD_FIELD(leftColor, (0.3, 0.6, 0.8));
   SO_KIT_ADD_FIELD(rightColor, (0.3, 0.6, 0.8));
@@ -315,8 +323,8 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(transform, SoTransform, FALSE, topSeparator, topLod, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLod, SoLOD, FALSE, topSeparator, "", TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLodGroup, SoSeparator, FALSE, topLod, topInfo, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topLodGroup, wellMaterial, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(wellMaterial, SoMaterial, FALSE, topLodGroup, well, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topLodGroup, wellBaseColor, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(wellBaseColor, SoBaseColor, FALSE, topLodGroup, well, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, lightModel, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, pickStyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, FALSE, topLodGroup, lod, FALSE);
@@ -341,6 +349,9 @@ SmWellLogKit::SmWellLogKit(void)
   sh->vertexOrdering = SoShapeHints::CLOCKWISE;
   sh->shapeType = SoShapeHints::UNKNOWN_SHAPE_TYPE;
   sh->faceType = SoShapeHints::CONVEX;
+
+  SoBaseColor *wellBaseColor = (SoBaseColor *) this->getAnyPart("wellBaseColor", TRUE);
+  wellBaseColor->rgb.connectFrom(&this->wellColor);
 
   SoLODExtrusion * well = (SoLODExtrusion*) this->getAnyPart("well", TRUE);
   well->ccw = TRUE;

@@ -55,7 +55,7 @@ class SMALLCHANGE_DLL_API SmWellLogKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(topLod);
   SO_KIT_CATALOG_ENTRY_HEADER(topLodGroup);
   SO_KIT_CATALOG_ENTRY_HEADER(shapeHints);
-  SO_KIT_CATALOG_ENTRY_HEADER(wellMaterial);
+  SO_KIT_CATALOG_ENTRY_HEADER(wellBaseColor);
   SO_KIT_CATALOG_ENTRY_HEADER(well);
   SO_KIT_CATALOG_ENTRY_HEADER(lightModel);
   SO_KIT_CATALOG_ENTRY_HEADER(lod);
@@ -99,6 +99,7 @@ public:
   SoSFFloat lodDistance1;
   SoSFFloat lodDistance2;
   SoSFFloat wellRadius;
+  SoSFColor wellColor;
 
   SoMFFloat topsDepths;
   SoMFString topsNames;
