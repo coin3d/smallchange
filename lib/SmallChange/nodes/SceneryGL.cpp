@@ -40,7 +40,11 @@
 #include <dlfcn.h>
 #endif // HAVE_DLFCN_H
 
+#ifdef HAVE_OPENGL_GL_H
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 
 /* this source file is shared between SIM Scenery and SmallChange, hence the
  * strange conditional includes below */
