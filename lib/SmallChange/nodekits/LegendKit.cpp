@@ -23,22 +23,24 @@
 
 /*!
   \class LegendKit LegendKit.h
-  \brief The LegendKit class is used to draw a simple legend....
+  \brief The LegendKit class is used to draw a simple colormap legend.
   \ingroup nodekits
 
-  The class is organized as a nodekit for conveniece. Most parts are public,
-  but we recommend that normal users only change the backgroundMaterial,
-  tickMaterial and extraNodes parts.
-  
-  The class should be initialized using initLegend(). This will initialize
-  internal data and parts to display the legend correctly. The coordinate
-  system used will be set up to range from (0,0) to the chosen size.
+  FIXME: there should be an explanation of general usage here,
+  preferably with an example. 20040305 mortene.
 
+  The class is organized as a nodekit for convenience. Most parts are
+  public, but users should seldom have any reason for changing
+  anything but the backgroundMaterial, tickMaterial and extraNodes
+  parts.
+  
   This nodekit contains the follwing parts:
 
-  \li topSeparator The separator that holds all subscene for this kit. Private.
+  \li topSeparator The separator that holds all subscene for this
+  kit. Private.
 
-  \li resetTransform Used to reset any transform that might be on the state
+  \li resetTransform Used to reset any transform that might be on the
+  state
 
   \li viewport Used to set the viewport for the legend. Contains a
       ViewportRegion node. This part is NULL by default. Set this part if
@@ -47,7 +49,8 @@
   \li depthBuffer Used to disable depth buffer tests. Contains a DepthBuffer
       node.
 
-  \li lightModel Used to disable lighting. Contains an SoLightModel node.
+  \li lightModel Used to disable lighting. Contains an SoLightModel
+  node.
 
   \li camera Contains an SoOrthographicCamera, which defines the view volume
       for the shapes in the kit.
@@ -89,27 +92,28 @@
 
   \li textureGroup A group used to hold the texture image and shape.
 
-  \li textureImage A one row texture used when rendering the image as a
-  textured quad.
+  \li textureImage A one row texture used when rendering the image as
+  a textured quad.
   
   \li textureShape An SoFaceSet that renders one quad.
 
-  \li tickMaterial Can be used to set the material of the ticks and lines.
-  In the default node, diffuse color is set to (0 0 0).
+  \li tickMaterial Can be used to set the material of the ticks and
+  lines.  In the default node, diffuse color is set to (0 0 0).
 
-  \li renderCallbackLines Is used to render ticks and other lines using OpenGL.
+  \li renderCallbackLines Is used to render ticks and other lines
+  using OpenGL.
 
-  \li textMaterial Can be used to set the material of the text.
-  This part is NULL by default, and the text will then be rendered in the same
-  color as the ticks and lines.
+  \li textMaterial Can be used to set the material of the text.  This
+  part is NULL by default, and the text will then be rendered in the
+  same color as the ticks and lines.
 
   \li renderCallbackText Is used to render text using OpenGL.
 
   \li extraNodes Is NULL by default, but can be used to add geometry
-  that can be rendered after all other geometry in this kit.
-  Please note that the coordinate system in the legend is one
-  unit per pixel. This means that the world position (32.0f, 32.0f)
-  is at pixel position (32,32) in the legend viewport.
+  that can be rendered after all other geometry in this kit.  Please
+  note that the coordinate system in the legend is one unit per
+  pixel. This means that the world position (32.0f, 32.0f) is at pixel
+  position (32,32) in the legend viewport.
 */
 
 /*!
@@ -245,7 +249,7 @@
 #include <GL/gl.h>
 #endif // SGI/TGS Inventor
 
-#ifndef DOXYGEN_SKIP_THIS
+// *************************************************************************
 
 // used to store private (hidden) data members
 class LegendKitP {
@@ -295,13 +299,14 @@ public:
 
 };
 
-#endif // DOXYGEN_SKIP_THIS
-
 // convenience define to access private data
-#undef THIS // windoze defines this somewhere *sigh*
-#define THIS this->pimpl
+#define PRIVATE(p) ((p)->pimpl)
+
+// *************************************************************************
 
 SO_KIT_SOURCE(LegendKit);
+
+// *************************************************************************
 
 /*!
   Constructor.
@@ -356,26 +361,26 @@ LegendKit::LegendKit(void)
 
   SO_KIT_INIT_INSTANCE();
 
-  THIS = new LegendKitP(this); // private and hidden data members are stored here
-  THIS->size.setValue(0.0f, 0.0f);
-  THIS->needimageinit = FALSE;
-  THIS->imagealpha = 255;
-  THIS->needalphainit = FALSE;
-  THIS->recalcsize = TRUE;
-  THIS->colorCB = NULL;
-  THIS->colorCB2 = NULL;
-  THIS->discrete = FALSE;
-  THIS->usetexture = FALSE;
-  THIS->prevvpsize.setValue(-1,-1);
-  THIS->imageenabled = TRUE;
-  THIS->backgroundenabled = TRUE;
+  PRIVATE(this) = new LegendKitP(this); // private and hidden data members are stored here
+  PRIVATE(this)->size.setValue(0.0f, 0.0f);
+  PRIVATE(this)->needimageinit = FALSE;
+  PRIVATE(this)->imagealpha = 255;
+  PRIVATE(this)->needalphainit = FALSE;
+  PRIVATE(this)->recalcsize = TRUE;
+  PRIVATE(this)->colorCB = NULL;
+  PRIVATE(this)->colorCB2 = NULL;
+  PRIVATE(this)->discrete = FALSE;
+  PRIVATE(this)->usetexture = FALSE;
+  PRIVATE(this)->prevvpsize.setValue(-1,-1);
+  PRIVATE(this)->imageenabled = TRUE;
+  PRIVATE(this)->backgroundenabled = TRUE;
 
   // disable picking on geometry below
   SoPickStyle * ps = (SoPickStyle*) this->getAnyPart("pickStyle", TRUE);
   ps->style = SoPickStyle::UNPICKABLE;
 
   // initialize switch node
-  this->useTextureNotImage(THIS->usetexture);
+  this->useTextureNotImage(PRIVATE(this)->usetexture);
 
   // initialize tick material to black
   SoMaterial * mat = (SoMaterial*) this->getAnyPart("tickMaterial", TRUE);
@@ -424,7 +429,7 @@ LegendKit::LegendKit(void)
 */
 LegendKit::~LegendKit()
 {
-  delete THIS;
+  delete PRIVATE(this);
 }
 
 /*!
@@ -451,9 +456,9 @@ void
 LegendKit::setImageTransparency(const float transparency)
 {
   uint32_t alpha = (uint32_t) ((1.0f - transparency) * 255.0f);
-  if (alpha != THIS->imagealpha) {
-    THIS->imagealpha = alpha;
-    THIS->needalphainit = TRUE;
+  if (alpha != PRIVATE(this)->imagealpha) {
+    PRIVATE(this)->imagealpha = alpha;
+    PRIVATE(this)->needalphainit = TRUE;
     this->touch(); // trigger a redraw in the near future
   }
 }
@@ -469,9 +474,9 @@ LegendKit::preRender(SoAction * action)
 {
   SoState * state = action->getState();
   this->recalcSize(state);
-  if (THIS->size == SbVec2f(0.0f, 0.0f)) return; // not initialized
-  if (THIS->needimageinit) this->initImage();
-  if (THIS->needalphainit) this->fillImageAlpha();  
+  if (PRIVATE(this)->size == SbVec2f(0.0f, 0.0f)) return; // not initialized
+  if (PRIVATE(this)->needimageinit) this->initImage();
+  if (PRIVATE(this)->needalphainit) this->fillImageAlpha();  
 }
 
 /*!
@@ -589,13 +594,13 @@ next_power_of_two(int val)
 void 
 LegendKit::initImage(void)
 {
-  if (THIS->imagesize[0] <= 0 || THIS->imagesize[1] <= 0) return;
+  if (PRIVATE(this)->imagesize[0] <= 0 || PRIVATE(this)->imagesize[1] <= 0) return;
 #ifdef LEGEND_DEBUG
   fprintf(stderr,"(re)initializing image\n");
 #endif
 
-  THIS->needimageinit = FALSE;
-  THIS->needalphainit = FALSE;
+  PRIVATE(this)->needimageinit = FALSE;
+  PRIVATE(this)->needalphainit = FALSE;
 
   SoImage * image = (SoImage*) this->getAnyPart("image", TRUE);
   SbVec2f size, texsize;
@@ -607,10 +612,10 @@ LegendKit::initImage(void)
   size[1] = float(tmpsize[1]);
   
   SbBool didallocimage = FALSE;
-  if (size != THIS->imagesize) {
+  if (size != PRIVATE(this)->imagesize) {
     didallocimage = TRUE;
-    data = new unsigned char[int(THIS->imagesize[0])*int(THIS->imagesize[1])*4];
-    size = THIS->imagesize;
+    data = new unsigned char[int(PRIVATE(this)->imagesize[0])*int(PRIVATE(this)->imagesize[1])*4];
+    size = PRIVATE(this)->imagesize;
   } else {
     data = image->image.startEditing(tmpsize, nc);
   }
@@ -622,7 +627,7 @@ LegendKit::initImage(void)
   unsigned char * rowdata = (unsigned char *) tex->image.getValue(tmpsize, nc);
   texsize[0] = 2.0f;
   texsize[1] = float(tmpsize[1]);
-  int texh = next_power_of_two((int)THIS->imagesize[1]);
+  int texh = next_power_of_two((int)PRIVATE(this)->imagesize[1]);
 
   SbBool didalloctexture = FALSE;
   if (texsize != SbVec2f(2.0f, float(texh))) {
@@ -663,17 +668,17 @@ LegendKit::initImage(void)
 void 
 LegendKit::reallyInitImage(unsigned char * data, unsigned char * rowdata)
 {
-  int w = (int)THIS->imagesize[0];
-  int h = (int)THIS->imagesize[1];
+  int w = (int)PRIVATE(this)->imagesize[0];
+  int h = (int)PRIVATE(this)->imagesize[1];
   double delta = 1.0 / double(h);
   double val = 0.0;
 
   for (int y = 0; y < h; y++) {
-    uint32_t col = THIS->getLineColor(val);
+    uint32_t col = PRIVATE(this)->getLineColor(val);
     unsigned char r  = col>>24;
     unsigned char g = (col>>16)&0xff;
     unsigned char b = (col>>8)&0xff;
-    unsigned char a = THIS->imagealpha;
+    unsigned char a = PRIVATE(this)->imagealpha;
     
     if (rowdata) {
       *rowdata++ = r;
@@ -701,7 +706,7 @@ LegendKit::reallyInitImage(unsigned char * data, unsigned char * rowdata)
 void 
 LegendKit::fillImageAlpha(void)
 {
-  if (THIS->imagesize[0] <= 0 || THIS->imagesize[1] <= 0) return;
+  if (PRIVATE(this)->imagesize[0] <= 0 || PRIVATE(this)->imagesize[1] <= 0) return;
   // FIXME: implement
 }
 
@@ -711,17 +716,17 @@ LegendKit::fillImageAlpha(void)
 void 
 LegendKit::setColorCB(uint32_t (*colorCB)(double, void*), void * userdata)
 {
-  THIS->colorCB2 = NULL;
-  THIS->colorCB = colorCB;
-  THIS->colorCBdata = userdata;
+  PRIVATE(this)->colorCB2 = NULL;
+  PRIVATE(this)->colorCB = colorCB;
+  PRIVATE(this)->colorCBdata = userdata;
   this->touch(); // trigger redraw
 }
 
 void 
 LegendKit::setColorCB(uint32_t (*colorCB)(double))
 {
-  THIS->colorCB = NULL;
-  THIS->colorCB2 = colorCB;
+  PRIVATE(this)->colorCB = NULL;
+  PRIVATE(this)->colorCB2 = colorCB;
   this->touch(); // trigger redraw
 }
 
@@ -731,11 +736,11 @@ LegendKit::setColorCB(uint32_t (*colorCB)(double))
 void 
 LegendKit::enableImage(const SbBool onoff)
 {
-  THIS->imageenabled = onoff;
+  PRIVATE(this)->imageenabled = onoff;
   if (onoff) {
     // this will set switch to the correct value.
-    this->useTextureNotImage(THIS->usetexture);
-    this->enableBackground(THIS->backgroundenabled);
+    this->useTextureNotImage(PRIVATE(this)->usetexture);
+    this->enableBackground(PRIVATE(this)->backgroundenabled);
   }
   else {
     SoSwitch * sw = (SoSwitch*) this->getAnyPart("imageSwitch", TRUE);
@@ -752,7 +757,7 @@ LegendKit::enableImage(const SbBool onoff)
 float 
 LegendKit::getLegendWidth(void) const
 {
-  return THIS->size[0];
+  return PRIVATE(this)->size[0];
 }
 
 /*!
@@ -817,24 +822,24 @@ LegendKit::render(SoGLRenderAction * action, const SbBool lines)
 void 
 LegendKit::renderLines(SoGLRenderAction * action)
 {
-  float starty = THIS->imageoffset[1];
-  double sizey = (double) THIS->imagesize[1];
-  float startx = THIS->imageoffset[0] + THIS->imagesize[0];
+  float starty = PRIVATE(this)->imageoffset[1];
+  double sizey = (double) PRIVATE(this)->imagesize[1];
+  float startx = PRIVATE(this)->imageoffset[0] + PRIVATE(this)->imagesize[0];
   float ticksize = this->smallTickSize.getValue();
 
-  if (THIS->imagesize[1] > 1.0f && THIS->imageenabled) {
+  if (PRIVATE(this)->imagesize[1] > 1.0f && PRIVATE(this)->imageenabled) {
     glBegin(GL_LINES);
-    int i, n = THIS->smalltick.getLength();
+    int i, n = PRIVATE(this)->smalltick.getLength();
     for (i = 0; i < n; i++) {
-      float ypos = float(THIS->smalltick[i] * sizey) + starty; 
+      float ypos = float(PRIVATE(this)->smalltick[i] * sizey) + starty; 
       glVertex3f(startx, ypos, 0.0f);
       glVertex3f(startx + ticksize, ypos, 0.0f);
     }
 
-    n = THIS->bigtick.getLength();
+    n = PRIVATE(this)->bigtick.getLength();
     ticksize = this->bigTickSize.getValue();
     for (i = 0; i < n; i++) {
-      LegendKitP::legend_tick tick = THIS->bigtick[i];
+      LegendKitP::legend_tick tick = PRIVATE(this)->bigtick[i];
       float ypos = float(tick.nval * sizey) + starty; 
       glVertex3f(startx, ypos, 0.0f);
       glVertex3f(startx + ticksize, ypos, 0.0f);
@@ -843,10 +848,10 @@ LegendKit::renderLines(SoGLRenderAction * action)
     
     // render lines around image
     glBegin(GL_LINE_LOOP);
-    glVertex3f(THIS->imageoffset[0], THIS->imageoffset[1], 0.0f);
-    glVertex3f(THIS->imageoffset[0]+THIS->imagesize[0], THIS->imageoffset[1], 0.0f);
-    glVertex3f(THIS->imageoffset[0]+THIS->imagesize[0], THIS->imageoffset[1]+THIS->imagesize[1], 0.0f);
-    glVertex3f(THIS->imageoffset[0], THIS->imageoffset[1]+THIS->imagesize[1], 0.0f);
+    glVertex3f(PRIVATE(this)->imageoffset[0], PRIVATE(this)->imageoffset[1], 0.0f);
+    glVertex3f(PRIVATE(this)->imageoffset[0]+PRIVATE(this)->imagesize[0], PRIVATE(this)->imageoffset[1], 0.0f);
+    glVertex3f(PRIVATE(this)->imageoffset[0]+PRIVATE(this)->imagesize[0], PRIVATE(this)->imageoffset[1]+PRIVATE(this)->imagesize[1], 0.0f);
+    glVertex3f(PRIVATE(this)->imageoffset[0], PRIVATE(this)->imageoffset[1]+PRIVATE(this)->imagesize[1], 0.0f);
     glEnd();
   }
 
@@ -854,13 +859,13 @@ LegendKit::renderLines(SoGLRenderAction * action)
   int numtext = this->description.getNum();
   float border = this->space.getValue();
   float ypos = this->descriptionOnTop.getValue() ? 
-    THIS->size[1] - border :
+    PRIVATE(this)->size[1] - border :
     numtext*(FONT_HEIGHT+FONT_SPACE) + border * 2.0f;
   float ysize = float(numtext) * float(FONT_HEIGHT+FONT_SPACE) + FONT_SPACE;
   glBegin(GL_LINE_LOOP);
   glVertex3f(border, ypos, 0.0f);
-  glVertex3f(THIS->size[0] - border, ypos, 0.0f);
-  glVertex3f(THIS->size[0] - border, ypos - ysize, 0.0f);
+  glVertex3f(PRIVATE(this)->size[0] - border, ypos, 0.0f);
+  glVertex3f(PRIVATE(this)->size[0] - border, ypos - ysize, 0.0f);
   glVertex3f(border, ypos - ysize, 0.0f);
   glEnd();
 }
@@ -876,20 +881,20 @@ LegendKit::renderText(SoGLRenderAction * action)
   glPixelStorei(GL_PACK_ALIGNMENT,1);
 
   // first, render tick values
-  int offsety = (int) (THIS->imageoffset[1]);
-  int offsetx = (int) (THIS->imageoffset[0] + THIS->imagesize[0] + 
+  int offsety = (int) (PRIVATE(this)->imageoffset[1]);
+  int offsetx = (int) (PRIVATE(this)->imageoffset[0] + PRIVATE(this)->imagesize[0] + 
                        this->bigTickSize.getValue() + this->tickValueOffset.getValue());
-  double sizey = (double) THIS->imagesize[1];
+  double sizey = (double) PRIVATE(this)->imagesize[1];
 
   double prevnval = 0.0;
   int xpos, ypos;
   const char * str = NULL;
 
-  if (THIS->imagesize[1] > 1.0f && THIS->imageenabled) {
-    for (i = 0; i < THIS->bigtick.getLength(); i++) {
-      LegendKitP::legend_tick tick = THIS->bigtick[i];
+  if (PRIVATE(this)->imagesize[1] > 1.0f && PRIVATE(this)->imageenabled) {
+    for (i = 0; i < PRIVATE(this)->bigtick.getLength(); i++) {
+      LegendKitP::legend_tick tick = PRIVATE(this)->bigtick[i];
       str = tick.string.getString();
-      if (!THIS->discrete || !tick.discretestringset) {
+      if (!PRIVATE(this)->discrete || !tick.discretestringset) {
         xpos = offsetx;
         ypos = offsety + int(sizey*tick.nval) - FONT_HEIGHT/2;
       }
@@ -906,7 +911,7 @@ LegendKit::renderText(SoGLRenderAction * action)
   // then, the description
   int numtext = this->description.getNum();
   ypos = this->descriptionOnTop.getValue() ? 
-    int(THIS->size[1]) - (FONT_HEIGHT+FONT_SPACE) - int(this->space.getValue()) :
+    int(PRIVATE(this)->size[1]) - (FONT_HEIGHT+FONT_SPACE) - int(this->space.getValue()) :
     (numtext-1)*(FONT_HEIGHT+FONT_SPACE) + int(2.0f*this->space.getValue());
   
   for (i = 0; i < numtext; i++) {
@@ -948,8 +953,8 @@ LegendKit::renderString(const char * str, int xpos, int ypos)
 void 
 LegendKit::clearTicks(void)
 {
-  THIS->smalltick.truncate(0);
-  THIS->bigtick.truncate(0);
+  PRIVATE(this)->smalltick.truncate(0);
+  PRIVATE(this)->bigtick.truncate(0);
   this->touch(); // trigger redraw
 }
 
@@ -960,7 +965,7 @@ void
 LegendKit::addSmallTick(double nval)
 {
   // we don't care if these are sorted, just add
-  THIS->smalltick.append(nval); 
+  PRIVATE(this)->smalltick.append(nval); 
   this->touch(); // trigger redraw
 }
 
@@ -986,7 +991,7 @@ LegendKit::addBigTick(double nval, double tickvalue, const SbString * discretete
     tick.discretestringset = TRUE;
     tick.discretestring = *discretetext;
   }
-  THIS->addBigTickSorted(tick);
+  PRIVATE(this)->addBigTickSorted(tick);
   this->touch(); // trigger redraw
 }
 
@@ -1005,7 +1010,7 @@ LegendKit::addBigTick(double nval, const SbString & string, const SbString * dis
     tick.discretestringset = TRUE;
     tick.discretestring = *discretetext;
   }
-  THIS->addBigTickSorted(tick);
+  PRIVATE(this)->addBigTickSorted(tick);
   this->touch(); // trigger redraw
 }
 
@@ -1019,12 +1024,12 @@ LegendKit::addBigTick(double nval, const SbString & string, const SbString * dis
 void 
 LegendKit::useTextureNotImage(const SbBool onoff)
 {
-  THIS->usetexture = onoff;
-  if (!THIS->imageenabled) return;
+  PRIVATE(this)->usetexture = onoff;
+  if (!PRIVATE(this)->imageenabled) return;
 
   SoSwitch * sw = (SoSwitch*) this->getAnyPart("imageSwitch", TRUE);
   sw->whichChild = onoff ? 1 : 0;
-  THIS->recalcsize = TRUE;
+  PRIVATE(this)->recalcsize = TRUE;
 }
 
 /*!
@@ -1038,16 +1043,16 @@ LegendKit::useTextureNotImage(const SbBool onoff)
 void 
 LegendKit::setDiscreteMode(const SbBool onoff)
 {
-  if (THIS->discrete == FALSE && onoff && (THIS->colorCB || THIS->colorCB2) && THIS->bigtick.getLength()) {
-    THIS->discretelist.truncate(0);
-    int n = THIS->bigtick.getLength();
-    double delta = 1.0 / (THIS->recalcsize ? 512.0 : double(THIS->imagesize[1]));
+  if (PRIVATE(this)->discrete == FALSE && onoff && (PRIVATE(this)->colorCB || PRIVATE(this)->colorCB2) && PRIVATE(this)->bigtick.getLength()) {
+    PRIVATE(this)->discretelist.truncate(0);
+    int n = PRIVATE(this)->bigtick.getLength();
+    double delta = 1.0 / (PRIVATE(this)->recalcsize ? 512.0 : double(PRIVATE(this)->imagesize[1]));
     for (int i = 0; i < n; i++) {
-      LegendKitP::legend_tick tick = THIS->bigtick[i];
+      LegendKitP::legend_tick tick = PRIVATE(this)->bigtick[i];
       // no use adding discrete if we have a bigtick at nval == 0
       if (tick.nval > delta) {
 #if 0 // we calculate the discrete color using the colorCB now
-        uint32_t color = THIS->getLineColor(tick.nval - delta);
+        uint32_t color = PRIVATE(this)->getLineColor(tick.nval - delta);
         this->addDiscreteColor(tick.nval, color);
 #else
         this->addDiscreteColor(tick.nval);
@@ -1055,8 +1060,8 @@ LegendKit::setDiscreteMode(const SbBool onoff)
       }
     }
   }
-  THIS->discrete = onoff;
-  THIS->needimageinit= TRUE;
+  PRIVATE(this)->discrete = onoff;
+  PRIVATE(this)->needimageinit= TRUE;
   this->touch(); // force redraw
 }
 
@@ -1074,10 +1079,10 @@ LegendKit::addDiscreteColor(double uppernval, uint32_t color)
   item.colorset = TRUE;
 
   int i = 0;
-  int n = THIS->discretelist.getLength();
-  while (i < n && THIS->discretelist[i].uppernval <= uppernval) i++;
-  if (i < n) THIS->discretelist.insert(item, i);
-  else THIS->discretelist.append(item);
+  int n = PRIVATE(this)->discretelist.getLength();
+  while (i < n && PRIVATE(this)->discretelist[i].uppernval <= uppernval) i++;
+  if (i < n) PRIVATE(this)->discretelist.insert(item, i);
+  else PRIVATE(this)->discretelist.append(item);
   this->touch(); // trigger redraw
 }
 
@@ -1096,10 +1101,10 @@ LegendKit::addDiscreteColor(double uppernval)
   item.colorset = FALSE;
 
   int i = 0;
-  int n = THIS->discretelist.getLength();
-  while (i < n && THIS->discretelist[i].uppernval <= uppernval) i++;
-  if (i < n) THIS->discretelist.insert(item, i);
-  else THIS->discretelist.append(item);
+  int n = PRIVATE(this)->discretelist.getLength();
+  while (i < n && PRIVATE(this)->discretelist[i].uppernval <= uppernval) i++;
+  if (i < n) PRIVATE(this)->discretelist.insert(item, i);
+  else PRIVATE(this)->discretelist.append(item);
   this->touch(); // trigger redraw
 }
 
@@ -1110,9 +1115,9 @@ LegendKit::addDiscreteColor(double uppernval)
 void 
 LegendKit::clearData(void)
 {
-  THIS->discretelist.truncate(0);
+  PRIVATE(this)->discretelist.truncate(0);
   this->clearTicks();
-  THIS->recalcsize = TRUE;
+  PRIVATE(this)->recalcsize = TRUE;
   this->touch(); // trigger redraw
 }
 
@@ -1127,17 +1132,17 @@ LegendKit::initBackground(const SbBool force)
     prop = new SoVertexProperty;
     faceset->vertexProperty = prop;
   }
-  if (THIS->recalcsize) return; // delay
+  if (PRIVATE(this)->recalcsize) return; // delay
 
   prop->vertex.setNum(8);
   prop->vertex.set1Value(0, 0.0f, 0.0f, 0.0f);
-  prop->vertex.set1Value(1, THIS->size[0], 0.0f, 0.0f);
-  prop->vertex.set1Value(2, THIS->size[0], THIS->size[1], 0.0f);
-  prop->vertex.set1Value(3, 0.0f, THIS->size[1], 0.0f);
-  prop->vertex.set1Value(4, THIS->imageoffset[0], THIS->imageoffset[1], 0.0f);
-  prop->vertex.set1Value(5, THIS->imageoffset[0]+THIS->imagesize[0], THIS->imageoffset[1], 0.0f);
-  prop->vertex.set1Value(6, THIS->imageoffset[0]+THIS->imagesize[0], THIS->imageoffset[1]+THIS->imagesize[1], 0.0f);
-  prop->vertex.set1Value(7, THIS->imageoffset[0], THIS->imageoffset[1]+THIS->imagesize[1], 0.0f);
+  prop->vertex.set1Value(1, PRIVATE(this)->size[0], 0.0f, 0.0f);
+  prop->vertex.set1Value(2, PRIVATE(this)->size[0], PRIVATE(this)->size[1], 0.0f);
+  prop->vertex.set1Value(3, 0.0f, PRIVATE(this)->size[1], 0.0f);
+  prop->vertex.set1Value(4, PRIVATE(this)->imageoffset[0], PRIVATE(this)->imageoffset[1], 0.0f);
+  prop->vertex.set1Value(5, PRIVATE(this)->imageoffset[0]+PRIVATE(this)->imagesize[0], PRIVATE(this)->imageoffset[1], 0.0f);
+  prop->vertex.set1Value(6, PRIVATE(this)->imageoffset[0]+PRIVATE(this)->imagesize[0], PRIVATE(this)->imageoffset[1]+PRIVATE(this)->imagesize[1], 0.0f);
+  prop->vertex.set1Value(7, PRIVATE(this)->imageoffset[0], PRIVATE(this)->imageoffset[1]+PRIVATE(this)->imagesize[1], 0.0f);
 
   int32_t indices[] = {0,1,5,4,-1,1,2,6,5,-1,6,2,3,7,-1,0,4,7,3,-1};
   faceset->coordIndex.setNum(20);
@@ -1157,14 +1162,14 @@ LegendKit::initTextureImage(void)
   }
   prop->vertex.setNum(4);
   prop->vertex.set1Value(0, 0.0f, 0.0f, 0.0f);
-  prop->vertex.set1Value(1, THIS->imagesize[0], 0.0f, 0.0f);
-  prop->vertex.set1Value(2, THIS->imagesize[0], THIS->imagesize[1], 0.0f);
-  prop->vertex.set1Value(3, 0.0f, THIS->imagesize[1], 0.0f);
+  prop->vertex.set1Value(1, PRIVATE(this)->imagesize[0], 0.0f, 0.0f);
+  prop->vertex.set1Value(2, PRIVATE(this)->imagesize[0], PRIVATE(this)->imagesize[1], 0.0f);
+  prop->vertex.set1Value(3, 0.0f, PRIVATE(this)->imagesize[1], 0.0f);
 
   // since GL textures always must be a power of two, adjust
   // texture coordinates to account for this.
-  int texh = next_power_of_two(int(THIS->imagesize[1]));
-  float topy = THIS->imagesize[1] / float(texh);
+  int texh = next_power_of_two(int(PRIVATE(this)->imagesize[1]));
+  float topy = PRIVATE(this)->imagesize[1] / float(texh);
 #ifdef LEGEND_DEBUG
   fprintf(stderr,"topy: %g\n", topy); 
 #endif
@@ -1183,7 +1188,7 @@ LegendKit::initTextureImage(void)
 void 
 LegendKit::notify(SoNotList * list)
 {
-  if (THIS) {
+  if (PRIVATE(this)) {
     SoField *f = list->getLastField();
     if (f == &this->description || 
         f == &this->descriptionOnTop || 
@@ -1192,7 +1197,7 @@ LegendKit::notify(SoNotList * list)
         f == &this->tickValueFormat ||
         f == &this->space ||
         f == &this->tickValueOffset) {
-      THIS->recalcsize = TRUE;
+      PRIVATE(this)->recalcsize = TRUE;
     }
   }
   inherited::notify(list);
@@ -1204,9 +1209,9 @@ LegendKit::recalcSize(SoState * state)
   int i;
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   SbVec2s vpsize = vp.getViewportSizePixels();
-  if (vpsize == THIS->prevvpsize && !THIS->recalcsize) return;
+  if (vpsize == PRIVATE(this)->prevvpsize && !PRIVATE(this)->recalcsize) return;
   
-  THIS->needimageinit = TRUE; // ok, need to init image again
+  PRIVATE(this)->needimageinit = TRUE; // ok, need to init image again
   float border = this->space.getValue();
   SbVec2f descsize(0.0f, 4.0f * border + this->description.getNum()*(FONT_HEIGHT+FONT_SPACE)+FONT_SPACE);
   for (i = 0; i < this->description.getNum(); i++) {
@@ -1216,15 +1221,15 @@ LegendKit::recalcSize(SoState * state)
   descsize[0] += border*4.0f;
   
   float ticktextw = 0.0f;
-  for (i = 0; i < THIS->bigtick.getLength(); i++) {
-    LegendKitP::legend_tick tick = THIS->bigtick[i];
+  for (i = 0; i < PRIVATE(this)->bigtick.getLength(); i++) {
+    LegendKitP::legend_tick tick = PRIVATE(this)->bigtick[i];
     float len = float(tick.string.getLength()) * FONT_WIDTH;
     if (len > ticktextw) ticktextw = len;
   }
   ticktextw += 2.0f * border + this->imageWidth.getValue() +
     this->bigTickSize.getValue() + this->tickValueOffset.getValue();
   
-  THIS->size[0] = ticktextw > descsize[0] ? ticktextw : descsize[0];
+  PRIVATE(this)->size[0] = ticktextw > descsize[0] ? ticktextw : descsize[0];
 
   SbVec2f position(0.0f, 0.0f);
   SoTranslation * tnode = (SoTranslation*) this->getPart("position", FALSE); 
@@ -1233,38 +1238,38 @@ LegendKit::recalcSize(SoState * state)
     position[1] = tnode->translation.getValue()[1];
   }
   
-  THIS->size[1] = vpsize[1] - position[1] - this->topSpace.getValue();
-  if (THIS->size[1] < descsize[1]+2.0f) THIS->size[1] = descsize[1]+2.0f;
+  PRIVATE(this)->size[1] = vpsize[1] - position[1] - this->topSpace.getValue();
+  if (PRIVATE(this)->size[1] < descsize[1]+2.0f) PRIVATE(this)->size[1] = descsize[1]+2.0f;
 
 #ifdef LEGEND_DEBUG
-  fprintf(stderr,"(re)calcing size: %g %g\n", THIS->size[0], THIS->size[1]);
+  fprintf(stderr,"(re)calcing size: %g %g\n", PRIVATE(this)->size[0], PRIVATE(this)->size[1]);
 #endif
-  THIS->imagesize[0] = this->imageWidth.getValue();
-  THIS->imagesize[1] = THIS->size[1] - this->space.getValue() - descsize[1];
+  PRIVATE(this)->imagesize[0] = this->imageWidth.getValue();
+  PRIVATE(this)->imagesize[1] = PRIVATE(this)->size[1] - this->space.getValue() - descsize[1];
 
-  if (THIS->imagesize[1] <= 0) {
-    THIS->imagesize[1] = 1.0f; 
+  if (PRIVATE(this)->imagesize[1] <= 0) {
+    PRIVATE(this)->imagesize[1] = 1.0f; 
     this->setSwitchValue("imageSwitch", SO_SWITCH_NONE);
   }
-  else if (!THIS->imageenabled) {
+  else if (!PRIVATE(this)->imageenabled) {
     this->setSwitchValue("imageSwitch", SO_SWITCH_NONE);
   }
-  else if (THIS->usetexture) {
+  else if (PRIVATE(this)->usetexture) {
     this->setSwitchValue("imageSwitch", 1);
   }
   else {
     this->setSwitchValue("imageSwitch", 0);
   }
 
-  THIS->imageoffset = this->descriptionOnTop.getValue() ?
+  PRIVATE(this)->imageoffset = this->descriptionOnTop.getValue() ?
     SbVec2f(this->space.getValue(),
             this->space.getValue()) :
     SbVec2f(this->space.getValue(), descsize[1]);
 
   // transform image to offset position
   SoTransform * trans = (SoTransform*) this->getAnyPart("imageTransform", TRUE);
-  trans->translation = SbVec3f(float(THIS->imageoffset[0]), 
-                               float(THIS->imageoffset[1]), 0.0f);
+  trans->translation = SbVec3f(float(PRIVATE(this)->imageoffset[0]), 
+                               float(PRIVATE(this)->imageoffset[1]), 0.0f);
   
   
   float size[2];
@@ -1283,12 +1288,12 @@ LegendKit::recalcSize(SoState * state)
   camera->focalDistance = 2.0f;
   camera->height = float(vpsize[1]);
 
-  THIS->recalcsize = FALSE;
+  PRIVATE(this)->recalcsize = FALSE;
 
   this->initBackground();  
   this->initTextureImage();
   
-  THIS->prevvpsize = vpsize;
+  PRIVATE(this)->prevvpsize = vpsize;
 }
 
 /*!
@@ -1340,7 +1345,7 @@ LegendKit::setBackgroundColor(const SbColor & color, const float transparency)
 void
 LegendKit::enableBackground(const SbBool onoff)
 {
-  THIS->backgroundenabled = onoff;
+  PRIVATE(this)->backgroundenabled = onoff;
   if (!onoff) this->setPart("backgroundShape", NULL);
   else this->initBackground(TRUE);
 }
@@ -1355,10 +1360,7 @@ LegendKit::setSwitchValue(const char * part, const int value)
   }
 }
 
-#undef THIS
-
-// methods in LegendKitP
-
+// *************************************************************************
 
 // returns the line color at nval.
 uint32_t 
@@ -1403,3 +1405,5 @@ LegendKitP::addBigTickSorted(const legend_tick & tick)
   if (i < n) this->bigtick.insert(tick, i);
   else this->bigtick.append(tick);
 }
+
+// *************************************************************************
