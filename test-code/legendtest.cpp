@@ -10,10 +10,10 @@
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
 #include <assert.h>
-#include <nodekits/LegendKit.h>
-#include <elements/GLDepthBufferElement.h>
-#include <nodes/ViewportRegion.h>
-#include <nodes/DepthBuffer.h>
+#include <SmallChange/nodekits/LegendKit.h>
+#include <SmallChange/elements/GLDepthBufferElement.h>
+#include <SmallChange/nodes/ViewportRegion.h>
+#include <SmallChange/nodes/DepthBuffer.h>
 #include <Inventor/actions/SoSearchAction.h>
 
 
