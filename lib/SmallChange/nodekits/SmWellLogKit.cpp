@@ -299,7 +299,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(leftColor, (0.3, 0.6, 0.8));
   SO_KIT_ADD_FIELD(rightColor, (0.3, 0.6, 0.8));
 
-  SO_KIT_ADD_FIELD(topsDepths, (NULL));
+  SO_KIT_ADD_FIELD(topsDepths, (0.0f));
   SO_KIT_ADD_FIELD(topsNames, (NULL));
   SO_KIT_ADD_FIELD(topsColor, (0.8, 0.4, 0.4));
   SO_KIT_ADD_FIELD(topsSize, (10.0f));
