@@ -317,7 +317,11 @@ void
 SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
 {
   int activeitem = -1;
+  
+  SbBool handled = FALSE;
+
   if (this->isActive.getValue() && this->visible.getValue()) {  
+    handled = TRUE;
     PRIVATE(this)->updateViewport(action->getState());
     
     const SoEvent * event = action->getEvent();
@@ -339,15 +343,14 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
         if (activeitem >= this->items.getNum()) activeitem = this->items.getNum()-1;
       }
     }
-    if (activeitem >= 0 && SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
-      this->pickedItem = activeitem;
+    if (activeitem >= 0 && SO_MOUSE_RELEASE_EVENT(event, ANY)) {
       SmPopupMenuKit * sub = PRIVATE(this)->getSubMenu(activeitem);
-      activeitem = -1;
-      this->isActive = FALSE;
       
       if (sub) {
+        this->isActive = FALSE;
+        activeitem = -1;
         SbVec3f np(0.0f, 0.0f, 0.0f);
-
+        
         np[0] = event->getPosition()[0] / float (PRIVATE(this)->vp.getViewportSizePixels()[0]);
         np[1] = event->getPosition()[1] / float (PRIVATE(this)->vp.getViewportSizePixels()[1]);
         sub->setViewportRegion(PRIVATE(this)->vp);
@@ -357,11 +360,27 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
         sub->isActive = TRUE;
       }
       else {
-        this->visible = FALSE;
-        if (PRIVATE(this)->parent) {
-          PRIVATE(this)->parent->childFinished(this);
-          this->setParent(NULL);
+//         fprintf(stderr,"picked item (%p): %d\n",
+//                 this, activeitem);
+        this->pickedItem = activeitem;
+        if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
+          activeitem = -1;
+          this->isActive = FALSE;
+          this->visible = FALSE;
+          if (PRIVATE(this)->parent) {
+            PRIVATE(this)->parent->childFinished(this);
+            this->setParent(NULL);
+          }
         }
+      }
+    }
+    else if (activeitem < 0 && SO_MOUSE_RELEASE_EVENT(event, ANY)) {
+      handled = TRUE;
+      this->isActive = FALSE;
+      this->visible = FALSE;
+      if (PRIVATE(this)->parent) {
+        PRIVATE(this)->parent->isActive = TRUE;
+        this->setParent(NULL);
       }
     }
   }
@@ -369,7 +388,9 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
     PRIVATE(this)->activeitem = activeitem;
     PRIVATE(this)->activeitemchanged->schedule();
   }
-  inherited::handleEvent(action);
+  
+  if (handled) action->setHandled();
+  else inherited::handleEvent(action);
 }
 
 void 
