@@ -37,6 +37,7 @@
 #include <Inventor/SbVec3f.h>
 #include <Inventor/SbLine.h>
 #include <Inventor/system/gl.h>
+#include <Inventor/SoPrimitiveVertex.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -211,7 +212,12 @@ SmHQSphere::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   if (!this->shouldPrimitiveCount(action)) return;
 
-  action->addNumTriangles(1); // FIXME
+  int l = this->level.getValue();
+  if (l != PRIVATE(this)->currlevel) {
+    PRIVATE(this)->genGeom(l);
+    PRIVATE(this)->currlevel = l;
+  }
+  action->addNumTriangles(PRIVATE(this)->idx.getLength()/3);
 }
 
 // internal method used to add a sphere intersection to the ray pick
@@ -251,7 +257,31 @@ SmHQSphere::rayPick(SoRayPickAction * action)
 void 
 SmHQSphere::generatePrimitives(SoAction * action)
 {
-  // FIXME:
+  int l = this->level.getValue();
+  if (l != PRIVATE(this)->currlevel) {
+    PRIVATE(this)->genGeom(l);
+    PRIVATE(this)->currlevel = l;
+  }
+
+  int n = PRIVATE(this)->idx.getLength();
+  const int32_t * idx = PRIVATE(this)->idx.getArrayPtr();
+  const SbVec3f * pts = PRIVATE(this)->bsp.getPointsArrayPtr();
+  const SbVec2f * tc = PRIVATE(this)->texcoord.getArrayPtr();
+  
+  float r = this->radius.getValue();
+
+  SoPrimitiveVertex vertex;
+  this->beginShape(action, SoShape::TRIANGLES);
+
+  for (int i = 0; i < n; i++) {
+    vertex.setTextureCoords(tc[idx[i]]);
+    SbVec3f p = pts[idx[i]];
+    vertex.setNormal(p);
+    p *= r;
+    vertex.setPoint(p);
+    this->shapeVertex(&vertex);
+  }
+  this->endShape();
 }
 
 void 
