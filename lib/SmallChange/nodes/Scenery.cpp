@@ -692,6 +692,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
       cc_glglue_has_multitexture(gl)) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     glEnable(GL_TEXTURE_2D);
+    PRIVATE(this)->elevationlinesimage->getGLDisplayList(state)->call(state);
     cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
     didenabletexture1 = TRUE;
   }
