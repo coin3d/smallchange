@@ -109,6 +109,12 @@ public:
   SoAlarmSensor * alarm;
   SoNode * alarm_root;
   SbVec2f alarm_pos;
+
+  float bbw;
+  float bbh;
+
+  SbBool flipleftright;
+  SbBool flipupdown;
 };
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -129,6 +135,7 @@ SmTooltipKit::SmTooltipKit(void)
   SO_KIT_ADD_FIELD(isActive, (FALSE));
   SO_KIT_ADD_FIELD(description, (""));
   SO_KIT_ADD_FIELD(frameSize, (3));
+  SO_KIT_ADD_FIELD(offset, (16, 0));
   
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
@@ -139,7 +146,8 @@ SmTooltipKit::SmTooltipKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, pickStyle, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, TRUE, topSeparator, materialBinding, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(materialBinding, SoMaterialBinding, TRUE, topSeparator, backgroundColor, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(backgroundColor, SoBaseColor, TRUE, topSeparator, backgroundShape, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(backgroundColor, SoBaseColor, TRUE, topSeparator, justification, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(justification, SoTranslation, TRUE, topSeparator, backgroundShape, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(backgroundShape, SoFaceSet, TRUE, topSeparator, position, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(position, SoTranslation, TRUE, topSeparator, textColor, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(textColor, SoBaseColor, TRUE, topSeparator, textShape, TRUE);
@@ -178,8 +186,11 @@ SmTooltipKit::SmTooltipKit(void)
 
   PRIVATE(this)->tooltipsensor = new SoFieldSensor(tooltip_changed_cb, this);
   PRIVATE(this)->tooltipsensor->attach(&this->description);
+  PRIVATE(this)->tooltipsensor->setPriority(0);
   PRIVATE(this)->alarm = new SoAlarmSensor(alarm_cb, this);
   PRIVATE(this)->alarm_root = NULL;
+  PRIVATE(this)->flipleftright = FALSE;
+  PRIVATE(this)->flipupdown = FALSE;
 }
 
 /*!
@@ -308,7 +319,10 @@ void
 SmTooltipKit::setViewportRegion(const SbViewportRegion & vp)
 {
   PRIVATE(this)->vp = vp;
-  this->updateBackground();
+  SoText2 * t = (SoText2*) this->getAnyPart("textShape", FALSE);
+  if (t && t->string.getNum() >= 1 && t->string[0].getLength()) { 
+    this->updateBackground();
+  }
 }
 
 /*!
@@ -322,7 +336,8 @@ SmTooltipKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & 
     this->isActive = FALSE;
     return;
   }
-  
+
+  PRIVATE(this)->vp = vp;
   SbBool oldsearch = SoBaseKit::isSearchingChildren();
   SoBaseKit::setSearchingChildren(TRUE);
 
@@ -356,12 +371,36 @@ SmTooltipKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & 
 
     SbVec3f npt;
     vv.projectToScreen(pp->getPoint(), npt);
-    npt[2] = -1.0f;
+    npt[2] = 0.0f;
 
+    PRIVATE(this)->flipupdown = FALSE;
+    PRIVATE(this)->flipleftright = FALSE;
+    if (npt[0] > 0.5) PRIVATE(this)->flipleftright = TRUE;
+    if (npt[1] < 0.5) PRIVATE(this)->flipupdown = TRUE;
+    
     SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
     t->translation = npt;
-    
     this->updateBackground();
+
+    SbVec2s of = this->offset.getValue();
+    SbVec3f fof(0.0f, 0.0f, 0.0f);
+    fof[0] = float(of[0]) / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
+    fof[1] = float(of[1]) / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+
+    if (PRIVATE(this)->flipleftright) fof[0] = -fof[0];
+    if (PRIVATE(this)->flipupdown) fof[1] = -fof[1];
+
+    SbVec3f j(0.0f, 0.0f, 0.0f);
+    if (PRIVATE(this)->flipleftright) j[0] = -PRIVATE(this)->bbw;
+    if (PRIVATE(this)->flipupdown) j[1] = PRIVATE(this)->bbh;
+
+    j[0] += fof[0];
+    j[1] += fof[1];
+    t->translation = npt + j;    
+
+    // calculate again to account for offset and justification
+    this->updateBackground();
+
     this->isActive = TRUE;
   }
   else {
@@ -444,6 +483,9 @@ SmTooltipKit::updateBackground(void)
   bmin[1] -= fy;
   bmax[0] += fx;
   bmax[1] += fy;
+
+  PRIVATE(this)->bbw = bmax[0] - bmin[0];
+  PRIVATE(this)->bbh = bmax[1] - bmin[1];
 
   SbVec3f varray[4];
   varray[0] = SbVec3f(bmin[0], bmin[1], 0.0f);

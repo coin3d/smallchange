@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFInt32.h>
+#include <Inventor/fields/SoSFVec2s.h>
 #include <Inventor/fields/SoMFString.h>
 #include <SmallChange/basic.h>
 
@@ -53,6 +54,7 @@ class SMALLCHANGE_DLL_API SmTooltipKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(materialBinding);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundColor);
+  SO_KIT_CATALOG_ENTRY_HEADER(justification);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundShape);
   SO_KIT_CATALOG_ENTRY_HEADER(textColor);
   SO_KIT_CATALOG_ENTRY_HEADER(textShape);
@@ -85,6 +87,7 @@ public:
   SoSFBool isActive;
   SoMFString description;
   SoSFInt32 frameSize;
+  SoSFVec2s offset;
 
 private:
 

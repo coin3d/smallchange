@@ -25,6 +25,8 @@ mousebutton_cb(void * closure, SoEventCallback * node)
 {
   myclosure * data = (myclosure*) closure;
 
+  if (!SO_MOUSE_RELEASE_EVENT(node->getEvent(), BUTTON1)) return;
+
   SmTooltipKit * tooltip = (SmTooltipKit*) data->tooltip;  
 
   const SoPickedPoint * pp = node->getPickedPoint();
