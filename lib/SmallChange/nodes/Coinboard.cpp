@@ -38,14 +38,12 @@
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoGLTextureEnabledElement.h>
 #include <Inventor/elements/SoLightModelElement.h>
-#include <Inventor/elements/SoDiffuseColorElement.h>
+//#include <Inventor/elements/SoDiffuseColorElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoViewingMatrixElement.h>
-#include <Inventor/SbRotation.h>
-#include <Inventor/SbMatrix.h>
-#include <Inventor/SbPlane.h>
+#include <Inventor/SbLinear.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
-#include <Inventor/SbXfBox3f.h>
+//#include <Inventor/SbXfBox3f.h>
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/details/SoFaceDetail.h>
@@ -57,6 +55,10 @@
 #include <windows.h>
 #endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
+#define SbMin(a, b) (((a) < (b)) ? (a) : (b))
+#define SbMax(a, b) (((a) > (b)) ? (a) : (b))
+#define SbClamp(val, min, max) (SbMax(SbMin(val, max), min))
+#define SbAbs(a) (((a) < 0) ? (-(a)) : (a))
 #endif // SGI/TGS Inventor
 
 /*!
@@ -166,7 +168,9 @@ Coinboard::Coinboard()
   SO_NODE_ADD_FIELD(shapeType, (TRIANGLES));
 
   SO_NODE_DEFINE_ENUM_VALUE(ShapeType, TRIANGLES);
+#ifdef __COIN__
   SO_NODE_DEFINE_ENUM_VALUE(ShapeType, QUADS);
+#endif // __COIN__
   SO_NODE_DEFINE_ENUM_VALUE(ShapeType, TRIANGLE_STRIP);
   SO_NODE_DEFINE_ENUM_VALUE(ShapeType, TRIANGLE_FAN);
   SO_NODE_SET_SF_ENUM_TYPE(shapeType, ShapeType);
@@ -255,7 +259,9 @@ Coinboard::GLRender(SoGLRenderAction * action)
   GLenum type;
   switch ((ShapeType) this->shapeType.getValue()) {
   case TRIANGLES: type = GL_TRIANGLES; break;
+#ifdef __COIN__
   case QUADS: type = GL_QUADS; break;
+#endif // __COIN__
   case TRIANGLE_STRIP: type = GL_TRIANGLE_STRIP; break;
   default: // avoid compiler warnings
   case TRIANGLE_FAN: type = GL_TRIANGLE_FAN; break;
@@ -303,12 +309,12 @@ Coinboard::GLRender(SoGLRenderAction * action)
     mymat[3][2] = 0.0f;
 
     state->push();
-#if 0
+#ifdef __COIN__
+    SoModelMatrixElement::set(state, this, mymat);
+#else // !__COIN__
     SoModelMatrixElement::mult(state, this, mm.inverse());
     SoModelMatrixElement::mult(state, this, mymat);
-#else
-    SoModelMatrixElement::set(state, this, mymat);
-#endif
+#endif // !__COIN__
     mymat = SoViewingMatrixElement::get(state);
     mymat[3][0] = 0.0f;
     mymat[3][1] = 0.0f;
@@ -434,7 +440,9 @@ Coinboard::generatePrimitives(SoAction * action)
   TriangleShape type;
   switch ((ShapeType) this->shapeType.getValue()) {
   case TRIANGLES: type = SoShape::TRIANGLES; break;
+#ifdef __COIN__
   case QUADS: type = SoShape::QUADS; break;
+#endif // __COIN__
   case TRIANGLE_STRIP: type = SoShape::TRIANGLE_STRIP; break;
   case TRIANGLE_FAN: type = SoShape::TRIANGLE_FAN; break;
   default:
@@ -443,7 +451,7 @@ Coinboard::generatePrimitives(SoAction * action)
     break;
   }
   
-  SbBool doTextures = SoTextureEnabledElement::get(state);
+  SbBool doTextures = SoGLTextureEnabledElement::get(state);
   if (doTextures) {
     texcoords = this->texCoord.getValues(0);
   }
@@ -485,8 +493,13 @@ Coinboard::generatePrimitives(SoAction * action)
     mymat[3][2] = 0.0f;
 
     state->push();
-    SoModelMatrixElement::set(state, this, mymat);
 
+#ifdef __COIN__
+    SoModelMatrixElement::set(state, this, mymat);
+#else // !__COIN__
+    SoModelMatrixElement::mult(state, this, mm.inverse());
+    SoModelMatrixElement::mult(state, this, mymat);
+#endif // !__COIN__
     if (action->isOfType(SoRayPickAction::getClassTypeId())) {
       ((SoRayPickAction*)action)->setObjectSpace();
     }
@@ -500,7 +513,11 @@ Coinboard::generatePrimitives(SoAction * action)
 
     if (neednormal) v.setNormal(normal);
 
+#ifdef __COIN__
     if (type == SoShape::TRIANGLES || type == SoShape::QUADS) {
+#else // !__COIN__
+    if (type == SoShape::TRIANGLES) {
+#endif // !__COIN__
       this->beginShape(action, type, &faceDetail);
       for (int i = 0; i < num; i++) {
         faceDetail.setFaceIndex(0);
@@ -513,7 +530,7 @@ Coinboard::generatePrimitives(SoAction * action)
         else {
           this->generate(&v, tmp, coords, numcoords, texcoords);
         }
-        faceDetail.incPartIndex();
+        faceDetail.setPartIndex(faceDetail.getPartIndex()+1);
       }
       this->endShape();
     }
@@ -531,7 +548,7 @@ Coinboard::generatePrimitives(SoAction * action)
           this->generate(&v, tmp, coords, numcoords, texcoords);
         }
         this->endShape();
-        faceDetail.incPartIndex();
+        faceDetail.setPartIndex(faceDetail.getPartIndex()+1);
       }
     }
     state->pop();
@@ -554,7 +571,11 @@ Coinboard::generatePrimitives(SoAction * action)
       v.setNormal(normal);
     }
 
+#ifdef __COIN__
     if (type == SoShape::TRIANGLES || type == SoShape::QUADS) {
+#else // !__COIN__
+    if (type == SoShape::TRIANGLES) {
+#endif // !__COIN__
       this->beginShape(action, type, &faceDetail);
       for (int i = 0; i < num; i++) {
         faceDetail.setFaceIndex(0);
@@ -570,7 +591,7 @@ Coinboard::generatePrimitives(SoAction * action)
         else {
           this->generate(&v, mat, coords, numcoords, texcoords);
         }
-        faceDetail.incPartIndex();
+        faceDetail.setPartIndex(faceDetail.getPartIndex()+1);
       }
       this->endShape();
     }
@@ -592,7 +613,7 @@ Coinboard::generatePrimitives(SoAction * action)
           this->generate(&v, mat, coords, numcoords, texcoords);
         }
         this->endShape();
-        faceDetail.incPartIndex();
+        faceDetail.setPartIndex(faceDetail.getPartIndex()+1);
       }
     }
   }
