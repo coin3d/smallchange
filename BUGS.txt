@@ -33,7 +33,7 @@
 
 =====================================================================
 
-002 SoText2Set crates too small bounding boxes for rotated strings
+002 SoText2Set creates too small bounding boxes for rotated strings
 
     The bounding box will not come out right when a string has a
     justification != RIGHT and an extreme rotation (about 90+
@@ -49,5 +49,53 @@
     See detailed description of bug as item #121 in Coin/BUGS.txt.
 
     20040705 mortene.
+
+=====================================================================
+
+004 SoText2Set should be migrated to the new Coin cc_glyph2d interface.
+
+    It is now using the obsoleted SoGlyph class in Coin, which will
+    probably be removed before releasing Coin 3.0.
+
+    Note that the cc_glyph* and cc_fontspec* interfaces have not been
+    made public in Coin. They need a final audit before letting them
+    fly.
+
+    20040708 mortene.
+
+=====================================================================
+
+005 SmScenery node causes continuous redraws.
+
+    When using this node in any scene graph, it will for some reason
+    cause continuous notifications from the scenegraph -- causing it
+    to continually trigger redraws.
+
+    This is quite straightforward to reproduce, just set the envvar
+    COIN_SHOW_FPS_COUNTER=1 and load an SmScenery node, and you'll see
+    that it won't stop redrawing even though the scene's camera is
+    kept static.
+
+    I just added some convenient debugging stuff to Coin to aid in
+    these situations: by setting the envvar
+    COIN_DEBUG_ROOT_NOTIFICATIONS=1, the SoSceneManager will dump the
+    full notification chain of any changes made to the scene
+    graph. For some strange reason, this didn't help much with this
+    bug, as the notification chain seems rather non-sensical for
+    whatever happens with the SmScenery node. Could be a bug with the
+    Coin notification tracking mechanism -- should investigate.
+
+    20040708 mortene.
+
+=====================================================================
+
+006 Use of SmScenery node causes glGetError() to report
+    GL_INVALID_ENUM.
+
+    ..but only for some drivers (like oso's laptop). Need to find out
+    why, it seems to have grave consequences on some drivers, like
+    completely short-cutting the visualization of Scenery data.
+
+    20040708 mortene.
 
 =====================================================================
