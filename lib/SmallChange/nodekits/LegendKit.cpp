@@ -860,11 +860,13 @@ void
 LegendKit::renderString(const char * str, int xpos, int ypos)
 {
   int len = strlen(str);
+  const unsigned char * ustr = (const unsigned char*) str;
   for (int i = 0; i < len; i++) {
-    if (str[i] >= 32) { // just in case?
+    if (ustr[i] >= 32) { // just in case?
       glRasterPos2i(xpos, ypos);
       glBitmap(FONT_WIDTH, FONT_HEIGHT, 0, 0, 0, 0, 
-               (const GLubyte *) bitmapfont_data + FONT_HEIGHT * (str[i]-32) );
+               (const GLubyte *) bitmapfont_data + 
+               FONT_HEIGHT * bitmapfont_isolatin1_mapping[ustr[i]]);
     }
     xpos += FONT_WIDTH;
   }
