@@ -109,7 +109,7 @@ FrustumCamera::getViewVolume(float useaspectratio) const
 {
   SbViewVolume vv;
 
-  if (useaspectratio == 0.0f) { // LEAVE_ALONE viewportMappin
+  if (useaspectratio == 0.0f) { // LEAVE_ALONE viewportMapping
     vv.frustum(this->left.getValue(),
                this->right.getValue(),
                this->bottom.getValue(),
@@ -119,7 +119,7 @@ FrustumCamera::getViewVolume(float useaspectratio) const
   }
   else {
     // calculate left and right based on height
-    float cx = this->left.getValue() + this->right.getValue();
+    float cx = (this->left.getValue() + this->right.getValue()) * 0.5f;
     float h_2 = (this->top.getValue() - this->bottom.getValue()) * 0.5f;
 
     vv.frustum(cx - h_2 * useaspectratio,
