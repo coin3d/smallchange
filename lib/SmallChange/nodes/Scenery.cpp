@@ -154,12 +154,38 @@ public:
   SceneryP(void);
   void commonConstructor(void);
 
+  static uint32_t colortexgen_cb(void * closure, double * pos, float elevation, double * spacing);
+  void colormaptexchange(void);
+
   static void filenamesensor_cb(void * data, SoSensor * sensor);
   static void blocksensor_cb(void * data, SoSensor * sensor);
   static void loadsensor_cb(void * data, SoSensor * sensor);
   static void colormapsensor_cb(void * data, SoSensor * sensor);
 
+  // texture caching
+  SoGLImage * findReuseTexture(const unsigned int texid);
+  SoGLImage * createTexture(const unsigned int texid);
+  void deleteUnusedTextures(void);
+  static void hash_clear(unsigned long key, void * val, void * closure);
+  static void hash_inc_unused(unsigned long key, void * val, void * closure);
+  static void hash_add_all(unsigned long key, void * val, void * closure);
+  static void hash_check_unused(unsigned long key, void * val, void * closure);
+
+  // rendering
   void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
+  static int render_pre_cb(void * closure, ss_render_pre_cb_info * info);
+  static void undefrender_cb(void * closure, const int x, const int y, const int len,
+                             const unsigned int bitmask_org);
+  static void render_cb(void * closure, const int x, const int y,
+                        const int len, const unsigned int bitmask);
+
+  static int gen_pre_cb(void * closure, ss_render_pre_cb_info * info);
+  static void gen_cb(void * closure, const int x, const int y,
+                     const int len, const unsigned int bitmask);
+  static void undefgen_cb(void * closure, const int x, const int y, const int len,
+                          const unsigned int bitmask_org);
+
+
 };
 
 SceneryP::SceneryP(void)
@@ -178,6 +204,13 @@ SceneryP::SceneryP(void)
   this->bboxmax[1] = 0.0;
   this->bboxmax[2] = 0.0;
 }
+
+/* ********************************************************************** */
+
+static int pre_block_cb(void * closure, const double * bmin, const double * bmax);
+static void post_block_cb(void * closure);
+static int raypick_pre_cb(void * closure, const double * bmin, const double * bmax);
+static void raypick_post_cb(void * closure);
 
 /* ********************************************************************** */
 
@@ -286,146 +319,13 @@ SmScenery::~SmScenery(void)
   }
   delete PRIVATE(this)->pvertex;
   delete PRIVATE(this)->facedetail;
-  cc_hash_apply(PRIVATE(this)->texhash, hash_clear, NULL);
+  cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_clear, NULL);
   cc_hash_destruct(PRIVATE(this)->texhash);
 
   delete PRIVATE(this);
 }
 
 /* ********************************************************************** */
-
-static int
-pre_block_cb(void * closure, const double * bmin, const double * bmax)
-{
-  SoState * state = (SoState*) closure;
-  state->push();
-  if (!SoCullElement::completelyInside(state)) {
-    SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
-    if (SoCullElement::cullBox(state, box, TRUE)) {
-
-//       fprintf(stderr,"culled box: %g %g %g, %g %g %g\n",
-//               bmin[0], bmin[1], bmin[2],
-//               bmax[0], bmax[1], bmax[2]);
-      return 0;
-    }
-  }
-  return 1;
-}
-
-static void
-post_block_cb(void * closure)
-{
-  SoState * state = (SoState*) closure;  
-  state->pop();
-}
- 
-
-static int
-raypick_pre_cb(void * closure, const double * bmin, const double * bmax)
-{
-  SoRayPickAction * action = (SoRayPickAction*) closure;
-  SoState * state = action->getState();
-  state->push();
-
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
-  if (box.isEmpty()) return 0;
-  action->setObjectSpace();
-  return action->intersect(box, TRUE);
-}
-
-
-static void
-raypick_post_cb(void * closure)
-{
-  SoRayPickAction * action = (SoRayPickAction*) closure;
-  SoState * state = action->getState();
-  state->pop();
-}
-
-
-int 
-SmScenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
-{
-  if ( sc_scenery_available() ) {
-  SmScenery * thisp = (SmScenery*) closure; 
-  SoState * state = PRIVATE(thisp)->currstate;
-  
-  RenderState & renderstate = PRIVATE(thisp)->renderstate;
-  
-  sc_ssglue_render_get_elevation_measures(info, 
-                                   renderstate.voffset,
-                                   renderstate.vspacing,
-                                   &renderstate.elevdata,
-                                   &renderstate.normaldata);
-
-  float ox = renderstate.voffset[0] / PRIVATE(thisp)->bboxmax[0];
-  float oy = renderstate.voffset[1] / PRIVATE(thisp)->bboxmax[1];
-  float sx = renderstate.vspacing[0] * renderstate.blocksize;
-  float sy = renderstate.vspacing[1] * renderstate.blocksize;
-
-  sx /= PRIVATE(thisp)->bboxmax[0];
-  sy /= PRIVATE(thisp)->bboxmax[1];
-
-  PRIVATE(thisp)->debuglist.append(ox);
-  PRIVATE(thisp)->debuglist.append(oy);
-  PRIVATE(thisp)->debuglist.append(ox+sx);
-  PRIVATE(thisp)->debuglist.append(oy+sy);
-
-  sc_ssglue_render_get_texture_measures(info,
-                                 &renderstate.texid,
-                                 renderstate.toffset,
-                                 renderstate.tscale);
-  
-  if (PRIVATE(thisp)->dotex && renderstate.texid) {
-    if (renderstate.texid != PRIVATE(thisp)->currtexid) {      
-      SoGLImage * image = thisp->findReuseTexture(renderstate.texid);
-      if (!image) {
-        image = thisp->createTexture(renderstate.texid);
-        assert(image);      
-        sc_ssglue_render_get_texture_image(info, renderstate.texid,
-                                    &renderstate.texdata,
-                                    &renderstate.texw,
-                                    &renderstate.texh,
-                                    &renderstate.texnc);
-#if 0 // workaround for preng bug in texture
-        assert(renderstate.texnc == 4);
-        uint32_t * dst = (uint32_t*) renderstate.texdata;
-        unsigned char * ptr = renderstate.texdata;
-        for (int i = 0; i < renderstate.texw*renderstate.texh; i++) {
-          *dst++ = (ptr[3]<<24)|(ptr[2]<<16)|(ptr[1]<<8)|0xff;
-        ptr += 4;
-        }
-#endif
-      
-        SbVec2s size(renderstate.texw, renderstate.texh);
-        image->setData(renderstate.texdata,
-                       size, renderstate.texnc, 
-                       SoGLImage::CLAMP_TO_EDGE,
-                       SoGLImage::CLAMP_TO_EDGE, 0.9, 0, state);
-        PRIVATE(thisp)->numnewtextures++;
-      }
-      image->getGLDisplayList(state)->call(state);
-      PRIVATE(thisp)->currtexid = renderstate.texid;
-    }
-    else {
-      //      fprintf(stderr,"reused tex\n");
-    }
-    if (!PRIVATE(thisp)->texisenabled) {
-      glEnable(GL_TEXTURE_2D);
-      PRIVATE(thisp)->texisenabled = TRUE;
-    }
-  }
-  else {
-    if (PRIVATE(thisp)->texisenabled) {
-      glDisable(GL_TEXTURE_2D);
-      PRIVATE(thisp)->texisenabled = FALSE;
-    }
-  }
-  return 1;
-  } else {
-    return 0;
-  }
-}
 
 void 
 SmScenery::GLRender(SoGLRenderAction * action)
@@ -486,15 +386,15 @@ SmScenery::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->currstate = state;
 
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                              render_cb, this);
+                                     SceneryP::render_cb, this);
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                    undefrender_cb, this); 
+                                           SceneryP::undefrender_cb, this); 
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                  render_pre_cb, this);
+                                         SceneryP::render_pre_cb, this);
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                   pre_block_cb, state);
+                                          pre_block_cb, state);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                    post_block_cb, state);
+                                           post_block_cb, state);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
@@ -629,17 +529,16 @@ SmScenery::callback(SoCallbackAction * action)
 
   SbVec3f campos = SoViewVolumeElement::get(state).getProjectionPoint();
   //  transform into local coordinate system
-  SbMatrix worldtolocal =
-    SoModelMatrixElement::get(state).inverse();
+  SbMatrix worldtolocal = SoModelMatrixElement::get(state).inverse();
   worldtolocal.multVecMatrix(campos, campos);
   PRIVATE(this)->currhotspot = campos;
 
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                     pre_block_cb, state);
+                                          pre_block_cb, state);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                      post_block_cb, state);
+                                           post_block_cb, state);
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                  NULL, this);
+                                         NULL, this);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
@@ -648,31 +547,30 @@ SmScenery::callback(SoCallbackAction * action)
   sc_ssglue_view_evaluate(PRIVATE(this)->system, PRIVATE(this)->viewid);
 
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                   NULL, NULL);
+                                          NULL, NULL);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                    NULL, NULL);
+                                           NULL, NULL);
 }
 
 void 
 SmScenery::generatePrimitives(SoAction * action)
 {
-  if ( sc_scenery_available() ) {
+  if ( !sc_scenery_available() ) { return; }
   if (PRIVATE(this)->system == NULL) return;
   SoState * state = action->getState();
 
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                              gen_cb, this);
+                                     SceneryP::gen_cb, this);
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                    undefgen_cb, this);
+                                           SceneryP::undefgen_cb, this);
 
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                  gen_pre_cb, this);
+                                         SceneryP::gen_pre_cb, this);
 
   SoPointDetail pointDetail;
   PRIVATE(this)->pvertex->setDetail(&pointDetail);
   PRIVATE(this)->curraction = action;
   sc_ssglue_view_render(PRIVATE(this)->system, PRIVATE(this)->viewid);
-  }
 }
 
 void 
@@ -765,8 +663,212 @@ readxyz(const char * filename)
   return system;
 }
 
+
+void
+SmScenery::setAttributeTextureCB(SmSceneryTexture2CB * callback, void * closure)
+{
+  PRIVATE(this)->cbtexcb = callback;
+  PRIVATE(this)->cbtexclosure = closure;
+  // FIXME: invalidate texture if attribute texture is currently enabled
+}
+
+void 
+SmScenery::preFrame(void)
+{
+  if ( sc_scenery_available() && PRIVATE(this)->system ) {
+    sc_ssglue_view_pre_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
+    cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_inc_unused, NULL);
+  }
+}
+
+int 
+SmScenery::postFrame(void)
+{
+  if (sc_scenery_available() && PRIVATE(this)->system) {
+    PRIVATE(this)->deleteUnusedTextures();
+    return sc_ssglue_view_post_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
+  }
+  return 0;
+}
+
+void 
+SmScenery::setBlockRottger(const float c)
+{
+  if (sc_scenery_available() && PRIVATE(this)->system) {
+    sc_ssglue_view_set_evaluate_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, 16.0f, c);
+  }
+}
+
+float
+SmScenery::getBlockRottger(void) const
+{
+  if (sc_scenery_available() && PRIVATE(this)->system) {
+    float C, c;
+    sc_ssglue_view_get_evaluate_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, &C, &c);
+    return c;
+  }
+  return 0.0f;
+}
+
+void 
+SmScenery::setLoadRottger(const float c)
+{
+  if (sc_scenery_available() && PRIVATE(this)->system) {
+    sc_ssglue_view_set_load_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, 16.0f, c);
+  }
+}
+
+float
+SmScenery::getLoadRottger(void) const
+{
+  if (sc_scenery_available() && PRIVATE(this)->system) {
+    float C, c;
+    sc_ssglue_view_get_load_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, &C, &c);
+    return c;
+  }
+  return 0.0f;
+}
+
+void 
+SmScenery::refreshTextures(const int id)
+{
+  if (sc_scenery_available() && PRIVATE(this)->system) {
+    sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
+
+    PRIVATE(this)->tmplist.truncate(0);
+    cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_add_all, &PRIVATE(this)->tmplist);
+
+    for (int i = 0; i < PRIVATE(this)->tmplist.getLength(); i++) {
+      void * tmp;
+      if (cc_hash_get(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i], &tmp)) {
+        TexInfo * tex = (TexInfo *) tmp;
+        PRIVATE(this)->reusetexlist.push(tex);
+        (void) cc_hash_remove(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i]);
+      }
+      else {
+        assert(0 && "huh");
+      }
+    }
+  }
+}
+
+
+/* ********************************************************************** */
+
+void
+SceneryP::commonConstructor(void)
+{
+  this->blocksensor = new SoFieldSensor(SceneryP::blocksensor_cb, PUBLIC(this));
+  this->blocksensor->attach(&PUBLIC(this)->blockRottger);
+
+  this->loadsensor = new SoFieldSensor(SceneryP::loadsensor_cb, PUBLIC(this));
+  this->loadsensor->attach(&PUBLIC(this)->loadRottger);
+
+  this->colormapsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
+  this->colormapsensor->attach(&PUBLIC(this)->colorMap);
+
+  this->colortexturesensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
+  this->colortexturesensor->attach(&PUBLIC(this)->colorTexture);
+
+  this->colorelevationsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
+  this->colorelevationsensor->attach(&PUBLIC(this)->colorElevation);
+}
+
+void 
+SceneryP::filenamesensor_cb(void * data, SoSensor * sensor)
+{
+  if ( !sc_scenery_available() ) { return; }
+  SmScenery * thisp = (SmScenery *) data;
+
+  if ( sc_scenery_available() && PRIVATE(thisp)->system) {
+    sc_ssglue_view_deallocate(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
+    sc_ssglue_system_close(PRIVATE(thisp)->system);
+  }
+
+  const SbStringList & pathlist = SoInput::getDirectories();
+
+  PRIVATE(thisp)->viewid = -1;
+  PRIVATE(thisp)->system = NULL;
+  PRIVATE(thisp)->colormaptexid = -1;
+
+
+  SbString s = thisp->filename.getValue();
+  if (s.getLength()) {
+#if 0 && SS_IMPORT_XYZ
+    if ( s.find(".xyz") == (s.getLength() - 4) ) {
+      PRIVATE(thisp)->system = readxyz(s.getString());
+    }
+#endif
+    if ( !PRIVATE(thisp)->system ) {
+      int i;
+      for ( i = -1; (PRIVATE(thisp)->system == NULL) && (i < pathlist.getLength()); i++ ) {
+        if ( i == -1 ) {
+          PRIVATE(thisp)->system = sc_ssglue_system_open(s.getString(), 1);
+        } else {
+          SbString path = *(pathlist[i]);
+          path += "/";
+          path += s;
+          PRIVATE(thisp)->system = sc_ssglue_system_open(path.getString(), 1);
+        }
+      }
+    }
+    if (!PRIVATE(thisp)->system) {
+      (void)fprintf(stderr, "Unable to open SmScenery system '%s'\n", s.getString());
+    }
+    else {
+      if ( (sc_ssglue_system_get_num_datasets(PRIVATE(thisp)->system) > 0) &&
+           (sc_ssglue_system_get_dataset_type(PRIVATE(thisp)->system, 0) == SS_ELEVATION_TYPE) ) {
+        PRIVATE(thisp)->colormaptexid = sc_ssglue_system_add_runtime_texture2d(PRIVATE(thisp)->system, 0, SceneryP::colortexgen_cb, thisp);
+      }
+      sc_ssglue_system_get_object_box(PRIVATE(thisp)->system, PRIVATE(thisp)->bboxmin, PRIVATE(thisp)->bboxmax); 
+      PRIVATE(thisp)->blocksize = sc_ssglue_system_get_blocksize(PRIVATE(thisp)->system);
+      PRIVATE(thisp)->renderstate.blocksize = (float) (PRIVATE(thisp)->blocksize-1);
+      PRIVATE(thisp)->viewid = sc_ssglue_view_allocate(PRIVATE(thisp)->system);
+      assert(PRIVATE(thisp)->viewid >= 0);
+      sc_ssglue_view_enable(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
+      //      fprintf(stderr,"system: %p, viewid: %d\n", PRIVATE(thisp)->system, thisp->viewid);
+
+      const int sequencelen = thisp->renderSequence.getNum();
+      if ( thisp->colorTexture.getValue() && PRIVATE(thisp)->colormaptexid != -1 ) {
+        // FIXME: add runtime colortexture
+        int localsequence[2] = { PRIVATE(thisp)->colormaptexid, 0 };
+        sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 2, localsequence);
+      } else if ( sequencelen == 0 ) {
+        sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 0, NULL);
+      } else {
+        thisp->renderSequence.enableNotify(FALSE);
+        int * sequence = thisp->renderSequence.startEditing();
+        sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, sequencelen, sequence);
+        thisp->renderSequence.finishEditing();
+        thisp->renderSequence.enableNotify(TRUE);
+      }
+    }
+  }
+}
+
+void 
+SceneryP::blocksensor_cb(void * data, SoSensor * sensor)
+{
+  SmScenery * thisp = (SmScenery *) data;
+  thisp->setBlockRottger(thisp->blockRottger.getValue());
+}
+
+void 
+SceneryP::loadsensor_cb(void * data, SoSensor * sensor)
+{
+  SmScenery * thisp = (SmScenery *) data;
+  thisp->setLoadRottger(thisp->loadRottger.getValue());
+}
+
+void 
+SceneryP::colormapsensor_cb(void * data, SoSensor * sensor)
+{
+  SmScenery * thisp = (SmScenery *) data;
+  PRIVATE(thisp)->colormaptexchange();
+}
+
 uint32_t
-SmScenery::colortexgen_cb(void * closure, double * pos, float elevation, double * spacing)
+SceneryP::colortexgen_cb(void * closure, double * pos, float elevation, double * spacing)
 {
   uint32_t abgr = 0xffffffff; // no colors means white
   SmScenery * thisp = (SmScenery *) closure;
@@ -812,126 +914,116 @@ SmScenery::colortexgen_cb(void * closure, double * pos, float elevation, double 
 }
 
 void
-SmScenery::colormaptexchange(void)
+SceneryP::colormaptexchange(void)
 {
-  // if ( this->colorTexture.getValue() ) {
-    if ( PRIVATE(this)->colormaptexid != -1 ) {
-      this->refreshTextures(PRIVATE(this)->colormaptexid);
+  // if ( PUBLIC(this)->colorTexture.getValue() ) {
+    if ( this->colormaptexid != -1 ) {
+      PUBLIC(this)->refreshTextures(this->colormaptexid);
     }
   // }
 }
-
-void
-SmScenery::setAttributeTextureCB(SmSceneryTexture2CB * callback, void * closure)
+void 
+SceneryP::GEN_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
-  PRIVATE(this)->cbtexcb = callback;
-  PRIVATE(this)->cbtexclosure = closure;
-  // FIXME: invalidate texture if attribute texture is currently enabled
+  this->pvertex->setPoint(SbVec3f(x*state->vspacing[0] + state->voffset[0],
+                                  y*state->vspacing[1] + state->voffset[1],
+                                  elev));
+  PUBLIC(this)->shapeVertex(this->pvertex);
 }
+
+SoGLImage * 
+SceneryP::findReuseTexture(const unsigned int texid)
+{
+  void * tmp = NULL;
+  if (cc_hash_get(this->texhash, texid, &tmp)) {
+    TexInfo * tex = (TexInfo *) tmp;
+    assert(tex->image);
+    tex->unusedcount = 0;
+    return tex->image;
+  }
+  return NULL;
+}
+
+SoGLImage * 
+SceneryP::createTexture(const unsigned int texid)
+{
+  TexInfo * tex = NULL;
+  if (this->reusetexlist.getLength()) {
+    tex = this->reusetexlist.pop();
+  }
+  else {
+    tex = new TexInfo;
+    tex->image = new SoGLImage;
+    tex->image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
+  }
+  tex->texid = this->currtexid;
+  tex->unusedcount = 0;
+
+  (void) cc_hash_put(this->texhash, texid, tex);
+  return tex->image;
+}  
 
 void 
-SmScenery::preFrame(void)
+SceneryP::deleteUnusedTextures(void)
 {
-  if ( sc_scenery_available() && PRIVATE(this)->system ) {
-    sc_ssglue_view_pre_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
-    cc_hash_apply(PRIVATE(this)->texhash, hash_inc_unused, NULL);
-  }
-}
+  this->tmplist.truncate(0);
+  cc_hash_apply(this->texhash, SceneryP::hash_check_unused, &this->tmplist);
 
-int 
-SmScenery::postFrame(void)
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    this->deleteUnusedTextures();
-    return sc_ssglue_view_post_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
-  }
-  return 0;
-}
-
-void 
-SmScenery::setBlockRottger(const float c)
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    sc_ssglue_view_set_evaluate_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, 16.0f, c);
-  }
-}
-
-float
-SmScenery::getBlockRottger(void) const
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    float C, c;
-    sc_ssglue_view_get_evaluate_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, &C, &c);
-    return c;
-  }
-  return 0.0f;
-}
-
-void 
-SmScenery::setLoadRottger(const float c)
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    sc_ssglue_view_set_load_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, 16.0f, c);
-  }
-}
-
-float
-SmScenery::getLoadRottger(void) const
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    float C, c;
-    sc_ssglue_view_get_load_rottger_parameters(PRIVATE(this)->system, PRIVATE(this)->viewid, &C, &c);
-    return c;
-  }
-  return 0.0f;
-}
-
-void
-SmScenery::getSceneryOffset(double * offset) const
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    sc_ssglue_system_get_origo_world_position(PRIVATE(this)->system, offset);
-  }
-}
-
-void 
-SmScenery::refreshTextures(const int id)
-{
-  if (sc_scenery_available() && PRIVATE(this)->system) {
-    sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
-
-    PRIVATE(this)->tmplist.truncate(0);
-    cc_hash_apply(PRIVATE(this)->texhash, hash_add_all, &PRIVATE(this)->tmplist);
-
-    for (int i = 0; i < PRIVATE(this)->tmplist.getLength(); i++) {
-      void * tmp;
-      if (cc_hash_get(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i], &tmp)) {
-        TexInfo * tex = (TexInfo *) tmp;
-        PRIVATE(this)->reusetexlist.push(tex);
-        (void) cc_hash_remove(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i]);
-      }
-      else {
-        assert(0 && "huh");
-      }
+  int i;
+  for ( i = 0; i < this->tmplist.getLength(); i++ ) {
+    void * tmp;
+    if ( cc_hash_get(this->texhash, this->tmplist[i], &tmp) ) {
+      TexInfo * tex = (TexInfo *) tmp;
+      this->reusetexlist.push(tex);
+      (void) cc_hash_remove(this->texhash, this->tmplist[i]);
+    }
+    else {
+      assert(0 && "huh");
     }
   }
+
+//   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
+//           cc_hash_get_num_elements(this->texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
+
+  this->tmplist.truncate(0);
 }
 
-
-int 
-SmScenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
+void 
+SceneryP::hash_clear(unsigned long key, void * val, void * closure)
 {
-  SmScenery * thisp = (SmScenery*) closure; 
-
-  RenderState & renderstate = PRIVATE(thisp)->renderstate;
-  
-  sc_ssglue_render_get_elevation_measures(info, 
-                                   renderstate.voffset,
-                                   renderstate.vspacing,
-                                   &renderstate.elevdata,
-                                   &renderstate.normaldata);
-  return 1;
+  TexInfo * tex = (TexInfo *) val;
+  // safe to do this here since we'll never use this list again
+  assert(tex->image);
+  tex->image->unref(NULL);
+  delete tex;
 }
+
+void 
+SceneryP::hash_add_all(unsigned long key, void * val, void * closure)
+{  
+  TexInfo * tex = (TexInfo *) val;
+  SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
+  keylist->append(key);
+}
+
+void 
+SceneryP::hash_inc_unused(unsigned long key, void * val, void * closure)
+{
+  TexInfo * tex = (TexInfo *) val;
+  tex->unusedcount++;
+}
+
+void 
+SceneryP::hash_check_unused(unsigned long key, void * val, void * closure)
+{  
+  TexInfo * tex = (TexInfo*) val;
+  if ( tex->unusedcount > MAX_UNUSED_COUNT ) {
+    SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
+    keylist->append(key);
+  }
+}
+
+// *************************************************************************
 
 ////////////// render ///////////////////////////////////////////////////////////
 
@@ -1016,11 +1108,95 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
 }
 
 
+
+int 
+SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
+{
+  if ( sc_scenery_available() ) {
+  SmScenery * thisp = (SmScenery*) closure; 
+  SoState * state = PRIVATE(thisp)->currstate;
+  
+  RenderState & renderstate = PRIVATE(thisp)->renderstate;
+  
+  sc_ssglue_render_get_elevation_measures(info, 
+                                   renderstate.voffset,
+                                   renderstate.vspacing,
+                                   &renderstate.elevdata,
+                                   &renderstate.normaldata);
+
+  float ox = renderstate.voffset[0] / PRIVATE(thisp)->bboxmax[0];
+  float oy = renderstate.voffset[1] / PRIVATE(thisp)->bboxmax[1];
+  float sx = renderstate.vspacing[0] * renderstate.blocksize;
+  float sy = renderstate.vspacing[1] * renderstate.blocksize;
+
+  sx /= PRIVATE(thisp)->bboxmax[0];
+  sy /= PRIVATE(thisp)->bboxmax[1];
+
+  PRIVATE(thisp)->debuglist.append(ox);
+  PRIVATE(thisp)->debuglist.append(oy);
+  PRIVATE(thisp)->debuglist.append(ox+sx);
+  PRIVATE(thisp)->debuglist.append(oy+sy);
+
+  sc_ssglue_render_get_texture_measures(info,
+                                 &renderstate.texid,
+                                 renderstate.toffset,
+                                 renderstate.tscale);
+  
+  if (PRIVATE(thisp)->dotex && renderstate.texid) {
+    if (renderstate.texid != PRIVATE(thisp)->currtexid) {      
+      SoGLImage * image = PRIVATE(thisp)->findReuseTexture(renderstate.texid);
+      if (!image) {
+        image = PRIVATE(thisp)->createTexture(renderstate.texid);
+        assert(image);      
+        sc_ssglue_render_get_texture_image(info, renderstate.texid,
+                                    &renderstate.texdata,
+                                    &renderstate.texw,
+                                    &renderstate.texh,
+                                    &renderstate.texnc);
+#if 0 // workaround for preng bug in texture
+        assert(renderstate.texnc == 4);
+        uint32_t * dst = (uint32_t*) renderstate.texdata;
+        unsigned char * ptr = renderstate.texdata;
+        for (int i = 0; i < renderstate.texw*renderstate.texh; i++) {
+          *dst++ = (ptr[3]<<24)|(ptr[2]<<16)|(ptr[1]<<8)|0xff;
+        ptr += 4;
+        }
+#endif
+      
+        SbVec2s size(renderstate.texw, renderstate.texh);
+        image->setData(renderstate.texdata,
+                       size, renderstate.texnc, 
+                       SoGLImage::CLAMP_TO_EDGE,
+                       SoGLImage::CLAMP_TO_EDGE, 0.9, 0, state);
+        PRIVATE(thisp)->numnewtextures++;
+      }
+      image->getGLDisplayList(state)->call(state);
+      PRIVATE(thisp)->currtexid = renderstate.texid;
+    }
+    else {
+      //      fprintf(stderr,"reused tex\n");
+    }
+    if (!PRIVATE(thisp)->texisenabled) {
+      glEnable(GL_TEXTURE_2D);
+      PRIVATE(thisp)->texisenabled = TRUE;
+    }
+  }
+  else {
+    if (PRIVATE(thisp)->texisenabled) {
+      glDisable(GL_TEXTURE_2D);
+      PRIVATE(thisp)->texisenabled = FALSE;
+    }
+  }
+  return 1;
+  } else {
+    return 0;
+  }
+}
+
 #define ELEVATION(x,y) elev[(y)*W+(x)]    
 
-
 void 
-SmScenery::undefrender_cb(void * closure, const int x, const int y, const int len, 
+SceneryP::undefrender_cb(void * closure, const int x, const int y, const int len, 
                            const unsigned int bitmask_org)
 {
   SmScenery * thisp = (SmScenery*) closure; 
@@ -1090,8 +1266,8 @@ SmScenery::undefrender_cb(void * closure, const int x, const int y, const int le
 }
 
 void 
-SmScenery::render_cb(void * closure, const int x, const int y,
-                      const int len, const unsigned int bitmask)
+SceneryP::render_cb(void * closure, const int x, const int y,
+                    const int len, const unsigned int bitmask)
 {
   SmScenery * thisp = (SmScenery*) closure;
   
@@ -1181,20 +1357,25 @@ SmScenery::render_cb(void * closure, const int x, const int y,
   }
 }
 
-
 //////////// generate primitives ///////////////////////////////////////////////
 
-void 
-SceneryP::GEN_VERTEX(RenderState * state, const int x, const int y, const float elev)
+int 
+SceneryP::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
-  this->pvertex->setPoint(SbVec3f(x*state->vspacing[0] + state->voffset[0],
-                                  y*state->vspacing[1] + state->voffset[1],
-                                  elev));
-  PUBLIC(this)->shapeVertex(this->pvertex);
+  SmScenery * thisp = (SmScenery*) closure; 
+
+  RenderState & renderstate = PRIVATE(thisp)->renderstate;
+  
+  sc_ssglue_render_get_elevation_measures(info, 
+                                   renderstate.voffset,
+                                   renderstate.vspacing,
+                                   &renderstate.elevdata,
+                                   &renderstate.normaldata);
+  return 1;
 }
 
 void 
-SmScenery::undefgen_cb(void * closure, const int x, const int y, const int len, 
+SceneryP::undefgen_cb(void * closure, const int x, const int y, const int len, 
                      const unsigned int bitmask_org)
 {
   SmScenery * thisp = (SmScenery*) closure; 
@@ -1218,7 +1399,7 @@ SmScenery::undefgen_cb(void * closure, const int x, const int y, const int len,
     PRIVATE(thisp)->GEN_VERTEX(state, x, y, elev[idx]/*, normals+3*idx*/);
 
     while (numv) {
-      thisp->beginShape(PRIVATE(thisp)->curraction, TRIANGLE_FAN, PRIVATE(thisp)->facedetail);
+      thisp->beginShape(PRIVATE(thisp)->curraction, SoShape::TRIANGLE_FAN, PRIVATE(thisp)->facedetail);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
@@ -1232,7 +1413,7 @@ SmScenery::undefgen_cb(void * closure, const int x, const int y, const int len,
   }
   else {    
     while (numv) {
-      thisp->beginShape(PRIVATE(thisp)->curraction, TRIANGLE_FAN, PRIVATE(thisp)->facedetail);
+      thisp->beginShape(PRIVATE(thisp)->curraction, SoShape::TRIANGLE_FAN, PRIVATE(thisp)->facedetail);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
@@ -1246,8 +1427,8 @@ SmScenery::undefgen_cb(void * closure, const int x, const int y, const int len,
 }
 
 void 
-SmScenery::gen_cb(void * closure, const int x, const int y,
-                   const int len, const unsigned int bitmask)
+SceneryP::gen_cb(void * closure, const int x, const int y,
+                 const int len, const unsigned int bitmask)
 {
   SmScenery * thisp = (SmScenery*) closure;
 
@@ -1258,7 +1439,7 @@ SmScenery::gen_cb(void * closure, const int x, const int y,
 
 #define ELEVATION(x,y) elev[(y)*W+(x)]
   
-  thisp->beginShape(PRIVATE(thisp)->curraction, TRIANGLE_FAN, PRIVATE(thisp)->facedetail);
+  thisp->beginShape(PRIVATE(thisp)->curraction, SoShape::TRIANGLE_FAN, PRIVATE(thisp)->facedetail);
   PRIVATE(thisp)->GEN_VERTEX(renderstate, x, y, ELEVATION(x, y));
   PRIVATE(thisp)->GEN_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
   if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
@@ -1282,210 +1463,52 @@ SmScenery::gen_cb(void * closure, const int x, const int y,
 #undef ELEVATION
 }
 
-SoGLImage * 
-SmScenery::findReuseTexture(const unsigned int texid)
-{
-  void * tmp;
-  if (cc_hash_get(PRIVATE(this)->texhash, texid, &tmp)) {
-    TexInfo * tex = (TexInfo*) tmp;
-    assert(tex->image);
-    tex->unusedcount = 0;
-    return tex->image;
-  }
-  return NULL;
-}
-
-void 
-SmScenery::deleteUnusedTextures(void)
-{
-  PRIVATE(this)->tmplist.truncate(0);
-  cc_hash_apply(PRIVATE(this)->texhash, hash_check_unused, &PRIVATE(this)->tmplist);
-
-  for (int i = 0; i < PRIVATE(this)->tmplist.getLength(); i++) {
-    void * tmp;
-    if (cc_hash_get(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i], &tmp)) {
-      TexInfo * tex = (TexInfo*) tmp;
-      PRIVATE(this)->reusetexlist.push(tex);
-      (void) cc_hash_remove(PRIVATE(this)->texhash, PRIVATE(this)->tmplist[i]);
-    }
-    else {
-      assert(0 && "huh");
-    }
-  }
-
-//   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
-//           cc_hash_get_num_elements(this->texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
-
-  PRIVATE(this)->tmplist.truncate(0);
-}
-
-SoGLImage * 
-SmScenery::createTexture(const unsigned int texid)
-{
-  TexInfo * tex = NULL;
-  
-  if (PRIVATE(this)->reusetexlist.getLength()) {
-    tex = PRIVATE(this)->reusetexlist.pop();
-  }
-  else {
-    tex = new TexInfo;
-    tex->image = new SoGLImage;
-    tex->image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
-  }
-  tex->texid = PRIVATE(this)->currtexid;
-  tex->unusedcount = 0;
-
-  (void) cc_hash_put(PRIVATE(this)->texhash, texid, tex);
-  return tex->image;
-}  
-
-void 
-SmScenery::hash_clear(unsigned long key, void * val, void * closure)
-{
-  TexInfo * tex = (TexInfo*) val;
-  // safe to do this here since we'll never use this list again
-  assert(tex->image);
-  tex->image->unref(NULL);
-  delete tex;
-}
-
-void 
-SmScenery::hash_check_unused(unsigned long key, void * val, void * closure)
-{  
-  TexInfo * tex = (TexInfo*) val;
-  if (tex->unusedcount > MAX_UNUSED_COUNT) {
-    SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
-    keylist->append(key);
-  }
-}
-
-void 
-SmScenery::hash_add_all(unsigned long key, void * val, void * closure)
-{  
-  TexInfo * tex = (TexInfo*) val;
-  SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
-  keylist->append(key);
-}
-
-void 
-SmScenery::hash_inc_unused(unsigned long key, void * val, void * closure)
-{
-  TexInfo * tex = (TexInfo*) val;
-  tex->unusedcount++;
-}
-
 /* ********************************************************************** */
 
+int
+pre_block_cb(void * closure, const double * bmin, const double * bmax)
+{
+  SoState * state = (SoState*) closure;
+  state->push();
+  if (!SoCullElement::completelyInside(state)) {
+    SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
+    if (SoCullElement::cullBox(state, box, TRUE)) {
+
+//       fprintf(stderr,"culled box: %g %g %g, %g %g %g\n",
+//               bmin[0], bmin[1], bmin[2],
+//               bmax[0], bmax[1], bmax[2]);
+      return 0;
+    }
+  }
+  return 1;
+}
+
 void
-SceneryP::commonConstructor(void)
+post_block_cb(void * closure)
 {
-  this->blocksensor = new SoFieldSensor(SceneryP::blocksensor_cb, PUBLIC(this));
-  this->blocksensor->attach(&PUBLIC(this)->blockRottger);
+  SoState * state = (SoState*) closure;  
+  state->pop();
+}
+ 
+int
+raypick_pre_cb(void * closure, const double * bmin, const double * bmax)
+{
+  SoRayPickAction * action = (SoRayPickAction*) closure;
+  SoState * state = action->getState();
+  state->push();
 
-  this->loadsensor = new SoFieldSensor(SceneryP::loadsensor_cb, PUBLIC(this));
-  this->loadsensor->attach(&PUBLIC(this)->loadRottger);
-
-  this->colormapsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
-  this->colormapsensor->attach(&PUBLIC(this)->colorMap);
-
-  this->colortexturesensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
-  this->colortexturesensor->attach(&PUBLIC(this)->colorTexture);
-
-  this->colorelevationsensor = new SoFieldSensor(SceneryP::colormapsensor_cb, PUBLIC(this));
-  this->colorelevationsensor->attach(&PUBLIC(this)->colorElevation);
+  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
+  if (box.isEmpty()) return 0;
+  action->setObjectSpace();
+  return action->intersect(box, TRUE);
 }
 
-void 
-SceneryP::filenamesensor_cb(void * data, SoSensor * sensor)
+void
+raypick_post_cb(void * closure)
 {
-  if ( !sc_scenery_available() ) { return; }
-  SmScenery * thisp = (SmScenery *) data;
-
-  if ( sc_scenery_available() && PRIVATE(thisp)->system) {
-    sc_ssglue_view_deallocate(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
-    sc_ssglue_system_close(PRIVATE(thisp)->system);
-  }
-
-  const SbStringList & pathlist = SoInput::getDirectories();
-
-  PRIVATE(thisp)->viewid = -1;
-  PRIVATE(thisp)->system = NULL;
-  PRIVATE(thisp)->colormaptexid = -1;
-
-
-  SbString s = thisp->filename.getValue();
-  if (s.getLength()) {
-#if 0 && SS_IMPORT_XYZ
-    if ( s.find(".xyz") == (s.getLength() - 4) ) {
-      PRIVATE(thisp)->system = readxyz(s.getString());
-    }
-#endif
-    if ( !PRIVATE(thisp)->system ) {
-      int i;
-      for ( i = -1; (PRIVATE(thisp)->system == NULL) && (i < pathlist.getLength()); i++ ) {
-        if ( i == -1 ) {
-          PRIVATE(thisp)->system = sc_ssglue_system_open(s.getString(), 1);
-        } else {
-          SbString path = *(pathlist[i]);
-          path += "/";
-          path += s;
-          PRIVATE(thisp)->system = sc_ssglue_system_open(path.getString(), 1);
-        }
-      }
-    }
-    if (!PRIVATE(thisp)->system) {
-      (void)fprintf(stderr, "Unable to open SmScenery system '%s'\n", s.getString());
-    }
-    else {
-      if ( (sc_ssglue_system_get_num_datasets(PRIVATE(thisp)->system) > 0) &&
-           (sc_ssglue_system_get_dataset_type(PRIVATE(thisp)->system, 0) == SS_ELEVATION_TYPE) ) {
-        PRIVATE(thisp)->colormaptexid = sc_ssglue_system_add_runtime_texture2d(PRIVATE(thisp)->system, 0, SmScenery::colortexgen_cb, thisp);
-      }
-      sc_ssglue_system_get_object_box(PRIVATE(thisp)->system, PRIVATE(thisp)->bboxmin, PRIVATE(thisp)->bboxmax); 
-      PRIVATE(thisp)->blocksize = sc_ssglue_system_get_blocksize(PRIVATE(thisp)->system);
-      PRIVATE(thisp)->renderstate.blocksize = (float) (PRIVATE(thisp)->blocksize-1);
-      PRIVATE(thisp)->viewid = sc_ssglue_view_allocate(PRIVATE(thisp)->system);
-      assert(PRIVATE(thisp)->viewid >= 0);
-      sc_ssglue_view_enable(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
-      //      fprintf(stderr,"system: %p, viewid: %d\n", PRIVATE(thisp)->system, thisp->viewid);
-
-      const int sequencelen = thisp->renderSequence.getNum();
-      if ( thisp->colorTexture.getValue() && PRIVATE(thisp)->colormaptexid != -1 ) {
-        // FIXME: add runtime colortexture
-        int localsequence[2] = { PRIVATE(thisp)->colormaptexid, 0 };
-        sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 2, localsequence);
-      } else if ( sequencelen == 0 ) {
-        sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 0, NULL);
-      } else {
-        thisp->renderSequence.enableNotify(FALSE);
-        int * sequence = thisp->renderSequence.startEditing();
-        sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, sequencelen, sequence);
-        thisp->renderSequence.finishEditing();
-        thisp->renderSequence.enableNotify(TRUE);
-      }
-    }
-  }
-}
-
-void 
-SceneryP::blocksensor_cb(void * data, SoSensor * sensor)
-{
-  SmScenery * thisp = (SmScenery *) data;
-  thisp->setBlockRottger(thisp->blockRottger.getValue());
-}
-
-void 
-SceneryP::loadsensor_cb(void * data, SoSensor * sensor)
-{
-  SmScenery * thisp = (SmScenery *) data;
-  thisp->setLoadRottger(thisp->loadRottger.getValue());
-}
-
-void 
-SceneryP::colormapsensor_cb(void * data, SoSensor * sensor)
-{
-  SmScenery * thisp = (SmScenery *) data;
-  thisp->colormaptexchange();
+  SoRayPickAction * action = (SoRayPickAction*) closure;
+  SoState * state = action->getState();
+  state->pop();
 }
 
 /* ********************************************************************** */
