@@ -159,8 +159,14 @@ sc_renderstate_destruct(RenderState * state)
   if ( state->reusetexlist ) {
     SbList<TexInfo *> * list = (SbList<TexInfo *> *) state->reusetexlist;
     if ( list->getLength() ) {
-      // FIXME: 
-      printf("scenery: reusetexlist not empty\n");
+      // printf("scenery: reusetexlist not empty (%d)\n", list->getLength());
+      int i;
+      assert(texture_release);
+      for ( i = 0; i < list->getLength(); i++ ) {
+        TexInfo * tex = (*list)[i];
+        texture_release(tex->image);
+        delete tex;
+      }
     }
     delete list;
     state->reusetexlist = NULL;
