@@ -8,6 +8,7 @@ noinst_LTLIBRARIES = libnodes.la
 endif
 
 libnodes_la_SOURCES = \
+	AutoFile.cpp AutoFile.h \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
@@ -28,6 +29,7 @@ libnodes_la_SOURCES = \
 	SoLODExtrusion.h
 
 nodes_lst_SOURCES = \
+	AutoFile.cpp AutoFile.h \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
@@ -49,6 +51,7 @@ nodes_lst_SOURCES = \
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
+	$(top_srcdir)/lib/SmallChange/nodes/AutoFile.h \
 	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \

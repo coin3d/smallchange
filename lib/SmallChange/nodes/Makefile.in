@@ -158,6 +158,7 @@ INCLUDES = -I$(top_srcdir)/lib
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libnodes.la
 
 libnodes_la_SOURCES = \
+	AutoFile.cpp AutoFile.h \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
@@ -179,6 +180,7 @@ libnodes_la_SOURCES = \
 
 
 nodes_lst_SOURCES = \
+	AutoFile.cpp AutoFile.h \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
@@ -201,6 +203,7 @@ nodes_lst_SOURCES = \
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
+	$(top_srcdir)/lib/SmallChange/nodes/AutoFile.h \
 	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
@@ -225,10 +228,11 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 nodes_lst_AR = $(AR) cru
 nodes_lst_LIBADD =
-am_nodes_lst_OBJECTS = DepthBuffer.$(OBJEXT) ViewportRegion.$(OBJEXT) \
-	Coinboard.$(OBJEXT) Switchboard.$(OBJEXT) \
-	SwitchboardOperator.$(OBJEXT) CoinEnvironment.$(OBJEXT) \
-	SkyDome.$(OBJEXT) ShapeScale.$(OBJEXT) PickSwitch.$(OBJEXT) \
+am_nodes_lst_OBJECTS = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
+	ViewportRegion.$(OBJEXT) Coinboard.$(OBJEXT) \
+	Switchboard.$(OBJEXT) SwitchboardOperator.$(OBJEXT) \
+	CoinEnvironment.$(OBJEXT) SkyDome.$(OBJEXT) \
+	ShapeScale.$(OBJEXT) PickSwitch.$(OBJEXT) \
 	PickCallback.$(OBJEXT) SoTCBCurve.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
 	SoLODExtrusion.$(OBJEXT)
@@ -237,16 +241,18 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libnodes_la_LDFLAGS =
 libnodes_la_LIBADD =
-am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo \
-	Switchboard.lo SwitchboardOperator.lo CoinEnvironment.lo \
-	SkyDome.lo ShapeScale.lo PickSwitch.lo PickCallback.lo \
-	SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo SoLODExtrusion.lo
+am_libnodes_la_OBJECTS = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
+	Coinboard.lo Switchboard.lo SwitchboardOperator.lo \
+	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
+	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
+	SoLODExtrusion.lo
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/CoinEnvironment.Plo \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/AutoFile.Plo ./$(DEPDIR)/AutoFile.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Plo \
@@ -323,6 +329,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AutoFile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AutoFile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Plo@am__quote@
