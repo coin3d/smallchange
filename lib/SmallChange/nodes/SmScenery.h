@@ -1,5 +1,5 @@
-#ifndef COIN_SCENERY_H
-#define COIN_SCENERY_H
+#ifndef COIN_SMSCENERY_H
+#define COIN_SMSCENERY_H
 
 #include <Inventor/SbBasic.h>
 #include <Inventor/nodes/SoSubNode.h>
@@ -11,7 +11,6 @@
 #include <Inventor/C/base/hash.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/fields/SoSFFloat.h>
-// #include <sim/hsvl/hsvl.h>
 
 #include <SmallChange/basic.h>
 
@@ -24,14 +23,14 @@ class SoGLImage;
 typedef struct ss_system ss_system;
 typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
 
-class SMALLCHANGE_DLL_API Scenery : public SoShape {
+class SMALLCHANGE_DLL_API SmScenery : public SoShape {
   typedef SoShape inherited;
 
-  SO_NODE_HEADER(Scenery);
+  SO_NODE_HEADER(SmScenery);
 
 public:
   static void initClass(void);
-  Scenery(void);
+  SmScenery(void);
 
   SoSFString filename;
   SoMFInt32 renderSequence;
@@ -71,7 +70,7 @@ public:
   } RenderState;
 
 protected:
-  virtual ~Scenery();
+  virtual ~SmScenery();
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
 
@@ -157,5 +156,5 @@ private:
 };
 
 
-#endif // COIN_SCENERY_H
+#endif // COIN_SMSCENERY_H
 

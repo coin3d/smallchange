@@ -35,7 +35,7 @@
 #include <Inventor/lists/SbStringList.h>
 
 #include <SmallChange/misc/SceneryGlue.h>
-#include <SmallChange/nodes/Scenery.h>
+#include <SmallChange/nodes/SmScenery.h>
 
 #define MAX_UNUSED_COUNT 200
 
@@ -45,11 +45,11 @@
 #define SS_IMPORT_XYZ 1
 #define SS_RTTEXTURE2D_TEST 0
 
-SO_NODE_SOURCE(Scenery);
+SO_NODE_SOURCE(SmScenery);
 
-Scenery::Scenery(void)
+SmScenery::SmScenery(void)
 {
-  SO_NODE_CONSTRUCTOR(Scenery);
+  SO_NODE_CONSTRUCTOR(SmScenery);
   
   SO_NODE_ADD_FIELD(filename, (""));
   SO_NODE_ADD_FIELD(renderSequence, (-1));
@@ -88,7 +88,7 @@ Scenery::Scenery(void)
   this->texhash = cc_hash_construct(1024, 0.7f);
 }
 
-Scenery::~Scenery()
+SmScenery::~SmScenery()
 {
   delete this->filenamesensor;
   delete this->blocksensor;
@@ -106,7 +106,7 @@ Scenery::~Scenery()
 }
 
 void
-Scenery::initClass(void)
+SmScenery::initClass(void)
 {
   static int first = 1;
   if (first) {
@@ -114,7 +114,7 @@ Scenery::initClass(void)
     if ( sc_scenery_available() ) {
       sc_ssglue_initialize();
     }
-    SO_NODE_INIT_CLASS(Scenery, SoShape, "Shape");
+    SO_NODE_INIT_CLASS(SmScenery, SoShape, "Shape");
   }
 }
 
@@ -168,10 +168,10 @@ raypick_post_cb(void * closure)
 
 
 int 
-Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
+SmScenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
   if ( sc_scenery_available() ) {
-  Scenery * thisp = (Scenery*) closure; 
+  SmScenery * thisp = (SmScenery*) closure; 
   SoState * state = thisp->currstate;
   
   RenderState & renderstate = thisp->renderstate;
@@ -252,7 +252,7 @@ Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 }
 
 void 
-Scenery::GLRender(SoGLRenderAction * action)
+SmScenery::GLRender(SoGLRenderAction * action)
 {
   if ( sc_scenery_available() ) {
   if (this->system == NULL) return;
@@ -413,7 +413,7 @@ Scenery::GLRender(SoGLRenderAction * action)
 }
 
 void 
-Scenery::rayPick(SoRayPickAction * action)
+SmScenery::rayPick(SoRayPickAction * action)
 {
   if ( sc_scenery_available() ) {
   sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
@@ -431,7 +431,7 @@ Scenery::rayPick(SoRayPickAction * action)
 }
 
 void 
-Scenery::callback(SoCallbackAction * action)
+SmScenery::callback(SoCallbackAction * action)
 {
   if ( sc_scenery_available() ) {
   // FIXME: not correct to just evaluate in the callback()
@@ -468,7 +468,7 @@ Scenery::callback(SoCallbackAction * action)
 }
 
 void 
-Scenery::generatePrimitives(SoAction * action)
+SmScenery::generatePrimitives(SoAction * action)
 {
   if ( sc_scenery_available() ) {
   if (this->system == NULL) return;
@@ -490,7 +490,7 @@ Scenery::generatePrimitives(SoAction * action)
 }
 
 void 
-Scenery::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
+SmScenery::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
   if (this->system == NULL) return;  
   box = SbBox3f(this->bboxmin[0], this->bboxmin[1], this->bboxmin[2],
@@ -499,16 +499,16 @@ Scenery::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 }
 
 void 
-Scenery::blocksensor_cb(void * data, SoSensor * sensor)
+SmScenery::blocksensor_cb(void * data, SoSensor * sensor)
 {
-  Scenery * thisp = (Scenery*) data;
+  SmScenery * thisp = (SmScenery*) data;
   thisp->setBlockRottger(thisp->blockRottger.getValue());
 }
 
 void 
-Scenery::loadsensor_cb(void * data, SoSensor * sensor)
+SmScenery::loadsensor_cb(void * data, SoSensor * sensor)
 {
-  Scenery * thisp = (Scenery*) data;
+  SmScenery * thisp = (SmScenery*) data;
   thisp->setLoadRottger(thisp->loadRottger.getValue());
 }
 
@@ -594,9 +594,9 @@ readxyz(const char * filename)
 }
 
 uint32_t
-Scenery::colortexgen_cb(void * closure, double * pos, float elevation, double * spacing)
+SmScenery::colortexgen_cb(void * closure, double * pos, float elevation, double * spacing)
 {
-  Scenery * thisp = (Scenery *) closure;
+  SmScenery * thisp = (SmScenery *) closure;
   float fac = (elevation - thisp->bboxmin[2]) / (thisp->bboxmax[2] - thisp->bboxmin[2]);
   int steps = ((thisp->colorMap.getNum() / 4) - 1); // four components
   uint32_t abgr = 0xffffffff; // no colors means white
@@ -634,7 +634,7 @@ Scenery::colortexgen_cb(void * closure, double * pos, float elevation, double * 
 }
 
 void
-Scenery::colormaptexchange(void)
+SmScenery::colormaptexchange(void)
 {
   if ( this->colorTexture.getValue() ) {
     if ( this->colormaptexid != -1 ) {
@@ -644,16 +644,16 @@ Scenery::colormaptexchange(void)
 }
 
 void 
-Scenery::colormapsensor_cb(void * data, SoSensor * sensor)
+SmScenery::colormapsensor_cb(void * data, SoSensor * sensor)
 {
-  Scenery * thisp = (Scenery *) data;
+  SmScenery * thisp = (SmScenery *) data;
   thisp->colormaptexchange();
 }
 
 void 
-Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
+SmScenery::filenamesensor_cb(void * data, SoSensor * sensor)
 {
-  Scenery * thisp = (Scenery*) data;
+  SmScenery * thisp = (SmScenery*) data;
 
   if ( sc_scenery_available() && thisp->system) {
     sc_ssglue_view_deallocate(thisp->system, thisp->viewid);
@@ -688,7 +688,7 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
       }
     }
     if (!thisp->system) {
-      fprintf(stderr,"Unable to open Scenery system\n");
+      fprintf(stderr,"Unable to open SmScenery system\n");
     }
     else {
 #if 0 && SS_RTTEXTURE2D_TEST
@@ -716,7 +716,7 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
 }
 
 void 
-Scenery::preFrame(void)
+SmScenery::preFrame(void)
 {
   if ( sc_scenery_available() && this->system ) {
     sc_ssglue_view_pre_frame(this->system, this->viewid);
@@ -725,7 +725,7 @@ Scenery::preFrame(void)
 }
 
 int 
-Scenery::postFrame(void)
+SmScenery::postFrame(void)
 {
   if (sc_scenery_available() && this->system) {
     this->deleteUnusedTextures();
@@ -735,7 +735,7 @@ Scenery::postFrame(void)
 }
 
 void 
-Scenery::setBlockRottger(const float c)
+SmScenery::setBlockRottger(const float c)
 {
   if (sc_scenery_available() && this->system) {
     sc_ssglue_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, c);
@@ -743,7 +743,7 @@ Scenery::setBlockRottger(const float c)
 }
 
 float
-Scenery::getBlockRottger(void) const
+SmScenery::getBlockRottger(void) const
 {
   if (sc_scenery_available() && this->system) {
     float C, c;
@@ -754,7 +754,7 @@ Scenery::getBlockRottger(void) const
 }
 
 void 
-Scenery::setLoadRottger(const float c)
+SmScenery::setLoadRottger(const float c)
 {
   if (sc_scenery_available() && this->system) {
     sc_ssglue_view_set_load_rottger_parameters(this->system, this->viewid, 16.0f, c);
@@ -762,7 +762,7 @@ Scenery::setLoadRottger(const float c)
 }
 
 float
-Scenery::getLoadRottger(void) const
+SmScenery::getLoadRottger(void) const
 {
   if (sc_scenery_available() && this->system) {
     float C, c;
@@ -773,7 +773,7 @@ Scenery::getLoadRottger(void) const
 }
 
 void 
-Scenery::refreshTextures(const int id)
+SmScenery::refreshTextures(const int id)
 {
   if (sc_scenery_available() && this->system) {
     sc_ssglue_system_refresh_runtime_texture2d(this->system, id);
@@ -797,9 +797,9 @@ Scenery::refreshTextures(const int id)
 
 
 int 
-Scenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
+SmScenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
-  Scenery * thisp = (Scenery*) closure; 
+  SmScenery * thisp = (SmScenery*) closure; 
 
   RenderState & renderstate = thisp->renderstate;
   
@@ -814,7 +814,7 @@ Scenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
 ////////////// render ///////////////////////////////////////////////////////////
 
 inline void 
-GL_VERTEX_OLD(Scenery::RenderState * state, const int x, const int y, const float elev)
+GL_VERTEX_OLD(SmScenery::RenderState * state, const int x, const int y, const float elev)
 {
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
@@ -822,7 +822,7 @@ GL_VERTEX_OLD(Scenery::RenderState * state, const int x, const int y, const floa
 }
 
 inline void 
-GL_VERTEX(Scenery::RenderState * state, const int x, const int y, const float elev)
+GL_VERTEX(SmScenery::RenderState * state, const int x, const int y, const float elev)
 {
   glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
@@ -833,7 +833,7 @@ GL_VERTEX(Scenery::RenderState * state, const int x, const int y, const float el
 
 
 inline void 
-GL_VERTEX_N(Scenery::RenderState * state, const int x, const int y, const float elev, const signed char * n)
+GL_VERTEX_N(SmScenery::RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
   glNormal3bv((const GLbyte *)n);
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
@@ -842,7 +842,7 @@ GL_VERTEX_N(Scenery::RenderState * state, const int x, const int y, const float 
 }
 
 inline void 
-GL_VERTEX_TN(Scenery::RenderState * state, const int x, const int y, const float elev, const signed char * n)
+GL_VERTEX_TN(SmScenery::RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
   glNormal3bv((const GLbyte *)n);
   glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
@@ -857,12 +857,12 @@ GL_VERTEX_TN(Scenery::RenderState * state, const int x, const int y, const float
 
 
 void 
-Scenery::undefrender_cb(void * closure, const int x, const int y, const int len, 
+SmScenery::undefrender_cb(void * closure, const int x, const int y, const int len, 
                            const unsigned int bitmask_org)
 {
-  Scenery * thisp = (Scenery*) closure; 
+  SmScenery * thisp = (SmScenery*) closure; 
 
-  Scenery::RenderState * renderstate = &thisp->renderstate;
+  SmScenery::RenderState * renderstate = &thisp->renderstate;
   const signed char * normals = renderstate->normaldata;
   const float * elev = renderstate->elevdata;
   const int W = thisp->blocksize;
@@ -927,12 +927,12 @@ Scenery::undefrender_cb(void * closure, const int x, const int y, const int len,
 }
 
 void 
-Scenery::render_cb(void * closure, const int x, const int y,
+SmScenery::render_cb(void * closure, const int x, const int y,
                       const int len, const unsigned int bitmask)
 {
-  Scenery * thisp = (Scenery*) closure;
+  SmScenery * thisp = (SmScenery*) closure;
   
-  Scenery::RenderState * renderstate = &thisp->renderstate;
+  SmScenery::RenderState * renderstate = &thisp->renderstate;
 
   const signed char * normals = renderstate->normaldata;  
   const float * elev = renderstate->elevdata;
@@ -1022,7 +1022,7 @@ Scenery::render_cb(void * closure, const int x, const int y,
 //////////// generate primitives ///////////////////////////////////////////////
 
 void 
-Scenery::GEN_VERTEX(Scenery::RenderState * state, const int x, const int y, const float elev)
+SmScenery::GEN_VERTEX(SmScenery::RenderState * state, const int x, const int y, const float elev)
 {
   this->pvertex->setPoint(SbVec3f(x*state->vspacing[0] + state->voffset[0],
                                   y*state->vspacing[1] + state->voffset[1],
@@ -1031,12 +1031,12 @@ Scenery::GEN_VERTEX(Scenery::RenderState * state, const int x, const int y, cons
 }
 
 void 
-Scenery::undefgen_cb(void * closure, const int x, const int y, const int len, 
+SmScenery::undefgen_cb(void * closure, const int x, const int y, const int len, 
                      const unsigned int bitmask_org)
 {
-  Scenery * thisp = (Scenery*) closure; 
+  SmScenery * thisp = (SmScenery*) closure; 
 
-  Scenery::RenderState * renderstate = &thisp->renderstate;
+  SmScenery::RenderState * renderstate = &thisp->renderstate;
   const signed char * normals = renderstate->normaldata;
   const float * elev = renderstate->elevdata;
   const int W = thisp->blocksize;
@@ -1083,12 +1083,12 @@ Scenery::undefgen_cb(void * closure, const int x, const int y, const int len,
 }
 
 void 
-Scenery::gen_cb(void * closure, const int x, const int y,
+SmScenery::gen_cb(void * closure, const int x, const int y,
                    const int len, const unsigned int bitmask)
 {
-  Scenery * thisp = (Scenery*) closure;
+  SmScenery * thisp = (SmScenery*) closure;
 
-  Scenery::RenderState * renderstate = &thisp->renderstate;
+  SmScenery::RenderState * renderstate = &thisp->renderstate;
   const signed char * normals = renderstate->normaldata;
   const float * elev = renderstate->elevdata;
   const int W = thisp->blocksize;
@@ -1120,7 +1120,7 @@ Scenery::gen_cb(void * closure, const int x, const int y,
 }
 
 SoGLImage * 
-Scenery::findReuseTexture(const unsigned int texid)
+SmScenery::findReuseTexture(const unsigned int texid)
 {
   void * tmp;
   if (cc_hash_get(this->texhash, texid, &tmp)) {
@@ -1133,7 +1133,7 @@ Scenery::findReuseTexture(const unsigned int texid)
 }
 
 void 
-Scenery::deleteUnusedTextures(void)
+SmScenery::deleteUnusedTextures(void)
 {
   this->tmplist.truncate(0);
   cc_hash_apply(this->texhash, hash_check_unused, &this->tmplist);
@@ -1150,14 +1150,14 @@ Scenery::deleteUnusedTextures(void)
     }
   }
 
-//   fprintf(stderr,"Scenery now has %d active textures, %d reusable textures (removed %d)\n",
+//   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
 //           cc_hash_get_num_elements(this->texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
 
   this->tmplist.truncate(0);
 }
 
 SoGLImage * 
-Scenery::createTexture(const unsigned int texid)
+SmScenery::createTexture(const unsigned int texid)
 {
   TexInfo * tex = NULL;
   
@@ -1177,7 +1177,7 @@ Scenery::createTexture(const unsigned int texid)
 }  
 
 void 
-Scenery::hash_clear(unsigned long key, void * val, void * closure)
+SmScenery::hash_clear(unsigned long key, void * val, void * closure)
 {
   TexInfo * tex = (TexInfo*) val;
   // safe to do this here since we'll never use this list again
@@ -1187,7 +1187,7 @@ Scenery::hash_clear(unsigned long key, void * val, void * closure)
 }
 
 void 
-Scenery::hash_check_unused(unsigned long key, void * val, void * closure)
+SmScenery::hash_check_unused(unsigned long key, void * val, void * closure)
 {  
   TexInfo * tex = (TexInfo*) val;
   if (tex->unusedcount > MAX_UNUSED_COUNT) {
@@ -1197,7 +1197,7 @@ Scenery::hash_check_unused(unsigned long key, void * val, void * closure)
 }
 
 void 
-Scenery::hash_add_all(unsigned long key, void * val, void * closure)
+SmScenery::hash_add_all(unsigned long key, void * val, void * closure)
 {  
   TexInfo * tex = (TexInfo*) val;
   SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
@@ -1205,7 +1205,7 @@ Scenery::hash_add_all(unsigned long key, void * val, void * closure)
 }
 
 void 
-Scenery::hash_inc_unused(unsigned long key, void * val, void * closure)
+SmScenery::hash_inc_unused(unsigned long key, void * val, void * closure)
 {
   TexInfo * tex = (TexInfo*) val;
   tex->unusedcount++;
