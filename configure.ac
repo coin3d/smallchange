@@ -305,7 +305,7 @@ if $BUILD_WITH_MSVC; then
 fi
 
 # Must call gcc as g++ when compiling C++ on Mac OS X to ensure
-# linking against libstc++ if necessary.
+# linking against libstdc++ if necessary.
 case "$host_os" in
   darwin*)
     if test x"$CC" = xgcc; then
