@@ -43,7 +43,7 @@ mkdir actions
 if exist draggers\*.* goto draggersexists
 echo mkdir %COINDIR%\include\SmallChange\draggers
 mkdir draggers
-:elementsexists
+:draggersexists
 if exist elements\*.* goto elementsexists
 echo mkdir %COINDIR%\include\SmallChange\elements
 mkdir elements
