@@ -430,7 +430,7 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
         activeitem = -1;
         SbVec2f np;
         
-        np[0] = event->getPosition()[0] / float (PRIVATE(this)->vp.getViewportSizePixels()[0]);
+        np[0] = PRIVATE(this)->backgroundright + (6.0f / PRIVATE(this)->vp.getViewportSizePixels()[0]);
         np[1] = event->getPosition()[1] / float (PRIVATE(this)->vp.getViewportSizePixels()[1]);
 
         SmOpenSubData * data = new SmOpenSubData;
@@ -462,8 +462,11 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
       this->visible = FALSE;
       if (PRIVATE(this)->parent) {
         PRIVATE(this)->parent->isActive = TRUE;
+        PRIVATE(this)->parent->visible = TRUE;
+        // Check if the click missed the parent menu aswell
+        PRIVATE(this)->parent->handleEvent(action);
         this->setParent(NULL);
-      }
+      }           
     }
   }
 
@@ -755,8 +758,6 @@ SmPopupMenuKit::opensub_cb(void * closure, SoSensor * s)
   SmOpenSubData * data = (SmOpenSubData*) closure;
   SmPopupMenuKit * thisp = data->kit;
   SmPopupMenuKit * sub = data->sub;
-
-  //  fprintf(stderr,"open sub: %p %p\n", thisp, sub);
   
   sub->setNormalizedPosition(data->np);
   sub->setParent(thisp);
