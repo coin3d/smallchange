@@ -1,27 +1,45 @@
-#ifndef COIN_SMSCENERY_H
-#define COIN_SMSCENERY_H
+#ifndef SMALLCHANGE_SCENERY_H
+#define SMALLCHANGE_SCENERY_H
+
+/**************************************************************************\
+ *
+ *  This file is part of the SmallChange extension library for Coin.
+ *  Copyright (C) 1998-2003 by Systems in Motion.  All rights reserved.
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  ("GPL") version 2 as published by the Free Software Foundation.
+ *  See the file LICENSE.GPL at the root directory of this source
+ *  distribution for additional information about the GNU GPL.
+ *
+ *  For using SmallChange with software that can not be combined with the
+ *  GNU GPL, and for taking advantage of the additional benefits of our
+ *  support services, please contact Systems in Motion about acquiring
+ *  a Coin Professional Edition License.
+ *
+ *  See <URL:http://www.coin3d.org> for  more information.
+ *
+ *  Systems in Motion, Teknobyen, Abels Gate 5, 7030 Trondheim, NORWAY.
+ *  <URL:http://www.sim.no>.
+ *
+\**************************************************************************/
 
 #include <Inventor/SbBasic.h>
 #include <Inventor/nodes/SoSubNode.h>
-#include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoMFFloat.h>
-#include <Inventor/C/base/hash.h>
-#include <Inventor/lists/SbList.h>
-#include <Inventor/fields/SoSFFloat.h>
 
 #include <SmallChange/basic.h>
 
-class SoFieldSensor;
-class SoSensor;
-class SoPrimitiveVertex;
-class SoFaceDetail;
 class SoGLImage;
 
 typedef struct ss_system ss_system;
 typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
+
+typedef uint32_t SmSceneryTexture2CB(void * closure);
 
 class SceneryP;
 
@@ -33,6 +51,7 @@ class SMALLCHANGE_DLL_API SmScenery : public SoShape {
 public:
   static void initClass(void);
   SmScenery(void);
+  static SmScenery * createInstance(double * origo, double * spacing, int * elements, float * values, float undef = -1.0e30f);
 
   SoSFString filename;
   SoMFInt32 renderSequence;
@@ -41,7 +60,8 @@ public:
   SoSFBool visualDebug;
 
   SoSFBool colorTexture;
-  SoMFFloat colorMap; // r, g, b, a
+  SoMFFloat colorMap;        // r, g, b, a values
+  SoMFFloat colorElevation;  // not implemented yet
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void callback(SoCallbackAction * action);
@@ -57,38 +77,16 @@ public:
   void refreshTextures(const int id);
   void getSceneryOffset(double * offset) const;
 
-  typedef struct {
-    float blocksize;
-    double vspacing[2];
-    double voffset[2];
-    float tscale[2];
-    float toffset[2];
-    unsigned int texid;
-    float * elevdata;
-    signed char * normaldata;
-
-    // temporary
-    unsigned char * texdata;
-    int texw, texh, texnc;
-  } RenderState;
+  void setAttributeTextureCB(SmSceneryTexture2CB * callback, void * closure);
 
 protected:
-  virtual ~SmScenery();
+  SmScenery(ss_system * system);
+  virtual ~SmScenery(void);
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
 
 private:
-  SoFieldSensor * filenamesensor;
-  SoFieldSensor * blocksensor;
-  SoFieldSensor * loadsensor;
-  SoFieldSensor * colormapsensor;
-  SoFieldSensor * colortexturesensor;
-
   static int render_pre_cb(void * closure, ss_render_pre_cb_info * info);
-  static void filenamesensor_cb(void * data, SoSensor * sensor);
-  static void blocksensor_cb(void * data, SoSensor * sensor);
-  static void loadsensor_cb(void * data, SoSensor * sensor);
-  static void colormapsensor_cb(void * data, SoSensor * sensor);
   static uint32_t colortexgen_cb(void * closure, double * pos, float elevation, double * spacing);
   void colormaptexchange(void);
   
@@ -103,65 +101,19 @@ private:
   static void undefgen_cb(void * closure, const int x, const int y, const int len, 
                           const unsigned int bitmask_org);
     
-  void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
-
-  ss_system * system;
-  int blocksize;
-
-  // the rest of the data should really be stored in tls
-  SoPrimitiveVertex * pvertex;
-  SoFaceDetail * facedetail;
-  SbVec3f currhotspot;
-
-  SoAction * curraction;
-  SoState * currstate;
-  int viewid;
-
-  RenderState renderstate;
-  SoGLImage * dummyimage;
-
-  SbBool dotex;
-  SbBool texisenabled;
-  unsigned int currtexid;
-  int colormaptexid;
-  SbBool firstGLRender;
-
   SoGLImage * findReuseTexture(const unsigned int texid);
   SoGLImage * createTexture(const unsigned int texid);
 
   void deleteUnusedTextures(void);
-  
-  class TexInfo {
-  public:
-    TexInfo() {
-      this->image = NULL;
-    }
-    unsigned int texid;
-    SoGLImage * image;
-    int unusedcount;
-  };
   
   static void hash_clear(unsigned long key, void * val, void * closure);
   static void hash_inc_unused(unsigned long key, void * val, void * closure);
   static void hash_check_unused(unsigned long key, void * val, void * closure);
   static void hash_add_all(unsigned long key, void * val, void * closure);
 
-//   static int raypick_pre_cb(void * closure, const double * bmin, const double * bmax);
-//   static void raypick_post_cb(void * closure);
-  
-  SbList <TexInfo*> reusetexlist;
-  cc_hash * texhash;
-  SbList <unsigned int> tmplist;
-  SbList <float> debuglist;
-  int numnewtextures;
-  
-  double bboxmin[3];
-  double bboxmax[3];
-
   SceneryP * pimpl;
+  friend class SceneryP;
 
 };
 
-
-#endif // COIN_SMSCENERY_H
-
+#endif // !SMALLCHANGE_SCENERY_H
