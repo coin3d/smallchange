@@ -227,6 +227,7 @@ public:
   SoFieldSensor * elevationemphasissensor;
 
   SbBool didevaluate;
+  SbBool didevaluateonce;
 
   SmSceneryTexture2CB * cbtexcb;
   void * cbtexclosure;
@@ -433,6 +434,9 @@ SmScenery::SmScenery(void)
   // FIXME: view-specific. Move to struct.
   PRIVATE(this)->pvertex = new SoPrimitiveVertex;
   PRIVATE(this)->facedetail = new SoFaceDetail;
+
+  PRIVATE(this)->didevaluate = FALSE;
+  PRIVATE(this)->didevaluateonce = FALSE;
 }
 
 SmScenery::SmScenery(ss_system * system)
@@ -602,6 +606,15 @@ SmScenery::GLRender(SoGLRenderAction * action)
   if (PRIVATE(this)->system == NULL) { return; }
   if (!this->shouldGLRender(action)) { return; }
 
+  SbBool needpostframe = FALSE;
+
+  if (!PRIVATE(this)->didevaluate) {
+    this->preFrame();
+    this->evaluate(action);
+    needpostframe = TRUE;
+  }
+  PRIVATE(this)->didevaluate = FALSE;
+
   // rendersequence start
   const int sequencelen = this->renderSequence.getNum();
   if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
@@ -699,7 +712,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   SbPlane sbplanes[6];
   vv.getViewVolumePlanes(sbplanes);
-  float * planes = (float *) malloc(sizeof(float)*6*4);
+  float planes[24];
   assert(planes);
   int i;
   for ( i = 0; i < 6; i++ ) {
@@ -779,7 +792,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   PRIVATE(this)->renderstate.numclipplanes = 0;
   PRIVATE(this)->renderstate.clipplanes = NULL;
-  free(planes);
 
   if (didenabletexture1) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
@@ -814,6 +826,12 @@ SmScenery::GLRender(SoGLRenderAction * action)
   }
   
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK|SoLazyElement::GLIMAGE_MASK);
+
+  if (needpostframe) {
+    if (this->postFrame()) {
+      action->getCurPath()->getHead()->touch();
+    }
+  }
 }
 
 void 
@@ -859,6 +877,9 @@ SmScenery::evaluate(SoAction * action)
 {
   if (!sc_scenery_available()) { return; }
 
+  PRIVATE(this)->didevaluate = TRUE;
+  PRIVATE(this)->didevaluateonce = TRUE;
+
   // rendersequence start
   const int sequencelen = this->renderSequence.getNum();
   if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
@@ -900,8 +921,8 @@ SmScenery::evaluate(SoAction * action)
           
   SbPlane sbplanes[6];
   vv.getViewVolumePlanes(sbplanes);
-  float * planes = (float *) malloc(sizeof(float)*6*4);
-  assert(planes);
+
+  float planes[24];
   int i;
   for ( i = 0; i < 6; i++ ) {
     sbplanes[i].transform(imm);
@@ -934,7 +955,6 @@ SmScenery::evaluate(SoAction * action)
                                           NULL, NULL);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            NULL, NULL);
-  free(PRIVATE(this)->renderstate.clipplanes);
   PRIVATE(this)->renderstate.clipplanes = NULL;
   PRIVATE(this)->renderstate.numclipplanes = 0;
 }
@@ -944,7 +964,8 @@ SmScenery::generatePrimitives(SoAction * action)
 {
   if (!sc_scenery_available()) { return; }
   if (PRIVATE(this)->system == NULL) return;
-
+  if (!PRIVATE(this)->didevaluateonce) return;
+  
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                      SceneryP::gen_cb, this);
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
