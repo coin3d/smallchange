@@ -257,9 +257,10 @@ SoText2Set::GLRender(SoGLRenderAction * action)
   // Render using SoGlyphs
   PRIVATE(this)->buildGlyphCache(state);
 
+  // Try to cull entire node first, each string will also be attempted
+  // culled away later on.
   SbBox3f box;
   SbVec3f center;
-  // FIXME: cull per string, not for the entire node. preng 2003-03-27.
   this->computeBBox(action, box, center);
   if (!SoCullElement::cullTest(state, box, SbBool(TRUE))) {
     SoMaterialBundle mb(action);
@@ -287,6 +288,11 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     assert(stringcnt == (unsigned int)this->justification.getNum());
 
     for (unsigned int i = 0; i < stringcnt; i++) {
+
+      // Cull each string.
+      const SbBox3f stringbbox = PRIVATE(this)->stringBBox(state, i);
+      if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
+
       // Find nilpoint for this string
       SbVec3f nilpoint = this->position[i];
       mat.multVecMatrix(nilpoint, nilpoint);
