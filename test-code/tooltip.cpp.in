@@ -37,8 +37,7 @@ mousebutton_cb(void * closure, SoEventCallback * node)
 
     SoFaceDetail * facedetail = NULL;
     const SoDetail * detail = pp->getDetail();
-    assert(detail);
-    if (detail->isOfType(SoFaceDetail::getClassTypeId())) {
+    if (detail && detail->isOfType(SoFaceDetail::getClassTypeId())) {
       facedetail = (SoFaceDetail*) detail;
     }
     SbString tmp;
