@@ -566,7 +566,12 @@ SmScenery::~SmScenery(void)
   delete PRIVATE(this)->elevationoffsensor;
   delete PRIVATE(this)->elevationthicknesssensor;
   delete PRIVATE(this)->elevationemphasissensor;
+  delete PRIVATE(this)->old_colortexturesensor;
 
+  delete PRIVATE(this)->pvertex;
+  delete PRIVATE(this)->facedetail;
+  cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_clear, NULL);
+  cc_hash_destruct(PRIVATE(this)->texhash);
   if (sc_scenery_available() &&
       (PRIVATE(this)->system != NULL) &&
       (PRIVATE(this)->viewid != -1)) {
@@ -574,16 +579,12 @@ SmScenery::~SmScenery(void)
     sc_ssglue_system_close(PRIVATE(this)->system);
     PRIVATE(this)->viewid = -1;
   }
-  delete PRIVATE(this)->pvertex;
-  delete PRIVATE(this)->facedetail;
-  cc_hash_apply(PRIVATE(this)->texhash, SceneryP::hash_clear, NULL);
-  cc_hash_destruct(PRIVATE(this)->texhash);
   if (PRIVATE(this)->elevationlinesimage) {
     PRIVATE(this)->elevationlinesimage->unref();
     PRIVATE(this)->elevationlinesimage = NULL;
   }
   if (PRIVATE(this)->elevationlinesdata) {
-    delete PRIVATE(this)->elevationlinesdata;
+    free(PRIVATE(this)->elevationlinesdata);
     PRIVATE(this)->elevationlinesdata = NULL;
   }
   delete PRIVATE(this);
