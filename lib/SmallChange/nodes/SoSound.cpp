@@ -1,3 +1,9 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_OPENAL
+
 #include <SmallChange/nodes/SoSound.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -691,3 +697,5 @@ SoSoundP::sourceSensorCB(SoSensor *)
       // fill buffer
       // as an experiment, moved outside unqueue/queue
 //      audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(audioBuffer, audioClipStreaming->getBufferSize());
+
+#endif // HAVE_OPENAL

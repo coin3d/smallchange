@@ -1,3 +1,9 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_OPENAL
+
 #include <SmallChange/nodes/SoAudioClip.h>
 
 #include <Inventor/errors/SoDebugError.h>
@@ -234,3 +240,5 @@ SoAudioClipP::urlSensorCB(SoSensor *)
     }
   }
 }
+
+#endif // HAVE_OPENAL

@@ -1,3 +1,9 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_OPENAL
+
 #include <SmallChange/nodes/SoListener.h>
 
 #include <SmallChange/actions/SoAudioRenderAction.h>
@@ -97,3 +103,5 @@ void SoListener::GLRender(SoGLRenderAction *action)
 {
 }
 */
+
+#endif // HAVE_OPENAL

@@ -1,3 +1,9 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#if HAVE_OPENAL
+
 #include <SmallChange/nodes/SoAudioClipStreaming.h>
 
 #include <Inventor/errors/SoDebugError.h>
@@ -131,3 +137,5 @@ SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
   if (this->usercallback != NULL)
     return this->usercallback(buffer, size, this->userdata);
 };
+
+#endif // HAVE_OPENAL
