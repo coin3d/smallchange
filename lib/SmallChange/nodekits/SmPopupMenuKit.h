@@ -26,6 +26,7 @@
 
 #include <Inventor/nodekits/SoSubKit.h>
 #include <Inventor/nodekits/SoBaseKit.h>
+#include <Inventor/fields/SoMFNode.h>
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFInt32.h>
@@ -38,6 +39,7 @@ class SmPopupMenuKitP;
 class SoSensor;
 class SoPickedPoint;
 class SbViewportRegion;
+class SbVec3f;
 
 class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -87,15 +89,23 @@ protected:
 public:
   
   void setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & vp);
+  void setNormalizedPoint(const SbVec3f & npt);
+
   void setViewportRegion(const SbViewportRegion & vp);
   
+  SoSFBool visible;
   SoSFBool isActive;
   SoMFString items;
+  SoMFNode submenu;
   SoSFInt32 frameSize;
   SoSFVec2s offset;
   SoSFFloat spacing;
   SoSFInt32 pickedItem;
+  SoSFBool closeParent;
 
+  void setParent(SmPopupMenuKit * kit);
+  void childFinished(SmPopupMenuKit * child);
+  
 private:
 
   void updateBackground(void);

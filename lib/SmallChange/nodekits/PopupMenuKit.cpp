@@ -88,10 +88,14 @@
 
 class SmPopupMenuKitP {
 public:
-  SmPopupMenuKitP(void) 
-    : bba(SbViewportRegion(100,100)),
+  SmPopupMenuKitP(SmPopupMenuKit * master) 
+    : master(master),
+      bba(SbViewportRegion(100,100)),
       rpa(SbViewportRegion(100,100))
   { }
+  SmPopupMenuKit * master;
+  SmPopupMenuKit * parent;
+
   SoFieldSensor * itemssensor;
   SoOneShotSensor * oneshot;
   SoOneShotSensor * activeitemchanged;
@@ -114,6 +118,13 @@ public:
   
   int activeitem;
 
+  SmPopupMenuKit * getSubMenu(const int idx) {
+    if (idx < master->submenu.getNum()) {
+      return (SmPopupMenuKit*) master->submenu[idx];
+    }
+    return NULL;
+  }
+
   void updateViewport(SoState * state) {
     const SbViewportRegion & vp = SoViewportRegionElement::get(state);
     
@@ -133,16 +144,20 @@ SO_KIT_SOURCE(SmPopupMenuKit);
 */
 SmPopupMenuKit::SmPopupMenuKit(void)
 {
-  PRIVATE(this) = new SmPopupMenuKitP;
+  PRIVATE(this) = new SmPopupMenuKitP(this);
+  PRIVATE(this)->parent = NULL;
 
   SO_KIT_CONSTRUCTOR(SmPopupMenuKit);
   
   SO_KIT_ADD_FIELD(isActive, (FALSE));
+  SO_KIT_ADD_FIELD(visible, (FALSE));
   SO_KIT_ADD_FIELD(items, (""));
+  SO_KIT_ADD_FIELD(submenu, (NULL));
   SO_KIT_ADD_FIELD(frameSize, (3));
-  SO_KIT_ADD_FIELD(offset, (16, 0));
+  SO_KIT_ADD_FIELD(offset, (0, 0));
   SO_KIT_ADD_FIELD(spacing, (1.5f));
   SO_KIT_ADD_FIELD(pickedItem, (-1));
+  SO_KIT_ADD_FIELD(closeParent, (FALSE));
   
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
@@ -203,7 +218,9 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   amat->diffuseColor = SbColor(0.0f, 0.0f, 0.0f);
   amat->transparency = 0.5f;
 
-  //  SoTransparencyType * tt = (SoTransparencyType*) 
+  SoTransparencyType * tt = (SoTransparencyType*) 
+    this->getAnyPart("activeTransparencyType", TRUE);
+  tt->value = SoTransparencyType::BLEND;
   
   PRIVATE(this)->itemssensor = new SoFieldSensor(items_changed_cb, this);
   PRIVATE(this)->itemssensor->attach(&this->items);
@@ -235,6 +252,35 @@ SmPopupMenuKit::~SmPopupMenuKit(void)
   delete PRIVATE(this);
 }
 
+void 
+SmPopupMenuKit::setParent(SmPopupMenuKit * kit)
+{
+  if (PRIVATE(this)->parent) {
+    PRIVATE(this)->parent->unref();
+  }
+  PRIVATE(this)->parent = kit;
+  if (kit) kit->ref();
+}
+
+void 
+SmPopupMenuKit::childFinished(SmPopupMenuKit * child)
+{
+  if (child->closeParent.getValue()) {
+    this->visible = FALSE;
+    this->isActive = FALSE;
+    PRIVATE(this)->activeitem = -1;
+    
+    if (PRIVATE(this)->parent) {
+      PRIVATE(this)->parent->childFinished(this);
+      this->setParent(NULL);
+    }
+  }
+  else {
+    this->isActive = TRUE;
+  }
+}
+
+
 // Documented in superclass
 void
 SmPopupMenuKit::initClass(void)
@@ -250,12 +296,10 @@ SmPopupMenuKit::initClass(void)
 void 
 SmPopupMenuKit::GLRender(SoGLRenderAction * action)
 {
-  if (!this->isActive.getValue()) {
+  PRIVATE(this)->updateViewport(action->getState());
+  if (!this->visible.getValue()) {
     return;
   }
-
-  PRIVATE(this)->updateViewport(action->getState());
-
   if (!action->isRenderingDelayedPaths()) {
     action->addDelayedPath(action->getCurPath()->copy());
     return;
@@ -273,7 +317,7 @@ void
 SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
 {
   int activeitem = -1;
-  if (this->isActive.getValue()) {  
+  if (this->isActive.getValue() && this->visible.getValue()) {  
     PRIVATE(this)->updateViewport(action->getState());
     
     const SoEvent * event = action->getEvent();
@@ -296,10 +340,29 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
       }
     }
     if (activeitem >= 0 && SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
-      //      fprintf(stderr,"picked item: %d\n", activeitem);
       this->pickedItem = activeitem;
+      SmPopupMenuKit * sub = PRIVATE(this)->getSubMenu(activeitem);
       activeitem = -1;
       this->isActive = FALSE;
+      
+      if (sub) {
+        SbVec3f np(0.0f, 0.0f, 0.0f);
+
+        np[0] = event->getPosition()[0] / float (PRIVATE(this)->vp.getViewportSizePixels()[0]);
+        np[1] = event->getPosition()[1] / float (PRIVATE(this)->vp.getViewportSizePixels()[1]);
+        sub->setViewportRegion(PRIVATE(this)->vp);
+        sub->setNormalizedPoint(np);
+        sub->setParent(this);
+        sub->visible = TRUE;
+        sub->isActive = TRUE;
+      }
+      else {
+        this->visible = FALSE;
+        if (PRIVATE(this)->parent) {
+          PRIVATE(this)->parent->childFinished(this);
+          this->setParent(NULL);
+        }
+      }
     }
   }
   if (activeitem != PRIVATE(this)->activeitem) {
@@ -372,6 +435,42 @@ SmPopupMenuKit::setViewportRegion(const SbViewportRegion & vp)
     this->updateBackground();
   }
 }
+
+void
+SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
+{
+  PRIVATE(this)->flipupdown = FALSE;
+  PRIVATE(this)->flipleftright = FALSE;
+  if (npt[0] > 0.5) PRIVATE(this)->flipleftright = TRUE;
+  if (npt[1] < 0.5) PRIVATE(this)->flipupdown = TRUE;
+  
+  SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
+  t->translation = npt;
+
+  this->updateBackground();
+  
+  SbVec2s of = this->offset.getValue();
+  SbVec3f fof(0.0f, 0.0f, 0.0f);
+  fof[0] = float(of[0]) / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
+  fof[1] = float(of[1]) / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+  
+  if (PRIVATE(this)->flipleftright) fof[0] = -fof[0];
+  if (PRIVATE(this)->flipupdown) fof[1] = -fof[1];
+  
+  fof[1] -= float(PRIVATE(this)->fontsize) /  float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+  
+  SbVec3f j(0.0f, 0.0f, 0.0f);
+  if (PRIVATE(this)->flipleftright) j[0] = -PRIVATE(this)->bbw;
+  if (PRIVATE(this)->flipupdown) j[1] = PRIVATE(this)->bbh;
+  
+  j[0] += fof[0];
+  j[1] += fof[1];
+  t->translation = npt + j;    
+  
+  // calculate again to account for offset and justification
+  this->updateBackground();  
+}
+
 
 /*!
   Convenience function that uses an SoPickedPoint to calculate the
@@ -572,13 +671,13 @@ SmPopupMenuKit::updateBackground(void)
   PRIVATE(this)->backgroundmenulow += 3.0f / PRIVATE(this)->vp.getViewportSizePixels()[1];
   PRIVATE(this)->backgroundmenuhigh +=  3.0f / PRIVATE(this)->vp.getViewportSizePixels()[1];
 
-  PRIVATE(this)->backgroundleft = bmin[0];
-  PRIVATE(this)->backgroundright = bmax[0];
-
   bmin[0] -= fx;
   bmin[1] -= fy;
   bmax[0] += fx;
   bmax[1] += fy;
+
+  PRIVATE(this)->backgroundleft = bmin[0];
+  PRIVATE(this)->backgroundright = bmax[0];
 
   PRIVATE(this)->bbw = bmax[0] - bmin[0];
   PRIVATE(this)->bbh = bmax[1] - bmin[1];
