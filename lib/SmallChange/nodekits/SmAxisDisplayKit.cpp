@@ -124,10 +124,6 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
 
   SoLightModel *lightmodel = (SoLightModel *)this->getAnyPart("lightmodel", TRUE);
   lightmodel->model = SoLightModel::BASE_COLOR;
-
-  SoMaterialBinding *matbinding = 
-    (SoMaterialBinding *)this->getAnyPart("matbinding", TRUE);
-  matbinding->value = SoMaterialBinding::PER_PART;
 }
 
 /*!
@@ -156,7 +152,12 @@ void
 SmAxisDisplayKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SoCacheElement::invalidate(action->getState());
-  SoNode::getBoundingBox(action);
+}
+
+void 
+SmAxisDisplayKit::search(SoSearchAction * action)
+{
+  SoNode::search(action);
 }
 
 // overloader to test when stuff changes in the API fields
@@ -257,6 +258,10 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
   camera->nearDistance = 0.01f;
   camera->farDistance = 10.0f;
   camera->heightAngle = 22.5*M_PI/180; // Reduce perspective
+
+  // FIXME: hack to avoid continuous redraws. Use engine-connections
+  // instead, pederb, 2003-10-21
+  camera->position.enableNotify(FALSE); 
 
   if (thisp->oneshot->isScheduled()) thisp->oneshot->unschedule();
   thisp->processingoneshot = FALSE;;

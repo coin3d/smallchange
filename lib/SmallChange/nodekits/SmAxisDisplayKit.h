@@ -60,7 +60,7 @@ public:
 
   static void initClass(void);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
-
+  virtual void search(SoSearchAction * action);
 protected:
   virtual ~SmAxisDisplayKit();
   virtual void notify(SoNotList * l);
