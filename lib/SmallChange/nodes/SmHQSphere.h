@@ -31,6 +31,7 @@
 
 #include <SmallChange/basic.h>
 
+class SmHQSphereP;
 
 class SMALLCHANGE_DLL_API SmHQSphere : public SoShape {
   typedef SoShape inherited;
@@ -49,10 +50,12 @@ public:
   virtual void rayPick(SoRayPickAction * action);
 
 protected:
-  virtual ~SkyDome();
+  virtual ~SmHQSphere();
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
   
+private:
+  SmHQSphereP * pimpl;
 };
 
 #endif // COIN_SMHQSPHERE_H
