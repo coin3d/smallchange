@@ -15,10 +15,12 @@
 #include <SmallChange/nodekits/SmNormalsKit.h>
 
 /*
-** This nodekit is intended to be used like the example below.
+** This nodekit is intended to be used like the examples below.
 ** It might be a good idea to integrate this nodekit in the SoGui
 ** viewer components (menu-controllable) sometime in the future.
 * 
+
+----8<----- [snip] ----------------8<----- [snip] ------------
 
 #Inventor V2.1 ascii
 
@@ -37,6 +39,25 @@ Separator {
     length 0.2
   }
 }
+
+----8<----- [snip] ----------------8<----- [snip] ------------
+
+#Inventor V2.1 ascii
+
+Separator {
+  DEF TheScene Separator {
+    Text3 {
+      string "Hei"
+      parts ALL
+    }
+  }
+  SmNormalsKit {
+    scene USE TheScene
+    length 0.2
+  }
+}
+
+----8<----- [snip] ----------------8<----- [snip] ------------
 
  *
 ** Ideas for future improvements:
