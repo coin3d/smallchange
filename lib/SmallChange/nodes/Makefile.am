@@ -27,13 +27,10 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	Scenery.cpp SmScenery.h \
-	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
-	ColorGradient.cpp SmColorGradient.h \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h
 
@@ -64,12 +61,10 @@ libnodesinc_HEADERS = \
 	UTMPosition.h \
 	UTMCoordinate.h \
 	SmTooltip.h \
-	SmScenery.h \
 	SmHQSphere.h \
 	SmBillboardClipPlane.h \
 	SmHeadlight.h \
 	SmVertexArrayShape.h \
-	SmColorGradient.h \
 	SmCoordinateSystem.h \
 	SmMarkerSet.h
 

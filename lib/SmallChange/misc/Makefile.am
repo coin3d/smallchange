@@ -16,13 +16,11 @@ endif
 
 libmisc_la_SOURCES = \
 	Init.cpp Init.h \
-	SbCubicSpline.cpp SbCubicSpline.h \
-	SceneryGlue.cpp SceneryGlue.h
+	SbCubicSpline.cpp SbCubicSpline.h
 
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
-	SbCubicSpline.cpp SbCubicSpline.h \
-	SceneryGlue.cpp SceneryGlue.h
+	SbCubicSpline.cpp SbCubicSpline.h
 
 libmiscincdir = $(includedir)/SmallChange/misc
 libmiscinc_HEADERS = \

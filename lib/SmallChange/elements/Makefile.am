@@ -9,18 +9,15 @@ endif
 libelements_la_SOURCES = \
 	GLDepthBufferElement.cpp GLDepthBufferElement.h \
 	UTMElement.cpp UTMElement.h \
-	ColorGradientElement.cpp SmColorGradientElement.h
 
 elements_lst_SOURCES = \
 	GLDepthBufferElement.cpp GLDepthBufferElement.h \
 	UTMElement.cpp UTMElement.h \
-	ColorGradientElement.cpp SmColorGradientElement.h
 
 libelementsincdir = $(includedir)/SmallChange/elements
 libelementsinc_HEADERS = \
 	UTMElement.h \
-	GLDepthBufferElement.h \
-	SmColorGradientElement.h
+	GLDepthBufferElement.h
 
 elements.lst: $(elements_lst_OBJECTS)
 	@echo "Linking $@..."; \

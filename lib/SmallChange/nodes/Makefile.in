@@ -193,13 +193,10 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	Scenery.cpp SmScenery.h \
-	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
-	ColorGradient.cpp SmColorGradient.h \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h
 
@@ -230,12 +227,10 @@ libnodesinc_HEADERS = \
 	UTMPosition.h \
 	UTMCoordinate.h \
 	SmTooltip.h \
-	SmScenery.h \
 	SmHQSphere.h \
 	SmBillboardClipPlane.h \
 	SmHeadlight.h \
 	SmVertexArrayShape.h \
-	SmColorGradient.h \
 	SmCoordinateSystem.h \
 	SmMarkerSet.h
 
@@ -257,10 +252,9 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
 	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
-	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
-	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
-	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT) \
-	VertexArrayShape.$(OBJEXT) ColorGradient.$(OBJEXT) \
+	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) \
+	SmHQSphere.$(OBJEXT) SmBillboardClipPlane.$(OBJEXT) \
+	SmHeadlight.$(OBJEXT) VertexArrayShape.$(OBJEXT) \
 	SmCoordinateSystem.$(OBJEXT) SmMarkerSet.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
@@ -273,10 +267,9 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
-	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
-	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo \
-	VertexArrayShape.lo ColorGradient.lo SmCoordinateSystem.lo \
-	SmMarkerSet.lo
+	UTMCoordinate.lo SmTooltip.lo SmHQSphere.lo \
+	SmBillboardClipPlane.lo SmHeadlight.lo VertexArrayShape.lo \
+	SmCoordinateSystem.lo SmMarkerSet.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -287,8 +280,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/ColorGradient.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/ColorGradient.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/FrustumCamera.Plo \
@@ -296,9 +287,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po ./$(DEPDIR)/Scenery.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Scenery.Po ./$(DEPDIR)/SceneryGL.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SceneryGL.Po ./$(DEPDIR)/ShapeScale.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Po ./$(DEPDIR)/SkyDome.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Plo \
@@ -373,13 +363,10 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	Scenery.cpp SmScenery.h \
-	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
-	ColorGradient.cpp SmColorGradient.h \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h
 
@@ -420,8 +407,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorGradient.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorGradient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrustumCamera.Plo@am__quote@
@@ -430,10 +415,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneryGL.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneryGL.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Plo@am__quote@
