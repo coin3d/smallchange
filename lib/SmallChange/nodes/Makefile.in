@@ -188,6 +188,7 @@ SOURCES = \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
 	Scenery.cpp SmScenery.h \
+	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
 
@@ -241,7 +242,8 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
 	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
-	SmHQSphere.$(OBJEXT) SmBillboardClipPlane.$(OBJEXT)
+	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
+	SmBillboardClipPlane.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -253,8 +255,8 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
-	UTMCoordinate.lo SmTooltip.lo Scenery.lo SmHQSphere.lo \
-	SmBillboardClipPlane.lo
+	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
+	SmHQSphere.lo SmBillboardClipPlane.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -273,7 +275,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po ./$(DEPDIR)/Scenery.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Scenery.Po ./$(DEPDIR)/ShapeScale.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Scenery.Po ./$(DEPDIR)/SceneryGL.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SceneryGL.Po ./$(DEPDIR)/ShapeScale.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Po ./$(DEPDIR)/SkyDome.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Plo \
@@ -341,6 +344,7 @@ SOURCES = \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
 	Scenery.cpp SmScenery.h \
+	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
 
@@ -391,6 +395,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneryGL.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneryGL.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Plo@am__quote@
