@@ -13,8 +13,6 @@ class SoTimerSensor;
 
 class SbAsyncBuffer;
 
-//#define NUMBUFFERS 10
-
 class SoSound : 
   public SoNode
 {

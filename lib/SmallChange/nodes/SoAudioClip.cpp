@@ -24,13 +24,11 @@
 
 SO_NODE_SOURCE(SoAudioClip);
 
-//ALuint SoAudioClip = {};
-
 SbStringList SoAudioClip::subdirectories = SbStringList();
-
 
 void SoAudioClip::initClass()
 {
+  // 20011206 thammer, kept for debugging purposes
   // SO_NODE_INIT_CLASS(SoAudioClip, SoNode, "Node");
   SO_NODE_INTERNAL_INIT_CLASS(SoAudioClip);
 };
@@ -50,7 +48,6 @@ SoAudioClip::SoAudioClip()
   SO_NODE_ADD_FIELD(duration_changed, (0.0f)); //  eventOut
   SO_NODE_ADD_FIELD(isActive, (FALSE)); //  eventOut
 
-//  THIS->size = 0;
   THIS->duration = 0.0;
   THIS->bufferId = 0; // no buffer (NULL), see alIsBuffer(...)
   THIS->readstatus = 0; // buffer is not filled
@@ -67,11 +64,11 @@ SoAudioClip::SoAudioClip()
 
 SoAudioClip::~SoAudioClip()
 {
-#ifndef DEBUG_AUDIO
+#ifdef DEBUG_AUDIO
   fprintf(stderr, "~SoAudioClip()\n");
 #endif
   if (alIsBuffer(THIS->bufferId))
-	  alDeleteBuffers(1, &THIS->bufferId);
+    alDeleteBuffers(1, &THIS->bufferId);
 
   this->unloadUrl();
 
@@ -83,45 +80,42 @@ SbBool SoAudioClip::setBuffer(void *buffer, int length, int channels, int bitspe
 {
   // for setting data directly (doesn't use url)
 
-  ALint	error;
+  ALint  error;
 
 #if 0
   // 20011130 thammer, not necessary. code kept for debugging
   // Delete previous buffer
   if (alIsBuffer(THIS->bufferId))
-	  alDeleteBuffers(1, &THIS->bufferId);
+    alDeleteBuffers(1, &THIS->bufferId);
 #endif
 
   // Generate new buffer
 
   if (!alIsBuffer(THIS->bufferId)) {
     alGenBuffers(1, &THIS->bufferId);
-	  if ((error = alGetError()) != AL_NO_ERROR)
-	  {
+    if ((error = alGetError()) != AL_NO_ERROR) {
       char errstr[256];
-		  SoDebugError::postWarning("SoAudioClip::setBuffer",
+      SoDebugError::postWarning("SoAudioClip::setBuffer",
                                 "alGenBuffers failed. %s",
                                 GetALErrorString(errstr, error));
-  		return FALSE;
-	  }
+      return FALSE;
+    }
   };
 
-	ALenum	alformat = 0;;
+  ALenum  alformat = 0;;
 
   alformat = getALSampleFormat(channels, bitspersample);
 
-
-	// Copy wav data into buffer
-	alBufferData(THIS->bufferId, alformat, (ALvoid *)buffer, length*bitspersample/8*channels,
+  // Copy wav data into buffer
+  alBufferData(THIS->bufferId, alformat, (ALvoid *)buffer, length*bitspersample/8*channels,
     samplerate);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::setBuffer",
+    SoDebugError::postWarning("SoAudioClip::setBuffer",
                               "alBufferData failed for data read from file. %s",
                               GetALErrorString(errstr, error));
-		return FALSE;
-	}
+    return FALSE;
+  }
 
   THIS->duration = (double)length/(double)samplerate;
   THIS->readstatus = 1; // buffer is OK
@@ -157,36 +151,27 @@ SbBool SoAudioClip::loadUrl(void)
   }
 
 
-  ALint	error;
+  ALint  error;
 
-  // fixme: remove code below, just debugging
 #if 0
   // 20011130 thammer, not necessary. code kept for debugging
   // Delete previous buffer
   if (alIsBuffer(THIS->bufferId))
-	  alDeleteBuffers(1, &THIS->bufferId);
+    alDeleteBuffers(1, &THIS->bufferId);
 #endif
 
   // Generate new buffer
 
   if (!alIsBuffer(THIS->bufferId)) {
     alGenBuffers(1, &THIS->bufferId);
-	  if ((error = alGetError()) != AL_NO_ERROR)
-	  {
+    if ((error = alGetError()) != AL_NO_ERROR) {
       char errstr[256];
-		  SoDebugError::postWarning("SoAudioClip::loadUrl",
+      SoDebugError::postWarning("SoAudioClip::loadUrl",
                                 "alGenBuffers failed. %s",
                                 GetALErrorString(errstr, error));
-		  return FALSE;
-	  }
+      return FALSE;
+    }
   }
-
-/*  else
-  { // debugging
-    THIS->playedOnce = FALSE;
-    return TRUE;
-  }
-*/
 
   SbBool ret;
   char *buffer;
@@ -200,7 +185,7 @@ SbBool SoAudioClip::loadUrl(void)
   ret = readWaveFile(filename.getString(), buffer, size, format, 
                     channels, samplerate, bitspersample);
   if (!ret) {
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
+    SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "Couldn't load file %s. Using blank buffer.",
                               filename.getString());
     size=44100;
@@ -216,23 +201,22 @@ SbBool SoAudioClip::loadUrl(void)
 
   ALsizei alsize = size;
   ALsizei alfreq = samplerate;
-	ALvoid	*aldata = (ALvoid	*)buffer;
-	ALenum	alformat = 0;;
+  ALvoid  *aldata = (ALvoid  *)buffer;
+  ALenum  alformat = 0;;
 
   if (format == 1)
     alformat = getALSampleFormat(channels, bitspersample);
 
-	// Copy wav data into buffer
-	alBufferData(THIS->bufferId, alformat, aldata, alsize, alfreq);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
+  // Copy wav data into buffer
+  alBufferData(THIS->bufferId, alformat, aldata, alsize, alfreq);
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
+    SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "alBufferData failed for data read from file %s. %s",
                               str,
                               GetALErrorString(errstr, error));
-		return FALSE;
-	}
+    return FALSE;
+  }
 
   freeWaveDataBuffer(buffer);
 
@@ -262,25 +246,16 @@ SoAudioClipP::urlSensorCBWrapper(void * data, SoSensor *)
 void
 SoAudioClipP::urlSensorCB(SoSensor *)
 {
-//   printf("SoAudioClip::urlSensorCB()\n");
-
-  if (ITHIS->url.getNum()>0)
-  {
+  if (ITHIS->url.getNum()>0) {
     const char * str = ITHIS->url[0].getString();
-//    if ( (str != NULL) && (strlen(str)>0) )
-    if (str != NULL)
-    {
-
-      if (ITHIS->loadUrl())
-      {
+    if (str != NULL){
+      if (ITHIS->loadUrl()) {
         this->readstatus = 1;
       }
-      else
-      {
+      else {
         SoDebugError::postWarning("SoAudioClipP::urlSensorCB",
                                   "Sound file could not be read: %s",
                                   str);
-//                                  text.getString());
         this->readstatus = 0;
       }
     }

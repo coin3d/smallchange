@@ -32,6 +32,7 @@ public:
   SbTime actualStartTime;
 
 #ifdef HAVE_PTHREAD
-  pthread_mutex_t syncmutex;
+  static pthread_mutex_t syncmutex;
+  static int refcount;
 #endif
 };

@@ -35,10 +35,15 @@
 
 SO_NODE_SOURCE(SoSound);
 
+#ifdef HAVE_PTHREAD
+pthread_mutex_t SoSoundP::syncmutex = NULL;
+#endif // HAVE_PTHREAD
+
 void SoSound::initClass()
 {
-//  SO_NODE_INIT_CLASS(SoSound, SoNode, "Node");
   SO_NODE_INTERNAL_INIT_CLASS(SoSound);
+  pthread_mutex_init(&SoSoundP::syncmutex, NULL);
+  // fixme 20011207 thammer, what about destroying the mutex ?
 };
 
 SoSound::SoSound() 
@@ -65,22 +70,17 @@ SoSound::SoSound()
   THIS->isStreaming = FALSE;
   THIS->asyncStreamingMode = FALSE;
 
-	ALint	error;
+  ALint  error;
 
   alGenSources(1, &(THIS->sourceId));
-	if ((error = alGetError()) != AL_NO_ERROR)
-  {
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoSound::SoSound",
+    SoDebugError::postWarning("SoSound::SoSound",
                               "alGenSources failed. %s",
                               GetALErrorString(errstr, error));
     return;
   }
 
-
-  // use field sensor for filename since we will load an image if
-  // filename changes. This is a time-consuming task which should
-  // not be done in notify().
   THIS->sourcesensor = new SoFieldSensor(THIS->sourceSensorCBWrapper, THIS);
   THIS->sourcesensor->setPriority(0);
   THIS->sourcesensor->attach(&this->source);
@@ -89,14 +89,17 @@ SoSound::SoSound()
   THIS->audioBuffer = NULL;
 
 #ifdef HAVE_PTHREAD
-  pthread_mutex_init(&THIS->syncmutex, NULL);
+#if 0
+  // 20011207 thammer, kept for futute debugging
+  pthread_mutex_init(&SoSoundP::syncmutex, NULL);
+#endif
 #endif
 
 };
 
 SoSound::~SoSound()
 {
-#ifndef DEBUG_AUDIO
+#ifdef DEBUG_AUDIO
   fprintf(stderr, "~SoSound()\n");
 #endif
   delete THIS->sourcesensor;
@@ -106,19 +109,21 @@ SoSound::~SoSound()
   delete THIS->workerThread;
 
 #ifdef HAVE_PTHREAD
-  pthread_mutex_destroy(&THIS->syncmutex);
+#if 0
+  // 20011207 thammer, kept for future debugging
+  pthread_mutex_destroy(&SoSoundP::syncmutex);
+#endif
 #endif
 
   if (THIS->audioBuffer != NULL)
     delete[] THIS->audioBuffer;
 
-	ALint	error;
+  ALint  error;
 
   alDeleteSources(1, &(THIS->sourceId));
-	if ((error = alGetError()) != AL_NO_ERROR)
-  {
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoSound::~SoSound",
+    SoDebugError::postWarning("SoSound::~SoSound",
                               "alDeleteSources() failed. %s",
                               GetALErrorString(errstr, error));
   }
@@ -144,16 +149,14 @@ SbBool SoSoundP::stopPlaying(SbBool force)
   SoAudioClip *audioClip = NULL;
   audioClip = (SoAudioClip *)ITHIS->source.getValue();
 
-  if (force || (audioClip->isActive.getValue()))
-  { 
+  if (force || (audioClip->isActive.getValue())) { 
     // we were playing, so stop
     // printf("SoSound::stopPlaying stopping \n");
     // stop playing
     alSourceStop(this->sourceId);
-	  if ((error = alGetError()) != AL_NO_ERROR)
-    {
+    if ((error = alGetError()) != AL_NO_ERROR) {
       char errstr[256];
-		  SoDebugError::postWarning("SoSound::stopPlaying",
+      SoDebugError::postWarning("SoSound::stopPlaying",
                                 "alSourceStop failed. %s",
                                 GetALErrorString(errstr, error));
       retval= FALSE;
@@ -162,11 +165,10 @@ SbBool SoSoundP::stopPlaying(SbBool force)
     // fixme debugging
     // unqueue buffer
     if (!this->isStreaming) {
-			alSourceUnqueueBuffers(this->sourceId, 1, &audioClip->soaudioclip_impl->bufferId);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      alSourceUnqueueBuffers(this->sourceId, 1, &audioClip->soaudioclip_impl->bufferId);
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSound::stopPlaying",
+        SoDebugError::postWarning("SoSound::stopPlaying",
                                   "alSourceUnqueueBuffers failed. %s",
                                   GetALErrorString(errstr, error));
         return 0;
@@ -175,16 +177,13 @@ SbBool SoSoundP::stopPlaying(SbBool force)
         printf("Buffer unqueued.\n");
 
       alSourcei(this->sourceId, AL_BUFFER, 0);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSoundP::stopPlaying",
+        SoDebugError::postWarning("SoSoundP::stopPlaying",
                                   "alSourcei(,AL_BUFFER, 0) failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
       }
-
-
     }
 
     audioClip->isActive.setValue(FALSE);
@@ -201,11 +200,9 @@ SbBool SoSoundP::stopPlaying(SbBool force)
   if (workerThread->isActive())
     workerThread->stop();
 
-  if (this->isStreaming)
-  {
+  if (this->isStreaming) {
     SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)ITHIS->source.getValue();
     audioClipStreaming->soaudioclipstreaming_impl->stopPlaying();
-
   }
 
   return retval;
@@ -218,21 +215,17 @@ SbBool SoSoundP::startPlaying(SbBool force)
   ALint error;
   SoAudioClip *audioClip = (SoAudioClip *)ITHIS->source.getValue();
 
-  if (force || (!audioClip->isActive.getValue()))
-  {
+  if (force || (!audioClip->isActive.getValue())) {
    
     this->isStreaming = FALSE;
-    if (ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()))
-    {
+    if (ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId())) {
       SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)ITHIS->source.getValue();
       this->asyncStreamingMode = audioClipStreaming->getAsyncMode();
       this->isStreaming = TRUE;
 
       // create class-local buffers (used in fillBuffers)
-      if (this->isStreaming)
-      {
-        if (this->audioBuffer == NULL)
-        {
+      if (this->isStreaming) {
+        if (this->audioBuffer == NULL) {
           SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
           this->audioBuffer = new short int[audioClipStreaming->getBufferSize() * audioClipStreaming->getNumChannels()];
         };
@@ -241,22 +234,20 @@ SbBool SoSoundP::startPlaying(SbBool force)
       // create AL buffers
       audioClipStreaming->soaudioclipstreaming_impl->startPlaying();
 
-    	  // Queue the buffers on the source
-	    alSourceQueueBuffers(this->sourceId, audioClipStreaming->getNumBuffers(), audioClipStreaming->soaudioclipstreaming_impl->alBuffers);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+        // Queue the buffers on the source
+      alSourceQueueBuffers(this->sourceId, audioClipStreaming->getNumBuffers(), audioClipStreaming->soaudioclipstreaming_impl->alBuffers);
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSoundP::startPlaying",
+        SoDebugError::postWarning("SoSoundP::startPlaying",
                                   "alSourceQueueBuffers failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
       }
 
-	    alSourcei(this->sourceId,AL_LOOPING, FALSE);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      alSourcei(this->sourceId,AL_LOOPING, FALSE);
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSoundP::sourceSensorCB",
+        SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                                   "alSourcei(,AL_LOOPING,) failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
@@ -264,8 +255,7 @@ SbBool SoSoundP::startPlaying(SbBool force)
 
       // 20010803 thh moved alSourcePlay here 
 
-      if (!this->asyncStreamingMode)
-      {
+      if (!this->asyncStreamingMode) {
         // stop previous timer
         if (this->timersensor) {
           if (this->timersensor->isScheduled()) 
@@ -278,8 +268,7 @@ SbBool SoSoundP::startPlaying(SbBool force)
         this->timersensor->setInterval(SbTime(0.05));
         this->timersensor->schedule();
       }
-      else
-      {
+      else {
         // stop existing thread, start new thread
         if (workerThread->isActive())
           workerThread->stop();
@@ -288,36 +277,33 @@ SbBool SoSoundP::startPlaying(SbBool force)
       }
 
     }
-    else
-    {
+    else {
       // FIXME 20011130 thammer, this is just for debugging! copied from sourcesensorcb
       // when we're not streaming, fill buffer once
-	    alSourcei(this->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      alSourcei(this->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSoundP::startPlaying",
+        SoDebugError::postWarning("SoSoundP::startPlaying",
                                   "alSourcei(,AL_BUFFER,) failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
       }
     }
 
-	  ALint			state;
+    ALint      state;
   #ifdef _WIN32
-	  alGetSourcei(this->sourceId, AL_SOURCE_STATE, &state);
+    alGetSourcei(this->sourceId, AL_SOURCE_STATE, &state);
   #else
-	  alGetSourceiv(this->sourceId, AL_SOURCE_STATE, &state);
+    alGetSourceiv(this->sourceId, AL_SOURCE_STATE, &state);
   #endif
 
 
     // 20010809 thh moved here
     // we weren't playing, so start playing
     alSourcePlay(this->sourceId);
-	  if ((error = alGetError()) != AL_NO_ERROR)
-    {
+    if ((error = alGetError()) != AL_NO_ERROR) {
       char errstr[256];
-		  SoDebugError::postWarning("SoSoundP::StartPlaying",
+      SoDebugError::postWarning("SoSoundP::StartPlaying",
                                 "alSourcePlay failed. %s",
                                 GetALErrorString(errstr, error));
       return FALSE;
@@ -327,19 +313,6 @@ SbBool SoSoundP::startPlaying(SbBool force)
 
     audioClip->isActive.setValue(TRUE);
 
-/*
-  moved up 20010803 ThH
-    // we weren't playing, so start playing
-    alSourcePlay(this->sourceId);
-	  if ((error = alGetError()) != AL_NO_ERROR)
-    {
-      char errstr[256];
-		  SoDebugError::postWarning("SoSound::audioRender",
-                                "alSourcePlay failed. %s",
-                                GetALErrorString(errstr, error));
-      return FALSE;
-    }
-*/
   }
   return TRUE;
 };
@@ -347,14 +320,13 @@ SbBool SoSoundP::startPlaying(SbBool force)
 int SoSoundP::fillBuffers()
 {
 #if HAVE_PTHREAD
-  SbAutoLock autoLock(&(this->syncmutex)); // synchronize with main thread
+  SbAutoLock autoLock(&(SoSoundP::syncmutex)); // synchronize with main thread
 #endif
 
-	ALint			processed;
+  ALint      processed;
 
-  //  SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->source.getValue();
   SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
-	// Get status
+  // Get status
 #ifdef _WIN32
   alGetSourcei(this->sourceId, AL_BUFFERS_PROCESSED, &processed);
 #else
@@ -362,30 +334,26 @@ int SoSoundP::fillBuffers()
 #endif
 
   // for debugging
-	ALint			queued;
+  ALint      queued;
 #ifdef _WIN32
-	alGetSourcei(this->sourceId, AL_BUFFERS_QUEUED, &queued);
+  alGetSourcei(this->sourceId, AL_BUFFERS_QUEUED, &queued);
 #else
-	alGetSourceiv(this->sourceId, AL_BUFFERS_QUEUED, &queued);
+  alGetSourceiv(this->sourceId, AL_BUFFERS_QUEUED, &queued);
 #endif
 //  printf("Processed: %d, Queued: %d\n", processed, queued);
 
 
-	ALuint			BufferID;
-	ALint			error;
+  ALuint      BufferID;
+  ALint      error;
   int retval = 1;
 
-	if (processed > 0)
-	{
-		while (processed)
-		{
+  if (processed > 0) {
+    while (processed) {
 
-//      printf(">");
-			alSourceUnqueueBuffers(this->sourceId, 1, &BufferID);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      alSourceUnqueueBuffers(this->sourceId, 1, &BufferID);
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
+        SoDebugError::postWarning("SoSound::fillBuffers",
                                   "alSourceUnqueueBuffers failed. %s",
                                   GetALErrorString(errstr, error));
         return 0;
@@ -394,16 +362,10 @@ int SoSoundP::fillBuffers()
       // fill buffer
       retval = audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(this->audioBuffer, audioClipStreaming->getBufferSize());
 
-/*      if (retval == 0) {
-        stopPlaying();
-        return 0; // buffer has been played to the end
-      }
-*/
-      if (retval <= 0)
-      {
+      if (retval <= 0) {
         printf("retval<=0\n");
         audioClipStreaming->setPlayedOnce();
-        return 0; // 0 worked ok, but will terminate thread, better to let audioRender do that
+        return 0; // 20011206 thammer. 0 worked ok, but will terminate thread, better to let audioRender do that
         // should play AL_BUFFERS_QUEUED empty buffers, then return 0 so that the thread finishes
         // the sound should finish also, so we could probably just call stopPlaying()
       }
@@ -415,34 +377,32 @@ int SoSoundP::fillBuffers()
       int bitspersample;
       audioClipStreaming->getSampleFormat(channels, samplerate, bitspersample);
 
-	    ALenum	alformat = 0;;
+      ALenum  alformat = 0;;
       alformat = getALSampleFormat(channels, bitspersample);
 
-			alBufferData(BufferID, alformat, this->audioBuffer, 
+      alBufferData(BufferID, alformat, this->audioBuffer, 
         audioClipStreaming->getBufferSize() * sizeof(short int) * audioClipStreaming->getNumChannels(), 
         samplerate);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
+        SoDebugError::postWarning("SoSound::fillBuffers",
                                   "alBufferData failed. %s",
                                   GetALErrorString(errstr, error));
         return 0;
       }
 
-			// Queue buffer
-			alSourceQueueBuffers(this->sourceId, 1, &BufferID);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      // Queue buffer
+      alSourceQueueBuffers(this->sourceId, 1, &BufferID);
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
+        SoDebugError::postWarning("SoSound::fillBuffers",
                                   "alSourceQueueBuffers failed. %s",
                                   GetALErrorString(errstr, error));
         return 0;
       }
 
-			processed--;
-		}
+      processed--;
+    }
     // delete buffer;
   }
 
@@ -451,31 +411,27 @@ int SoSoundP::fillBuffers()
   // if we're not playing, it's because the buffers have not been filled up (unqueued, filled, queued)
   // fast enough, so the source has plaued the last buffer in the queue and changed state from playing to stopped.
 
-	ALint			state;
+  ALint      state;
 #ifdef _WIN32
-	alGetSourcei(this->sourceId, AL_SOURCE_STATE, &state);
+  alGetSourcei(this->sourceId, AL_SOURCE_STATE, &state);
 #else
-	alGetSourceiv(this->sourceId, AL_SOURCE_STATE, &state);
+  alGetSourceiv(this->sourceId, AL_SOURCE_STATE, &state);
 #endif
-  if (state != AL_PLAYING)
-  {
-    if (state == AL_STOPPED)
-    {
+  if (state != AL_PLAYING) {
+    if (state == AL_STOPPED) {
       alSourcePlay(this->sourceId);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
+      if ((error = alGetError()) != AL_NO_ERROR) {
         char errstr[256];
-		    SoDebugError::postWarning("SoSoundP::StartPlaying",
+        SoDebugError::postWarning("SoSoundP::StartPlaying",
                                   "alSourcePlay failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
       }
-#ifndef DEBUG_AUDIO
+#ifdef DEBUG_AUDIO
       fprintf(stderr, "state == AL_STOPPED. Had to restart source\n");
 #endif
     }
-    else
-    {
+    else {
       char statestr[20];
       switch (state) {
       case AL_INITIAL : sprintf(statestr, "initial"); break;
@@ -484,7 +440,7 @@ int SoSoundP::fillBuffers()
       case AL_STOPPED : sprintf(statestr, "stopped"); break;
       default : sprintf(statestr, "unknown"); break;
       };
-#ifndef DEBUG_AUDIO
+#ifdef DEBUG_AUDIO
       fprintf(stderr, "state == %s. Don't know what to do about it...\n", statestr);
 #endif
     }
@@ -504,6 +460,11 @@ SoSoundP::timercb(void * data, SoSensor * s)
 
 void SoSound::audioRender(SoAudioRenderAction *action)
 {
+
+#if HAVE_PTHREAD
+  SbAutoLock autoLock(&(SoSoundP::syncmutex)); // synchronize with fillBuffers
+#endif
+
   ALint error;
   // FIXME: allow for other types of source nodes (like MovieTexture)
 
@@ -525,7 +486,6 @@ void SoSound::audioRender(SoAudioRenderAction *action)
   SbString stop_str = stop.format("%D %h %m %s");
   SbString now_str = now.format("%D %h %m %s");
 
-//  if ((now<start) && (!audioClip->isActive))
   if ( (now<start) || ( (now>=stop) && (stop>start)) )
   {
     // we shouldn't be playing now
@@ -546,16 +506,16 @@ void SoSound::audioRender(SoAudioRenderAction *action)
     // check to see if we're looping. 
     // If we're not, check if the sample has been played completely
     // if it has, there's no point in plaing any more, is there?????
-    // fixme: 20011116, think about this. Could some other node be depending on
+    // fixme: 20011116 thammer, think about this. Could some other node be depending on
     // exact playing time ??
     ALint looping = FALSE;
 #ifdef _WIN32 // FIXME: hack to compile under Linux, pederb 2001-12-01
-	  alGetSourcei(THIS->sourceId,AL_LOOPING, &looping);
+    alGetSourcei(THIS->sourceId,AL_LOOPING, &looping);
 #endif
-	  if ((error = alGetError()) != AL_NO_ERROR)
+    if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];
-		  SoDebugError::postWarning("SoSoundP::audioRender",
+      SoDebugError::postWarning("SoSoundP::audioRender",
                                 "alSourcei(,AL_LOOPING,) failed. %s",
                                 GetALErrorString(errstr, error));
       return;
@@ -563,8 +523,8 @@ void SoSound::audioRender(SoAudioRenderAction *action)
 
     if (!looping) {
       if (now - THIS->actualStartTime >= audioClip->getBufferDuration()) {
-        // fixme: perhaps we need some slack...
-		    printf("SoSoundP::audioRender - "
+        // fixme 20011206 thammer, perhaps we need some slack...
+        printf("SoSoundP::audioRender - "
                                   "Stopping non-looping sound because the whole buffer has been played\n");
         THIS->stopPlaying();
         audioClip->setPlayedOnce();
@@ -589,37 +549,34 @@ void SoSound::audioRender(SoAudioRenderAction *action)
 
   SbVec3f2ALfloat3(alfloat3, worldpos);
 
-	// Position ...
-	alSourcefv(THIS->sourceId, AL_POSITION, alfloat3);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
+  // Position ...
+  alSourcefv(THIS->sourceId, AL_POSITION, alfloat3);
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoSound::audioRender",
+    SoDebugError::postWarning("SoSound::audioRender",
                               "alSourcefv(,AL_POSITION,) failed. %s",
                               GetALErrorString(errstr, error));
-		return;
-	}
+    return;
+  }
 
-	// Velocity ...
+  // Velocity ...
 /*  SbVec3f2ALfloat3(alfloat3, velocity.getValue());
 
-	alSourcefv(this->sourceId, AL_VELOCITY, alfloat3);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
+  alSourcefv(this->sourceId, AL_VELOCITY, alfloat3);
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoSound::GLRender",
+    SoDebugError::postWarning("SoSound::GLRender",
                               "alSourcefv(,AL_VELOCITY,) failed. %s",
                               GetALErrorString(errstr, error));
-		return;
-	}
+    return;
+  }
 */
 
   // Gain / intensity
-	alSourcef(THIS->sourceId,AL_GAIN, this->intensity.getValue());
-	if ((error = alGetError()) != AL_NO_ERROR)
-  {
+  alSourcef(THIS->sourceId,AL_GAIN, this->intensity.getValue());
+  if ((error = alGetError()) != AL_NO_ERROR) {
     char errstr[256];
-		SoDebugError::postWarning("SoSound::audioRender",
+    SoDebugError::postWarning("SoSound::audioRender",
                               "alSourcef(,AL_GAIN,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
@@ -655,7 +612,7 @@ SoSoundP::sourceSensorCB(SoSensor *)
   if ( !ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()) 
     && !ITHIS->source.getValue()->isOfType(SoAudioClip::getClassTypeId()) )
   {
-		SoDebugError::postWarning("SoSound::sourceSensorCB",
+    SoDebugError::postWarning("SoSound::sourceSensorCB",
                               "Unknown source node type");
     return;
   };
@@ -670,7 +627,7 @@ SoSoundP::sourceSensorCB(SoSensor *)
     // gets any fields changed!
 
 #if HAVE_PTHREAD
-  SbAutoLock autoLock(&(this->syncmutex)); // synchronize with fill-thread
+  SbAutoLock autoLock(&(SoSoundP::syncmutex)); // synchronize with fill-thread
 #endif
 
   this->currentAudioClip = audioClip;
@@ -688,34 +645,35 @@ SoSoundP::sourceSensorCB(SoSensor *)
 
 
   alSourceStop(this->sourceId);
-	if ((error = alGetError()) != AL_NO_ERROR)
+  if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSound::sourceSensorCB",
+    SoDebugError::postWarning("SoSound::sourceSensorCB",
                               "alSourceStop failed. %s",
                               GetALErrorString(errstr, error));
   }
 
-	alSourcef(this->sourceId,AL_PITCH, audioClip->pitch.getValue());
-	if ((error = alGetError()) != AL_NO_ERROR)
+  alSourcef(this->sourceId,AL_PITCH, audioClip->pitch.getValue());
+  if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
+    SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                               "alSourcef(,AL_PITCH,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
   }
 
-	alSourcef(this->sourceId,AL_GAIN, ITHIS->intensity.getValue());
-	if ((error = alGetError()) != AL_NO_ERROR)
+  alSourcef(this->sourceId,AL_GAIN, ITHIS->intensity.getValue());
+  if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
+    SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                               "alSourcef(,AL_GAIN,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
   }
 
+#if 0
 /*
 //  fixme 20011130 thammer, removed for debugging purposes. see startplaying
 
@@ -726,46 +684,29 @@ SoSoundP::sourceSensorCB(SoSensor *)
   else
   {
     // when we're not streaming, fill buffer once
-	  alSourcei(this->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
-	  if ((error = alGetError()) != AL_NO_ERROR)
+    alSourcei(this->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
+    if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];
-		  SoDebugError::postWarning("SoSoundP::sourceSensorCB",
+      SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                                 "alSourcei(,AL_BUFFER,) failed. %s",
                                 GetALErrorString(errstr, error));
       return;
     }
   };
 */
-	alSourcei(this->sourceId,AL_LOOPING, audioClip->loop.getValue());
-	if ((error = alGetError()) != AL_NO_ERROR)
+#endif // 0
+
+  alSourcei(this->sourceId,AL_LOOPING, audioClip->loop.getValue());
+  if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
+    SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                               "alSourcei(,AL_LOOPING,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
   }
 
 }
-
-// void SoSound::GLRender(SoGLRenderAction *action)
-
-
-
-
-      // fixme: if we run out of buffers, processed
-      // will allways be 0
-      // should probably check queued also / instead
-
-      // 20010809 ThH - update: (from simple2.cpp
-//  buffernode->loop.setValue(TRUE); // this fixes silence-bug for the case when 
-  // all bufers have been played without new ones being filled
-      // Hmm.. no, this doesn't work after all. When looping is on, one cannot unqueue buffers 
-      // (and processed will allways be 0)
-
-      // fill buffer
-      // as an experiment, moved outside unqueue/queue
-//      audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(audioBuffer, audioClipStreaming->getBufferSize());
 
 #endif // HAVE_OPENAL

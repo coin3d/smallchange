@@ -47,8 +47,8 @@ protected:
 
   static SbStringList subdirectories;
 protected:
-	class SoAudioClipP *soaudioclip_impl;
-	friend class SoAudioClipP;
+  class SoAudioClipP *soaudioclip_impl;
+  friend class SoAudioClipP;
   friend class SoSoundP;
 };
 

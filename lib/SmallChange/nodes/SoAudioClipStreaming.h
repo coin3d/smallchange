@@ -26,7 +26,7 @@ public:
   void setKeepAlive(SbBool alive=TRUE);
 
 protected:
-	virtual ~SoAudioClipStreaming();
+  virtual ~SoAudioClipStreaming();
 
   virtual SbBool loadUrl(void); 
   virtual void unloadUrl(void);

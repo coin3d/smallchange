@@ -8,9 +8,8 @@ public:
   SoAudioClipP(SoAudioClip * interfaceptr) : ifacep(interfaceptr) {};
   SoAudioClip *ifacep;
 
-//  unsigned int size;
   double duration; // duration at pitch = 1.0
-  ALuint	bufferId;
+  ALuint bufferId;
   int readstatus;
   SoFieldSensor * urlsensor;
   static void urlSensorCBWrapper(void *, SoSensor *);

@@ -9,28 +9,20 @@
 class SoListener : public SoNode
 {
   SO_NODE_HEADER(SoListener);
-
   friend class SoAudioRenderAction;
 
 public:
-
   static void initClass();
   SoListener();
-
   SoSFVec3f position;
   SoSFRotation orientation;
   SoSFVec3f velocity;
   SoSFFloat gain;
 
 protected:
-
   virtual void audioRender(class SoAudioRenderAction *action);
-//  virtual void GLRender(SoGLRenderAction *action);
-
 private:
-
   virtual ~SoListener();
-
 };
 
 #endif // COIN_SOLISTENER_H
