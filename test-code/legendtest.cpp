@@ -72,7 +72,7 @@ main(
     
     kit->setColorCB(color_cb);
     kit->setImageTransparency(0.2);
-    //    kit->useTextureNotImage(TRUE);
+    kit->useTextureNotImage(TRUE);
     kit->setBackgroundColor(SbColor(1.0f, 1.0f, 1.0f), 0.2f);
     kit->setTickAndLinesColor(SbColor(0.0f, 0.0f, 0.0f), 0.0f);
     kit->bigTickSize = 8;
