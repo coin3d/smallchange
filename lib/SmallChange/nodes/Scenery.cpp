@@ -459,6 +459,17 @@ SmScenery::SmScenery(ss_system * system)
   PRIVATE(this)->texhash = cc_hash_construct(1024, 0.7f);
 
   PRIVATE(this)->system = system;
+
+  sc_ssglue_system_get_object_box(PRIVATE(thisp)->system,
+                                  PRIVATE(thisp)->renderstate.bbmin,
+                                  PRIVATE(thisp)->renderstate.bbmax); 
+
+  PRIVATE(this)->blocksize =
+    sc_ssglue_system_get_blocksize(PRIVATE(this)->system);
+  PRIVATE(this)->renderstate.blocksize = (float) (PRIVATE(this)->blocksize-1);
+  PRIVATE(this)->viewid = sc_ssglue_view_allocate(PRIVATE(this)->system);
+  assert(PRIVATE(this)->viewid >= 0);
+  sc_ssglue_view_enable(PRIVATE(this)->system, PRIVATE(this)->viewid);
 }
 
 void
@@ -519,9 +530,12 @@ SmScenery::~SmScenery(void)
   delete PRIVATE(this)->elevationthicknesssensor;
   delete PRIVATE(this)->elevationemphasissensor;
 
-  if (sc_scenery_available() && PRIVATE(this)->system) {
+  if (sc_scenery_available() &&
+      (PRIVATE(this)->system != NULL) &&
+      (PRIVATE(this)->viewid != -1) ) {
     sc_ssglue_view_deallocate(PRIVATE(this)->system, PRIVATE(this)->viewid);
     sc_ssglue_system_close(PRIVATE(this)->system);
+    PRIVATE(this)->viewid = -1;
   }
   delete PRIVATE(this)->pvertex;
   delete PRIVATE(this)->facedetail;
@@ -965,7 +979,9 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
   SmScenery * thisp = (SmScenery *) closure;
 
   if ( PRIVATE(thisp)->system ) {
-    sc_ssglue_view_deallocate(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
+    if ( PRIVATE(thisp)->viewid != -1 ) {
+      sc_ssglue_view_deallocate(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid);
+    }
     sc_ssglue_system_close(PRIVATE(thisp)->system);
   }
 
