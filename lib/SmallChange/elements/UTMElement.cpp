@@ -22,7 +22,7 @@
 \**************************************************************************/
 
 /*!
-  \class UTMElement Inventor/elements/UTMElement.h
+  \class UTMElement UTMElement.h SmallChange/elements/UTMElement.h
   \brief The UTMElement class is yet to be documented.
 
   FIXME: write doc.

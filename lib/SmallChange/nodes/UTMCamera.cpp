@@ -22,7 +22,7 @@
 \**************************************************************************/
 
 /*!
-  \class UTMCamera UTMCamera.h
+  \class UTMCamera UTMCamera SmallChange/nodes/UTMCamera.h
   \brief The UTMCamera class defines a camera node with perspective rendering and an UTM position.
   \ingroup nodes
 

@@ -22,7 +22,7 @@
 \**************************************************************************/
 
 /*!
-  \class UTMPosition UTMPosition.h Inventor/nodes/UTMPosition.h
+  \class UTMPosition UTMPosition.h SmallChange/nodes/UTMPosition.h
   \brief The UTMPosition class is a node type for specifying geometry translations.
   \ingroup nodes
 
@@ -38,13 +38,13 @@
 
   There are three fields which controls the translation. easting
   (along the positive x-axis), northing (along the positive y-axis)
-  and elevation ( along the positive z-axis).
+  and elevation (along the positive z-axis).
 
   If you use this node, do not have transformation nodes over any
   UTMPosition nodes in your scene graph. This will make it impossible
   to calculate the new relative position. You are free to have
   transformation nodes under UTMPositon nodes (as long as they are
-  inside a SoSeparator node), of course. 
+  inside an SoSeparator node), of course.
 
   BUGS: This node will currently not work as expected when used inside
   a SoTransformSeparator. For this to work, the current relative
