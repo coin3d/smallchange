@@ -2,6 +2,7 @@
 #include <Inventor/nodes/SoDirectionalLight.h>
 #include <Inventor/nodes/SoPerspectiveCamera.h>
 #include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/actions/SoHandleEventAction.h>
 
 #include <Inventor/@Gui@/So@Gui@.h>
 #include <Inventor/@Gui@/So@Gui@RenderArea.h>
@@ -13,17 +14,21 @@
 #include <Inventor/nodes/SoRotation.h>
 #include <Inventor/nodes/SoEventCallback.h>
 #include <Inventor/events/SoKeyboardEvent.h>
+#include <Inventor/events/SoMouseButtonEvent.h>
+#include <Inventor/sensors/SoFieldSensor.h>
 #include <SmallChange/misc/SmSceneManager.h>
 #include <SmallChange/nodes/SmViewpointWrapper.h>
+#include <SmallChange/nodekits/SmPopupMenuKit.h>
 #include <stdio.h>
 
+typedef struct {
+  SmSceneManager * scenemgr;
+  SmPopupMenuKit * menu;
+} scenedata;
 
-static void 
-event_cb(void * userdata, SoEventCallback * node)
+static void
+handle_key_press_event(const SoEvent * e, SmSceneManager * scenemgr)
 {
-  SmSceneManager * scenemgr = (SmSceneManager*) userdata;
-  const SoEvent * e = node->getEvent();
-
   if (SO_KEY_PRESS_EVENT(e, W)) {
     scenemgr->setRenderMode(SmSceneManager::WIREFRAME);
   }
@@ -53,8 +58,76 @@ event_cb(void * userdata, SoEventCallback * node)
   else if (SO_KEY_PRESS_EVENT(e, T)) {
     scenemgr->setTexturesEnabled(!scenemgr->isTexturesEnabled());
   }
-
   scenemgr->scheduleRedraw();
+}
+
+static void
+menusensor_cb(void * userdata, SoSensor * s)
+{
+  scenedata * data = (scenedata*) userdata;
+  SmSceneManager * scenemgr = data->scenemgr;
+  SmPopupMenuKit * menu = data->menu;
+
+  SoKeyboardEvent::Key key = SoKeyboardEvent::ANY;
+
+  int idx = menu->pickedItem.getValue();
+  switch (idx) {
+  case 0:
+    key = SoKeyboardEvent::A;
+    break;
+  case 1:
+    key = SoKeyboardEvent::W;
+    break;
+  case 2:
+    key = SoKeyboardEvent::O;
+    break;
+  case 3:
+    key = SoKeyboardEvent::P;
+    break;
+  case 4:
+    key = SoKeyboardEvent::B;
+    break;
+  case 5:
+    key = SoKeyboardEvent::H;
+    break;
+  default:
+    break;
+  }
+
+  if (key != SoKeyboardEvent::ANY) {
+    SoKeyboardEvent ke;
+    ke.setKey(key);
+    ke.setState(SoButtonEvent::DOWN);
+    handle_key_press_event(&ke, scenemgr);
+  }
+}
+
+
+static void 
+mbevent_cb(void * userdata, SoEventCallback * node)
+{
+  const SoEvent * e = node->getEvent();
+  SoHandleEventAction * a = node->getAction();
+  if (SO_MOUSE_RELEASE_EVENT(e, BUTTON2)) {
+    SmPopupMenuKit * kit = (SmPopupMenuKit*) userdata;
+    if (!kit->visible.getValue()) {
+      SbVec3f np(0.0f, 0.0f, 0.0f);
+      np[0] = e->getNormalizedPosition(a->getViewportRegion())[0];
+      np[1] = e->getNormalizedPosition(a->getViewportRegion())[1];
+      kit->visible = TRUE;
+      kit->isActive = TRUE;
+      kit->setNormalizedPoint(np);
+    }
+  }
+}
+
+static void 
+event_cb(void * userdata, SoEventCallback * node)
+{
+  SmSceneManager * scenemgr = (SmSceneManager*) userdata;
+  const SoEvent * e = node->getEvent();
+
+  handle_key_press_event(e, scenemgr);
 }
 
 // *************************************************************************
@@ -142,9 +215,30 @@ main(int argc, char ** argv )
   renderarea->setSceneManager(scenemgr);
   scenemgr->activate();
 
+  SmPopupMenuKit * menu = new SmPopupMenuKit;
+  
+  const char * items[] = {
+    "As Is",
+    "Wireframe",
+    "Wireframe overlay",
+    "Points",
+    "BBox",
+    "Hidden line"
+  };
+  menu->itemList.setValues(0, 6, items);
+
+  scenedata data;
+  data.scenemgr = scenemgr;
+  data.menu = menu;
+
+  SoFieldSensor * menusensor = new SoFieldSensor(menusensor_cb, &data);
+  menusensor->attach(&menu->pickedItem);
+
   SoEventCallback * ec = new SoEventCallback;
   ec->addEventCallback(SoKeyboardEvent::getClassTypeId(), event_cb, scenemgr);
+  ec->addEventCallback(SoMouseButtonEvent::getClassTypeId(), mbevent_cb, menu);
   root->insertChild(ec, 0);
+  root->insertChild(menu, 0);
 
   renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   renderarea->setSceneGraph(ck);
@@ -158,6 +252,9 @@ main(int argc, char ** argv )
   So@Gui@::mainLoop();
 
   delete renderarea;
+  delete menusensor;
+  
+
   root->unref();
   ck->unref();
 
