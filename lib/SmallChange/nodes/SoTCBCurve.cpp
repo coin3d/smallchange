@@ -24,10 +24,9 @@
 
   The TCB-type curve guarantees that all controlpoints are touched by the
   curve. If no timestamps are specified, all timeintervals are set to equal
-  length. The node reads coordinates either from the state or via a specified
-  source-pointer. If no source is specified, coordinates from the state 
-  are assumed (SoCoordinate3). A specified timestamp/coordinate source may 
-  be removed by calling the set-function with NULL as parameter.  
+  length. Coordinates are read from the state. 
+
+  Note that the list of timestamps MUST be sorted in increasing order. 
 */
 
 #include "SoTCBCurve.h"
@@ -41,9 +40,11 @@
 #include <config.h>
 #endif // HAVE_CONFIG_H
 
-#if HAVE_WINDOWS_H
+//FIXME: These lines didn't compile with msvs...? torbjorv 07052002
+/*#if HAVE_WINDOWS_H
 #include <windows.h>
-#endif // HAVE_WINDOWS_H
+#endif // HAVE_WINDOWS_H*/
+#include <windows.h>
 #include <GL/gl.h>
 
 
@@ -51,21 +52,12 @@
   \var SoSFInt32 SoTCBCurve::numControlpoints
   Number of control points to use in this NURBS curve.
 
-  \var SoMFTime SoTCBCurve::setTimestampSrc
-  Specify the source of timestamps for the control points. If specified, the number of timestamps
-  must match the number of controlpoints. If not specified, equal timeintervals are assumed. The
-  client app must free the instance of SoMFTime. 
+  \var SoMFTime SoTCBCurve::timestamp
+  The timestamps for the curve. This table must contain either 0 elements
+  or exactly numControlpoints elements. Nothing in between. This list MUST
+  be sorted in increasing order. 
+
 */
-
-
-/*!
-  \fn void SoTCBCurve::setCoordinateSrc(float scalefactor)
-
-  Sets a \a scalefactor for the height of the camera viewport. What
-  "viewport height" means exactly in this context depends on the
-  camera model. See documentation in subclasses.
-*/
-
 
 
 // *************************************************************************
@@ -80,8 +72,6 @@ public:
     this->master = master;
   }
 
-  const SoMFVec3f * coordinateSrc;
-  const SoMFTime  * timestampSrc;
   int linesPerSegment;
 
 private:
@@ -105,9 +95,6 @@ SoTCBCurve::SoTCBCurve(void)
   SO_NODE_CONSTRUCTOR(SoTCBCurve);
 
   SO_NODE_ADD_FIELD(numControlpoints, (0));
-
-  PRIVATE(this)->coordinateSrc = NULL;
-  PRIVATE(this)->timestampSrc = NULL;
 }// Constructor
 
 
@@ -128,6 +115,10 @@ SoTCBCurve::~SoTCBCurve()
 void
 SoTCBCurve::initClass(void)
 {
+  static int first = 0;
+  if (first == 1) return;
+  first = 1;
+
   SO_NODE_INIT_CLASS(SoTCBCurve, SoShape, "Shape");
 }
 
@@ -142,42 +133,11 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
 
   if (numControlpoints.getValue() < 2) return;
 
-
-  //---- Selecting coordinatesource
-  const SbVec3f * coords;
-  if (PRIVATE(this)->coordinateSrc == NULL) {
-    const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
-    assert(coordElement);
-    coords = coordElement->getArrayPtr3();
-  }//if
-  else
-    coords = PRIVATE(this)->coordinateSrc->getValues(0);
+  const SoCoordinateElement *coordElement= SoCoordinateElement::getInstance(state);
+  const SbVec3f * coords =  coordElement->getArrayPtr3();
 
  
-  //---- Converting coords/PRIVATE(this)->timestampSrc to standard float-arrays...
-  //This baby could be optimized a lot... But maybe it's bad to assume
-  //that the timestamps are a table of floats?
-  float (* c)[3] = new float[numControlpoints.getValue()][3];
-  float * t      = new float[numControlpoints.getValue()];
-
-  const SbTime * timestamp = NULL;
-  if (PRIVATE(this)->timestampSrc != NULL) 
-    timestamp = PRIVATE(this)->timestampSrc->getValues(0);
-
-  for (int i = 0; i < numControlpoints.getValue(); i++) {
-    coords[i].getValue(c[i][0], c[i][1], c[i][2]);
-
-    // If no PRIVATE(this)->timestampSrc specified, use equal timeintervals between all controlpoints
-    if (PRIVATE(this)->timestampSrc == NULL)
-      t[i] = i;
-    else
-      t[i] = timestamp[i].getValue();
-
-  }// for
-
-
   //---- Rendering...
-
   // FIXME: I guess things like material, normals, texturecoords, drawstyle etc 
   // should be stuffed here somewhere.
   // But I can't find any examples or reasonable text in that stupid book. This is probably trivial for 
@@ -193,21 +153,21 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
   // (avoiding floating point errors)
   PRIVATE(this)->linesPerSegment = (int)(this->getComplexityValue(action)*100.0);
 
-  glVertex3f(c[0][0], c[0][1], c[0][2]);
+  glVertex3f(coords[0][0], coords[0][1], coords[0][2]);
   for (int segment = 0; segment < numControlpoints.getValue() - 1; segment++) {
 
-    float timestep  = (t[segment + 1] - t[segment])/PRIVATE(this)->linesPerSegment;
-    float time      = t[segment] + timestep;
-    float x, y, z;
+    float timestep  = (timestamp[segment + 1] - timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+    float time      = timestamp[segment].getValue() + timestep;
+    SbVec3f vec;
 
     for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-      TCB(c, t, numControlpoints.getValue(), time, x, y, z);
-      glVertex3f(x, y, z);
+      TCB(coords, timestamp, numControlpoints.getValue(), time, vec);
+      glVertex3f(vec[0], vec[1], vec[2]);
       
       time += timestep;
     }// for
 
-    glVertex3f(c[segment + 1][0], c[segment + 1][1], c[segment + 1][2]);
+    glVertex3f(coords[segment + 1][0], coords[segment + 1][1], coords[segment + 1][2]);
   }// for
 
   glEnd();
@@ -227,43 +187,14 @@ SoTCBCurve::generatePrimitives(SoAction * action)
 {
   SoState * state = action->getState();
 
-  //---- Selecting coordinatesource
-  const SbVec3f * coords;
-  if (PRIVATE(this)->coordinateSrc == NULL) {
-    const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
-    assert(coordElement);
-    coords = coordElement->getArrayPtr3();
-  }//if
-  else
-    coords = PRIVATE(this)->coordinateSrc->getValues(0);
-
+  const SoCoordinateElement *coordElement= SoCoordinateElement::getInstance(state);
+  const SbVec3f * coords =  coordElement->getArrayPtr3();
   
-  //---- Converting coords/PRIVATE(this)->timestampSrc to standard float-arrays...
-  float (* c)[3]  = new float[numControlpoints.getValue()][3];
-  float * t       = new float[numControlpoints.getValue()];
-
-  const SbTime * timestamp = NULL;
-  if (PRIVATE(this)->timestampSrc != NULL) 
-    timestamp = PRIVATE(this)->timestampSrc->getValues(0);
-
-  for (int i = 0; i < numControlpoints.getValue(); i++) {
-    coords[i].getValue(c[i][0], c[i][1], c[i][2]);
-
-    // If no PRIVATE(this)->timestampSrc specified, use equal timeintervals between all controlpoints
-    if (PRIVATE(this)->timestampSrc == NULL)
-      t[i] = i;
-    else
-      t[i] = timestamp[i].getValue();
-
-  }// for
-
-
 
   //---- Generating...
-
-  // FIXME: I guess things like material, normals, texturecoords, drawstyle etc 
-  // should be stuffed here somewhere.
-  // But I can't find any examples or reasonable text in that stupid book. This is probably trivial for 
+  // FIXME: I guess things like material, normals, texturecoords, drawstyle 
+  // etc should be stuffed here somewhere. But I can't find any examples 
+  // or reasonable text in that stupid book. This is probably trivial for 
   // the other guys here. 20020612 torbjorv
 
   SoLineDetail lineDetail;
@@ -277,7 +208,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
   
   SoPrimitiveVertex pv;
   SbVec3f point;
-  point.setValue(c[0][0], c[0][1], c[0][2]);
+  point.setValue(coords[0][0], coords[0][1], coords[0][2]);
   pv.setPoint(point);
   pv.setDetail(&pointDetail);
   shapeVertex(&pv);
@@ -285,13 +216,13 @@ SoTCBCurve::generatePrimitives(SoAction * action)
   if (numControlpoints.getValue() > 1)
     for (int segment = 0; segment < numControlpoints.getValue() - 1; segment++) {
 
-      float timestep  = (t[segment + 1] - t[segment])/PRIVATE(this)->linesPerSegment;
-      float time      = t[segment] + timestep;
-      float x, y, z;
+      float timestep  = (timestamp[segment + 1] - timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+      float time      = timestamp[segment].getValue() + timestep;
+      SbVec3f vec;
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-        TCB(c, t, numControlpoints.getValue(), time, x, y, z);
-        point.setValue(x, y, z);
+        TCB(coords, timestamp, numControlpoints.getValue(), time, vec);
+        point.setValue(vec[0], vec[1], vec[2]);
 
         pv.setPoint(point);
         shapeVertex(&pv);
@@ -300,7 +231,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
         time += timestep;
       }// for
 
-      point.setValue(c[segment + 1][0], c[segment + 1][1], c[segment + 1][2]);
+      point.setValue(coords[segment + 1][0], coords[segment + 1][1], coords[segment + 1][2]);
       pv.setPoint(point);
       shapeVertex(&pv);
       lineDetail.incLineIndex();
@@ -326,76 +257,49 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
 
   SoState * state = action->getState();
   
-  //---- Selecting coordinatesource
-  const SbVec3f * coords;
-  if (PRIVATE(this)->coordinateSrc == NULL) {
-    const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
-    assert(coordElement);
-    coords = coordElement->getArrayPtr3();
-  }//if
-  else
-    coords = PRIVATE(this)->coordinateSrc->getValues(0);
-
-
+  const SoCoordinateElement *coordElement= SoCoordinateElement::getInstance(state);
+  const SbVec3f * coords =  coordElement->getArrayPtr3();
  
-//---- Converting coords to standard float-arrays...
-  float (* c)[3]  = new float[numControlpoints.getValue()][3];
-  float * t       = new float[numControlpoints.getValue()];
-
-  const SbTime * timestamp = NULL;
-  if (PRIVATE(this)->timestampSrc != NULL) 
-    timestamp = PRIVATE(this)->timestampSrc->getValues(0);
-
-  float x, y, z;
-  for (int i = 0; i < numControlpoints.getValue(); i++) {
-    coords[i].getValue(c[i][0], c[i][1], c[i][2]);
-
-    // If no PRIVATE(this)->timestampSrc specified, use equal timeintervals between all controlpoints
-    if (PRIVATE(this)->timestampSrc == 0)
-      t[i] = i;
-    else
-      t[i] = timestamp[i].getValue();
-
-  }// for
-
-
   //---- Generating geometry...
-  float minx = c[0][0];
-  float miny = c[0][1];
-  float minz = c[0][2];
-  float maxx = c[0][0];
-  float maxy = c[0][1];
-  float maxz = c[0][2];
+  float minx = coords[0][0];
+  float miny = coords[0][1];
+  float minz = coords[0][2];
+  float maxx = coords[0][0];
+  float maxy = coords[0][1];
+  float maxz = coords[0][2];
 
   if (numControlpoints.getValue() > 1)
     for (int segment = 0; segment < numControlpoints.getValue() - 1; segment++) {
 
-      float timestep  = (t[segment + 1] - t[segment])/PRIVATE(this)->linesPerSegment;
-      float time      = t[segment] + timestep;
+      float timestep  = (timestamp[segment + 1] - timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+      float time      = timestamp[segment].getValue() + timestep;
+      SbVec3f vec;
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-        TCB(c, t, numControlpoints.getValue(), time, x, y, z);
+        TCB(coords, timestamp, numControlpoints.getValue(), time, vec);
+        glVertex3f(vec[0], vec[1], vec[2]);
 
-        if (x < minx) minx = x;
-        if (y < miny) miny = y;
-        if (z < minz) minz = z;
-        if (x < maxx) maxx = x;
-        if (y < maxy) maxy = y;
-        if (z < maxz) maxz = z;
+        if (vec[0] < minx) minx = vec[0];
+        if (vec[1] < miny) miny = vec[1];
+        if (vec[2] < minz) minz = vec[2];
+        if (vec[0] < maxx) maxx = vec[0];
+        if (vec[1] < maxy) maxy = vec[1];
+        if (vec[2] < maxz) maxz = vec[2];
       
         time += timestep;
       }// for
 
-      if (c[segment + 1][0] < minx) minx = c[segment + 1][0];
-      if (c[segment + 1][1] < miny) miny = c[segment + 1][1];
-      if (c[segment + 1][2] < minz) minz = c[segment + 1][2];
-      if (c[segment + 1][0] > maxx) maxx = c[segment + 1][0];
-      if (c[segment + 1][1] > maxy) maxy = c[segment + 1][1];
-      if (c[segment + 1][2] > maxz) maxz = c[segment + 1][2];
+      if (coords[segment + 1][0] < minx) minx = coords[segment + 1][0];
+      if (coords[segment + 1][1] < miny) miny = coords[segment + 1][1];
+      if (coords[segment + 1][2] < minz) minz = coords[segment + 1][2];
+      if (coords[segment + 1][0] > maxx) maxx = coords[segment + 1][0];
+      if (coords[segment + 1][1] > maxy) maxy = coords[segment + 1][1];
+      if (coords[segment + 1][2] > maxz) maxz = coords[segment + 1][2];
     }// for
 
   box.setBounds(minx, miny, minz, maxx, maxy, maxz);
   center.setValue(0.5*(minx + maxx), 0.5*(miny + maxy), 0.5*(minz + maxz));
+
   return;
 }//computeBBox
 
@@ -411,6 +315,9 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   Quit ironic as this is how the curve got it's name. :) The timestamp-table must
   be sorted in increasing order. Timevalues specified outside the range of timestamps
   will be clipped to the nearest value. 
+
+  This function is totally independent of the rest of the class, and may be used for 
+  general curvecalculations. 
 */
 void 
 SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpoints, float time, float &x, float &y, float &z)
@@ -506,11 +413,35 @@ SoTCBCurve::TCB(const float coords[][3], const float tStamps[], int numControlpo
   Quit ironic as this is how the curve got it's name. :) The timestamp-table must
   be sorted in increasing order. Timevalues specified outside the range of timestamps
   will be clipped to the nearest value. 
+
+  This function is totally independent of the rest of the class, and may be used for 
+  general curvecalculations. 
 */
 void 
 SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &time, SbVec3f &res)
 {
-  if (vec.getNum() == 0) return;
+  TCB(vec.getValues(0), timestamp, vec.getNum(), time, res);
+}//TCB
+
+
+ 
+ 
+/*!
+  Static function to interpolate values along a curve. 
+
+  This function is based on the Lightwave SDK (ftp.newtek.com) and calculates a 
+  TCB-type curve. Code for handling continuity/tension/bias is removed (values = 1). 
+  Quit ironic as this is how the curve got it's name. :) The timestamp-table must
+  be sorted in increasing order. Timevalues specified outside the range of timestamps
+  will be clipped to the nearest value. 
+
+  This function is totally independent of the rest of the class, and may be used for 
+  general curvecalculations. 
+*/
+void 
+SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpoints, const SbTime &time, SbVec3f &res)
+{
+  if (numControlpoints == 0) return;
 
   int k1, k2;
   int c1, c2;
@@ -523,11 +454,11 @@ SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &t
   float ds1_x, ds1_y, ds1_z;
 
   //---- Find object's position and angles...
-  if ( vec.getNum() > 1 ) {
+  if ( numControlpoints > 1 ) {
 
     //---- Find segment...
     k2 = 0;
-    c1 = vec.getNum() - 1;
+    c1 = numControlpoints - 1;
     for (c2 = 0; c2 < c1; c2++)
       if (timestamp[c2] <= time) k2++;
     k1 = k2 - 1;
@@ -550,7 +481,7 @@ SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &t
 
     if (k1 != 0) 
       adj0 = (timestamp[k2] - timestamp[k1])/(timestamp[k2] - timestamp[k1 - 1]);
-    if (k2 != (vec.getNum() - 1)) 
+    if (k2 != (numControlpoints - 1)) 
       adj1 = (timestamp[k2] - timestamp[k1])/(timestamp[k2+1] - timestamp[k1]);
 
     //---- Calculating TCB-values...
@@ -565,7 +496,7 @@ SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &t
       dd0_z = adj0*((vec[k1][2] - vec[k1 - 1][2]) + d10_z);
     }//else
 
-    if (k2 == (vec.getNum() - 1)) {
+    if (k2 == (numControlpoints - 1)) {
       ds1_x = d10_x;
       ds1_y = d10_y;
       ds1_z = d10_z;
@@ -585,26 +516,8 @@ SoTCBCurve::TCB(const SoMFVec3f &vec, const SoMFTime &timestamp, const SbTime &t
     res[1] = vec[0][1];
     res[2] = vec[0][2];
   }//else if only one controlpoint...
-
 }//TCB
 
-
-/*!
-  Sets the source for coordinates.
-*/
-void SoTCBCurve::setCoordinateSrc(const SoMFVec3f *src)
-{
-  PRIVATE(this)->coordinateSrc = src;
-}//setCoordinateSrc
-
-
-/*!
-  Sets the source for timestamps.
-*/
-void SoTCBCurve::setTimestampSrc(const SoMFTime *src)
-{
-  PRIVATE(this)->timestampSrc = src;
-}//setTimestampSrc
 
 
 /*!
