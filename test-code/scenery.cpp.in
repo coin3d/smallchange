@@ -30,6 +30,7 @@
 #include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/events/SoKeyboardEvent.h>
+#include <Inventor/SbViewportRegion.h>
 
 #include <SmallChange/misc/Init.h>
 #include <SmallChange/nodes/SmScenery.h>
@@ -39,19 +40,28 @@
 
 class Examiner : public So@Gui@ExaminerViewer {
 public:
+  SoSearchAction * saction;
+  SoCallbackAction * cbaction;
   Examiner(void) : So@Gui@ExaminerViewer() {
+    saction = new SoSearchAction;
+    cbaction = new SoCallbackAction(SbViewportRegion(100, 100));
+  }
+  ~Examiner() {
+    delete saction;
+    delete cbaction;
   }
   virtual void actualRedraw(void) {
     // update hotspot and evaluate for SmScenery nodes
-    SoCallbackAction cbaction(this->getViewportRegion());
-    cbaction.apply(this->getSceneManager()->getSceneGraph());
-    SoSearchAction saction;
-    saction.setType(SmScenery::getClassTypeId());
-    saction.setInterest(SoSearchAction::FIRST);
-    saction.apply(this->getSceneManager()->getSceneGraph());
+    saction->reset();
+    saction->setType(SmScenery::getClassTypeId());
+    saction->setInterest(SoSearchAction::FIRST);
+    saction->apply(this->getSceneManager()->getSceneGraph());
     SmScenery * scenery = NULL;
-    if ( saction.getPath() ) {
-      scenery = (SmScenery *) saction.getPath()->getTail();
+    if ( saction->getPath() ) {
+      scenery = (SmScenery *) saction->getPath()->getTail();
+      cbaction->reset();
+      cbaction->setViewportRegion(this->getViewportRegion());
+      cbaction->apply(this->getSceneManager()->getSceneGraph());
       scenery->preFrame();
     }
     So@Gui@ExaminerViewer::actualRedraw();
@@ -62,13 +72,13 @@ public:
   }
   virtual SbBool processSoEvent(const SoEvent * const ev) {
     if ( !this->isViewing() ) {
-      SoSearchAction saction;
-      saction.setType(SmScenery::getClassTypeId());
-      saction.setInterest(SoSearchAction::FIRST);
-      saction.apply(this->getSceneManager()->getSceneGraph());
+      saction->reset();
+      saction->setType(SmScenery::getClassTypeId());
+      saction->setInterest(SoSearchAction::FIRST);
+      saction->apply(this->getSceneManager()->getSceneGraph());
       SmScenery * scenery = NULL;
-      if ( saction.getPath() ) {
-        scenery = (SmScenery *) saction.getPath()->getTail();
+      if ( saction->getPath() ) {
+        scenery = (SmScenery *) saction->getPath()->getTail();
         if ( SO_KEY_PRESS_EVENT(ev, E) ) {
           if ( scenery->elevationLines.getValue() ) {
             scenery->elevationLines.setValue(FALSE);
