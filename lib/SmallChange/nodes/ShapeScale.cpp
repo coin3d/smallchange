@@ -23,9 +23,27 @@
 
 /*!
   \class ShapeScale ShapeScale.h
-  \brief The ShapeScale class ...
+  \brief The ShapeScale class is used for scaling a shape based on projected size.
 
-  FIXME: class doc
+  This nodekit can be inserted in your scene graph to add for instance
+  3D markers that will be of a constant projected size.
+
+  The marker shape is stored in the "shape" part. Any kind of node
+  can be used, even group nodes with several shapes, but the marker
+  shape should be approximately of unit size, and with a center 
+  position in (0, 0, 0).
+*/
+
+/*!
+  \var SoSFFloat ShapeScale::active
+  
+  Turns the scaling on/off. Default value is TRUE.
+*/
+
+/*!
+  \var SoSFFloat ShapeScale::projectedSize
+
+  The requested projected size of the shape. Default value is 5.0.
 */
 
 #include "ShapeScale.h"
@@ -53,6 +71,11 @@ ShapeScale::ShapeScale(void)
   SO_KIT_ADD_FIELD(active, (TRUE));
   SO_KIT_ADD_FIELD(projectedSize, (5.0f));  
   SO_KIT_ADD_FIELD(threadSafe, (FALSE));
+
+#ifndef __COIN__
+#error catalog setup probably not compatible with non-Coin Inventor implementation
+#endif // !__COIN__
+
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(scale, SoScale, FALSE, topSeparator, shape, FALSE);
   SO_KIT_ADD_CATALOG_ABSTRACT_ENTRY(shape, SoNode, SoCube, TRUE, topSeparator, "", TRUE);
@@ -74,6 +97,7 @@ ShapeScale::initClass(void)
 static void
 update_scale(SoScale * scale, const SbVec3f & v)
 {
+  // only write to field when scaling has changed.
   if (scale->scaleFactor.getValue() != v) {
     scale->scaleFactor = v;
   }
