@@ -28,7 +28,8 @@ SOURCES = \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
 	SmScenery.cpp SmScenery.h \
-	SmHQSphere.cpp SmHQSphere.h
+	SmHQSphere.cpp SmHQSphere.h \
+	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
