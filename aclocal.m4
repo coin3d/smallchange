@@ -8126,7 +8126,9 @@ true)
     sim_ac_libscenery_ldflags="-L$sim_ac_libscenery_path/lib"
     LDFLAGS="$LDFLAGS $sim_ac_libscenery_ldflags"
   fi
-  sim_ac_libscenery_libs="-lscenery -lsdm -lhsvl -lxml -lcbase"
+  # Now we use an all-in-one library instead of one for each submodule.
+  # sim_ac_libscenery_libs="-lscenery -lsdm -lhsvl -lxml -lcbase"
+  sim_ac_libscenery_libs="-lscenery"
   LIBS="$sim_ac_libscenery_libs $LIBS"
   AC_TRY_LINK([
 #include <sim/scenery/scenery.h>
