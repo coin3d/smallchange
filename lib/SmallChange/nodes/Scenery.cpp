@@ -81,10 +81,12 @@ Scenery::~Scenery()
   delete this->blocksensor;
   delete this->loadsensor;
 
+#ifdef HAVE_LIBSCENERY
   if (this->system) {
     ss_view_deallocate(this->system, this->viewid);
     ss_system_close(this->system);
   }
+#endif // HAVE_LIBSCENERY
   delete this->pvertex;
   delete this->facedetail;
   cc_hash_apply(this->texhash, hash_clear, NULL);
@@ -153,6 +155,7 @@ raypick_post_cb(void * closure)
 int 
 Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
+#ifdef HAVE_LIBSCENERY
   Scenery * thisp = (Scenery*) closure; 
   SoState * state = thisp->currstate;
   
@@ -228,11 +231,15 @@ Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
     }
   }
   return 1;
+#else // !HAVE_LIBSCENERY
+  return 0;
+#endif // !HAVE_LIBSCENERY
 }
 
 void 
 Scenery::GLRender(SoGLRenderAction * action)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system == NULL) return;
   if (!this->shouldGLRender(action)) return;
 
@@ -372,11 +379,13 @@ Scenery::GLRender(SoGLRenderAction * action)
     state->pop();
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
   }
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::rayPick(SoRayPickAction * action)
 {
+#ifdef HAVE_LIBSCENERY
   ss_view_set_culling_pre_callback(this->system, this->viewid,
                                    raypick_pre_cb, action);
   ss_view_set_culling_post_callback(this->system, this->viewid,
@@ -388,11 +397,13 @@ Scenery::rayPick(SoRayPickAction * action)
                                    NULL, NULL);
   ss_view_set_culling_post_callback(this->system, this->viewid,
                                     NULL, NULL);
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::callback(SoCallbackAction * action)
 {
+#ifdef HAVE_LIBSCENERY
   // FIXME: not correct to just evaluate in the callback()
   // method. SoCallbackAction can be executed for a a number of
   // reasons. Consider creating a SoSimlaEvaluateAction or something...
@@ -423,11 +434,13 @@ Scenery::callback(SoCallbackAction * action)
                                    NULL, NULL);
   ss_view_set_culling_post_callback(this->system, this->viewid,
                                     NULL, NULL);
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::generatePrimitives(SoAction * action)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system == NULL) return;
   SoState * state = action->getState();
 
@@ -443,6 +456,7 @@ Scenery::generatePrimitives(SoAction * action)
   this->pvertex->setDetail(&pointDetail);
   this->curraction = action;
   ss_view_render(this->system, this->viewid);
+#endif // HAVE_LIBSCENERY
 }
 
 void 
@@ -468,6 +482,7 @@ Scenery::loadsensor_cb(void * data, SoSensor * sensor)
   thisp->setLoadRottger(thisp->loadRottger.getValue());
 }
 
+#ifdef HAVE_LIBSCENERY
 static
 ss_system *
 readxyz(const char * filename)
@@ -564,6 +579,7 @@ calctex_cb(void * closure, double * pos, float elevation, double * spacing)
     return 0xffff0000;
   }
 }
+#endif // HAVE_LIBSCENERY
 
 void 
 Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
@@ -571,14 +587,17 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
   Scenery * thisp = (Scenery*) data;
 
   if (thisp->system) {
+#ifdef HAVE_LIBSCENERY
     ss_view_deallocate(thisp->system, thisp->viewid);
     ss_system_close(thisp->system);
+#endif // HAVE_LIBSCENERY
   }
   thisp->viewid = -1;
   thisp->system = NULL;
 
   SbString s = thisp->filename.getValue();
   if (s.getLength()) {
+#ifdef HAVE_LIBSCENERY
 #if SS_IMPORT_XYZ
     if ( s.find(".xyz") == (s.getLength() - 4) ) {
       thisp->system = readxyz(s.getString());
@@ -606,47 +625,57 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
       ss_view_enable(thisp->system, thisp->viewid);
       //      fprintf(stderr,"system: %p, viewid: %d\n", thisp->system, thisp->viewid);
     }
+#endif // HAVE_LIBSCENERY
   }
 }
 
 void 
 Scenery::preFrame(void)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system) {
     ss_view_pre_frame(this->system, this->viewid);
     cc_hash_apply(this->texhash, hash_inc_unused, NULL);
   }
+#endif // HAVE_LIBSCENERY
 }
 
 int 
 Scenery::postFrame(void)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system) {
     this->deleteUnusedTextures();
     return ss_view_post_frame(this->system, this->viewid);
   }
+#endif // HAVE_LIBSCENERY
   return 0;
 }
 
 void 
 Scenery::setBlockRottger(const float c)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system) {
     ss_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, c);
   }
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::setLoadRottger(const float c)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system) {
     ss_view_set_load_rottger_parameters(this->system, this->viewid, 16.0f, c);
   }
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::refreshTextures(const int id)
 {
+#ifdef HAVE_LIBSCENERY
   if (this->system) {
     ss_system_refresh_runtime_texture2d(this->system, id);
 
@@ -665,12 +694,14 @@ Scenery::refreshTextures(const int id)
       }
     }
   }
+#endif // HAVE_LIBSCENERY
 }
 
 
 int 
 Scenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
+#ifdef HAVE_LIBSCENERY
   Scenery * thisp = (Scenery*) closure; 
 
   RenderState & renderstate = thisp->renderstate;
@@ -681,6 +712,9 @@ Scenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
                                    &renderstate.elevdata,
                                    &renderstate.normaldata);
   return 1;
+#else // !HAVE_LIBSCENERY
+  return 0;
+#endif // !HAVE_LIBSCENERY
 }
 
 ////////////// render ///////////////////////////////////////////////////////////
@@ -732,6 +766,7 @@ void
 Scenery::undefrender_cb(void * closure, const int x, const int y, const int len, 
                            const unsigned int bitmask_org)
 {
+#ifdef HAVE_LIBSCENERY
   Scenery * thisp = (Scenery*) closure; 
 
   Scenery::RenderState * renderstate = &thisp->renderstate;
@@ -796,12 +831,14 @@ Scenery::undefrender_cb(void * closure, const int x, const int y, const int len,
       glEnd();
     }
   }
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::render_cb(void * closure, const int x, const int y,
                       const int len, const unsigned int bitmask)
 {
+#ifdef HAVE_LIBSCENERY
   Scenery * thisp = (Scenery*) closure;
   
   Scenery::RenderState * renderstate = &thisp->renderstate;
@@ -888,6 +925,7 @@ Scenery::render_cb(void * closure, const int x, const int y,
     glEnd();
 #undef ELEVATION
   }
+#endif // HAVE_LIBSCENERY
 }
 
 
@@ -906,6 +944,7 @@ void
 Scenery::undefgen_cb(void * closure, const int x, const int y, const int len, 
                      const unsigned int bitmask_org)
 {
+#ifdef HAVE_LIBSCENERY
   Scenery * thisp = (Scenery*) closure; 
 
   Scenery::RenderState * renderstate = &thisp->renderstate;
@@ -952,12 +991,14 @@ Scenery::undefgen_cb(void * closure, const int x, const int y, const int len,
       thisp->endShape();
     }
   }
+#endif // HAVE_LIBSCENERY
 }
 
 void 
 Scenery::gen_cb(void * closure, const int x, const int y,
                    const int len, const unsigned int bitmask)
 {
+#ifdef HAVE_LIBSCENERY
   Scenery * thisp = (Scenery*) closure;
 
   Scenery::RenderState * renderstate = &thisp->renderstate;
@@ -989,6 +1030,7 @@ Scenery::gen_cb(void * closure, const int x, const int y,
   thisp->endShape();
   
 #undef ELEVATION
+#endif // HAVE_LIBSCENERY
 }
 
 SoGLImage * 
