@@ -320,30 +320,6 @@ sc_probe_gl(int verbose)
   const char * vendor = (const char *) glGetString(GL_VENDOR);
   const char * version = (const char *) glGetString(GL_VERSION);
 
-  // VERTEX ARRAYS:
-  // The rendering loop that uses direct GL calls does not behave very well
-  // on ATI cards, giving randomly garbage normals and texture coordinates.
-  // This is a driver bug, which was present for both v3.8 and 3.9 of the
-  // driver.  The rendering loop using vertex arrays behaves though, so for
-  // the ATI case, the vertex array rendering loop is suggested.  It does not
-  // perform as well as the direct rendering loop though.
-  //
-  // On Mac OS X, you have the issue of C-call overhead, which is a lot higher
-  // than for other platforms.  Using vertex arrays means less calls to GL,
-  // making the vertex array approach potentially a lot faster (that's what we
-  // hear, this hasn't been tested yet though) than direct GL calls, so we
-  // suggest using the vertex array rendering approach for that platform as
-  // well.
-
-  if ( strcmp(vendor, "ATI Technologies Inc.") == 0 ) {
-    // vertex arrays are less buggy than other rendering techniques
-    GL.SUGGEST_VERTEXARRAYS = TRUE;
-  }
-#ifdef __APPLE__
-  GL.SUGGEST_VERTEXARRAYS = TRUE;
-#endif
-
-
   // BYTE NORMALS:
   // The 3Dlabs driver has problems with normals given with glNormal3bv(), but
   // not with normals given with glNormal3f().  We therefore suggest doing
@@ -368,9 +344,12 @@ sc_probe_gl(int verbose)
   }
 
   if ( (minor >= 1) || strstr(exts, "GL_ARB_vertex_array ") ) {
-    // vertex arrays are available in OpenGL 1.1 and up
+    // Vertex arrays are available in OpenGL 1.1 and up.
+    // It is currently the preferred rendering loop.
+    GL.SUGGEST_VERTEXARRAYS = TRUE;
     GL.HAVE_VERTEXARRAYS = TRUE;
   } else {
+    GL.HAVE_VERTEXARRAYS = FALSE;
     GL.SUGGEST_VERTEXARRAYS = FALSE;
   }
 
@@ -438,7 +417,7 @@ sc_probe_gl(int verbose)
     // multi-texturing + vertex-arrays
     GL_PROC_SEARCH(ptr, glClientActiveTexture);
     if ( verbose ) printf("PROBE: glClientActiveTexture = %p\n", ptr);
-    assert(ptr);
+    // assert(ptr);
     sc_set_glClientActiveTexture(ptr);
     if ( verbose ) printf("PROBE: installed multi-texturing support\n");
   }
@@ -538,9 +517,10 @@ sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, i
   info->wrapt = wrapt;
   info->quality = q;
 
-  assert(GL.glBindTexture);
+  assert(GL.glGenTextures);
 
   GL.glGenTextures(1, &info->id);
+
   return info;
 }
 
@@ -550,6 +530,7 @@ sc_default_texture_activate(RenderState * state, void * handle)
   texture_info * info = (texture_info *) handle;
   assert(info != NULL);
   
+  assert(GL.glBindTexture);
   assert(GL.glTexImage2D);
 
   GL.glBindTexture(GL_TEXTURE_2D, info->id);
@@ -561,9 +542,6 @@ sc_default_texture_activate(RenderState * state, void * handle)
   // with the terrain blocks already.  However, for sattelite view
   // of the top block, it would definitely be a good idea.
   // 20031123 larsa
-
-  // This will be needed when the texture has higher resolution than
-  // the terrain. pederb, 2003-12-04
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 #else
@@ -1849,7 +1827,6 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   sc_render_pre_cb(closure, info);
 
   assert(info);
-  assert(GL.glClientActiveTexture != NULL);
   assert(GL.glEnableClientState != NULL);
   assert(GL.glDisableClientState != NULL);
   assert(GL.glVertexPointer != NULL);
@@ -1872,23 +1849,23 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
     GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
     GL.glEnableClientState(GL_NORMAL_ARRAY);
 
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture2);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture1);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture2);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
 
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture1);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
@@ -1944,19 +1921,19 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   } else if ( normals ) {
     // elevation, normals and textures
     GL.glDisableClientState(GL_NORMAL_ARRAY);
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
 
@@ -1987,7 +1964,6 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // sure the last blocks are actually rendered.
 
   assert(info);
-  assert(GL.glClientActiveTexture != NULL);
   assert(GL.glEnableClientState != NULL);
   assert(GL.glDisableClientState != NULL);
   assert(GL.glVertexPointer != NULL);
@@ -2060,27 +2036,27 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
     GL.glEnableClientState(GL_NORMAL_ARRAY);
 
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
     assert((vertexarray->getLength() / 3) == (texcoord1array->getLength() / 2));
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
 
     assert((vertexarray->getLength() / 3) == (texcoord1array->getLength() / 2));
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
@@ -2119,19 +2095,19 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   } else if ( normals ) {
     // elevation, normals and textures
     GL.glDisableClientState(GL_NORMAL_ARRAY);
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( renderstate->etexscale != 0.0f ) {
+    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
 
