@@ -8147,6 +8147,17 @@ true)
 ], [
       sim_ac_have_libscenery=true])
   fi
+  if test x"$sim_ac_have_libscenery" = x"false"; then
+    # maybe with our special Guile156
+    sim_ac_libscenery_libs="${sim_ac_libscenery_libs}156"
+    LIBS="$sim_ac_libscenery_libs $sim_ac_libscenery_save_LIBS"
+    AC_TRY_LINK([
+#include <sim/scenery/scenery.h>
+], [
+      ss_initialize();
+], [
+      sim_ac_have_libscenery=true])
+  fi
 
   CPPFLAGS=$sim_ac_libscenery_save_CPPFLAGS
   LDFLAGS=$sim_ac_libscenery_save_LDFLAGS
