@@ -279,7 +279,7 @@ SbBool SoSoundP::startPlaying(SbBool force)
   return TRUE;
 };
 
-int SoSound::fillBuffers()
+int SoSoundP::fillBuffers()
 {
 
 	ALint			processed;
@@ -349,9 +349,9 @@ int SoSound::fillBuffers()
 };
 
 void
-SoSound::timercb(void * data, SoSensor * s)
+SoSoundP::timercb(void * data, SoSensor * s)
 {
-  SoSound * thisp = (SoSound*) data;
+  SoSoundP * thisp = (SoSoundP*) data;
   thisp->fillBuffers();
 /*
   // used only when isStreaming and not in asyncStreamingMode
@@ -449,19 +449,19 @@ void SoSound::audioRender(SoAudioRenderAction *action)
   if (now<start)
   {
     // we shouldn't be playing now
-    stopPlaying();
+    THIS->stopPlaying();
     return; 
   }
 
   if (now>=stop)
   {
-    stopPlaying();
+    THIS->stopPlaying();
     return;
   }
 
   // If we got this far, then  ( start <= now < stop ) and we should be playing
 
-  startPlaying(); // if we're not playing, playing will start
+  THIS->startPlaying(); // if we're not playing, playing will start
 
   // audio source is now playing, update OpenAL parameters
  
@@ -479,7 +479,7 @@ void SoSound::audioRender(SoAudioRenderAction *action)
   SbVec3f2ALfloat3(alfloat3, worldpos);
 
 	// Position ...
-	alSourcefv(this->sourceId, AL_POSITION, alfloat3);
+	alSourcefv(THIS->sourceId, AL_POSITION, alfloat3);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
@@ -504,11 +504,11 @@ void SoSound::audioRender(SoAudioRenderAction *action)
 */
 
   // Gain / intensity
-	alSourcef(this->sourceId,AL_GAIN, this->intensity.getValue());
+	alSourcef(THIS->sourceId,AL_GAIN, this->intensity.getValue());
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundBuffer::xxx",
+		SoDebugError::postWarning("SoSound::audioRender",
                               "alSourcef(,AL_GAIN,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
@@ -521,39 +521,47 @@ void SoSound::audioRender(SoAudioRenderAction *action)
 // called when source changes
 //
 void
-SoSound::sourceSensorCB(void * data, SoSensor *)
+SoSoundP::sourceSensorCBWrapper(void * data, SoSensor *)
 {
-  ALint error;
-  SoSound * thisp = (SoSound*) data;
+  SoSoundP * thisp = (SoSoundP*) data;
+  thisp->sourceSensorCB(NULL);
+}
+//
+// called when source changes
+//
+void
+SoSoundP::sourceSensorCB(SoSensor *)
+{
 
 //  printf("SoSound::sourceSensorCB()\n");
+  ALint error;
 
-  if (!thisp->source.getValue())
+  if (!ITHIS->source.getValue())
     return;
 
-  SoAudioClip *audioClip = (SoAudioClip *)thisp->source.getValue();
+  SoAudioClip *audioClip = (SoAudioClip *)ITHIS->source.getValue();
   // FIXME: use RTTI instead, to see what kind of node it is (might be a movietexture node)
   // ... or perhaps OI has a convenience method for just that (SoNode::getNodeId ??)
 
-  if (audioClip == thisp->currentAudioClip)
+  if (audioClip == this->currentAudioClip)
     return; 
     // for some obscure reason, the sensor was called, even though the field haven't changed .....
     // FIXME: ask mortene about this --^
 
-  thisp->currentAudioClip = audioClip;
+  this->currentAudioClip = audioClip;
 
-  if (thisp->isStreaming)
+  if (this->isStreaming)
   { 
-    if (thisp->audioBuffer != NULL)
-      delete[] thisp->audioBuffer;
-    SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)thisp->currentAudioClip;
-    thisp->audioBuffer = new short int[audioClipStreaming->getBufferSize()];
+    if (this->audioBuffer != NULL)
+      delete[] this->audioBuffer;
+    SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
+    this->audioBuffer = new short int[audioClipStreaming->getBufferSize()];
   };
 
   // FIXME: should probably sync with streaming thread (if we're doing async streaming)
   // especially important for the buffer...
 
-  alSourceStop(thisp->sourceId);
+  alSourceStop(this->sourceId);
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
@@ -562,49 +570,49 @@ SoSound::sourceSensorCB(void * data, SoSensor *)
                               GetALErrorString(errstr, error));
   }
 
-	alSourcef(thisp->sourceId,AL_PITCH, audioClip->pitch.getValue());
+	alSourcef(this->sourceId,AL_PITCH, audioClip->pitch.getValue());
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundBuffer::xxx",
+		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                               "alSourcef(,AL_PITCH,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
   }
 
-	alSourcef(thisp->sourceId,AL_GAIN, thisp->intensity.getValue());
+	alSourcef(this->sourceId,AL_GAIN, ITHIS->intensity.getValue());
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundBuffer::xxx",
+		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                               "alSourcef(,AL_GAIN,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
   }
 
-  if (thisp->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()))
+  if (ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()))
   {
 
   }
   else
   {
 
-	  alSourcei(thisp->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
+	  alSourcei(this->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];
-		  SoDebugError::postWarning("SoSound::sourceSensorCB",
+		  SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                                 "alSourcei(,AL_BUFFER,) failed. %s",
                                 GetALErrorString(errstr, error));
       return;
     }
   };
 
-	alSourcei(thisp->sourceId,AL_LOOPING, audioClip->loop.getValue());
+	alSourcei(this->sourceId,AL_LOOPING, audioClip->loop.getValue());
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundBuffer::xxx",
+		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
                               "alSourcei(,AL_LOOPING,) failed. %s",
                               GetALErrorString(errstr, error));
     return;

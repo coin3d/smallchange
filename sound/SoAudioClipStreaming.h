@@ -24,6 +24,7 @@ protected:
 protected:
   class SoAudioClipStreamingP *soaudioclipstreaming_impl;
   friend class SoAudioClipStreamingP;
+  friend class SoSoundP;
 };
 
 #endif // COIN_SOAUDIOCLIPSTREAMING_H

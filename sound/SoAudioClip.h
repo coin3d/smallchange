@@ -36,7 +36,7 @@ protected:
 protected:
 	class SoAudioClipP *soaudioclip_impl;
 	friend class SoAudioClipP;
-
+  friend class SoSoundP;
 };
 
 #endif // COIN_SOAUDIOCLIP_H
