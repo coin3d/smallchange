@@ -50,14 +50,22 @@ struct RenderState {
   float etexscale;
   float etexoffset;
 
-  // internal state data
+  // internal vertex array state data
   int vertexcount;
+
+  // post-block loop
   void * varray;
   void * narray;
   void * t1array;
   void * t2array;
   void * idxarray;
   void * lenarray;
+
+  // interleaved
+  float vertices[10*3];
+  unsigned char normals[10*3];
+  float texture1[10*2];
+  float texture2[10*2];
 
   // temporary
   unsigned int currtexid;
