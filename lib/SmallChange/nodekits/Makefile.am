@@ -15,7 +15,8 @@ SOURCES = \
 	GeoMarkerKit.cpp SmGeoMarkerKit.h \
 	NormalsKit.cpp SmNormalsKit.h \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
-	SmAxisKit.cpp SmAxisKit.h
+	SmAxisKit.cpp SmAxisKit.h \
+	PopupMenuKit.cpp SmPopupMenuKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
@@ -31,7 +32,8 @@ libnodekitsinc_HEADERS = \
 	SmGeoMarkerKit.h \
 	SmNormalsKit.h \
 	SmAxisDisplayKit.h \
-	SmAxisKit.h
+	SmAxisKit.h \
+	SmPopupMenuKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
