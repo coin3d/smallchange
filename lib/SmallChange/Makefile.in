@@ -478,16 +478,17 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
 
 # **************************************************************************
 
-install-exec-local:
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
-	for ext in dll pdb; do \
-	  file="$$basename.$$ext"; \
-	  if test -s "$$file"; then \
-	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
-	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
-	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
-	  fi \
-	done
+@BUILD_WITH_MSVC_TRUE@install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
+@BUILD_WITH_MSVC_TRUE@	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+@BUILD_WITH_MSVC_TRUE@	for ext in dll pdb lib; do \
+@BUILD_WITH_MSVC_TRUE@	  file="$$basename.$$ext"; \
+@BUILD_WITH_MSVC_TRUE@	  if test -s "$$file"; then \
+@BUILD_WITH_MSVC_TRUE@	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
+@BUILD_WITH_MSVC_TRUE@	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
+@BUILD_WITH_MSVC_TRUE@	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
+@BUILD_WITH_MSVC_TRUE@	  fi \
+@BUILD_WITH_MSVC_TRUE@	done
+@BUILD_WITH_MSVC_FALSE@install-exec-local:
 
 install-data-local:
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
