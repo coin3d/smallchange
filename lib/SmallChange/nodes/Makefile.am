@@ -33,7 +33,8 @@ SOURCES = \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
-	ColorGradient.cpp SmColorGradient.h
+	ColorGradient.cpp SmColorGradient.h \
+	SmCoordinateSystem.cpp SmCoordinateSystem.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
@@ -66,7 +67,8 @@ libnodesinc_HEADERS = \
 	SmBillboardClipPlane.h \
 	SmHeadlight.h \
 	SmVertexArrayShape.h \
-	SmColorGradient.h
+	SmColorGradient.h \
+	SmCoordinateSystem.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -195,7 +195,8 @@ SOURCES = \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
-	ColorGradient.cpp SmColorGradient.h
+	ColorGradient.cpp SmColorGradient.h \
+	SmCoordinateSystem.cpp SmCoordinateSystem.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -229,7 +230,8 @@ libnodesinc_HEADERS = \
 	SmBillboardClipPlane.h \
 	SmHeadlight.h \
 	SmVertexArrayShape.h \
-	SmColorGradient.h
+	SmColorGradient.h \
+	SmCoordinateSystem.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -252,7 +254,8 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
 	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
 	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT) \
-	VertexArrayShape.$(OBJEXT) ColorGradient.$(OBJEXT)
+	VertexArrayShape.$(OBJEXT) ColorGradient.$(OBJEXT) \
+	SmCoordinateSystem.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -266,7 +269,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
 	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
 	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo \
-	VertexArrayShape.lo ColorGradient.lo
+	VertexArrayShape.lo ColorGradient.lo SmCoordinateSystem.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -293,6 +296,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmCoordinateSystem.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmCoordinateSystem.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Plo \
@@ -365,7 +370,8 @@ SOURCES = \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
-	ColorGradient.cpp SmColorGradient.h
+	ColorGradient.cpp SmColorGradient.h \
+	SmCoordinateSystem.cpp SmCoordinateSystem.h
 
 
 all: all-am
@@ -424,6 +430,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmBillboardClipPlane.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmBillboardClipPlane.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCoordinateSystem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCoordinateSystem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Plo@am__quote@
