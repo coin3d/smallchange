@@ -59,7 +59,6 @@ public:
     SmScenery * scenery = NULL;
     if ( saction->getPath() ) {
       scenery = (SmScenery *) saction->getPath()->getTail();
-      cbaction->reset();
       cbaction->setViewportRegion(this->getViewportRegion());
       cbaction->apply(this->getSceneManager()->getSceneGraph());
       scenery->preFrame();
@@ -79,43 +78,60 @@ public:
       SmScenery * scenery = NULL;
       if ( saction->getPath() ) {
         scenery = (SmScenery *) saction->getPath()->getTail();
+        SbBool info = FALSE;
+        SbBool retval = FALSE;
         if ( SO_KEY_PRESS_EVENT(ev, E) ) {
           if ( scenery->elevationLines.getValue() ) {
             scenery->elevationLines.setValue(FALSE);
           }
           else {
             scenery->elevationLines.setValue(TRUE);
+            info = TRUE;
           }
-        }
-        else if ( SO_KEY_RELEASE_EVENT(ev, E) ) {
+          retval = TRUE;
         }
         else if ( SO_KEY_PRESS_EVENT(ev, A) ) {
           scenery->elevationLineOffset =
             scenery->elevationLineOffset.getValue() + 10.0f;
-          SoDebugError::postInfo("", "offset: %g\n", scenery->elevationLineOffset.getValue());
-        }
-        else if ( SO_KEY_RELEASE_EVENT(ev, A) ) {
+          info = TRUE;
+          retval = TRUE;
         }
         else if ( SO_KEY_PRESS_EVENT(ev, Z) ) {
           scenery->elevationLineOffset =
             scenery->elevationLineOffset.getValue() - 10.0f;
-          SoDebugError::postInfo("", "offset: %g\n", scenery->elevationLineOffset.getValue());
-        }
-        else if ( SO_KEY_RELEASE_EVENT(ev, Z) ) {
+          info = TRUE;
+          retval = TRUE;
         }
         else if ( SO_KEY_PRESS_EVENT(ev, S) ) {
           scenery->elevationLineDistance =
             scenery->elevationLineDistance.getValue() * 2.0f;
-          SoDebugError::postInfo("", "distance: %g\n", scenery->elevationLineDistance.getValue());
-        }
-        else if ( SO_KEY_RELEASE_EVENT(ev, S) ) {
+          info = TRUE;
+          retval = TRUE;
         }
         else if ( SO_KEY_PRESS_EVENT(ev, X) ) {
           scenery->elevationLineDistance =
             scenery->elevationLineDistance.getValue() / 2.0f;
-          SoDebugError::postInfo("", "distance: %g\n", scenery->elevationLineDistance.getValue());
+          info = TRUE;
+          retval = TRUE;
         }
-        else if ( SO_KEY_RELEASE_EVENT(ev, X) ) {
+        if ( (info == TRUE) && !scenery->elevationLines.getValue() ) {
+          info = FALSE;
+          retval = TRUE;
+        }
+        else if ( SO_KEY_RELEASE_EVENT(ev, E) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, A) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, Z) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, S) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, X) ) { retval = TRUE; }
+        if ( info ) {
+          printf("line distance : %g\n", scenery->elevationLineDistance.getValue());
+          printf("line offset   : %g\n", scenery->elevationLineOffset.getValue());
+          if ( scenery->elevationLineEmphasis.getValue() > 1 ) {
+            printf("emphasis every %d. line\n", scenery->elevationLineEmphasis.getValue());
+          }
+        }
+        if ( retval ) {
+          return retval;
         }
       }
     }
