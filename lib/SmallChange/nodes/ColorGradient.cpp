@@ -51,6 +51,7 @@ SmColorGradient::SmColorGradient(void)
   SO_NODE_ADD_FIELD(color, (1.0f, 1.0f, 1.0f));
   SO_NODE_ADD_FIELD(parameter, (0.0f));
   SO_NODE_ADD_FIELD(filename, (""));
+  SO_NODE_ADD_FIELD(on, (TRUE));
   
   SO_NODE_DEFINE_ENUM_VALUE(Mapping, RELATIVE);
   SO_NODE_DEFINE_ENUM_VALUE(Mapping, ABSOLUTE);
@@ -91,6 +92,8 @@ SmColorGradient::initClass(void)
 void
 SmColorGradient::doAction(SoAction * action)
 {
+  if (!this->on.getValue()) return;
+
   SoState * state = action->getState();
   
   int numparams = this->parameter.getNum();

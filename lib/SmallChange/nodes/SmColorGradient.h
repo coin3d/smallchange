@@ -25,6 +25,7 @@
 \**************************************************************************/
 
 #include <Inventor/fields/SoSFEnum.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoMFFloat.h>
 #include <Inventor/fields/SoMFColor.h>
 #include <Inventor/nodes/SoSubNode.h>
@@ -49,6 +50,7 @@ public:
     ABSOLUTE = SmColorGradientElement::ABSOLUTE
   };
   
+  SoSFBool on;
   SoSFEnum mapping;
   SoMFColor color;
   SoMFFloat parameter;
