@@ -26,10 +26,10 @@
 
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoMFFloat.h>
-#include <Inventor/fields/SoMFInt32.h>
-#include <Inventor/fields/SoMFString.h>
-#include <Inventor/fields/SoMFColor.h>
-#include <Inventor/fields/SoMFVec2f.h>
+#include <Inventor/fields/SoSFInt32.h>
+#include <Inventor/fields/SoSFString.h>
+#include <Inventor/fields/SoSFColor.h>
+#include <Inventor/fields/SoSFVec2f.h>
 #include <SmallChange/basic.h>
 
 
@@ -44,13 +44,13 @@ public:
   static void initClass(void);
   virtual SbBool affectsState(void) const;
 
-  SoMFVec2f axisRange;
-  SoMFFloat markerInterval;
-  SoMFFloat markerWidth;
-  SoMFFloat textInterval;
-  SoMFInt32 digits;
-  SoMFString axisName;
-  SoMFColor arrowColor;
+  SoSFVec2f axisRange;
+  SoSFFloat markerInterval;
+  SoSFFloat markerWidth;
+  SoSFFloat textInterval;
+  SoSFInt32 digits;
+  SoSFString axisName;
+  SoSFColor arrowColor;
 
 protected:
   virtual ~SmAxisKit();
