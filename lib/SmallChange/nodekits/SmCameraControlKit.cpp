@@ -58,15 +58,14 @@
 #include <Inventor/errors/SoDebugError.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/UTMCamera.h>
+#include <SmallChange/nodes/SmHeadlight.h>
 
 class SmCameraControlKitP {
 public:
   SmCameraControlKitP(SmCameraControlKit * master) : master(master) { }
   
   SmCameraControlKit * master;
-  SoOneShotSensor * cameraupdatesensor;
   SoOneShotSensor * autoclippingsensor;
-  static void camera_update(void * closure, SoSensor * sensor);
   static void autoclip_update(void * closure, SoSensor * sensor);
   
   SbBool viewing;
@@ -110,8 +109,6 @@ SmCameraControlKit::SmCameraControlKit(void)
   PRIVATE(this)->matrixaction = new SoGetMatrixAction(SbViewportRegion(100,100));
 
   PRIVATE(this)->viewing = TRUE;
-  PRIVATE(this)->cameraupdatesensor = 
-    new SoOneShotSensor(SmCameraControlKitP::camera_update, PRIVATE(this));
   PRIVATE(this)->autoclippingsensor = 
     new SoOneShotSensor(SmCameraControlKitP::autoclip_update, PRIVATE(this));
   
@@ -128,23 +125,19 @@ SmCameraControlKit::SmCameraControlKit(void)
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, VARIABLE_NEAR_PLANE);
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, CONSTANT_NEAR_PLANE);
   SO_KIT_SET_SF_ENUM_TYPE(autoClippingStrategy, AutoClippingStrategy);
- 
+  
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ABSTRACT_ENTRY(camera, SoCamera, SoPerspectiveCamera, FALSE, topSeparator, headlightSwitch, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightSwitch, SoSwitch, FALSE, topSeparator, scene, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightDummy, SoInfo, FALSE, headlightSwitch, headlightNode, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SoDirectionalLight, FALSE, headlightSwitch, "", TRUE);
+  SO_KIT_ADD_CATALOG_ABSTRACT_ENTRY(camera, SoCamera, SoPerspectiveCamera, FALSE, topSeparator, headlightNode, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SmHeadlight, FALSE, topSeparator, scene, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(scene, SoSeparator, TRUE, topSeparator, "", TRUE);
 
   SO_KIT_INIT_INSTANCE();
 
   this->eventHandler = new SmExaminerEventHandler;
   this->eventHandler.setDefault(TRUE);
-  
-  SoSwitch * sw = (SoSwitch*) this->getAnyPart("headlightSwitch", TRUE);
-  sw->whichChild.connectFrom(&this->headlight);
-  
-  SmCameraControlKitP::camera_update(PRIVATE(this), NULL);
+
+  SmHeadlight * hl = (SmHeadlight*) this->getAnyPart("headlightNode", TRUE);
+  hl->on.connectFrom(&this->headlight);
 }
 
 /*!
@@ -156,7 +149,6 @@ SmCameraControlKit::~SmCameraControlKit(void)
   delete PRIVATE(this)->autoclipbboxaction;
   delete PRIVATE(this)->searchaction;
   delete PRIVATE(this)->matrixaction;
-  delete PRIVATE(this)->cameraupdatesensor;
   delete PRIVATE(this)->autoclippingsensor;
   delete PRIVATE(this);
 }
@@ -285,7 +277,6 @@ SmCameraControlKit::notify(SoNotList * list)
 {
   SoField * f = list->getLastField();
   if (f == &this->camera) {
-    PRIVATE(this)->cameraupdatesensor->schedule();
     PRIVATE(this)->autoclippingsensor->schedule();
   }
   else if (f == &this->scene) {
@@ -599,20 +590,6 @@ SmCameraControlKit::resetCameraRoll(void)
 
 #undef PRIVATE
 #define PUBLIC(obj) (obj)->master
-
-void 
-SmCameraControlKitP::camera_update(void * closure, SoSensor * sensor)
-{
-  SmCameraControlKitP * thisp = (SmCameraControlKitP*) closure;
-  
-  if (PUBLIC(thisp)->headlight.getValue()) {
-    SoCamera * cam = (SoCamera*) PUBLIC(thisp)->getAnyPart("camera", TRUE);
-    SoDirectionalLight * l = (SoDirectionalLight*) PUBLIC(thisp)->getAnyPart("headlightNode", TRUE);
-    SbVec3f dir(0.0f, 0.0f, -1.0f);
-    cam->orientation.getValue().multVec(dir, dir);
-    l->direction = dir;
-  }
-}
 
 void 
 SmCameraControlKitP::autoclip_update(void * closure, SoSensor * sensor)

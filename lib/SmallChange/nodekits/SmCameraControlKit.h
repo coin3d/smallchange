@@ -45,8 +45,6 @@ class SMALLCHANGE_DLL_API SmCameraControlKit : public SoBaseKit {
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(camera);
-  SO_KIT_CATALOG_ENTRY_HEADER(headlightSwitch);
-  SO_KIT_CATALOG_ENTRY_HEADER(headlightDummy);
   SO_KIT_CATALOG_ENTRY_HEADER(headlightNode);
   SO_KIT_CATALOG_ENTRY_HEADER(scene);
   
