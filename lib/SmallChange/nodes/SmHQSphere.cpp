@@ -556,9 +556,9 @@ HQSphereGenerator::convert(object * obj, SbBSPTree & bsp, SbList <int> & idx)
 {
   triangle * t = obj->poly;
   int n = obj->npoly;
-
+  
   for (int i = 0; i < n; i++) {
-    for (int j = 0; j < 3; j++) {
+    for (int j = 2; j >= 0; j--) {
       idx.append(bsp.addPoint(t->pt[j]));
     }
     t++;
