@@ -1,3 +1,11 @@
+2002-09-23  Lars J. Aas  <larsa@sim.no>
+* added SoTweakAction
+* added scene graph item palette (data/SceneGraphItems.png/.fig)
+* vastly improved test-code/iv2scenegraph.cpp
+
+2002-09-11  Lars J. Aas  <larsa@sim.no>
+* added SoGenerateSceneGraphAction
+
 2002-02-06  Lars J. Aas  <larsa@sim.no>
 * added nodes Switchboard and SwitchboardOperator
 * added demo model SwitchboardOperator.iv
