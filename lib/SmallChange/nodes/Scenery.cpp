@@ -682,7 +682,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
   sc_set_glglue_instance(gl);
 
   if ( (PRIVATE(this)->renderstate.etexscale != 0.0f) &&
-       (PRIVATE(this)->elevationlinesimage != NULL) ) {
+       (PRIVATE(this)->elevationlinesimage != NULL) &&
+       cc_glglue_has_multitexture(gl) ) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     glEnable(GL_TEXTURE_2D);
     PRIVATE(this)->elevationlinesimage->getGLDisplayList(state)->call(state);
@@ -691,7 +692,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   sc_ssglue_view_render(PRIVATE(this)->system, PRIVATE(this)->viewid);
 
-  if ( PRIVATE(this)->renderstate.etexscale != 0.0f ) {
+  if ( PRIVATE(this)->renderstate.etexscale != 0.0f &&
+       cc_glglue_has_multitexture(gl) ) {
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
     glDisable(GL_TEXTURE_2D);
@@ -1149,7 +1151,7 @@ SceneryP::elevationlinessensor_cb(void * closure, SoSensor * sensor)
 void
 SceneryP::colormaptexchange(void)
 {
-  if ( this->colormaptexid != -1 ) {
+    if ( this->colormaptexid != -1 ) {
     PUBLIC(this)->refreshTextures(this->colormaptexid);
   }
 }
