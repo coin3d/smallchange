@@ -265,6 +265,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
   SbBox3f box;
   SbVec3f center;
   this->computeBBox(action, box, center);
+
   if (!SoCullElement::cullTest(state, box, SbBool(TRUE))) {
     SoMaterialBundle mb(action);
     mb.sendFirst();
@@ -284,13 +285,21 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
     // Find number of strings to render
     const unsigned int stringcnt = this->string.getNum();
-    // FIXME: this is not good, just asserting. Should warn, then use
-    // default values for too short arrays. 20031215 mortene.
-    assert(stringcnt == (unsigned int)this->position.getNum());
+   
+    // FIXME: Is this warning enough? Or should there be a warning at
+    // all? (20040206 handegar)
+    if (stringcnt > (unsigned int)this->position.getNum())
+      SoDebugError::postWarning("SoText2Set::GLRender", "Position not specfied for all the strings.");
+
 
     for (unsigned int i = 0; i < stringcnt; i++) {
 
-      SbVec3f nilpoint = this->position[i];
+      SbVec3f nilpoint;
+      if (i < (unsigned int)this->position.getNum())
+        nilpoint = this->position[i];
+      else
+        nilpoint = SbVec3f(0 ,0, 0); // Default position
+
       // transform to world coordinate system
       mat.multVecMatrix(nilpoint, nilpoint);
 
@@ -304,6 +313,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       // left-side and top borders of the rendering canvas.
       //
       // 20031222 mortene.
+      
 #if 1
       // Frustum cull each string, checking just its position point.
       const SbBox3f stringbbox(nilpoint, nilpoint);
@@ -424,7 +434,7 @@ SoText2Set::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
   for (unsigned int i = 0; i < (unsigned int)this->string.getNum(); i++) {
     box.extendBy(PRIVATE(this)->stringBBox(action->getState(), i));
   }
-  center = box.getCenter();
+  center = box.getCenter(); 
 }
 
 SbBox3f
@@ -632,11 +642,14 @@ void
 SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
                      SbVec3f & v2, SbVec3f & v3, unsigned int stringidx)
 {
-  assert(stringidx < (unsigned int)PUBLIC(this)->position.getNum());
 
   this->buildGlyphCache(state);
 
-  SbVec3f nilpoint = PUBLIC(this)->position[stringidx];
+  SbVec3f nilpoint;
+  if (stringidx >= (unsigned int)PUBLIC(this)->position.getNum())
+    nilpoint = SbVec3f(0.0f, 0.0f, 0.0f); // Default position
+  else
+    nilpoint = PUBLIC(this)->position[stringidx];
 
   const SbMatrix & mat = SoModelMatrixElement::get(state);
   mat.multVecMatrix(nilpoint, nilpoint);
@@ -649,53 +662,42 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   SbVec2s vpsize = vp.getViewportSizePixels();
 
-  SbVec2f n0, n1, n2, n3, center;
+  SbVec2f n0, n1, n2, n3;
   short xmin, ymin, xmax, ymax;
-  float minx, miny, maxx, maxy;
   this->bboxes[stringidx].getBounds(xmin, ymin, xmax, ymax);
-  center = SbVec2f((float)(-xmin+xmax) / 2.0f, (float)(-ymin+ymax) / 2.0f);
-
-  minx = ((float) xmin) / vpsize[0];
-  miny = ((float) ymin) / vpsize[1];
-  maxx = ((float) xmax) / vpsize[0];
-  maxy = ((float) ymax) / vpsize[1];
-
-  n0 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + minx, (screenpoint[1] - (center[1]/vpsize[1])) + miny);
-  n1 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + maxx, (screenpoint[1] - (center[1]/vpsize[1])) + miny);
-  n2 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + maxx, (screenpoint[1] - (center[1]/vpsize[1])) + maxy);
-  n3 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + minx, (screenpoint[1] - (center[1]/vpsize[1])) + maxy);
-
-  float halfw = (maxx - minx) / (float)2.0;
-  float halfh = (maxy - miny) / (float)2.0;
-
+    
+  SbVec2f sp((float) screenpoint[0], (float) screenpoint[1]);  
+  n0 = SbVec2f(sp[0] + ((float) xmin)/float(vpsize[0]),
+               sp[1] + ((float) ymax)/float(vpsize[1]));
+  n1 = SbVec2f(sp[0] + ((float) xmax)/float(vpsize[0]), 
+               sp[1] + ((float) ymax)/float(vpsize[1]));
+  n2 = SbVec2f(sp[0] + ((float) xmax)/float(vpsize[0]), 
+               sp[1] + ((float) ymin)/float(vpsize[1]));
+  n3 = SbVec2f(sp[0] + ((float) xmin)/float(vpsize[0]), 
+               sp[1] + ((float) ymin)/float(vpsize[1]));
+  
+  float w = n1[0]-n0[0];
+  float halfw = w*0.5f;
   switch (this->getJustification(stringidx)) {
   case SoText2Set::LEFT:
-    n0[0] += halfw;
-    n1[0] += halfw;
-    n2[0] += halfw;
-    n3[0] += halfw;
-    n0[1] += halfh;
-    n1[1] += halfh;
-    n2[1] += halfh;
-    n3[1] += halfh;
     break;
   case SoText2Set::RIGHT:
+    n0[0] -= w;
+    n1[0] -= w;
+    n2[0] -= w;
+    n3[0] -= w;
+    break;
+  case SoText2Set::CENTER:
     n0[0] -= halfw;
     n1[0] -= halfw;
     n2[0] -= halfw;
     n3[0] -= halfw;
-    n0[1] += halfh;
-    n1[1] += halfh;
-    n2[1] += halfh;
-    n3[1] += halfh;
-   break;
-  case SoText2Set::CENTER:
     break;
   default:
     assert(0 && "unknown alignment");
     break;
   }
-
+  
   // get distance from nilpoint to camera plane
   float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
 
@@ -711,6 +713,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   inv.multVecMatrix(v1, v1);
   inv.multVecMatrix(v2, v2);
   inv.multVecMatrix(v3, v3);
+
 }
 
 // Debug convenience method.
@@ -820,11 +823,8 @@ SoText2SetP::buildGlyphCache(SoState * state)
         if (outline) advance[0] += 1;
 
         SbVec2s kerning;
-
-        if (j > 0)
-          kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
-        else
-          kerning = SbVec2s(0,0);
+        if (j > 0) kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
+        else kerning = SbVec2s(0,0);
 
         this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
 
