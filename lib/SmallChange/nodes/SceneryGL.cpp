@@ -608,7 +608,6 @@ sc_probe_gl(sc_msghandler_fp msghandler)
         sprintf(buf, "PROBE: glDrawRangeElements = %p\n", ptr);
         msghandler(buf);
       }
-      assert(ptr);
       sc_set_glDrawRangeElements(ptr);
     } else {
       GL_PROC_SEARCH(ptr, glDrawRangeElements);
