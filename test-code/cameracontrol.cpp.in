@@ -1,6 +1,7 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoDirectionalLight.h>
 #include <Inventor/nodes/SoPerspectiveCamera.h>
+#include <Inventor/actions/SoSearchAction.h>
 
 #include <Inventor/@Gui@/So@Gui@.h>
 #include <Inventor/@Gui@/So@Gui@RenderArea.h>
@@ -40,10 +41,21 @@ main(int argc, char ** argv )
   }
   root->ref();
 
-  SmCameraControlKit * ck = new SmCameraControlKit;
-  ck->ref();
-  ck->setPart("scene", root);
-
+  SmCameraControlKit * ck = NULL;
+  
+  SoSearchAction sa;
+  sa.setType(SmCameraControlKit::getClassTypeId());
+  sa.setInterest(SoSearchAction::FIRST);
+  sa.apply(root);
+  if (sa.getPath()) {
+    ck = (SmCameraControlKit*) sa.getPath()->getTail();
+    ck->ref();
+  }
+  else {
+    ck = new SmCameraControlKit;
+    ck->ref();
+    ck->setPart("scene", root);
+  }
   if (argc >= 3) {
     if (strcmp(argv[2], "helicopter") == 0) {
       SmHelicopterEventHandler *helihandler;
