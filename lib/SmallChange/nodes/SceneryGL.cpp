@@ -561,6 +561,9 @@ sc_default_texture_activate(RenderState * state, void * handle)
   // with the terrain blocks already.  However, for sattelite view
   // of the top block, it would definitely be a good idea.
   // 20031123 larsa
+
+  // This will be needed when the texture has higher resolution than
+  // the terrain. pederb, 2003-12-04
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 #else
