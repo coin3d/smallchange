@@ -722,6 +722,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->renderstate.state = action->getState();
   PRIVATE(this)->renderstate.action = action;
 
+  sc_init_debug_info(&PRIVATE(this)->renderstate);
+
   PRIVATE(this)->currhotspot = campos;
   PRIVATE(this)->curraction = action;
   PRIVATE(this)->currstate = state;
@@ -804,7 +806,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
     campos[0] = (campos[0] / PRIVATE(this)->renderstate.bbmax[0]) - 0.5f;
     campos[1] = (campos[1] / PRIVATE(this)->renderstate.bbmax[1]) - 0.5f;
     state->push();
-    // sc_display_debug_info(&campos[0], &vpsize[0], &PRIVATE(this)->debuglist);
+    sc_display_debug_info(&PRIVATE(this)->renderstate, &campos[0], &vpsize[0]);
     state->pop();
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
   }
@@ -1390,6 +1392,7 @@ SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double 
 {
   assert(closure);
   RenderState * renderstate = (RenderState *) closure;
+  assert(renderstate->action && renderstate->state);
 
   SoAction * action = renderstate->action;
   assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
@@ -1400,10 +1403,10 @@ SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double 
 
   // just checking existing cull-bits - which is why the state is
   // pushed and popped all the time
-  if (SoCullElement::completelyInside(state)) { return TRUE; }
+  if ( SoCullElement::completelyInside(state) ) { return TRUE; }
 
   SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
-  if (!SoCullElement::cullBox(state, box, TRUE)) { return TRUE; }
+  if ( !SoCullElement::cullBox(state, box, TRUE) ) { return TRUE; }
 
   return FALSE;
 }
