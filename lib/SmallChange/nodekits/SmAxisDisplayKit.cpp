@@ -46,6 +46,7 @@
 #include <Inventor/nodes/SoPerspectiveCamera.h>
 #include <Inventor/nodes/SoCallback.h>
 #include <Inventor/nodes/SoLightModel.h>
+#include <Inventor/nodes/SoText2.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
@@ -314,6 +315,22 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
       axissep->addChild(conesep);
     }
 
+    SbString annot;
+    if (PUBLIC(thisp)->annotations.getNum() > i)
+      annot = PUBLIC(thisp)->annotations[i];
+    if (annot.getLength() > 0) {
+      SoSeparator *annotsep = new SoSeparator;
+      SoTranslation *trans = new SoTranslation;
+      SoText2 *text = new SoText2;
+
+      trans->translation.setValue(0.0f, 1.25f, 0.0f);
+      text->string.setValue(annot);
+      
+      annotsep->addChild(trans);
+      annotsep->addChild(text);
+      axissep->addChild(annotsep);
+    }
+
     axessep->addChild(axissep);
   }
 
@@ -343,6 +360,6 @@ SmAxisDisplayKitP::callback_cb(void * userdata, SoAction * action)
     SbRotation rot = PUBLIC(thisp)->orientation.getValue();
     SbVec3f dir;
     rot.multVec(SbVec3f(0.0f, 0.0f, 1.0f), dir);
-    camera->position.setValue(6.0f*dir); // Just a good guess
+    camera->position.setValue(7.0f*dir); // Just a good guess
   }
 }

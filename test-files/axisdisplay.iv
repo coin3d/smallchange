@@ -8,5 +8,6 @@ Separator {
     axes [1 0 0, 0 1 0, 0 0 1]
     colors [1 0 0, 0 1 0, 0 0 1]
     enableArrows [TRUE, FALSE, FALSE]
+    annotations ["X", "Y", "Z"]
   }
 }
