@@ -94,6 +94,7 @@ public:
   float getLoadRottger(void) const;
 
   SbVec3f getRenderCoordinateOffset(void) const;
+  SbVec2f getElevationRange(void) const;
 
   void set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closure);
 

@@ -990,6 +990,12 @@ SmScenery::getRenderCoordinateOffset(void) const
   return SbVec3f(origo[0], origo[1], origo[2]);
 }
 
+SbVec2f
+SmScenery::getElevationRange(void) const
+{
+  return SbVec2f(PRIVATE(this)->renderstate.bbmin[2], PRIVATE(this)->renderstate.bbmax[2]);
+}
+
 void 
 SmScenery::refreshTextures(const int id)
 {
