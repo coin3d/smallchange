@@ -153,9 +153,13 @@ UTMPosition::doAction(SoAction * action)
                                  SoModelMatrixElement::get(state).inverse());
     }
     else {
-      SoModelMatrixElement::mult(state, 
-                                 this, 
-                                 SoModelMatrixElement::get(state).inverse());
+      // disabled, yields bad floating point precision
+      // SoModelMatrixElement::mult(state, 
+      //                            this, 
+      //                            SoModelMatrixElement::get(state).inverse());
+
+      // use makeIdentity instead
+      SoModelMatrixElement::makeIdentity(state, this);
     }
   }
   SoModelMatrixElement::translateBy(action->getState(), this, trans);
