@@ -597,6 +597,7 @@ SmPopupMenuKit::setNormalizedPosition(const SbVec2f & npt)
     j[1] += fof[1];
 
     t->translation = SbVec3f(npt[0], npt[1], 0.0f) + j;
+
     this->updateBackground();  
     
     // check if parts of the menu is outside the window
@@ -694,9 +695,6 @@ SmPopupMenuKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion 
     j[0] += fof[0];
     j[1] += fof[1];
     t->translation = npt + j;    
-
-    // calculate again to account for offset and justification
-    this->updateBackground();
 
     this->isActive = TRUE;
   }
@@ -906,6 +904,38 @@ SmPopupMenuKitP::buildTextScenegraph()
   SoSeparator * titlesep = (SoSeparator *) PUBLIC(this)->getAnyPart("titleSeparator", TRUE);
   titlesep->removeAllChildren();
 
+  // Add a menu title
+  if (PUBLIC(this)->menuTitle.getValue().getLength() != 0) {
+    SoSeparator * textsep = new SoSeparator;
+
+    SoFont * menufont = (SoFont *) PUBLIC(this)->getAnyPart("textFont", TRUE);
+    SoFont * titlefont = new SoFont;
+    titlefont->size.setValue(menufont->size.getValue());
+    titlefont->name.setValue("Verdana:Bold:Italic");
+
+    SoTranslation * trans = new SoTranslation;
+    trans->translation.setValue(0, spacing, 0); 
+
+    SoBaseColor * graycolor = new SoBaseColor;
+    graycolor->rgb.setValue(0.2f, 0.2f, 0.2f);
+    SoText2 * title = new SoText2;
+    title->string = PUBLIC(this)->menuTitle.getValue();
+    textsep->addChild(trans);
+    textsep->addChild(titlefont);
+    textsep->addChild(graycolor);
+    textsep->addChild(title);
+
+    SoBaseColor * whitecolor = new SoBaseColor;
+    whitecolor->rgb.setValue(1.0f, 1.0f, 1.0f);
+    SoTranslation * pixelshift = new SoTranslation;
+    pixelshift->translation.setValue(-1.0f/pixelsize[0], 1.0f/pixelsize[1], 0);
+    textsep->addChild(pixelshift);
+    textsep->addChild(whitecolor);
+    textsep->addChild(title);
+    titlesep->addChild(textsep);
+  }
+
+
   // Calculate boundingbox for the menu
   SoPath * p = new SoPath(PUBLIC(this)->topSeparator.getValue());
   p->ref();
@@ -963,38 +993,8 @@ SmPopupMenuKitP::buildTextScenegraph()
     submenuitemlist.truncate(0);    
   }
     
-  // Add a menu title
-  if (PUBLIC(this)->menuTitle.getValue().getLength() != 0) {
-    SoSeparator * textsep = new SoSeparator;
 
-    SoFont * menufont = (SoFont *) PUBLIC(this)->getAnyPart("textFont", TRUE);
-    SoFont * titlefont = new SoFont;
-    titlefont->size.setValue(menufont->size.getValue());
-    titlefont->name.setValue("Verdana:Bold:Italic");
-
-    SoTranslation * trans = new SoTranslation;
-    trans->translation.setValue(0, spacing, 0); 
-
-    SoBaseColor * graycolor = new SoBaseColor;
-    graycolor->rgb.setValue(0.2f, 0.2f, 0.2f);
-    SoText2 * title = new SoText2;
-    title->string = PUBLIC(this)->menuTitle.getValue();
-    textsep->addChild(trans);
-    textsep->addChild(titlefont);
-    textsep->addChild(graycolor);
-    textsep->addChild(title);
-
-    SoBaseColor * whitecolor = new SoBaseColor;
-    whitecolor->rgb.setValue(1.0f, 1.0f, 1.0f);
-    SoTranslation * pixelshift = new SoTranslation;
-    pixelshift->translation.setValue(-1.0f/pixelsize[0], 1.0f/pixelsize[1], 0);
-    textsep->addChild(pixelshift);
-    textsep->addChild(whitecolor);
-    textsep->addChild(title);
-    titlesep->addChild(textsep);
-  }
   
-
 }
 
 void 
@@ -1076,7 +1076,7 @@ SmPopupMenuKit::updateBackground(void)
   varray[5] = SbVec3f(bmax[0]-bw, bmin[1]+bh, 0.0f);
   varray[6] = SbVec3f(bmax[0]-bw, bmax[1]-bh, 0.0f);
   varray[7] = SbVec3f(bmin[0]+bw, bmax[1]-bh, 0.0f);
-  
+ 
   vp->vertex.setValues(0,8,varray);
 
   const int32_t cidx[] = 
