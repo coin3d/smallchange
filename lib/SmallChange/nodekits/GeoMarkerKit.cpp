@@ -111,6 +111,8 @@ GeoMarkerKitP::scene[] = {
   "      diffuseColor 1.0 1.0 0.0\n",
   "    }\n",
   "  }\n",
+  "  SoTexture2 {\n",
+  "  }\n",
   "  RotationXYZ {\n",
   "    axis X\n",
   "    angle 1.67\n",
