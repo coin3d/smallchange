@@ -43,8 +43,11 @@ struct RenderState {
   int numclipplanes;
   float raypos[3], raydir[3];
 
+  // picking
   int intersected;
   float intersection[3];
+  int dataset;
+  ss_render_block_cb_info * blockinfo;
 
   // elevation texture
   float etexscale;
@@ -64,6 +67,7 @@ struct RenderState {
   // interleaved
   float vertices[10*3];
   unsigned char normals[10*3];
+  float fnormals[10*3];
   float texture1[10*2];
   float texture2[10*2];
 
@@ -168,6 +172,7 @@ void sc_va_undefrender_cb(void * closure, const int x, const int y, const int le
 /* raypick callbacks */
 
 void sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info);
+void sc_raypick_post_cb(void * closure, ss_render_block_cb_info * info);
 
 void sc_raypick_cb(void * closure, const int x, const int y, const int len,
                    const unsigned int bitmask);

@@ -343,17 +343,6 @@ sc_probe_gl(int verbose)
     GL.HAVE_MULTITEXTURES = TRUE;
   }
 
-  if ( (minor >= 1) || strstr(exts, "GL_ARB_vertex_array ") ) {
-    // Vertex arrays are available in OpenGL 1.1 and up.
-    // It is currently the preferred rendering loop.
-    GL.SUGGEST_VERTEXARRAYS = TRUE;
-    GL.HAVE_VERTEXARRAYS = TRUE;
-  } else {
-    GL.HAVE_VERTEXARRAYS = FALSE;
-    GL.SUGGEST_VERTEXARRAYS = FALSE;
-  }
-
-
   // normal maps will make rendering with normals instead of textures
   // much nicer (no popping), and will combine better with non-lighted
   // textures.  (to be implemented)
@@ -368,6 +357,16 @@ sc_probe_gl(int verbose)
     if ( verbose ) printf("PROBE: installed hardware occlusion test support\n");
   } else {
     if ( verbose ) printf("PROBE: hardware occlusion test not supported\n");
+  }
+
+  if ( strcmp(vendor, "ATI Technologies Inc.") == 0 ) {
+    GL.HAVE_OCCLUSIONTEST = FALSE;
+    // A case with false positive results for the GL_HP_occlusion_test,
+    // causing nothing to be rendered, was found on an ATI graphics board
+    // (Windows laptop), so we disable occlusion testing for ATI cards
+    // by default (better safe than sorry at this stage), and declare
+    // this feature for working on more or less a version-by-version
+    // case.
   }
 
   if ( (minor >= 2) ||
@@ -425,7 +424,7 @@ sc_probe_gl(int verbose)
     if ( verbose ) printf("PROBE: multi-texturing not supported\n");
   }
 
-  if ( GL.HAVE_VERTEXARRAYS ) {
+  if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glEnableClientState);
     if ( verbose ) printf("PROBE: glEnableClientState = %p\n", ptr);
     assert(ptr);
@@ -472,12 +471,24 @@ sc_probe_gl(int verbose)
       sc_set_glDrawRangeElements(ptr);
     }
 
-    if ( verbose ) printf("PROBE: installed vertex-arrays support\n");
+    if ( GL.glVertexPointer != NULL ) {
+      GL.HAVE_VERTEXARRAYS = TRUE;
+      if ( verbose ) printf("PROBE: installed vertex-arrays support\n");
+    } else {
+      GL.HAVE_VERTEXARRAYS = FALSE;
+      if ( verbose ) printf("PROBE: vertex-arrays should have been supported\n");
+    }
   }
   else {
     if ( verbose ) printf("PROBE: vertex-arrays not supported\n");
+    GL.HAVE_VERTEXARRAYS = FALSE;
   }
     
+  // Vertex arrays are available in OpenGL 1.1 and up.
+  // It is currently the preferred rendering loop.
+  GL.SUGGEST_VERTEXARRAYS = GL.HAVE_VERTEXARRAYS;
+
+
   APP_HANDLE_CLOSE(handle);
 }
 
@@ -534,6 +545,7 @@ sc_default_texture_activate(RenderState * state, void * handle)
   assert(GL.glTexImage2D);
 
   GL.glBindTexture(GL_TEXTURE_2D, info->id);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, info->wraps);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, info->wrapt);
 #if 1
@@ -615,6 +627,8 @@ sc_renderstate_construct(RenderState * state)
   state->idxarray = NULL;
   state->lenarray = NULL;
   state->renderpass = FALSE;
+  state->dataset = -1;
+  state->blockinfo = NULL;
 }
 
 static void sc_texture_hash_clear(const unsigned int & key, TexInfo * const & val, void * closure);
@@ -1152,7 +1166,7 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = ((state->vertexcount == 0) || (GL.glDrawRangeElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((state->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     vertex[1][0] = vertex[2][0];
     vertex[1][1] = vertex[2][1];
@@ -1170,7 +1184,7 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( GL.glDrawRangeElements != NULL ) {
+  if ( GL.glDrawElements != NULL ) {
     SbList<float> * vertexarray = (SbList<float> *) state->varray;
     SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
     SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
@@ -1221,9 +1235,16 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
 {
 #if VA_INTERLEAVED
   const int idx = state->vertexcount;
-  state->normals[idx*3+0] = n[0];
-  state->normals[idx*3+1] = n[1];
-  state->normals[idx*3+2] = n[2];
+  if ( GL.USE_BYTENORMALS ) {
+    state->normals[idx*3+0] = n[0];
+    state->normals[idx*3+1] = n[1];
+    state->normals[idx*3+2] = n[2];
+  } else {
+    static const float factor = 1.0f / 127.0f;
+    state->fnormals[idx*3+0] = float(n[0]) * factor;
+    state->fnormals[idx*3+1] = float(n[1]) * factor;
+    state->fnormals[idx*3+2] = float(n[2]) * factor;
+  }
   state->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
   state->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   state->vertices[idx*3+2] = elev;
@@ -1232,7 +1253,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   static signed char normal[3][3];
   static float vertex[3][3];
 
-  const int idx = ((state->vertexcount == 0) || (GL.glDrawRangeElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((state->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1248,7 +1269,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( GL.glDrawRangeElements != NULL ) {
+  if ( GL.glDrawElements != NULL ) {
     SbList<float> * vertexarray = (SbList<float> *) state->varray;
     SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
     normalarray->append(normal[0][0]);
@@ -1298,9 +1319,16 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
 {
 #if VA_INTERLEAVED
   const int idx = state->vertexcount;
-  state->normals[idx*3+0] = n[0];
-  state->normals[idx*3+1] = n[1];
-  state->normals[idx*3+2] = n[2];
+  if ( GL.USE_BYTENORMALS ) {
+    state->normals[idx*3+0] = n[0];
+    state->normals[idx*3+1] = n[1];
+    state->normals[idx*3+2] = n[2];
+  } else {
+    static const float factor = 1.0f / 127.0f;
+    state->fnormals[idx*3+0] = float(n[0]) * factor;
+    state->fnormals[idx*3+1] = float(n[1]) * factor;
+    state->fnormals[idx*3+2] = float(n[2]) * factor;
+  }
   state->texture1[idx*2+0] = state->toffset[0] + float(x) * state->invtsizescale[0];
   state->texture1[idx*2+1] = state->toffset[1] + float(y) * state->invtsizescale[1];
   state->texture2[idx*2+0] = 0.0f;
@@ -1315,7 +1343,7 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = ((state->vertexcount == 0) || (GL.glDrawRangeElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((state->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1339,7 +1367,7 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( GL.glDrawRangeElements != NULL ) {
+  if ( GL.glDrawElements != NULL ) {
     SbList<float> * vertexarray = (SbList<float> *) state->varray;
     SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
     SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
@@ -1392,8 +1420,10 @@ sc_render_pre_cb_common(void * closure, ss_render_block_cb_info * info)
   ss_render_get_elevation_measures(info, 
                                    renderstate->voffset,
                                    renderstate->vspacing,
+                                   NULL,
                                    &renderstate->elevdata,
-                                   &renderstate->normaldata);
+                                   &renderstate->normaldata,
+                                   NULL);
 
   if ( renderstate->debuglist ) {
     float ox = (float) (renderstate->voffset[0] / renderstate->bbmax[0]);
@@ -1567,9 +1597,13 @@ void
 SEND_VA_TRIANGLE_FAN(RenderState * state)
 {
   assert(state->vertexcount <= 10);
-  assert(GL.glDrawRangeElements != NULL);
+  assert(GL.glDrawElements != NULL);
   static unsigned int indices[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-  GL.glDrawRangeElements(GL_TRIANGLE_FAN, 0, state->vertexcount - 1, state->vertexcount, GL_UNSIGNED_INT, indices);
+  if ( GL.glDrawRangeElements != NULL ) {
+    GL.glDrawRangeElements(GL_TRIANGLE_FAN, 0, state->vertexcount - 1, state->vertexcount, GL_UNSIGNED_INT, indices);
+  } else {
+    GL.glDrawElements(GL_TRIANGLE_FAN, state->vertexcount, GL_UNSIGNED_INT, indices);
+  }
 }
 
 #if VA_INTERLEAVED
@@ -1842,11 +1876,19 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
 
   if ( normals != NULL && renderstate->texid == 0 ) {
     // elevation and normals
-    GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
+    if ( GL.USE_BYTENORMALS ) {
+      GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
+    } else {
+      GL.glNormalPointer(GL_FLOAT, 0, renderstate->fnormals);
+    }
     GL.glEnableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
-    GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
+    if ( GL.USE_BYTENORMALS ) {
+      GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
+    } else {
+      GL.glNormalPointer(GL_FLOAT, 0, renderstate->fnormals);
+    }
     GL.glEnableClientState(GL_NORMAL_ARRAY);
 
     if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
@@ -2199,6 +2241,27 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
       state->intersection[0] = intersectionpoint[0];
       state->intersection[1] = intersectionpoint[1];
       state->intersection[2] = intersectionpoint[2];
+      if ( state->dataset != -2 ) {
+        // we want to know which dataset we picked on
+        double voffset[2];
+        double vspacing[2];
+        int dimension[2];
+        float * elevation;
+        signed char * texture;
+        int * datasets;
+        assert(state->blockinfo);
+        ss_render_get_elevation_measures(state->blockinfo,
+                                         voffset, vspacing,
+                                         dimension,
+	 &elevation, &texture,
+	 &datasets);
+        int x = (int) ((intersectionpoint[0] - voffset[0]) / vspacing[0]);
+        int y = (int) ((intersectionpoint[1] - voffset[1]) / vspacing[1]);
+        // printf("x, y   : %g, %g\n", intersectionpoint[0], intersectionpoint[1]);
+        // printf("offset : %g, %g\n", voffset[0], voffset[1]);
+        // printf("index  : %d, %d = dataset %d\n", x, y, datasets[y*dimension[0]+x]);
+        state->dataset = datasets[y*dimension[0]+x];
+      }
     }
   }
 }
@@ -2214,8 +2277,19 @@ sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info)
   ss_render_get_elevation_measures(info,
                                    renderstate->voffset,
                                    renderstate->vspacing,
+                                   NULL,
                                    &renderstate->elevdata,
-                                   &renderstate->normaldata);
+                                   &renderstate->normaldata,
+                                   NULL);
+  renderstate->blockinfo = info;
+}
+
+void
+sc_raypick_post_cb(void * closure, ss_render_block_cb_info * info)
+{
+  assert(closure);
+  RenderState * renderstate = (RenderState *) closure;
+  renderstate->blockinfo = NULL;
 }
 
 #define ELEVATION(x, y) elev[(y)*W+(x)]

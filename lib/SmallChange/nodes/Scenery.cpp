@@ -1353,8 +1353,10 @@ SceneryP::gen_pre_cb(void * closure, ss_render_block_cb_info * info)
   sc_ssglue_render_get_elevation_measures(info, 
                                    renderstate.voffset,
                                    renderstate.vspacing,
+                                   NULL,
                                    &renderstate.elevdata,
-                                   &renderstate.normaldata);
+                                   &renderstate.normaldata,
+                                   NULL);
 }
 
 void 
