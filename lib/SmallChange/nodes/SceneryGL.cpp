@@ -115,13 +115,17 @@ typedef void (APIENTRY * glDeleteTextures_f)(GLsizei n, const GLuint * textures)
 typedef void (APIENTRY * glMultiTexCoord2f_f)(GLenum target, GLfloat x, GLfloat y);
 typedef void (APIENTRY * glClientActiveTexture_f)(GLenum texture);
 
+// 1.1
 typedef void (APIENTRY * glEnableClientState_f)(GLenum cap);
 typedef void (APIENTRY * glDisableClientState_f)(GLenum cap);
 typedef void (APIENTRY * glVertexPointer_f)(GLint size, GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void (APIENTRY * glNormalPointer_f)(GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void (APIENTRY * glTexCoordPointer_f)(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
-typedef void (APIENTRY * glDrawElements_f)(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
 typedef void (APIENTRY * glDrawArrays_f)(GLenum mode, GLint first, GLsizei count);
+typedef void (APIENTRY * glDrawElements_f)(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
+// 1.2
+typedef void (APIENTRY * glDrawRangeElements_f)( GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices );
+
 
 // state container definition
 struct sc_GL {
@@ -145,8 +149,9 @@ struct sc_GL {
   glVertexPointer_f glVertexPointer;
   glNormalPointer_f glNormalPointer;
   glTexCoordPointer_f glTexCoordPointer;
-  glDrawElements_f glDrawElements;
   glDrawArrays_f glDrawArrays;
+  glDrawElements_f glDrawElements;
+  glDrawRangeElements_f glDrawRangeElements;
 
   // normalmaps
 
@@ -184,8 +189,9 @@ struct sc_GL GL =
   NULL,     // glVertexPointer
   NULL,     // glNormalPointer
   NULL,     // glTexCoordPointer
-  NULL,     // glDrawElements
   NULL,     // glDrawArrays
+  NULL,     // glDrawElements
+  NULL,     // glDrawRangeElements
 
   GL_CLAMP, // clamp_to_edge
   TRUE,     // USE_BYTENORMALS
@@ -202,7 +208,6 @@ struct sc_GL GL =
 void                             \
 sc_set_##func(void * fptr)       \
 {                                \
-  assert(fptr != NULL);          \
   GL.func = (func##_f) fptr;     \
 }
 
@@ -218,10 +223,14 @@ GL_FUNCTION_SETTER(glDisableClientState)
 GL_FUNCTION_SETTER(glVertexPointer)
 GL_FUNCTION_SETTER(glNormalPointer)
 GL_FUNCTION_SETTER(glTexCoordPointer)
-GL_FUNCTION_SETTER(glDrawElements)
 GL_FUNCTION_SETTER(glDrawArrays)
+GL_FUNCTION_SETTER(glDrawElements)
+GL_FUNCTION_SETTER(glDrawRangeElements)
 
 #undef GL_FUNCTION_SETTER
+
+#define GL_CALL(func, args) \
+  GL.func(args)
 
 void
 sc_set_have_clamp_to_edge(int enable)
@@ -462,15 +471,26 @@ sc_probe_gl(int verbose)
     assert(ptr);
     sc_set_glTexCoordPointer(ptr);
 
+    GL_PROC_SEARCH(ptr, glDrawArrays);
+    if ( verbose ) printf("PROBE: glDrawArrays = %p\n", ptr);
+    assert(ptr);
+    sc_set_glDrawArrays(ptr);
+
     GL_PROC_SEARCH(ptr, glDrawElements);
     if ( verbose ) printf("PROBE: glDrawElements = %p\n", ptr);
     assert(ptr);
     sc_set_glDrawElements(ptr);
 
-    GL_PROC_SEARCH(ptr, glDrawArrays);
-    if ( verbose ) printf("PROBE: glDrawArrays = %p\n", ptr);
-    assert(ptr);
-    sc_set_glDrawArrays(ptr);
+    if ( minor >= 2 ) {
+      GL_PROC_SEARCH(ptr, glDrawRangeElements);
+      if ( verbose ) printf("PROBE: glDrawRangeElements = %p\n", ptr);
+      assert(ptr);
+      sc_set_glDrawRangeElements(ptr);
+    } else {
+      GL_PROC_SEARCH(ptr, glDrawRangeElements);
+      if ( verbose ) printf("PROBE: glDrawRangeElements = %p\n", ptr);
+      sc_set_glDrawRangeElements(ptr);
+    }
 
     if ( verbose ) printf("PROBE: installed vertex-arrays support\n");
   }
@@ -612,10 +632,11 @@ sc_renderstate_construct(RenderState * state)
   state->t1array = NULL;
   state->t2array = NULL;
   state->idxarray = NULL;
+  state->lenarray = NULL;
   state->renderpass = FALSE;
 }
 
-static void sc_texture_hash_clear(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_clear(const unsigned int & key, TexInfo * const & val, void * closure);
 
 void
 sc_renderstate_destruct(RenderState * state)
@@ -653,6 +674,7 @@ sc_renderstate_destruct(RenderState * state)
   DELETE_LIST(t1array, float);
   DELETE_LIST(t2array, float);
   DELETE_LIST(idxarray, unsigned int);
+  DELETE_LIST(lenarray, int);
 #undef DELETE_LIST
 }
 
@@ -698,9 +720,9 @@ sc_create_texture(RenderState * state, void * image)
   return tex->image;
 }
 
-static void sc_texture_hash_check_unused(unsigned int key, TexInfo * val, void * closure);
-static void sc_texture_hash_inc_unused(unsigned int key, TexInfo * val, void * closure);
-static void sc_texture_hash_add_all(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_check_unused(const unsigned int & key, TexInfo * const & val, void * closure);
+static void sc_texture_hash_inc_unused(const unsigned int & key, TexInfo * const & val, void * closure);
+static void sc_texture_hash_add_all(const unsigned int & key, TexInfo * const & val, void * closure);
 
 void
 sc_delete_unused_textures(RenderState * state)
@@ -760,7 +782,7 @@ sc_mark_unused_textures(RenderState * state)
 /* ********************************************************************** */
 
 void
-sc_texture_hash_check_unused(unsigned int key, TexInfo * tex, void * closure)
+sc_texture_hash_check_unused(const unsigned int & key, TexInfo * const & tex, void * closure)
 {
   assert(tex);
   if ( tex->unusedcount > MAX_UNUSED_COUNT ) {
@@ -770,7 +792,7 @@ sc_texture_hash_check_unused(unsigned int key, TexInfo * tex, void * closure)
 }
 
 void
-sc_texture_hash_clear(unsigned int key, TexInfo * tex, void * closure)
+sc_texture_hash_clear(const unsigned int & key, TexInfo * const & tex, void * closure)
 {
   // safe to delete the TexInfo objects here since we'll never use this list again
   assert(tex);
@@ -781,7 +803,7 @@ sc_texture_hash_clear(unsigned int key, TexInfo * tex, void * closure)
 }
 
 void
-sc_texture_hash_add_all(unsigned int key, TexInfo * tex, void * closure)
+sc_texture_hash_add_all(const unsigned int & key, TexInfo * const & tex, void * closure)
 {
   assert(tex);
   SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
@@ -789,7 +811,7 @@ sc_texture_hash_add_all(unsigned int key, TexInfo * tex, void * closure)
 }
 
 void
-sc_texture_hash_inc_unused(unsigned int key, TexInfo * tex, void * closure)
+sc_texture_hash_inc_unused(const unsigned int & key, TexInfo * const & tex, void * closure)
 {
   assert(tex);
   tex->unusedcount++;
@@ -1138,7 +1160,7 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = (state->vertexcount == 0) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((state->vertexcount == 0) || (GL.glDrawRangeElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     vertex[1][0] = vertex[2][0];
     vertex[1][1] = vertex[2][1];
@@ -1156,7 +1178,19 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( ++state->vertexcount >= 3 ) {
+  if ( GL.glDrawRangeElements != NULL ) {
+    SbList<float> * vertexarray = (SbList<float> *) state->varray;
+    SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
+    SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
+    vertexarray->append(vertex[0][0]);
+    vertexarray->append(vertex[0][1]);
+    vertexarray->append(vertex[0][2]);
+    texcoord1array->append(texture1[0][0]);
+    texcoord1array->append(texture1[0][1]);
+    texcoord2array->append(texture2[0][0]);
+    texcoord2array->append(texture2[0][1]);
+    state->vertexcount += 1;
+  } else if ( state->vertexcount >= 2 ) {
     SbList<float> * vertexarray = (SbList<float> *) state->varray;
     SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
     SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
@@ -1169,6 +1203,7 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
       texcoord2array->append(texture2[v][0]);
       texcoord2array->append(texture2[v][1]);
     }
+    state->vertexcount += 1;
   }
 }
 
@@ -1193,7 +1228,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   static signed char normal[3][3];
   static float vertex[3][3];
 
-  const int idx = (state->vertexcount == 0) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((state->vertexcount == 0) || (GL.glDrawRangeElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1209,7 +1244,17 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( ++state->vertexcount >= 3 ) {
+  if ( GL.glDrawRangeElements != NULL ) {
+    SbList<float> * vertexarray = (SbList<float> *) state->varray;
+    SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
+    normalarray->append(normal[0][0]);
+    normalarray->append(normal[0][1]);
+    normalarray->append(normal[0][2]);
+    vertexarray->append(vertex[0][0]);
+    vertexarray->append(vertex[0][1]);
+    vertexarray->append(vertex[0][2]);
+    state->vertexcount += 1;
+  } else if ( state->vertexcount >= 2 ) {
     SbList<float> * vertexarray = (SbList<float> *) state->varray;
     SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
     for ( int v = 0; v < 3; v++ ) {
@@ -1220,6 +1265,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
       vertexarray->append(vertex[v][1]);
       vertexarray->append(vertex[v][2]);
     }
+    state->vertexcount += 1;
   }
 }
 
@@ -1250,7 +1296,7 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = (state->vertexcount == 0) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((state->vertexcount == 0) || (GL.glDrawRangeElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1274,7 +1320,24 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( ++state->vertexcount >= 3 ) { // we have a new triangle
+  if ( GL.glDrawRangeElements != NULL ) {
+    SbList<float> * vertexarray = (SbList<float> *) state->varray;
+    SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
+    SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
+    SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
+    texcoord1array->append(texture1[0][0]);
+    texcoord1array->append(texture1[0][1]);
+    texcoord2array->append(texture2[0][0]);
+    texcoord2array->append(texture2[0][1]);
+    normalarray->append(normal[0][0]);
+    normalarray->append(normal[0][1]);
+    normalarray->append(normal[0][2]);
+    vertexarray->append(vertex[0][0]);
+    vertexarray->append(vertex[0][1]);
+    vertexarray->append(vertex[0][2]);
+    state->vertexcount += 1;
+  }
+  else if ( state->vertexcount >= 2 ) { // we have a new triangle
     SbList<float> * vertexarray = (SbList<float> *) state->varray;
     SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
     SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
@@ -1291,6 +1354,7 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
       vertexarray->append(vertex[v][1]);
       vertexarray->append(vertex[v][2]);
     }
+    state->vertexcount += 1;
   }
 }
 
@@ -1515,6 +1579,10 @@ sc_va_render_cb(void * closure, const int x, const int y,
     }
     SEND_VERTEX(renderstate, x-len, y-len);
 #undef SEND_VERTEX
+    if ( GL.glDrawRangeElements != NULL ) {
+      SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+      lenarray->append(renderstate->vertexcount);
+    }
   }
   else if (normals) {
 #define SEND_VERTEX(state, x, y) \
@@ -1541,6 +1609,10 @@ sc_va_render_cb(void * closure, const int x, const int y,
     }
     SEND_VERTEX(renderstate, x-len, y-len);
 #undef SEND_VERTEX
+    if ( GL.glDrawRangeElements != NULL ) {
+      SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+      lenarray->append(renderstate->vertexcount);
+    }
   }
   else {
     renderstate->vertexcount = 0;
@@ -1562,6 +1634,10 @@ sc_va_render_cb(void * closure, const int x, const int y,
       GL_VA_VERTEX(renderstate, x-len, y, ELEVATION(x-len, y));
     }
     GL_VA_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
+    if ( GL.glDrawRangeElements != NULL ) {
+      SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+      lenarray->append(renderstate->vertexcount);
+    }
   }
 }
 
@@ -1662,6 +1738,10 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
         SEND_VERTEX(renderstate, tx, ty);
         numv--;
       }
+      if ( GL.glDrawRangeElements != NULL ) {
+        SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+        lenarray->append(renderstate->vertexcount);
+      }
       numv = *ptr++;
     }
 #undef SEND_VERTEX
@@ -1680,6 +1760,10 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
         SEND_VERTEX(renderstate, tx, ty);
         numv--;
       }
+      if ( GL.glDrawRangeElements != NULL ) {
+        SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+        lenarray->append(renderstate->vertexcount);
+      }
       numv = *ptr++;
     }
 #undef SEND_VERTEX
@@ -1692,6 +1776,10 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
         ty = y + *ptr++ * len;
         GL_VA_VERTEX(renderstate, tx, ty, ELEVATION(tx, ty));
         numv--;
+      }
+      if ( GL.glDrawRangeElements != NULL ) {
+        SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+        lenarray->append(renderstate->vertexcount);
       }
       numv = *ptr++;
     }
@@ -1713,6 +1801,8 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
     renderstate->narray = new SbList<signed char>(4096);
     renderstate->t1array = new SbList<float>(4096);
     renderstate->t2array = new SbList<float>(4096);
+    renderstate->idxarray = new SbList<unsigned int>(4096);
+    renderstate->lenarray = new SbList<int>(4096);
     assert(renderstate->varray);
     assert(renderstate->narray);
     assert(renderstate->t1array);
@@ -1723,11 +1813,15 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   SbList<signed char> * normalarray = (SbList<signed char> *) renderstate->narray;
   SbList<float> * texcoord1array = (SbList<float> *) renderstate->t1array;
   SbList<float> * texcoord2array = (SbList<float> *) renderstate->t2array;
+  SbList<unsigned int> * idxarray = (SbList<unsigned int> *) renderstate->idxarray;
+  SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
   // reset lists
   vertexarray->truncate(0);
   normalarray->truncate(0);
   texcoord1array->truncate(0);
   texcoord2array->truncate(0);
+  lenarray->truncate(0);
+  // idxarray->truncate(0); // FIXME: necessary to do this?
 }
 
 void
@@ -1741,8 +1835,17 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   SbList<signed char> * normalarray = (SbList<signed char> *) renderstate->narray;
   SbList<float> * texcoord1array = (SbList<float> *) renderstate->t1array;
   SbList<float> * texcoord2array = (SbList<float> *) renderstate->t2array;
+  SbList<unsigned int> * idxarray = (SbList<unsigned int> *) renderstate->idxarray;
+  SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
 
   if ( vertexarray->getLength() == 0 ) { return; } // nothing to render in this block
+  if ( idxarray->getLength() < (vertexarray->getLength() / 3) ) {
+    int c;
+    const int needed = vertexarray->getLength() / 3;
+    for ( c = idxarray->getLength(); c < needed; c++ ) {
+      idxarray->append(c);
+    }
+  }
 
   // If the number of vertices for a block is small, we might consider adding
   // another block or two before pushing the vertex arrays to the graphics card,
@@ -1802,6 +1905,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   const signed char * normalarrayptr = normalarray->getArrayPtr();
   const float * texcoord1arrayptr = texcoord1array->getArrayPtr();
   const float * texcoord2arrayptr = texcoord2array->getArrayPtr();
+  const unsigned int * idxarrayptr = idxarray->getArrayPtr();
 
   const int vertices = vertexarray->getLength() / 3;
   const int triangles = vertices / 3;
@@ -1851,7 +1955,29 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // the index table without too much overhead, we're going to try it out...
   // GL.glDrawElements(GL_TRIANGLES,
   //                   indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
-  GL.glDrawArrays(GL_TRIANGLES, 0, vertices);
+  if ( GL.glDrawRangeElements == NULL ) {
+    GL.glDrawArrays(GL_TRIANGLES, 0, vertices);
+  } else {
+    SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
+    int offset = 0;
+    const int numstrips = lenarray->getLength();
+    const int numindices = idxarray->getLength();
+    int i;
+    for ( i = 0; i < numstrips; i++ ) {
+      int indices[10];
+      int j;
+      const int len = (*lenarray)[i];
+      // printf("len: %d   offset: %d\n", len, offset);
+      for ( j = 0; j < len; j++ ) { indices[j] = offset + j; }
+#if 0
+      GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, offset + len - 1, len, GL_UNSIGNED_INT, idxarrayptr);
+#else
+      GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, numindices, len, GL_UNSIGNED_INT, idxarrayptr);
+#endif
+      offset += len;
+    }
+  }
+  // loop over glDrawRangeElements() instead, and use triangle fans?
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
   if ( normals != NULL && renderstate->texid == 0 ) {
@@ -2080,5 +2206,7 @@ sc_undefraypick_cb(void * closure, const int x, const int y,
 
 #undef ELEVATION
 #undef GEN_VERTEX
+
+#undef GL_CALL
 
 /* ********************************************************************** */
