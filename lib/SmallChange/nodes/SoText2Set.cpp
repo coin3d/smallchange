@@ -144,6 +144,12 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
   Default value is FALSE.
 */
 
+/*!
+  \var SoSFInt32 SoText2Set::maxStringsToRender
+
+  Specifies how many strings to render based on their closeness to the camera.
+*/
+
 struct sotext2set_indexdistance {
   unsigned int index;
   float distance; 
@@ -153,7 +159,12 @@ static int sotext2set_sortcompare(const void * element1, const void * element2)
 {
   sotext2set_indexdistance * item1 = (sotext2set_indexdistance *) element1;
   sotext2set_indexdistance * item2 = (sotext2set_indexdistance *) element2;
-  return ((int) (item2->distance - item1->distance) * 100);
+  if (item1->distance < item2->distance)
+    return 1;
+  else if (item1->distance > item2->distance)
+    return -1;
+  else
+    return 0;
 }
 
 
@@ -227,7 +238,7 @@ SoText2Set::SoText2Set(void)
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
   SO_NODE_ADD_FIELD(string, (""));
   SO_NODE_ADD_FIELD(renderOutline, (FALSE));
-  SO_NODE_ADD_FIELD(numberClosestToCamera, (-1));
+  SO_NODE_ADD_FIELD(maxStringsToRender, (-1));
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
@@ -309,7 +320,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       PRIVATE(this)->textdistancelist = new sotext2set_indexdistance[stringcnt];
     }
 
-    if (this->numberClosestToCamera.getValue() != -1) {
+    if (this->maxStringsToRender.getValue() != -1) {
       SbVec3f campos = vv.getProjectionPoint();
       // Calculate distance to camera for all strings
       for (unsigned int i=0;i<stringcnt;++i) {        
@@ -337,8 +348,8 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     if (stringcnt > (unsigned int)this->position.getNum())
       SoDebugError::postWarning("SoText2Set::GLRender", "Position not specfied for all the strings.");
 
-    unsigned int counter = (this->numberClosestToCamera.getValue() != -1) ? 
-      this->numberClosestToCamera.getValue() : stringcnt;
+    unsigned int counter = (this->maxStringsToRender.getValue() != -1) ? 
+      this->maxStringsToRender.getValue() : stringcnt;
     if (counter > stringcnt) counter = stringcnt; // Failsafe
     
 

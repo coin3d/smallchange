@@ -57,7 +57,7 @@ public:
   SoMFVec3f position;
   SoMFFloat rotation;
   SoSFBool renderOutline;
-  SoSFInt32 numberClosestToCamera;
+  SoSFInt32 maxStringsToRender;
 
   static void initClass(void);
   virtual void GLRender(SoGLRenderAction * action);
