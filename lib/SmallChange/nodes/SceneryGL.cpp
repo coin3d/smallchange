@@ -531,7 +531,9 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   SbVec3<float> point[8];
   int i;
   for ( i = 0; i < 8; i++ ) {
-    point[i].setValue(i & 1 ? bmin[0] : bmax[0], i & 2 ? bmin[1] : bmax[1], i & 4 ? bmin[2] : bmax[2]);
+    point[i].setValue((float) ((i & 1) ? bmin[0] : bmax[0]),
+		      (float) ((i & 2) ? bmin[1] : bmax[1]),
+		      (float) ((i & 4) ? bmin[2] : bmax[2]));
   }
   int j, bits = 0;
   for ( i = 0; i < state->numclipplanes; i++ ) { // foreach plane
@@ -576,8 +578,8 @@ sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
   }
 
   const SbVec3<float> bounds[2] = {
-    SbVec3<float>(bmin[0], bmin[1], bmin[2]),
-    SbVec3<float>(bmax[0], bmax[1], bmax[2])
+    SbVec3<float>((float) bmin[0], (float) bmin[1], (float) bmin[2]),
+    SbVec3<float>((float) bmax[0], (float) bmax[1], (float) bmax[2])
   };
   const SbVec3<float> raypos(state->raypos[0], state->raypos[1], state->raypos[2]);
   const SbVec3<float> raydir(state->raydir[0], state->raydir[1], state->raydir[2]);
@@ -640,8 +642,8 @@ GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
   texture1[idx][1] = state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1];
   texture2[idx][0] = 0.0f;
   texture2[idx][1] = (state->etexscale * elev) + state->etexoffset;
-  vertex[idx][0] = x*state->vspacing[0] + state->voffset[0];
-  vertex[idx][1] = y*state->vspacing[1] + state->voffset[1];
+  vertex[idx][0] = (float) (x*state->vspacing[0] + state->voffset[0]);
+  vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
   vertices++;
@@ -688,8 +690,8 @@ GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, con
   normal[idx][0] = n[0];
   normal[idx][1] = n[1];
   normal[idx][2] = n[2];
-  vertex[idx][0] = x*state->vspacing[0] + state->voffset[0];
-  vertex[idx][1] = y*state->vspacing[1] + state->voffset[1];
+  vertex[idx][0] = (float) (x*state->vspacing[0] + state->voffset[0]);
+  vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
   vertices++;
@@ -745,8 +747,8 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
   texture1[idx][1] = state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1];
   texture2[idx][0] = 0.0f;
   texture2[idx][1] = (state->etexscale * elev) + state->etexoffset;
-  vertex[idx][0] = x*state->vspacing[0] + state->voffset[0];
-  vertex[idx][1] = y*state->vspacing[1] + state->voffset[1];
+  vertex[idx][0] = (float) (x*state->vspacing[0] + state->voffset[0]);
+  vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
   vertices++;
@@ -803,13 +805,13 @@ sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
                                    &renderstate->normaldata);
 
   if ( renderstate->debuglist ) {
-    float ox = renderstate->voffset[0] / renderstate->bbmax[0];
-    float oy = renderstate->voffset[1] / renderstate->bbmax[1];
-    float sx = renderstate->vspacing[0] * renderstate->blocksize;
-    float sy = renderstate->vspacing[1] * renderstate->blocksize;
+    float ox = (float) (renderstate->voffset[0] / renderstate->bbmax[0]);
+    float oy = (float) (renderstate->voffset[1] / renderstate->bbmax[1]);
+    float sx = (float) (renderstate->vspacing[0] * renderstate->blocksize);
+    float sy = (float) (renderstate->vspacing[1] * renderstate->blocksize);
 
-    sx /= renderstate->bbmax[0];
-    sy /= renderstate->bbmax[1];
+    sx = (float) (sx / renderstate->bbmax[0]);
+    sy = (float) (sy / renderstate->bbmax[1]);
 
     ((SbList<float> *) renderstate->debuglist)->append(ox);
     ((SbList<float> *) renderstate->debuglist)->append(oy);
@@ -834,7 +836,7 @@ sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        imagehandle = texture_construct(renderstate->texdata, renderstate->texw, renderstate->texh, renderstate->texnc, clampmode, clampmode, 0.9, 0);
+        imagehandle = texture_construct(renderstate->texdata, renderstate->texw, renderstate->texh, renderstate->texnc, clampmode, clampmode, 0.9f, 0);
 
         imagehandle = sc_create_texture(renderstate, imagehandle);
         assert(imagehandle);
@@ -1151,8 +1153,8 @@ sc_raypick_pre_cb(void * closure, ss_render_pre_cb_info * info)
 
 #define GEN_VERTEX(state, x, y, z) \
   second = third; \
-  third.setValue(((x)*renderstate->vspacing[0] + renderstate->voffset[0]), \
-                 ((y)*renderstate->vspacing[1] + renderstate->voffset[1]), (z)); \
+  third.setValue((float) ((x)*renderstate->vspacing[0] + renderstate->voffset[0]), \
+                 (float) ((y)*renderstate->vspacing[1] + renderstate->voffset[1]), (z)); \
   if ( ++vertices >= 3 ) { \
     intersect(renderstate, first, second, third); \
   }
@@ -1174,8 +1176,8 @@ sc_raypick_cb(void * closure, const int x, const int y,
   int vertices = 1;
   SbVec3<float> second(0.0f, 0.0f, 0.0f), third(0.0f, 0.0f, 0.0f);
 
-  const SbVec3<float> first((x*renderstate->vspacing[0] + renderstate->voffset[0]),
-                            (y*renderstate->vspacing[1] + renderstate->voffset[1]),
+  const SbVec3<float> first((float) (x*renderstate->vspacing[0] + renderstate->voffset[0]),
+                            (float) (y*renderstate->vspacing[1] + renderstate->voffset[1]),
                             ELEVATION(x, y));
 
   GEN_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
@@ -1205,8 +1207,8 @@ sc_raypick_cb(void * closure, const int x, const int y,
 #define GEN_VERTEX(state, x, y, z) \
   if ( vertices == 2 ) { first = second; } \
   second = third; \
-  third.setValue(((x)*(state)->vspacing[0] + (state)->voffset[0]), \
-                 ((y)*(state)->vspacing[1] + (state)->voffset[1]), (z)); \
+  third.setValue((float) ((x)*(state)->vspacing[0] + (state)->voffset[0]), \
+                 (float) ((y)*(state)->vspacing[1] + (state)->voffset[1]), (z)); \
   if ( ++vertices >= 3 ) { \
     intersect((state), first, second, third); \
   }

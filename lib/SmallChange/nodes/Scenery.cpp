@@ -803,8 +803,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
                                            NULL, NULL);
 
   if (this->visualDebug.getValue()) {
-    campos[0] = (campos[0] / PRIVATE(this)->renderstate.bbmax[0]) - 0.5f;
-    campos[1] = (campos[1] / PRIVATE(this)->renderstate.bbmax[1]) - 0.5f;
+    campos[0] = (float) ((campos[0] / PRIVATE(this)->renderstate.bbmax[0]) - 0.5f);
+    campos[1] = (float) ((campos[1] / PRIVATE(this)->renderstate.bbmax[1]) - 0.5f);
     state->push();
     sc_display_debug_info(&PRIVATE(this)->renderstate, &campos[0], &vpsize[0]);
     state->pop();
@@ -925,8 +925,8 @@ SmScenery::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
   if (PRIVATE(this)->system == NULL) return;  
   const RenderState & rs = PRIVATE(this)->renderstate;
-  box.setBounds(rs.bbmin[0], rs.bbmin[1], rs.bbmin[2],
-                rs.bbmax[0], rs.bbmax[1], rs.bbmax[2]);
+  box.setBounds((float) rs.bbmin[0], (float) rs.bbmin[1], (float) rs.bbmin[2],
+                (float) rs.bbmax[0], (float) rs.bbmax[1], (float) rs.bbmax[2]);
   center = box.getCenter();
 }
 
@@ -1076,13 +1076,14 @@ SmScenery::getRenderCoordinateOffset(void) const
 {
   double origo[3] = { 0.0, 0.0, 0.0 };
   sc_ssglue_system_get_origo_world_position(PRIVATE(this)->system, origo);
-  return SbVec3f(origo[0], origo[1], origo[2]);
+  return SbVec3f((float) origo[0], (float) origo[1], (float) origo[2]);
 }
 
 SbVec2f
 SmScenery::getElevationRange(void) const
 {
-  return SbVec2f(PRIVATE(this)->renderstate.bbmin[2], PRIVATE(this)->renderstate.bbmax[2]);
+  return SbVec2f((float) PRIVATE(this)->renderstate.bbmin[2],
+		 (float) PRIVATE(this)->renderstate.bbmax[2]);
 }
 
 void 
@@ -1272,8 +1273,8 @@ SceneryP::elevationlinestexchange(void)
 void 
 SceneryP::GEN_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
-  this->pvertex->setPoint(SbVec3f(x*state->vspacing[0] + state->voffset[0],
-                                  y*state->vspacing[1] + state->voffset[1],
+  this->pvertex->setPoint(SbVec3f((float) (x*state->vspacing[0] + state->voffset[0]),
+                                  (float) (y*state->vspacing[1] + state->voffset[1]),
                                   elev));
   PUBLIC(this)->shapeVertex(this->pvertex);
 }
@@ -1404,7 +1405,8 @@ SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double 
   // pushed and popped all the time
   if ( SoCullElement::completelyInside(state) ) { return TRUE; }
 
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
+  SbBox3f box((float) bmin[0], (float) bmin[1], (float) bmin[2],
+	      (float) bmax[0], (float) bmax[1], (float) bmax[2]);
   if ( !SoCullElement::cullBox(state, box, TRUE) ) { return TRUE; }
 
   return FALSE;
@@ -1438,7 +1440,8 @@ SmScenery::ray_culling_pre_cb(void * closure, const double * bmin, const double 
   SoState * state = rpaction->getState();
   state->push();
 
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
+  SbBox3f box((float) bmin[0], (float) bmin[1], (float) bmin[2],
+	      (float) bmax[0], (float) bmax[1], (float) bmax[2]); 
   if (box.isEmpty()) return FALSE;
   rpaction->setObjectSpace();
   return rpaction->intersect(box, TRUE);
@@ -1474,7 +1477,8 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
   if (thisp->colorTexturing.getValue() == SmScenery::INTERPOLATED) {
     if (thisp->colorElevation.getNum() == 0) {
       // interpolate color table evenly over elevation range
-      float fac = (elevation - rs.bbmin[2]) / (rs.bbmax[2] - rs.bbmin[2]);
+      float fac = (float) ((elevation - rs.bbmin[2]) /
+			   (rs.bbmax[2] - rs.bbmin[2]));
       int steps = ((thisp->colorMap.getNum() / 4) - 1); // four components
       if (steps == 0) { // only one color given
         int nr = (int) (SbClamp(thisp->colorMap[0], 0.0f, 1.0f) * 255.0f);
