@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <conio.h>
 
+/*
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alut.h>
-
+*/
 
 #include <Inventor/Win/SoWin.h>
 #include <Inventor/Win/viewers/SoWinExaminerViewer.h>
@@ -46,7 +47,7 @@
 #include <SmallChange/nodes/SoAudioClip.h>
 #include <SmallChange/nodes/SoAudioClipStreaming.h>
 #include <SmallChange/misc/SoAudioDevice.h>
-#include <SmallChange/misc/ALTools.h>
+// #include <SmallChange/misc/ALTools.h>
 
 #include <SmallChange/misc/SbAudioWorkerThread.h>
 
