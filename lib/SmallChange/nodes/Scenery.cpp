@@ -408,9 +408,11 @@ SmScenery::SmScenery(void)
   SO_NODE_ADD_FIELD(blockRottger, (20.0f));
   SO_NODE_ADD_FIELD(loadRottger, (16.0f));
 
-  SO_NODE_ADD_FIELD(renderSequence, (-1));
+  SO_NODE_ADD_FIELD(renderSequence, (0));
+#if 0 // disabled. Doesn't work with ViewEM. pederb, 2004-02-19
   this->renderSequence.setNum(0);
   this->renderSequence.setDefault(TRUE);
+#endif // disabled  
 
   SO_NODE_ADD_FIELD(colorTexturing, (SmScenery::DISABLED));
   SO_NODE_DEFINE_ENUM_VALUE(ColorTexturing, DISABLED);
@@ -506,14 +508,6 @@ SmScenery::SmScenery(ss_system * system)
   sc_ssglue_system_get_object_box(PRIVATE(this)->system,
                                   PRIVATE(this)->renderstate.bbmin,
                                   PRIVATE(this)->renderstate.bbmax); 
-  printf("setting bbox to %g %g %g - %g %g %g\n",
-      PRIVATE(this)->renderstate.bbmin[0],
-      PRIVATE(this)->renderstate.bbmin[1],
-      PRIVATE(this)->renderstate.bbmin[2],
-      PRIVATE(this)->renderstate.bbmax[0],
-      PRIVATE(this)->renderstate.bbmax[1],
-      PRIVATE(this)->renderstate.bbmax[2]
-      );
 
   PRIVATE(this)->blocksize =
     sc_ssglue_system_get_blocksize(PRIVATE(this)->system);
@@ -904,7 +898,6 @@ raypick_post_cb(void * closure)
 void 
 SmScenery::rayPick(SoRayPickAction * action)
 {
-  printf("SmScenery::rayPick\n");
   if (!sc_scenery_available()) { return; }
 
   action->setObjectSpace();
