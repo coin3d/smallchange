@@ -84,7 +84,7 @@ SIM_AC_CHECK_PTHREAD([
 )
 
 #  Check for openal (required for sound)
-SIM_AC_CHECK_OPENAL([
+SIM_AC_HAVE_OPENAL_IFELSE([
   CPPFLAGS="$CPPFLAGS $sim_ac_openal_cppflags"
   LDFLAGS="$LDFLAGS $sim_ac_openal_ldflags"
   LIBS="$sim_ac_openal_libs $LIBS"
