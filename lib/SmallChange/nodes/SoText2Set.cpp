@@ -58,7 +58,7 @@
 
 
 
-#include <SmallChange/nodes/SoText2.h>
+#include <SmallChange/nodes/SoText2Set.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/elements/SoGLCoordinateElement.h>
@@ -82,11 +82,9 @@
 #endif // HAVE_CONFIG_H
 
 
-//FIXME: These lines didn't compile with msvs...? torbjorv 07052002
-/*#if HAVE_WINDOWS_H
+#ifdef HAVE_WINDOWS_H
 #include <windows.h>
-#endif // HAVE_WINDOWS_H*/
-#include <windows.h>
+#endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
 
 /*!
@@ -137,8 +135,8 @@ private:
 };
 
 
-#define PRIVATE(p) (p->pimpl)
-#define PUBLIC(p) (p->master)
+#define PRIVATE(p) p->pimpl
+#define PUBLIC(p) p->master
 
 // *************************************************************************
 
@@ -151,7 +149,7 @@ const SbVec2f SoText2SetP::fontsize = SbVec2f(8.0f, 12.0f);
 SoText2Set::SoText2Set(void)
 {
   SO_NODE_CONSTRUCTOR(SoText2Set);
-  PRIVATE(this) = new SoTextSetP(this);
+  PRIVATE(this) = new SoText2SetP(this);
 
 
   SO_NODE_ADD_FIELD(strings, (""));

@@ -40,11 +40,9 @@
 #include <config.h>
 #endif // HAVE_CONFIG_H
 
-//FIXME: These lines didn't compile with msvs...? torbjorv 07052002
-/*#if HAVE_WINDOWS_H
+#ifdef HAVE_WINDOWS_H
 #include <windows.h>
-#endif // HAVE_WINDOWS_H*/
-#include <windows.h>
+#endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
 
 
