@@ -58,7 +58,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmScenery.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmHQSphere.h
+	$(top_srcdir)/lib/SmallChange/nodes/SmHQSphere.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmBillboardClipPlane.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
