@@ -428,6 +428,8 @@ LegendKit::LegendKit(void)
   // avoid rounding errors
   SoTranslation * t = (SoTranslation*) this->getAnyPart("imageTranslation", TRUE);
   t->translation = SbVec3f(0.5f, 0.5f, 0.0f);
+  
+  this->setBackgroundColor(SbColor(1.0f, 1.0f, 1.0f), 0.0f);
 }
 
 /*!
