@@ -81,6 +81,11 @@
   Invert the y coordinate. Normally y=0 is at the bottom, setting this to TRUE will make y=0 at the top.
 */
 
+/*!
+  \var SoSFBool ViewportRegion::flipX
+  Invert the x coordinate. Normally x=0 is at the left, setting this to TRUE will make x=0 at the right.
+*/
+
 SO_NODE_SOURCE(ViewportRegion);
 
 /*!
@@ -97,6 +102,7 @@ ViewportRegion::ViewportRegion()
   SO_NODE_ADD_FIELD(clearColorBuffer, (FALSE));
   SO_NODE_ADD_FIELD(clearDepthBuffer, (FALSE));
   SO_NODE_ADD_FIELD(clearColor, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(flipX, (FALSE));
   SO_NODE_ADD_FIELD(flipY, (FALSE));
   SO_NODE_ADD_FIELD(clampSize, (FALSE));
 
@@ -186,6 +192,11 @@ ViewportRegion::doAction(SoAction * action)
   this->origin.enableNotify(norigin);
   this->pixelSize.enableNotify(npsize);
   this->pixelOrigin.enableNotify(nporigin);
+
+  if (this->flipX.getValue()) {
+    org[0] = 1.0f - org[0];
+    org[0] -= siz[0];
+  }
 
   if (this->flipY.getValue()) {
     org[1] = 1.0f - org[1];

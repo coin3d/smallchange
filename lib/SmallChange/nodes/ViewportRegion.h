@@ -31,6 +31,7 @@ public:
 
   SoSFVec2f origin;
   SoSFVec2f size;
+  SoSFBool flipX;
   SoSFBool flipY;
   SoSFBool clampSize;
 
