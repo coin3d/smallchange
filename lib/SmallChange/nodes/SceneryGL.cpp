@@ -38,6 +38,7 @@
 
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
+#define APIENTRY
 #endif // HAVE_DLFCN_H
 
 #include "SceneryGL.h"
@@ -93,27 +94,27 @@
 /* ********************************************************************** */
 /* GL setup */
 
-typedef void glMultiTexCoord2f_f(GLenum target, GLfloat x, GLfloat y);
+typedef void (APIENTRY * glMultiTexCoord2f_f)(GLenum target, GLfloat x, GLfloat y);
 
-typedef void glEnableClientState_f(GLenum cap);
-typedef void glDisableClientState_f(GLenum cap);
-typedef void glVertexPointer_f(GLint size, GLenum type, GLsizei stride, const GLvoid * ptr);
-typedef void glNormalPointer_f(GLenum type, GLsizei stride, const GLvoid * ptr);
-typedef void glTexCoordPointer_f(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
-typedef void glDrawElements_f(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
-typedef void glDrawArrays_f(GLenum mode, GLint first, GLsizei count);
-typedef void glClientActiveTexture_f(GLenum texture);
+typedef void (APIENTRY * glEnableClientState_f)(GLenum cap);
+typedef void (APIENTRY * glDisableClientState_f)(GLenum cap);
+typedef void (APIENTRY * glVertexPointer_f)(GLint size, GLenum type, GLsizei stride, const GLvoid * ptr);
+typedef void (APIENTRY * glNormalPointer_f)(GLenum type, GLsizei stride, const GLvoid * ptr);
+typedef void (APIENTRY * glTexCoordPointer_f)(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
+typedef void (APIENTRY * glDrawElements_f)(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
+typedef void (APIENTRY * glDrawArrays_f)(GLenum mode, GLint first, GLsizei count);
+typedef void (APIENTRY * glClientActiveTexture_f)(GLenum texture);
 
 struct sc_GL {
-  glMultiTexCoord2f_f * glMultiTexCoord2f;
-  glEnableClientState_f * glEnableClientState;
-  glDisableClientState_f * glDisableClientState;
-  glVertexPointer_f * glVertexPointer;
-  glNormalPointer_f * glNormalPointer;
-  glTexCoordPointer_f * glTexCoordPointer;
-  glDrawElements_f * glDrawElements;
-  glDrawArrays_f * glDrawArrays;
-  glClientActiveTexture_f * glClientActiveTexture;
+  glMultiTexCoord2f_f glMultiTexCoord2f;
+  glEnableClientState_f glEnableClientState;
+  glDisableClientState_f glDisableClientState;
+  glVertexPointer_f glVertexPointer;
+  glNormalPointer_f glNormalPointer;
+  glTexCoordPointer_f glTexCoordPointer;
+  glDrawElements_f glDrawElements;
+  glDrawArrays_f glDrawArrays;
+  glClientActiveTexture_f glClientActiveTexture;
 
   GLenum CLAMP_TO_EDGE;
   int use_byte_normals;
@@ -138,63 +139,63 @@ void
 sc_set_glEnableClientState(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glEnableClientState = (glEnableClientState_f *) fptr;
+  GL.glEnableClientState = (glEnableClientState_f) fptr;
 }
 
 void
 sc_set_glDisableClientState(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glDisableClientState = (glDisableClientState_f *) fptr;
+  GL.glDisableClientState = (glDisableClientState_f) fptr;
 }
 
 void
 sc_set_glVertexPointer(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glVertexPointer = (glVertexPointer_f *) fptr;
+  GL.glVertexPointer = (glVertexPointer_f) fptr;
 }
 
 void
 sc_set_glNormalPointer(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glNormalPointer = (glNormalPointer_f *) fptr;
+  GL.glNormalPointer = (glNormalPointer_f) fptr;
 }
 
 void
 sc_set_glTexCoordPointer(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glTexCoordPointer = (glTexCoordPointer_f *) fptr;
+  GL.glTexCoordPointer = (glTexCoordPointer_f) fptr;
 }
 
 void
 sc_set_glDrawElements(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glDrawElements = (glDrawElements_f *) fptr;
+  GL.glDrawElements = (glDrawElements_f) fptr;
 }
 
 void
 sc_set_glDrawArrays(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glDrawArrays = (glDrawArrays_f *) fptr;
+  GL.glDrawArrays = (glDrawArrays_f) fptr;
 }
 
 void
 sc_set_glMultiTexCoord2f(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glMultiTexCoord2f = (glMultiTexCoord2f_f *) fptr;
+  GL.glMultiTexCoord2f = (glMultiTexCoord2f_f) fptr;
 }
 
 void
 sc_set_glClientActiveTexture(void * fptr)
 {
   assert(fptr != NULL);
-  GL.glClientActiveTexture = (glClientActiveTexture_f *) fptr;
+  GL.glClientActiveTexture = (glClientActiveTexture_f) fptr;
 }
 
 void
@@ -221,19 +222,32 @@ sc_set_use_byte_normals(int enable)
 
 #ifdef HAVE_WINDOWS_H
 #define APP_HANDLE_TYPE HINSTANCE
-#define APP_HANDLE() NULL
-#define APP_HANDLE_CLOSE() /* nada */
-#define GL_PROC_ADDRESS(proc) (void *) GetProcAddress(handle, #proc)
+#define APP_HANDLE() GetModuleHandle("opengl32.dll")
+#define APP_HANDLE_CLOSE(handle) /* nada */
+#define GL_PROC_ADDRESS1(proc) (void *) wglGetProcAddress(#proc)
+#define GL_PROC_ADDRESS2(proc) (void *) GetProcAddress(NULL, #proc)
+#define GL_PROC_ADDRESS3(proc) (void *) GetProcAddress(handle, #proc)
 #else
 #ifdef HAVE_DLFCN_H
 #define APP_HANDLE_TYPE void *
 #define APP_HANDLE() dlopen(NULL, RTLD_NOW)
 #define APP_HANDLE_CLOSE(handle) dlclose(handle)
-#define GL_PROC_ADDRESS(proc) dlsym(handle, #proc)
+#define GL_PROC_ADDRESS1(proc) dlsym(handle, #proc)
+#define GL_PROC_ADDRESS2(proc) NULL
+#define GL_PROC_ADDRESS3(proc) NULL
 #else
-#error system not supported (for probing dynamic symbols)
+#error system not supported (for probing dynamic GL symbols)
 #endif
 #endif
+
+#define GL_PROC_SEARCH(ptr, name) \
+  ptr = NULL; \
+  if ( !ptr ) ptr = GL_PROC_ADDRESS1(name); \
+  if ( !ptr ) ptr = GL_PROC_ADDRESS1(name##ARB); \
+  if ( !ptr ) ptr = GL_PROC_ADDRESS2(name); \
+  if ( !ptr ) ptr = GL_PROC_ADDRESS2(name##ARB); \
+  if ( !ptr ) ptr = GL_PROC_ADDRESS3(name); \
+  if ( !ptr ) ptr = GL_PROC_ADDRESS3(name##ARB)
 
 void
 sc_probe_gl(int verbose)
@@ -244,52 +258,54 @@ sc_probe_gl(int verbose)
   // FIXME: probe GL for extensions
 
   // multi-texturing
-  ptr = GL_PROC_ADDRESS(glMultiTexCoord2f);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glMultiTexCoord2fARB);
+  GL_PROC_SEARCH(ptr, glMultiTexCoord2f);
+  if ( verbose ) printf("PROBE: glMultiTexCoord2f = %p\n", ptr);
   assert(ptr);
   sc_set_glMultiTexCoord2f(ptr);
 
   // multi-texturing + vertex-arrays
-  ptr = GL_PROC_ADDRESS(glClientActiveTexture);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glClientActiveTextureARB);
+  GL_PROC_SEARCH(ptr, glClientActiveTexture);
+  if ( verbose ) printf("PROBE: glClientActiveTexture = %p\n", ptr);
   assert(ptr);
   sc_set_glClientActiveTexture(ptr);
 
   if ( verbose ) printf("multi-texturing installed\n");
 
   // vertex arrays
-  ptr = GL_PROC_ADDRESS(glEnableClientState);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glEnableClientStateARB);
+  GL_PROC_SEARCH(ptr, glEnableClientState);
+  if ( verbose ) printf("PROBE: glEnableClientState = %p\n", ptr);
   assert(ptr);
   sc_set_glEnableClientState(ptr);
 
-  ptr = GL_PROC_ADDRESS(glDisableClientState);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glDisableClientStateARB);
+  GL_PROC_SEARCH(ptr, glDisableClientState);
+  if ( verbose ) printf("PROBE: glDisableClientState = %p\n", ptr);
   assert(ptr);
   sc_set_glDisableClientState(ptr);
 
-  ptr = GL_PROC_ADDRESS(glVertexPointer);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glVertexPointerARB);
+  GL_PROC_SEARCH(ptr, glVertexPointer);
+  if ( verbose ) printf("PROBE: glVertexPointer = %p\n", ptr);
   assert(ptr);
   sc_set_glVertexPointer(ptr);
 
-  ptr = GL_PROC_ADDRESS(glNormalPointer);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glNormalPointerARB);
+  GL_PROC_SEARCH(ptr, glNormalPointer);
+  if ( verbose ) printf("PROBE: glNormalPointer = %p\n", ptr);
   assert(ptr);
   sc_set_glNormalPointer(ptr);
 
-  ptr = GL_PROC_ADDRESS(glTexCoordPointer);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glTexCoordPointerARB);
+  GL_PROC_SEARCH(ptr, glTexCoordPointer);
+  if ( verbose ) printf("PROBE: glTexCoordPointer = %p\n", ptr);
   assert(ptr);
   sc_set_glTexCoordPointer(ptr);
 
-  ptr = GL_PROC_ADDRESS(glDrawElements);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glDrawElementsARB);
+  GL_PROC_SEARCH(ptr, glDrawElementsARB);
+  if ( verbose ) printf("PROBE: glDrawElements = %p\n", ptr);
+#if 0
   assert(ptr);
   sc_set_glDrawElements(ptr);
+#endif
 
-  ptr = GL_PROC_ADDRESS(glDrawArrays);
-  if ( !ptr ) ptr = GL_PROC_ADDRESS(glDrawArraysARB);
+  GL_PROC_SEARCH(ptr, glDrawArrays);
+  if ( verbose ) printf("PROBE: glDrawArrays = %p\n", ptr);
   assert(ptr);
   sc_set_glDrawArrays(ptr);
 
@@ -301,7 +317,9 @@ sc_probe_gl(int verbose)
 #undef APP_HANDLE_TYPE
 #undef APP_HANDLE
 #undef APP_HANDLE_CLOSE
-#undef GL_PROC_ADDRESS
+#undef GL_PROC_ADDRESS1
+#undef GL_PROC_ADDRESS2
+#undef GL_PROC_SEARCH
 
 /* ********************************************************************** */
 /* texture management */
@@ -1416,6 +1434,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   assert(closure);
   RenderState * renderstate = (RenderState *) closure;
   assert(renderstate->varray != NULL);
+
   SbList<float> * vertexarray = (SbList<float> *) renderstate->varray;
   SbList<signed char> * normalarray = (SbList<signed char> *) renderstate->narray;
   SbList<float> * texcoord1array = (SbList<float> *) renderstate->t1array;
@@ -1435,7 +1454,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   assert(GL.glVertexPointer != NULL);
   assert(GL.glNormalPointer != NULL);
   assert(GL.glTexCoordPointer != NULL);
-  assert(GL.glDrawElements != NULL);
+  // assert(GL.glDrawElements != NULL);
   assert(GL.glDrawArrays != NULL);
 
   // Set up textures before rendering - we delayed this because some blocks have
@@ -1486,49 +1505,50 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   const int triangles = vertices / 3;
 
   const signed char * normals = renderstate->normaldata; // used as a flag below
-
   // elevation data is common for all modes
   GL.glEnableClientState(GL_VERTEX_ARRAY);
   GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
+
   if ( normals != NULL && renderstate->texid == 0 ) {
     // elevation and normals
-    assert((vertexarray->getLength() / 3) == (normalarray->getLength() / 3));
-    GL.glEnableClientState(GL_NORMAL_ARRAY);
+    assert(vertexarray->getLength() == normalarray->getLength());
     GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
+    GL.glEnableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
-    assert((vertexarray->getLength() / 3) == (normalarray->getLength() / 3));
-    GL.glEnableClientState(GL_NORMAL_ARRAY);
+    assert(vertexarray->getLength() == normalarray->getLength());
     GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
+    GL.glEnableClientState(GL_NORMAL_ARRAY);
+
     if ( renderstate->etexscale != 0.0f ) {
       assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
       GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
+      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     }
     assert((vertexarray->getLength() / 3) == (texcoord1array->getLength() / 2));
     GL.glClientActiveTexture(GL_TEXTURE0);
-    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
+    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
     if ( renderstate->etexscale != 0.0f ) {
       assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
       GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
+      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     }
+
     assert((vertexarray->getLength() / 3) == (texcoord1array->getLength() / 2));
     GL.glClientActiveTexture(GL_TEXTURE0);
-    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
+    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
     
   // Indexed vertex arrays will probably perform better, so if we can create
   // the index table without too much overhead, we're going to try it out...
   // GL.glDrawElements(GL_TRIANGLES,
   //                   indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
-
   GL.glDrawArrays(GL_TRIANGLES, 0, vertices);
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
