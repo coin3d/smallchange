@@ -218,7 +218,7 @@ UTMPosition::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 }
 
 /*!
-  Overloaded to invalidate cache when some field change.
+  Overridden to invalidate cache when some field change.
 */
 void 
 UTMPosition::notify(SoNotList * nl)

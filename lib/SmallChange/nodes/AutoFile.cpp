@@ -190,7 +190,7 @@ AutoFile::notify(SoNotList * list)
 }
 
 /*!
-  Overloaded to detect when file is read.
+  Overridden to detect when file is read.
 */
 SbBool
 AutoFile::readNamedFile(SoInput * in)

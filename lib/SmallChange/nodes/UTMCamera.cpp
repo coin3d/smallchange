@@ -26,18 +26,21 @@
   \brief The UTMCamera class defines a camera node with perspective rendering and an UTM position.
   \ingroup nodes
 
-  This node adds three fields to the perspective camera node: easting,
-  northing and elevation. These fields are defined as strings, to make
-  it possible to specify positions with maximum resolution, not
-  limited by the floating point precision. The position vector moves
-  the camera relative to the UTM position. Use this camera instead of
-  a normal PerspectiveCamera if you plan to operate with large
-  floating point positions that might destroy the floating point
-  precision. This is typically useful if you want to place object
-  using, for instance, UTM coordinates.
+  This node adds a field \a utmposition to the perspective camera
+  node. \a utmposition is a vector which contains 3 values for
+  \e easting, \e northing and \e elevation.
+
+  The position vector moves the camera relative to the UTM
+  position. Use this camera instead of a normal SoPerspectiveCamera if
+  you plan to operate on large floating point coordinates that might
+  cause floating point precision to become too low. This is typically
+  useful if you want to place objects using, for instance, UTM
+  coordinates.
 
   \sa UTMPosition, UTMCoordinate 
 */
+
+// *************************************************************************
 
 #include "UTMCamera.h"
 #include <Inventor/actions/SoCallbackAction.h>
@@ -51,67 +54,61 @@
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/errors/SoDebugError.h>
 #include <Inventor/misc/SoState.h>
 #include <SmallChange/elements/UTMElement.h>
 
+// *************************************************************************
+
 /*!
-  \var SoSFString UTMCamera::easting
+  \var SoSFVec3d UTMCamera::utmposition
   
-  The easting (+X) position of the camera.
+  First value of vector is easting (+X) position of the camera, second
+  is northing (+Y) position, and third ist he elevation (+Z) position
+  of the camera.
+
+  Default value is [0, 0, 0].
 */
 
 /*!
-  \var SoSFString UTMCamera::northing
-  
-  The northing (+Y) position of the camera.
-*/
+  \var SoSFBool UTMCamera::moveTransform
 
-/*!
-  \var SoSFString UTMCamera::elevation
-  
-  The elevation (+X) position of the camera.
+  This field is to enable a hack to move transforms in front of the
+  camera to after an UTMPosition node.
+
+  Default value is \c FALSE.
 */
 
 // *************************************************************************
 
 SO_NODE_SOURCE(UTMCamera);
 
-/*!
-  Constructor.
-*/
-UTMCamera::UTMCamera()
+// *************************************************************************
+
+UTMCamera::UTMCamera(void)
 {
   SO_NODE_CONSTRUCTOR(UTMCamera);
 
   SO_NODE_ADD_FIELD(utmposition, (0.0, 0.0, 0.0)); 
+
+  // these are present for backwards compatibility
   SO_NODE_ADD_FIELD(easting, ("0.0"));
   SO_NODE_ADD_FIELD(northing, ("0.0"));
   SO_NODE_ADD_FIELD(elevation, ("0.0"));
 
-  // hackish field to move transform in front of the camera to after
-  // an UTMPosition node.
   SO_NODE_ADD_FIELD(moveTransform, (FALSE)); 
 }
 
-/*!
-  Destructor.
-*/
 UTMCamera::~UTMCamera()
 {
 }
 
-/*!
-  Required Coin method.
-*/
 void
 UTMCamera::initClass(void)
 {
   SO_NODE_INIT_CLASS(UTMCamera, SoPerspectiveCamera, "PerspectiveCamera");
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::callback(SoCallbackAction * action)
 {
@@ -119,9 +116,6 @@ UTMCamera::callback(SoCallbackAction * action)
   SoCamera::callback(action);
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::GLRender(SoGLRenderAction * action)
 {
@@ -130,9 +124,6 @@ UTMCamera::GLRender(SoGLRenderAction * action)
   SoCamera::GLRender(action);
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::audioRender(SoAudioRenderAction * action)
 {
@@ -140,9 +131,6 @@ UTMCamera::audioRender(SoAudioRenderAction * action)
   SoCamera::audioRender(action);
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::getBoundingBox(SoGetBoundingBoxAction * action)
 {
@@ -150,18 +138,12 @@ UTMCamera::getBoundingBox(SoGetBoundingBoxAction * action)
   SoCamera::getBoundingBox(action);
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::handleEvent(SoHandleEventAction * action)
 {
   SoCamera::handleEvent(action);
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::rayPick(SoRayPickAction * action)
 {
@@ -169,9 +151,6 @@ UTMCamera::rayPick(SoRayPickAction * action)
   SoCamera::rayPick(action);
 }
 
-/*!
-  Coin method.
-*/
 void 
 UTMCamera::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
@@ -180,8 +159,10 @@ UTMCamera::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 }
 
 /*!
-  Returns the current position of the camera. The value of the position
-  field will be added to each respective value before returning. 
+  This is a helper function to return the three components of the
+  UTMCamera::utmposition vector field.
+
+  FIXME: function is redundant and should be made obsolete.
 */
 void 
 UTMCamera::getPosition(double & easting, double & northing, double & elevation)
@@ -223,7 +204,7 @@ UTMCamera::getMatrix(SoGetMatrixAction * action)
 }
 
 /*!
-  Overloaded to recalculate cached values when something change.
+  Overridden to recalculate cached values when something change.
 */
 void 
 UTMCamera::notify(SoNotList * nl)
@@ -231,6 +212,7 @@ UTMCamera::notify(SoNotList * nl)
   SoField * f = nl->getLastField();
   SbVec3d utm = this->utmposition.getValue();
   SbBool update = FALSE;
+
   if (f == &this->easting) {
     utm[0] = atof(this->easting.getValue().getString());
     update = TRUE;
@@ -246,14 +228,20 @@ UTMCamera::notify(SoNotList * nl)
   else if (f == &this->position) {
     SbVec3f v = this->position.getValue();
     if (v != SbVec3f(0.0f, 0.0f, 0.0f)) {
-//       myfprintf(stderr,"Warning: don't use camera position, but utmposition (%g %g %g)\n",
-//                 v[0], v[1], v[2]);
+#if 0 // disabled, as this should be ok, at least for the View'EM app. mortene.
+      SoDebugError::postWarning("UTMCamera::notify",
+                                "Don't use SoPerspectiveCamera::position field, "
+                                "but UTMCamera::utmposition (%g %g %g)\n",
+                                v[0], v[1], v[2]);
+#endif // disabled
     }
   }
+
   if (update) {
     SbBool old = this->enableNotify(FALSE);
     this->utmposition = utm;
     (void) this->enableNotify(old);
   }
+
   inherited::notify(nl);
 }
