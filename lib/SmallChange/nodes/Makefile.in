@@ -194,7 +194,8 @@ SOURCES = \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
-	VertexArrayShape.cpp SmVertexArrayShape.h
+	VertexArrayShape.cpp SmVertexArrayShape.h \
+	ColorGradient.cpp SmColorGradient.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -227,7 +228,8 @@ libnodesinc_HEADERS = \
 	SmHQSphere.h \
 	SmBillboardClipPlane.h \
 	SmHeadlight.h \
-	SmVertexArrayShape.h
+	SmVertexArrayShape.h \
+	SmColorGradient.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -250,7 +252,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
 	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
 	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT) \
-	VertexArrayShape.$(OBJEXT)
+	VertexArrayShape.$(OBJEXT) ColorGradient.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -264,7 +266,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
 	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
 	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo \
-	VertexArrayShape.lo
+	VertexArrayShape.lo ColorGradient.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -275,6 +277,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ColorGradient.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/ColorGradient.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/FrustumCamera.Plo \
@@ -360,7 +364,8 @@ SOURCES = \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
 	SmHeadlight.cpp SmHeadlight.h \
-	VertexArrayShape.cpp SmVertexArrayShape.h
+	VertexArrayShape.cpp SmVertexArrayShape.h \
+	ColorGradient.cpp SmColorGradient.h
 
 
 all: all-am
@@ -399,6 +404,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorGradient.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ColorGradient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrustumCamera.Plo@am__quote@
