@@ -95,6 +95,8 @@
 #include <Inventor/SbBox2s.h>
 #include <Inventor/misc/SoGlyph.h>
 
+#include "../misc/SbList.h"
+
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>

@@ -23,7 +23,6 @@
 
 #include "SmHQSphere.h"
 #include <Inventor/SbBSPTree.h>
-#include <Inventor/lists/SbList.h>
 #include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
@@ -42,6 +41,8 @@
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <stddef.h>
 #include <string.h>
+
+#include "../misc/SbList.h"
 
 class HQSphereGenerator {
 public:

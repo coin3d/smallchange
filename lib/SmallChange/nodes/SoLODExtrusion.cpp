@@ -101,7 +101,6 @@
 
 #include "SoLODExtrusion.h"
 // #include <Inventor/nodes/SoSubNodeP.h>
-#include <Inventor/lists/SbList.h>
 #include <Inventor/misc/SoNormalGenerator.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/bundles/SoTextureCoordinateBundle.h>
@@ -124,6 +123,8 @@
 #include <Inventor/details/SoFaceDetail.h>
 #include <float.h>
 #include <math.h>
+
+#include "../misc/SbList.h"
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
