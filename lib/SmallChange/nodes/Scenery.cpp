@@ -619,6 +619,10 @@ SmScenery::~SmScenery(void)
     free(PRIVATE(this)->elevationlinesdata);
     PRIVATE(this)->elevationlinesdata = NULL;
   }
+
+  // FIXME: unset context here to be safe. Not all memory will be
+  // freed though. pederb, 2004-06-25
+  sc_unset_current_context(&PRIVATE(this)->renderstate);
   sc_renderstate_destruct(&PRIVATE(this)->renderstate);
   delete PRIVATE(this);
 }
