@@ -30,6 +30,7 @@
 
 #include "SmAxisDisplayKit.h"
 
+
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbViewVolume.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
@@ -81,16 +82,12 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
 
   SO_KIT_ADD_FIELD(orientation, (SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), 0.0f)));
   SO_KIT_ADD_FIELD(axes, (0.0f, 0.0f, 0.0f));
-  SO_KIT_ADD_FIELD(colors, (0.0f, 0.0f, 0.0f));
-  SO_KIT_ADD_FIELD(enableArrows, (FALSE));
+  SO_KIT_ADD_FIELD(colors, (1.0f, 1.0f, 1.0f));
+  SO_KIT_ADD_FIELD(enableArrows, (TRUE));
   SO_KIT_ADD_FIELD(annotations, (""));
 
   this->axes.setNum(0);
   this->axes.setDefault(TRUE);
-  this->colors.setNum(0);
-  this->colors.setDefault(TRUE);
-  this->enableArrows.setNum(0);
-  this->enableArrows.setDefault(TRUE);
   this->annotations.setNum(0);
   this->annotations.setDefault(TRUE);
 
@@ -266,7 +263,8 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
     (SoSeparator *)PUBLIC(thisp)->getAnyPart("axessep", TRUE);
   axessep->removeAllChildren();
 
-  SoSeparator *geomsep = NULL;
+  SoSeparator *linesep = NULL;
+  SoSeparator *conesep = NULL;
   for (int i=0;i<PUBLIC(thisp)->axes.getNum();i++) {
     SoSeparator *axissep = new SoSeparator;
     SoBaseColor *axiscol = new SoBaseColor;
@@ -279,29 +277,43 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
     SoRotation *axistrans = new SoRotation;
     axistrans->rotation = rot;
 
-    if (!geomsep) {
-      geomsep = new SoSeparator;
-      SoCoordinate3 *geomcoord = new SoCoordinate3;
-      SoLineSet *geomls = new SoLineSet;
-      SoTranslation *geomtrans = new SoTranslation;
-      SoCone *geomcone = new SoCone;
+    if (!linesep) {
+      linesep = new SoSeparator;
+      SoCoordinate3 *coord = new SoCoordinate3;
+      SoLineSet *ls = new SoLineSet;
 
-      geomcoord->point.set1Value(0, 0.0f, 0.0f, 0.0f);
-      geomcoord->point.set1Value(1, 0.0f, 1.0f, 0.0f);
-      geomls->numVertices.setValue(2);
-      geomtrans->translation.setValue(0.0f, 1.125f, 0.0f);
-      geomcone->height = 0.25f;
-      geomcone->bottomRadius = 0.0833f;
+      coord->point.set1Value(0, 0.0f, 0.0f, 0.0f);
+      coord->point.set1Value(1, 0.0f, 1.0f, 0.0f);
+      ls->numVertices.setValue(2);
 
-      geomsep->addChild(geomcoord);
-      geomsep->addChild(geomls);
-      geomsep->addChild(geomtrans);
-      geomsep->addChild(geomcone);
+      linesep->addChild(coord);
+      linesep->addChild(ls);
     }
-
     axissep->addChild(axiscol);
     axissep->addChild(axistrans);
-    axissep->addChild(geomsep);
+    axissep->addChild(linesep);
+    bool enableAxis;
+    if (PUBLIC(thisp)->enableArrows.getNum() <= i)
+      enableAxis = PUBLIC(thisp)->enableArrows[PUBLIC(thisp)->enableArrows.getNum()-1];
+    else
+      enableAxis = PUBLIC(thisp)->enableArrows[i];
+
+    if (enableAxis) {
+      if (!conesep) {
+        conesep = new SoSeparator;
+        SoTranslation *trans = new SoTranslation;
+        SoCone *cone = new SoCone;
+        
+        trans->translation.setValue(0.0f, 1.125f, 0.0f);
+        cone->height = 0.25f;
+        cone->bottomRadius = 0.0833f;
+        
+        conesep->addChild(trans);
+        conesep->addChild(cone);
+      }
+      axissep->addChild(conesep);
+    }
+
     axessep->addChild(axissep);
   }
 
