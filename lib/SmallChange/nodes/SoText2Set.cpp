@@ -69,7 +69,7 @@
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/details/SoLineDetail.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
-#include <Inventor/elements/SoGLLightModelElement.h>
+#include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
@@ -338,9 +338,14 @@ void
 SoText2Set::GLRender(SoGLRenderAction *action)
 {
   SoState * state = action->getState();
+  state->push();
 
-  if (!shouldGLRender(action)) return;
+  SoLazyElement::setLightModel(state, SoLazyElement::BASE_COLOR);
 
+  if (!shouldGLRender(action)) {
+    state->pop();
+    return;
+  }
   const SoCoordinateElement *coords;
   coords = SoCoordinateElement::getInstance(state);
   assert(coords);
@@ -348,11 +353,6 @@ SoText2Set::GLRender(SoGLRenderAction *action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
-#if COIN_MAJOR_VERSION >= 2
-  SoGLLightModelElement::forceSend(state, SoLightModelElement::BASE_COLOR);
-#else // COIN_MAJOR_VERSION >= 2
-  SoGLLightModelElement::getInstance(state)->forceSend(SoLightModelElement::BASE_COLOR);
-#endif // COIN_MAJOR_VERSION < 2
   const SbMatrix & mat = SoModelMatrixElement::get(state);
 
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
@@ -426,6 +426,8 @@ SoText2Set::GLRender(SoGLRenderAction *action)
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
+
+  state->pop();
 }// GLRender
 
 

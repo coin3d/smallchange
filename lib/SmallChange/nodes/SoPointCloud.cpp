@@ -62,14 +62,11 @@
 #include <Inventor/elements/SoNormalBindingElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
-#include <Inventor/elements/SoGLLightModelElement.h>
 #include <Inventor/caches/SoNormalCache.h>
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCacheElement.h>
-#include <Inventor/elements/SoGLShadeModelElement.h>
-#include <Inventor/elements/SoGLLightModelElement.h>
 #include <Inventor/SbPlane.h>
 
 #if COIN_DEBUG
@@ -257,8 +254,6 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
   state->push();
-  // flat shading
-  SoGLShadeModelElement::set(state, TRUE);
 
   if (this->vertexProperty.getValue()) {
     this->vertexProperty.getValue()->GLRender(action);
