@@ -34,32 +34,34 @@ mousebutton_cb(void * closure, SoEventCallback * node)
     int midx = pp->getMaterialIndex();
     
     SbString tmp;
-    tooltip->tooltipString.setNum(5);
-    tooltip->tooltipString.set1Value(0, "Picked point info:");
+    tooltip->description.setNum(5);
+    tooltip->description.set1Value(0, "Picked point info:");
     tmp.sprintf("Point: %.2g %.2g %.2g", p[0], p[1], p[2]);
-    tooltip->tooltipString.set1Value(1, tmp.getString());
+    tooltip->description.set1Value(1, tmp.getString());
     tmp.sprintf("Normal: %.2g %.2g %.2g", n[0], n[1], n[2]);
-    tooltip->tooltipString.set1Value(2, tmp.getString());
+    tooltip->description.set1Value(2, tmp.getString());
     tmp.sprintf("TexCoord: %.2g %.2g", tc[0], tc[1]);
-    tooltip->tooltipString.set1Value(3, tmp.getString());
+    tooltip->description.set1Value(3, tmp.getString());
     tmp.sprintf("Mat. idx.: %d", midx);
-    tooltip->tooltipString.set1Value(4, tmp.getString());
+    tooltip->description.set1Value(4, tmp.getString());
 
     tooltip->setPickedPoint(node->getPickedPoint(), 
                             data->viewer->getViewportRegion());
   }
   else tooltip->isActive = FALSE;
-
-
-
 }
 
+static void
+usage(void)
+{
+  fprintf(stderr,"Usage: tooltip <infile>\n");
+}
 
 int
 main(int argc, char ** argv )
 {
-  assert(argc >= 2);
-
+  if (argc == 1) { usage(); return 0; }
+    
   @WIDGET@ window = So@Gui@::init( argv[0] );
   smallchange_init();
     
@@ -78,7 +80,10 @@ main(int argc, char ** argv )
     fprintf(stderr,"Unable to read file.\n");
     return -1;
   }
+
   root->ref();
+
+  fprintf(stderr,"\nPick a shape to get some tooltip info\n\n");
 
   SmTooltipKit * tooltip = new SmTooltipKit;
   SoEventCallback * ec = new SoEventCallback;
@@ -96,6 +101,7 @@ main(int argc, char ** argv )
 
   ex1->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   ex1->show();
+  ex1->setViewing(FALSE);
   So@Gui@::show( window );
   So@Gui@::mainLoop();
   delete ex1;
