@@ -123,13 +123,8 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])
 
 # Autoconf 2.50 wants to disallow AM_ names.  We explicitly allow
 # the ones we care about.
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_CFLAGS])])
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_CPPFLAGS])])
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_CXXFLAGS])])
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_OBJCFLAGS])])
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_FFLAGS])])
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_RFLAGS])])
-ifdef([m4_pattern_allow], [m4_pattern_allow([AM_GCJFLAGS])])
+ifdef([m4_pattern_allow],
+      [m4_pattern_allow([^AM_(C|CPP|CXX|OBJC|F|R|GCJ)FLAGS])])dnl
 
 # Some tools Automake needs.
 AC_REQUIRE([AM_SANITY_CHECK])dnl
@@ -243,7 +238,7 @@ AC_DEFUN([AM_MISSING_HAS_RUN],
 [test x"${MISSING+set}" = xset ||
   MISSING="\${SHELL} `CDPATH=:; cd $ac_aux_dir && pwd`/missing"
 # Use eval to expand $SHELL
-if eval "$MISSING --run :"; then
+if eval "$MISSING --run true"; then
   am_missing_run="$MISSING --run "
 else
   am_missing_run=
@@ -441,22 +436,11 @@ AC_DEFUN([AM_DEP_TRACK],
 [AC_ARG_ENABLE(dependency-tracking,
 [  --disable-dependency-tracking Speeds up one-time builds
   --enable-dependency-tracking  Do not reject slow dependency extractors])
-if test "x$enable_dependency_tracking" = xno; then
-  AMDEP="#"
-else
+if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
-  if test ! -f "$am_depcomp"; then
-    AMDEP="#"
-  else
-    AMDEP=
-  fi
-fi
-AC_SUBST(AMDEP)
-if test -z "$AMDEP"; then
   AMDEPBACKSLASH='\'
-else
-  AMDEPBACKSLASH=
 fi
+AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
 pushdef([subst], defn([AC_SUBST]))
 subst(AMDEPBACKSLASH)
 popdef([subst])
@@ -518,7 +502,6 @@ ac_aux_dir="$ac_aux_dir"])])
 # Check to see how make treats includes.
 AC_DEFUN([AM_MAKE_INCLUDE],
 [am_make=${MAKE-make}
-# BSD make uses .include
 cat > confinc << 'END'
 doit:
 	@echo done
@@ -526,17 +509,56 @@ END
 # If we don't find an include directive, just comment out the code.
 AC_MSG_CHECKING([for style of include used by $am_make])
 _am_include='#'
-for am_inc in include .include; do
-   echo "$am_inc confinc" > confmf
-   if test "`$am_make -f confmf 2> /dev/null`" = "done"; then
-      _am_include=$am_inc
-      break
+_am_quote=
+_am_result=none
+# First try GNU make style include.
+echo "include confinc" > confmf
+if test "`$am_make -s -f confmf 2> /dev/null`" = "done"; then
+   _am_include=include
+   _am_quote=
+   _am_result=GNU
+fi
+# Now try BSD make style include.
+if test "$_am_include" = "#"; then
+   echo '.include "confinc"' > confmf
+   if test "`$am_make -s -f confmf 2> /dev/null`" = "done"; then
+      _am_include=.include
+      _am_quote='"'
+      _am_result=BSD
    fi
-done
+fi
 AC_SUBST(_am_include)
-AC_MSG_RESULT($_am_include)
+AC_SUBST(_am_quote)
+AC_MSG_RESULT($_am_result)
 rm -f confinc confmf
 ])
+
+# serial 3
+
+# AM_CONDITIONAL(NAME, SHELL-CONDITION)
+# -------------------------------------
+# Define a conditional.
+#
+# FIXME: Once using 2.50, use this:
+# m4_match([$1], [^TRUE\|FALSE$], [AC_FATAL([$0: invalid condition: $1])])dnl
+AC_DEFUN([AM_CONDITIONAL],
+[ifelse([$1], [TRUE],
+        [errprint(__file__:__line__: [$0: invalid condition: $1
+])dnl
+m4exit(1)])dnl
+ifelse([$1], [FALSE],
+       [errprint(__file__:__line__: [$0: invalid condition: $1
+])dnl
+m4exit(1)])dnl
+AC_SUBST([$1_TRUE])
+AC_SUBST([$1_FALSE])
+if $2; then
+  $1_TRUE=
+  $1_FALSE='#'
+else
+  $1_TRUE='#'
+  $1_FALSE=
+fi])
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file.
 
@@ -1000,22 +1022,6 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 ]
 )
 
-# serial 2
-
-# AM_CONDITIONAL(NAME, SHELL-CONDITION)
-# -------------------------------------
-# Define a conditional.
-AC_DEFUN([AM_CONDITIONAL],
-[AC_SUBST([$1_TRUE])
-AC_SUBST([$1_FALSE])
-if $2; then
-  $1_TRUE=
-  $1_FALSE='#'
-else
-  $1_TRUE='#'
-  $1_FALSE=
-fi])
-
 # Usage:
 #   SIM_AC_DEBUGSYMBOLS
 #
@@ -1291,21 +1297,28 @@ if test x"$enable_warnings" = x"yes"; then
 
         ### Turn off specific (bogus) warnings ########################
 
-        ## SGI MipsPro v?.?? (our compiler on IRIX 6.2) ##############
-        # 3115: ``type qualifiers are meaningless in this declaration''.
-        # 3262: unused variables.
-        ## SGI MipsPro v7.30 #########################################
-	# 1174: "The function was declared but never referenced."
-        # 1209: "The controlling expression is constant." (kill warning on
-        #       if (0), assert(FALSE), etc).
-        # 1355: Kill warnings on extra semicolons (which happens with some
-        #       of the Coin macros).
-        # 1375: Non-virtual destructors in base classes.
-        # 3201: Unused argument to a function.
-        # 1110: "Statement is not reachable" (the Lex/Flex generated code in
-        #       Coin/src/engines has lots of shitty code which needs this).
+        ### SGI MipsPro v?.?? (our compiler on IRIX 6.2) ##############
+        ##
+        ## 3115: ``type qualifiers are meaningless in this declaration''.
+        ## 3262: unused variables.
+        ##
+        ### SGI MipsPro v7.30 #########################################
+        ##
+	## 1174: "The function was declared but never referenced."
+        ## 1209: "The controlling expression is constant." (kill warning on
+        ##       if (0), assert(FALSE), etc).
+        ## 1355: Kill warnings on extra semicolons (which happens with some
+        ##       of the Coin macros).
+        ## 1375: Non-virtual destructors in base classes.
+        ## 3201: Unused argument to a function.
+        ## 1110: "Statement is not reachable" (the Lex/Flex generated code in
+        ##       Coin/src/engines has lots of shitty code which needs this).
+        ## 1506: Implicit conversion from "unsigned long" to "long".
+        ##       SbTime.h in SGI/TGS Inventor does this, so we need to kill
+        ##       this warning to avoid all the output clutter when compiling
+        ##       the SoQt, SoGtk or SoXt libraries on IRIX with SGI MIPSPro CC.
 
-        sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110"
+        sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110,1506"
         SIM_AC_CC_COMPILER_OPTION($sim_ac_bogus_warnings,
                                   CPPFLAGS="$CPPFLAGS $sim_ac_bogus_warnings")
       fi

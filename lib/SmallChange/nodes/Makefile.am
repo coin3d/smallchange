@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libnodes.la
 
-INCLUDES = -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)/lib
 
 libnodes_la_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \

@@ -10,7 +10,7 @@
 #ifndef COIN_SODEPTHBUFFER_H
 #define COIN_SODEPTHBUFFER_H
 
-#include <elements/GLDepthBufferElement.h>
+#include <SmallChange/elements/GLDepthBufferElement.h>
 #include <Inventor/fields/SoSFEnum.h>
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/nodes/SoSubNode.h>

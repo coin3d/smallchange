@@ -1,5 +1,5 @@
 #  This can be any file in the package.
-AC_INIT(src/nodes/DepthBuffer.cpp)
+AC_INIT(lib/SmallChange/nodes/DepthBuffer.cpp)
 AC_CONFIG_AUX_DIR(cfg)
 
 # If the Microsoft Visual C++ cl.exe compiler is available, set us up for
@@ -156,7 +156,7 @@ if $BUILD_WITH_MSVC; then
     CPPFLAGS="-DSMALLCHANGE_MAKE_DLL $CPPFLAGS"
     SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS -DSMALLCHANGE_DLL"
   fi
-  debugfile="`pwd`/src/SmallChange${SC_MAJOR}.pdb"
+  debugfile="`pwd`/lib/SmallChange/SmallChange${SC_MAJOR}.pdb"
   debugfile=`cygpath -w "$debugfile" | sed 's,\\\\,\\\\\\\\,g'`
   if $SMALLCHANGE_STATIC; then
     SIM_AC_CONFIGURATION_SETTING([SmallChange build type], [static .lib])
@@ -197,10 +197,11 @@ SIM_AC_UNIQIFY_LIST(LIBS, $LIBS)
 
 AC_OUTPUT([
         Makefile
-        src/Makefile
-	src/nodekits/Makefile
-	src/nodes/Makefile
-	src/elements/Makefile
+        lib/Makefile
+        lib/SmallChange/Makefile
+	lib/SmallChange/nodekits/Makefile
+	lib/SmallChange/nodes/Makefile
+	lib/SmallChange/elements/Makefile
 ])
 
 SIM_AC_CONFIGURATION_SETTING([Install prefix], [$prefix])
