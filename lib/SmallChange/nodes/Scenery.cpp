@@ -349,12 +349,6 @@ SmScenery::initClass(void)
   first = FALSE;
   if (sc_scenery_available()) {
     sc_ssglue_initialize();
-    if ( ok_to_use_bytevalue_normals() ) {
-      sc_set_use_bytenormals(TRUE);
-    }
-    else {
-      sc_set_use_bytenormals(FALSE);
-    }
   }
   SO_NODE_INIT_CLASS(SmScenery, SoShape, "Shape");
 }
@@ -679,7 +673,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
   }
 #else
   /* note: this is matched with an unset call at the end of the function */
-  uint32_t glcontextid = action->getCacheContext();
+  const uint32_t glcontextid = action->getCacheContext();
   sc_set_current_context_id(&PRIVATE(this)->renderstate, glcontextid);
 #endif
 
@@ -723,6 +717,22 @@ SmScenery::GLRender(SoGLRenderAction * action)
   const cc_glglue * gl = cc_glglue_instance(SoGLCacheContextElement::get(state));
   assert(gl);
 
+  // Must be done every frame, in case rendering in a new context.
+  sc_probe_gl(glcontextid, NULL);
+
+  if ( !sc_found_vertexarrays(glcontextid) ) {
+    PRIVATE(this)->usevertexarrays = FALSE;
+  } else {
+    PRIVATE(this)->usevertexarrays = sc_suggest_vertexarrays(glcontextid);
+    PRIVATE(this)->usevertexarrays = TRUE; // FIXME: hack
+  }
+  sc_set_use_bytenormals(glcontextid,
+                         sc_suggest_bytenormals(glcontextid) &&
+                         ok_to_use_bytevalue_normals());
+
+  sc_set_have_clamp_to_edge(glcontextid, cc_glglue_has_texture_edge_clamp(gl));
+
+
   if (PRIVATE(this)->firstGLRender) {
     // FIXME: this should not really be necessary, and should be
     // considered a work-around for a bug in the scenery SDK. 20031015 mortene.
@@ -730,26 +740,14 @@ SmScenery::GLRender(SoGLRenderAction * action)
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
 
-    sc_probe_gl(FALSE);
     // just override defaults when probing - power-users can override later
-    if ( !sc_found_multitexturing() ) {
+    if ( !sc_found_multitexturing(glcontextid) ) {
       if ( this->elevationLines.getValue() ) {
         // a better fix would be to have an internal flag on whether
         // multitexturing was possible or not, and to combine both
         // flags on whether to enable multitexturing 
         this->elevationLines.setValue(FALSE);
       }
-    }
-    if ( !sc_found_vertexarrays() ) {
-      PRIVATE(this)->usevertexarrays = FALSE;
-    } else {
-      PRIVATE(this)->usevertexarrays = sc_suggest_vertexarrays();
-      PRIVATE(this)->usevertexarrays = TRUE; // FIXME: hack
-    }
-    sc_set_use_bytenormals(sc_suggest_bytenormals());
-
-    if ( cc_glglue_has_texture_edge_clamp(gl) ) {
-      sc_set_have_clamp_to_edge(TRUE);
     }
     PRIVATE(this)->firstGLRender = FALSE;
   }

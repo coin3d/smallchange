@@ -63,7 +63,7 @@ struct RenderState {
 #endif /* !APIENTRY */
 
 typedef void (APIENTRY * sc_msghandler_fp)(const char * msg);
-void sc_probe_gl(sc_msghandler_fp msghandler); /* automatic setup of the below features */
+void sc_probe_gl(const unsigned int ctxid, sc_msghandler_fp msghandler); /* automatic setup of the below features */
 
 /* used to set the current OpenGL context id from client code,
    necessary for e.g. making sure texture allocation and destruction
@@ -75,18 +75,18 @@ void sc_unset_current_context(RenderState * state);
 
 /* don't use the following methods unless completely necessary */
 
-void sc_set_use_bytenormals(int enable); /* for buggy GL drivers (3Dlabs) */
-int sc_get_use_bytenormals(void); /* for buggy GL drivers (3Dlabs) */
-void sc_set_have_clamp_to_edge(int enable); /* GL 1.x feature */
-int sc_get_have_clamp_to_edge(void); /* GL 1.x feature */
-void sc_set_use_occlusion_test(int enable);
-int sc_get_use_occlusion_test(void);
+void sc_set_use_bytenormals(unsigned int ctxid, int enable); /* for buggy GL drivers (3Dlabs) */
+int sc_get_use_bytenormals(unsigned int ctxid); /* for buggy GL drivers (3Dlabs) */
+void sc_set_have_clamp_to_edge(unsigned int ctxid, int enable); /* GL 1.x feature */
+int sc_get_have_clamp_to_edge(unsigned int ctxid); /* GL 1.x feature */
+void sc_set_use_occlusion_test(unsigned int ctxid, int enable);
+int sc_get_use_occlusion_test(unsigned int ctxid);
 
 /* ask about features */
-int sc_found_multitexturing(void);
-int sc_found_vertexarrays(void);
-int sc_suggest_vertexarrays(void);
-int sc_suggest_bytenormals(void);
+int sc_found_multitexturing(unsigned int ctxid);
+int sc_found_vertexarrays(unsigned int ctxid);
+int sc_suggest_vertexarrays(unsigned int ctxid);
+int sc_suggest_bytenormals(unsigned int ctxid);
 
 /* ********************************************************************** */
 

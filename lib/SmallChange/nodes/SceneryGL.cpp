@@ -138,15 +138,11 @@ typedef void (APIENTRY * glDrawElements_f)(GLenum mode, GLsizei count, GLenum ty
 typedef void (APIENTRY * glDrawRangeElements_f)( GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices );
 
 
-// FIXME: there is only a single, global instance of the following
-// structure. This is bogus, as different GL contexts can be used
-// concurrently, and they very well could have different capabilities
-// (an offscreen-context may have a different renderer than a
-// hardware-assisted on-screen context, for instance).
-//
-// Suggested fix: separate out the GL glue part of Coin into a
-// sub-library which can be used from any project, then use that
-// instead of this duplicated effort.
+// FIXME: there is a lot of duplicated effort in the OpenGL capability
+// probing below, as this is already implemented for Coin --
+// better. The best fix would probably be to separate out the GL glue
+// part of Coin into a sub-library which can be used from any project,
+// then use that.
 //
 // 20040426 mortene.
 //
@@ -159,6 +155,8 @@ typedef void (APIENTRY * glDrawRangeElements_f)( GLenum mode, GLuint start, GLui
 
 // state container definition
 struct sc_GL {
+  int initialized;
+
   // polygon offset (for 
   // glPolygonOffsetEnable_f glPolygonOffsetEnable(TRUE, styles);
   glPolygonOffset_f glPolygonOffset;
@@ -201,46 +199,72 @@ struct sc_GL {
   int USE_OCCLUSIONTEST;
 };
 
-// static state container
+static SbHash<struct sc_GL *, unsigned int> * glctxhash = NULL;
+
 static
-struct sc_GL GL =
+struct sc_GL *
+GLi(const unsigned int ctxid)
 {
-  NULL,     // glPolygonOffset
+  if (glctxhash == NULL) {
+    glctxhash = new SbHash<struct sc_GL *, unsigned int>;
+    // FIXME: leak (should be deallocated on exit). 20040714 mortene.
+  }
 
-  NULL,     // glGenTextures
-  NULL,     // glBindTexture
-  NULL,     // glTexImage2D
-  NULL,     // glDeleteTextures
+  struct sc_GL * gli = NULL;
+  const int found = glctxhash->get(ctxid, gli);
+  if (!found) {
+    struct sc_GL tmp = {
+      FALSE,    // "has been initialized by sc_probe_gl()" flag
 
-  NULL,     // glMultiTexCoord2f
-  NULL,     // glClientActiveTexture
+      NULL,     // glPolygonOffset
 
-  NULL,     // glEnableClientState
-  NULL,     // glDisableClientState
-  NULL,     // glVertexPointer
-  NULL,     // glNormalPointer
-  NULL,     // glTexCoordPointer
-  NULL,     // glDrawArrays
-  NULL,     // glDrawElements
-  NULL,     // glDrawRangeElements
+      NULL,     // glGenTextures
+      NULL,     // glBindTexture
+      NULL,     // glTexImage2D
+      NULL,     // glDeleteTextures
 
-  GL_CLAMP, // clamp_to_edge
-  TRUE,     // USE_BYTENORMALS
-  TRUE,     // SUGGEST_BYTENORMALS
+      NULL,     // glMultiTexCoord2f
+      NULL,     // glClientActiveTexture
 
-  FALSE,    // HAVE_MULTITEXTURES
-  FALSE,    // HAVE_VERTEXARRAYS
-  FALSE,    // SUGGEST_VERTEXARRAYS
-  FALSE,    // HAVE_NORMALMAPS
-  FALSE,    // HAVE_OCCLUSIONTEST
-  FALSE     // USE_OCCLUSIONTEST
-};
+      NULL,     // glEnableClientState
+      NULL,     // glDisableClientState
+      NULL,     // glVertexPointer
+      NULL,     // glNormalPointer
+      NULL,     // glTexCoordPointer
+      NULL,     // glDrawArrays
+      NULL,     // glDrawElements
+      NULL,     // glDrawRangeElements
+
+      GL_CLAMP, // clamp_to_edge
+      TRUE,     // USE_BYTENORMALS
+      TRUE,     // SUGGEST_BYTENORMALS
+
+      FALSE,    // HAVE_MULTITEXTURES
+      FALSE,    // HAVE_VERTEXARRAYS
+      FALSE,    // SUGGEST_VERTEXARRAYS
+      FALSE,    // HAVE_NORMALMAPS
+      FALSE,    // HAVE_OCCLUSIONTEST
+      FALSE     // USE_OCCLUSIONTEST
+    };
+
+    // FIXME: there's got to be a more elegant way to alloc and init?
+    // 20040714 mortene.
+    gli = new struct sc_GL(tmp);
+
+    // FIXME: leak. Never taken out again. 20040714 mortene.
+    const int newentry = glctxhash->put(ctxid, gli);
+    assert(newentry);
+  }
+  return gli;
+}
+
+// *************************************************************************
 
 #define GL_FUNCTION_SETTER(func) \
-static void                      \
-sc_set_##func(void * fptr)       \
-{                                \
-  GL.func = (func##_f) fptr;     \
+static void \
+sc_set_##func(unsigned int ctxid, void * fptr) \
+{ \
+  GLi(ctxid)->func = (func##_f) fptr; \
 }
 
 GL_FUNCTION_SETTER(glPolygonOffset)
@@ -267,72 +291,69 @@ GL_FUNCTION_SETTER(glDrawRangeElements)
 
 #undef GL_FUNCTION_SETTER
 
-#define GL_CALL(func, args) \
-  GL.func(args)
-
 void
-sc_set_have_clamp_to_edge(int enable)
+sc_set_have_clamp_to_edge(unsigned int ctxid, int enable)
 {
   if ( enable ) {
-    GL.CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
+    GLi(ctxid)->CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
   } else {
-    GL.CLAMP_TO_EDGE = GL_CLAMP;
+    GLi(ctxid)->CLAMP_TO_EDGE = GL_CLAMP;
   }
 }
 
 int
-sc_get_have_clamp_to_edge(void)
+sc_get_have_clamp_to_edge(unsigned int ctxid)
 {
-  return GL.CLAMP_TO_EDGE;
+  return GLi(ctxid)->CLAMP_TO_EDGE;
 }
 
 void
-sc_set_use_bytenormals(int enable)
+sc_set_use_bytenormals(unsigned int ctxid, int enable)
 {
-  GL.USE_BYTENORMALS = (enable != FALSE) ? TRUE : FALSE;
+  GLi(ctxid)->USE_BYTENORMALS = (enable != FALSE) ? TRUE : FALSE;
 }
 
 int
-sc_get_use_bytenormals(void)
+sc_get_use_bytenormals(unsigned int ctxid)
 {
-  return GL.USE_BYTENORMALS;
+  return GLi(ctxid)->USE_BYTENORMALS;
 }
  
 void
-sc_set_use_occlusion_test(int enable)
+sc_set_use_occlusion_test(unsigned int ctxid, int enable)
 {
-  GL.USE_OCCLUSIONTEST = (enable != FALSE) ? TRUE : FALSE;
+  GLi(ctxid)->USE_OCCLUSIONTEST = (enable != FALSE) ? TRUE : FALSE;
 }
 
 int
-sc_get_use_occlusion_test(void)
+sc_get_use_occlusion_test(unsigned int ctxid)
 {
-  return GL.USE_OCCLUSIONTEST;
+  return GLi(ctxid)->USE_OCCLUSIONTEST;
 }
 
 
 int
-sc_found_multitexturing(void)
+sc_found_multitexturing(unsigned int ctxid)
 {
-  return GL.HAVE_MULTITEXTURES;
+  return GLi(ctxid)->HAVE_MULTITEXTURES;
 }
 
 int
-sc_found_vertexarrays(void)
+sc_found_vertexarrays(unsigned int ctxid)
 {
-  return GL.HAVE_VERTEXARRAYS;
+  return GLi(ctxid)->HAVE_VERTEXARRAYS;
 }
 
 int
-sc_suggest_vertexarrays(void)
+sc_suggest_vertexarrays(unsigned int ctxid)
 {
-  return GL.SUGGEST_VERTEXARRAYS;
+  return GLi(ctxid)->SUGGEST_VERTEXARRAYS;
 }
 
 int
-sc_suggest_bytenormals(void)
+sc_suggest_bytenormals(unsigned int ctxid)
 {
-  return GL.SUGGEST_BYTENORMALS;
+  return GLi(ctxid)->SUGGEST_BYTENORMALS;
 }
 
 /* ********************************************************************** */
@@ -367,15 +388,12 @@ sc_suggest_bytenormals(void)
   if ( !ptr ) ptr = GL_PROC_ADDRESS3(name##ARB)
 
 void
-sc_probe_gl(sc_msghandler_fp msghandler)
+sc_probe_gl(const unsigned int ctxid, sc_msghandler_fp msghandler)
 {
   // FIXME: should assert on having a current GL context here...
 
-  // Note that this function can be called multiple times, each time
-  // for new contexts, so old state information must be scrapped.
-  //
-  // See my FIXME from 20040426 a few hundred lines above this
-  // comment.  20040713 mortene.
+  struct sc_GL * GL = GLi(ctxid);
+  if (GL->initialized) { return; }
 
   const int bufsize = 1024*16;
   char * buf = (char *) malloc(bufsize); /* *this* should be long enough */
@@ -402,10 +420,10 @@ sc_probe_gl(sc_msghandler_fp msghandler)
   // not with normals given with glNormal3f().  We therefore suggest doing
   // conversion to floats before sending to GL for 3Dlabs graphics cards.
 
-  GL.SUGGEST_BYTENORMALS = TRUE;
+  GL->SUGGEST_BYTENORMALS = TRUE;
   if ( strcmp(vendor, "3Dlabs") == 0 ) {
     // float normals doesn't bug where byte normals does
-    GL.SUGGEST_BYTENORMALS = FALSE;
+    GL->SUGGEST_BYTENORMALS = FALSE;
     if ( msghandler ) {
       msghandler("PROBE: detected 3Dlabs card - disabling bytepacked normals\n");
     }
@@ -428,10 +446,10 @@ sc_probe_gl(sc_msghandler_fp msghandler)
     msghandler("PROBE: no GL_EXTENSIONS string\n");
   }
 
-  GL.HAVE_MULTITEXTURES = FALSE;
+  GL->HAVE_MULTITEXTURES = FALSE;
   if ( (minor >= 3) || (exts && strstr(exts, "GL_ARB_multitexture ")) ) {
     // multi-texturing is available frmo OpenGL 1.3 and up
-    GL.HAVE_MULTITEXTURES = TRUE;
+    GL->HAVE_MULTITEXTURES = TRUE;
     if ( msghandler ) {
       msghandler("PROBE: detected multitexturing support\n");
     }
@@ -440,18 +458,18 @@ sc_probe_gl(sc_msghandler_fp msghandler)
   // normal maps will make rendering with normals instead of textures
   // much nicer (no popping), and will combine better with non-lighted
   // textures.  (to be implemented)
-  GL.HAVE_NORMALMAPS = FALSE;
+  GL->HAVE_NORMALMAPS = FALSE;
   if ( (minor >= 10) || (exts && strstr(exts, "GL_whatever_normal_maps ")) ) {
-    GL.HAVE_NORMALMAPS = TRUE;
+    GL->HAVE_NORMALMAPS = TRUE;
   }
 
   // occlusion testing can probably optimize rendering quite a bit
   // (to be implemented)
-  GL.HAVE_OCCLUSIONTEST = FALSE;
-  GL.USE_OCCLUSIONTEST = FALSE;
+  GL->HAVE_OCCLUSIONTEST = FALSE;
+  GL->USE_OCCLUSIONTEST = FALSE;
   if ( exts && strstr(exts, "GL_HP_occlusion_test ") ) {
-    GL.HAVE_OCCLUSIONTEST = TRUE;
-    GL.USE_OCCLUSIONTEST = TRUE;
+    GL->HAVE_OCCLUSIONTEST = TRUE;
+    GL->USE_OCCLUSIONTEST = TRUE;
     if ( msghandler ) {
       msghandler("PROBE: installed hardware occlusion test support\n");
     }
@@ -463,8 +481,8 @@ sc_probe_gl(sc_msghandler_fp msghandler)
 
   assert(vendor);
   if ( strcmp(vendor, "ATI Technologies Inc.") == 0 ) {
-    GL.USE_OCCLUSIONTEST = FALSE;
-    if ( GL.HAVE_OCCLUSIONTEST && msghandler ) {
+    GL->USE_OCCLUSIONTEST = FALSE;
+    if ( GL->HAVE_OCCLUSIONTEST && msghandler ) {
       msghandler("PROBE: we don't trust ATI's occlusion test - disabling\n");
     }
     // A case with false positive results for the GL_HP_occlusion_test,
@@ -475,31 +493,31 @@ sc_probe_gl(sc_msghandler_fp msghandler)
     // case.
   }
 
-  GL.CLAMP_TO_EDGE = GL_CLAMP;
+  GL->CLAMP_TO_EDGE = GL_CLAMP;
   if ( (minor >= 2) ||
        (exts &&
         (strstr(exts, "GL_EXT_texture_edge_clamp ") ||
          strstr(exts, "GL_SGIS_texture_edge_clamp "))) ) {
-    GL.CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
+    GL->CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
     if ( msghandler ) {
       msghandler("PROBE: detected texture_edge_clamp\n");
     }
   }
 
-  sc_set_glPolygonOffset(NULL);
+  sc_set_glPolygonOffset(ctxid, NULL);
   if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glPolygonOffset);
     if ( msghandler ) {
       sprintf(buf, "PROBE: glPolygonOffset = %p\n", ptr);
       msghandler(buf);
     }
-    sc_set_glPolygonOffset(ptr);
+    sc_set_glPolygonOffset(ctxid, ptr);
   }
 
-  sc_set_glGenTextures(NULL);
-  sc_set_glBindTexture(NULL);
-  sc_set_glTexImage2D(NULL);
-  sc_set_glDeleteTextures(NULL);
+  sc_set_glGenTextures(ctxid, NULL);
+  sc_set_glBindTexture(ctxid, NULL);
+  sc_set_glTexImage2D(ctxid, NULL);
+  sc_set_glDeleteTextures(ctxid, NULL);
   if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glGenTextures);
     if ( msghandler ) {
@@ -507,7 +525,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glGenTextures(ptr);
+    sc_set_glGenTextures(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glBindTexture);
     if ( msghandler ) {
@@ -515,7 +533,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glBindTexture(ptr);
+    sc_set_glBindTexture(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glTexImage2D);
     if ( msghandler ) {
@@ -523,7 +541,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glTexImage2D(ptr);
+    sc_set_glTexImage2D(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glDeleteTextures);
     if ( msghandler ) {
@@ -531,18 +549,18 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glDeleteTextures(ptr);
+    sc_set_glDeleteTextures(ctxid, ptr);
   }
 
-  sc_set_glMultiTexCoord2f(NULL);
-  sc_set_glClientActiveTexture(NULL);
-  if ( GL.HAVE_MULTITEXTURES ) {
+  sc_set_glMultiTexCoord2f(ctxid, NULL);
+  sc_set_glClientActiveTexture(ctxid, NULL);
+  if ( GL->HAVE_MULTITEXTURES ) {
     GL_PROC_SEARCH(ptr, glMultiTexCoord2f);
     if ( msghandler ) {
       sprintf(buf, "PROBE: glMultiTexCoord2f = %p\n", ptr);
       msghandler(buf);
     }
-    sc_set_glMultiTexCoord2f(ptr);
+    sc_set_glMultiTexCoord2f(ctxid, ptr);
     if ( ptr ) {
       // multi-texturing + vertex-arrays
       GL_PROC_SEARCH(ptr, glClientActiveTexture);
@@ -550,15 +568,15 @@ sc_probe_gl(sc_msghandler_fp msghandler)
         sprintf(buf, "PROBE: glClientActiveTexture = %p\n", ptr);
         msghandler(buf);
       }
-      sc_set_glClientActiveTexture(ptr);
+      sc_set_glClientActiveTexture(ctxid, ptr);
       if ( msghandler ) {
         msghandler("PROBE: installed multi-texturing support\n");
       }
     } else {
       // Apparently, Windows software rendering can report TRUE on
       // multitexturing, withough having glMultiTexCoord2f available
-      GL.HAVE_MULTITEXTURES = FALSE;
-      sc_set_glClientActiveTexture(NULL);
+      GL->HAVE_MULTITEXTURES = FALSE;
+      sc_set_glClientActiveTexture(ctxid, NULL);
       if ( msghandler ) {
         msghandler("PROBE: disabled multi-texturing support\n");
       }
@@ -570,14 +588,14 @@ sc_probe_gl(sc_msghandler_fp msghandler)
     }
   }
 
-  sc_set_glEnableClientState(NULL);
-  sc_set_glDisableClientState(NULL);
-  sc_set_glVertexPointer(NULL);
-  sc_set_glNormalPointer(NULL);
-  sc_set_glTexCoordPointer(NULL);
-  sc_set_glDrawArrays(NULL);
-  sc_set_glDrawElements(NULL);
-  sc_set_glDrawRangeElements(NULL);
+  sc_set_glEnableClientState(ctxid, NULL);
+  sc_set_glDisableClientState(ctxid, NULL);
+  sc_set_glVertexPointer(ctxid, NULL);
+  sc_set_glNormalPointer(ctxid, NULL);
+  sc_set_glTexCoordPointer(ctxid, NULL);
+  sc_set_glDrawArrays(ctxid, NULL);
+  sc_set_glDrawElements(ctxid, NULL);
+  sc_set_glDrawRangeElements(ctxid, NULL);
   if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glEnableClientState);
     if ( msghandler ) {
@@ -585,7 +603,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glEnableClientState(ptr);
+    sc_set_glEnableClientState(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glDisableClientState);
     if ( msghandler ) {
@@ -593,7 +611,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glDisableClientState(ptr);
+    sc_set_glDisableClientState(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glVertexPointer);
     if ( msghandler ) {
@@ -601,7 +619,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glVertexPointer(ptr);
+    sc_set_glVertexPointer(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glNormalPointer);
     if ( msghandler ) {
@@ -609,7 +627,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glNormalPointer(ptr);
+    sc_set_glNormalPointer(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glTexCoordPointer);
     if ( msghandler ) {
@@ -617,7 +635,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glTexCoordPointer(ptr);
+    sc_set_glTexCoordPointer(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glDrawArrays);
     if ( msghandler ) {
@@ -625,7 +643,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glDrawArrays(ptr);
+    sc_set_glDrawArrays(ctxid, ptr);
 
     GL_PROC_SEARCH(ptr, glDrawElements);
     if ( msghandler ) {
@@ -633,7 +651,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
       msghandler(buf);
     }
     assert(ptr);
-    sc_set_glDrawElements(ptr);
+    sc_set_glDrawElements(ctxid, ptr);
 
     if ( minor >= 2 ) {
       GL_PROC_SEARCH(ptr, glDrawRangeElements);
@@ -641,30 +659,30 @@ sc_probe_gl(sc_msghandler_fp msghandler)
         sprintf(buf, "PROBE: glDrawRangeElements = %p\n", ptr);
         msghandler(buf);
       }
-      sc_set_glDrawRangeElements(ptr);
+      sc_set_glDrawRangeElements(ctxid, ptr);
     } else {
       GL_PROC_SEARCH(ptr, glDrawRangeElements);
       if ( msghandler ) {
         sprintf(buf, "PROBE: glDrawRangeElements = %p\n", ptr);
         msghandler(buf);
       }
-      sc_set_glDrawRangeElements(ptr);
+      sc_set_glDrawRangeElements(ctxid, ptr);
     }
 
-    if ( GL.glVertexPointer != NULL ) {
-      GL.HAVE_VERTEXARRAYS = TRUE;
+    if ( GL->glVertexPointer != NULL ) {
+      GL->HAVE_VERTEXARRAYS = TRUE;
       if ( msghandler ) {
         msghandler("PROBE: installed vertex-arrays support\n");
       }
     } else {
-      GL.HAVE_VERTEXARRAYS = FALSE;
+      GL->HAVE_VERTEXARRAYS = FALSE;
       if ( msghandler ) {
         msghandler("PROBE: vertex-arrays should have been supported\n");
       }
     }
   }
   else {
-    GL.HAVE_VERTEXARRAYS = FALSE;
+    GL->HAVE_VERTEXARRAYS = FALSE;
     if ( msghandler ) {
       msghandler("PROBE: vertex-arrays not supported\n");
     }
@@ -672,11 +690,13 @@ sc_probe_gl(sc_msghandler_fp msghandler)
     
   // Vertex arrays are available in OpenGL 1.1 and up.
   // It is currently the preferred rendering loop.
-  GL.SUGGEST_VERTEXARRAYS = GL.HAVE_VERTEXARRAYS;
+  GL->SUGGEST_VERTEXARRAYS = GL->HAVE_VERTEXARRAYS;
 
   APP_HANDLE_CLOSE(handle);
 
   free(buf);
+
+  GL->initialized = TRUE;
 }
 
 #undef APP_HANDLE_TYPE
@@ -685,18 +705,6 @@ sc_probe_gl(sc_msghandler_fp msghandler)
 #undef GL_PROC_ADDRESS1
 #undef GL_PROC_ADDRESS2
 #undef GL_PROC_SEARCH
-
-static void
-sc_set_max_defensive_settings(void)
-{
-  GL.HAVE_VERTEXARRAYS = FALSE;
-  GL.HAVE_MULTITEXTURES = FALSE;
-  GL.HAVE_OCCLUSIONTEST = FALSE;
-  GL.USE_OCCLUSIONTEST = FALSE;
-  GL.USE_BYTENORMALS = FALSE;
-  GL.SUGGEST_BYTENORMALS = FALSE;
-  GL.CLAMP_TO_EDGE = GL_CLAMP;
-}
 
 /* ********************************************************************** */
 
@@ -782,7 +790,9 @@ struct texture_info {
 };
 
 static void *
-sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
+sc_default_texture_construct(RenderState * state, unsigned char * data,
+                             int texw, int texh, int nc,
+                             int wraps, int wrapt, float q)
 {
   texture_info * info = new texture_info;
   assert(info != NULL);
@@ -797,9 +807,10 @@ sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, i
   info->quality = q;
   info->isbound = GL_FALSE;
 
-  assert(GL.glGenTextures);
+  const unsigned int ctxid = PRIVATE(state)->glcontextid;
+  assert(GLi(ctxid)->glGenTextures);
 
-  GL.glGenTextures(1, &info->id);
+  GLi(ctxid)->glGenTextures(1, &info->id);
 
   return info;
 }
@@ -810,10 +821,13 @@ sc_default_texture_activate(RenderState * state, void * handle)
   texture_info * info = (texture_info *) handle;
   assert(info != NULL);
   
-  assert(GL.glBindTexture);
-  assert(GL.glTexImage2D);
+  const unsigned int ctxid = PRIVATE(state)->glcontextid;
+  const struct sc_GL * GL = GLi(ctxid);
 
-  GL.glBindTexture(GL_TEXTURE_2D, info->id);
+  assert(GL->glBindTexture);
+  assert(GL->glTexImage2D);
+
+  GL->glBindTexture(GL_TEXTURE_2D, info->id);
 
   // When texture has been passed to GL driver, it will be sufficient
   // with just the glBindTexture() call on successive activations.
@@ -844,9 +858,9 @@ sc_default_texture_activate(RenderState * state, void * handle)
 
   // void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * pixels);
 
-  GL.glTexImage2D(GL_TEXTURE_2D, 0, info->components,
-                  info->texwidth, info->texheight, 0,
-                  GL_RGBA, GL_UNSIGNED_BYTE, info->data);
+  GL->glTexImage2D(GL_TEXTURE_2D, 0, info->components,
+                   info->texwidth, info->texheight, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, info->data);
 
   info->isbound = GL_TRUE;
 
@@ -854,25 +868,32 @@ sc_default_texture_activate(RenderState * state, void * handle)
 }
 
 static void
-sc_default_texture_release(void * handle)
+sc_default_texture_release(RenderState * state, void * handle)
 {
   texture_info * info = (texture_info *) handle;
   assert(info);
-  assert(GL.glDeleteTextures);
-  GL.glDeleteTextures(1, &info->id);
+
+  const unsigned int ctxid = PRIVATE(state)->glcontextid;
+  const struct sc_GL * GL = GLi(ctxid);
+  assert(GL->glDeleteTextures);
+  GL->glDeleteTextures(1, &info->id);
   delete info;
 }
 
-typedef void * sc_texture_construct_f(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey);
+typedef void * sc_texture_construct_f(RenderState * state, unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q);
 typedef void sc_texture_activate_f(RenderState * state, void * handle);
-typedef void sc_texture_release_f(void * handle);
+typedef void sc_texture_release_f(RenderState * state, void * handle);
 
 static sc_texture_construct_f * texture_construct = sc_default_texture_construct;
 static sc_texture_activate_f * texture_activate = sc_default_texture_activate;
 static sc_texture_release_f * texture_release = sc_default_texture_release;
 
-void
-sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release)
+// FIXME: not used as part of public API, so not really any point in
+// this round-about way of setting up callback functions? 20040714 mortene.
+static void
+sc_set_texture_functions(sc_texture_construct_f * construct,
+                         sc_texture_activate_f * activate,
+                         sc_texture_release_f * release)
 {
   texture_construct = construct;
   texture_activate = activate;
@@ -1014,7 +1035,7 @@ sc_delete_unused_textures(RenderState * state)
     assert(tex);
 
     if (tex->unusedcount > MAX_UNUSED_COUNT) {
-      texture_release(tex->clienttexdata);
+      texture_release(state, tex->clienttexdata);
       delete tex;
       texhash->remove(key);
     }
@@ -1048,7 +1069,7 @@ sc_delete_all_textures(RenderState * state)
     assert(tex);
     texhash->remove(key);
 
-    texture_release(tex->clienttexdata);
+    texture_release(state, tex->clienttexdata);
     delete tex;
   }
 }
@@ -1297,7 +1318,10 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   // PROLOGUE: The occlusion test is still not enabled for ATI cards
   // again though.
 
-  if ( state->renderpass && GL.USE_OCCLUSIONTEST ) {
+  const unsigned int ctxid = PRIVATE(state)->glcontextid;
+  const struct sc_GL * GL = GLi(ctxid);
+
+  if ( state->renderpass && GL->USE_OCCLUSIONTEST ) {
     if ( (state->numclipplanes > 0) && (total_inside == (state->numclipplanes * 8)) ) {
       // save GL state
       glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
@@ -1401,14 +1425,15 @@ sc_ray_culling_post_cb(void * closure)
 /* ********************************************************************** */
 
 inline void
-GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
+GL_VERTEX(RenderState * state, const struct sc_GL * GL,
+          const int x, const int y, const float elev)
 {
   glTexCoord2f(PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0],
                PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1]);
   
-  if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
-    GL.glMultiTexCoord2f(GL_TEXTURE1,
-                         0.0f, (state->etexscale * elev) + state->etexoffset);
+  if (state->etexscale != 0.0f && GL->glMultiTexCoord2f != NULL) {
+    GL->glMultiTexCoord2f(GL_TEXTURE1,
+                          0.0f, (state->etexscale * elev) + state->etexoffset);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
@@ -1477,9 +1502,10 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
 }
 
 inline void
-GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, const signed char * n)
+GL_VERTEX_N(RenderState * state, const struct sc_GL * GL,
+            const int x, const int y, const float elev, const signed char * n)
 {
-  if ( GL.USE_BYTENORMALS ) {
+  if ( GL->USE_BYTENORMALS ) {
     glNormal3bv((const GLbyte *)n);
   }
   else {
@@ -1492,11 +1518,12 @@ GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, con
 }
 
 inline void
-GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, const signed char * n)
+GL_VA_VERTEX_N(RenderState * state, const struct sc_GL * GL,
+               const int x, const int y, const float elev, const signed char * n)
 {
 #if VA_INTERLEAVED
   const int idx = PRIVATE(state)->vertexcount;
-  if ( GL.USE_BYTENORMALS ) {
+  if ( GL->USE_BYTENORMALS ) {
     PRIVATE(state)->normals[idx*3+0] = n[0];
     PRIVATE(state)->normals[idx*3+1] = n[1];
     PRIVATE(state)->normals[idx*3+2] = n[2];
@@ -1514,7 +1541,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   static signed char normal[3][3];
   static float vertex[3][3];
 
-  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL->glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1530,7 +1557,7 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( GL.glDrawElements != NULL ) {
+  if ( GL->glDrawElements != NULL ) {
     PRIVATE(state)->normalarray.append(normal[0][0]);
     PRIVATE(state)->normalarray.append(normal[0][1]);
     PRIVATE(state)->normalarray.append(normal[0][2]);
@@ -1553,17 +1580,18 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
 }
 
 inline void
-GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
+GL_VERTEX_TN(RenderState * state, const struct sc_GL * GL,
+             const int x, const int y, const float elev, const signed char * n)
 {
-  if ( GL.USE_BYTENORMALS ) { glNormal3bv((const GLbyte *)n); }
+  if ( GL->USE_BYTENORMALS ) { glNormal3bv((const GLbyte *)n); }
   else {
     static const float factor = 1.0f/127.0f;
     glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
   }
   glTexCoord2f(PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0],
                PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1]);
-  if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
-    GL.glMultiTexCoord2f(GL_TEXTURE1,
+  if (state->etexscale != 0.0f && GL->glMultiTexCoord2f != NULL) {
+    GL->glMultiTexCoord2f(GL_TEXTURE1,
                          0.0f, (state->etexscale * elev) + state->etexoffset);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
@@ -1572,11 +1600,12 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
 }
 
 inline void
-GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
+GL_VA_VERTEX_TN(RenderState * state, const struct sc_GL * GL,
+                const int x, const int y, const float elev, const signed char * n)
 {
 #if VA_INTERLEAVED
   const int idx = PRIVATE(state)->vertexcount;
-  if ( GL.USE_BYTENORMALS ) {
+  if ( GL->USE_BYTENORMALS ) {
     PRIVATE(state)->normals[idx*3+0] = n[0];
     PRIVATE(state)->normals[idx*3+1] = n[1];
     PRIVATE(state)->normals[idx*3+2] = n[2];
@@ -1600,7 +1629,7 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL->glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1624,7 +1653,7 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   vertex[idx][1] = (float) (y*state->vspacing[1] + state->voffset[1]);
   vertex[idx][2] = elev;
 
-  if ( GL.glDrawElements != NULL ) {
+  if ( GL->glDrawElements != NULL ) {
     PRIVATE(state)->texcoord1array.append(texture1[0][0]);
     PRIVATE(state)->texcoord1array.append(texture1[0][1]);
     PRIVATE(state)->texcoord2array.append(texture2[0][0]);
@@ -1728,11 +1757,11 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
 	// offscreen rendering.
 	//
 	// 20040713 mortene.
-	const int clampmode = GL.CLAMP_TO_EDGE;
-
+        const int clampmode = GLi(PRIVATE(renderstate)->glcontextid)->CLAMP_TO_EDGE;
         assert(texture_construct);
-        void * opaquetexstruct = texture_construct(texdata, texw, texh, texnc,
-                                                   clampmode, clampmode, 0.9f, 0);
+        void * opaquetexstruct = texture_construct(renderstate,
+                                                   texdata, texw, texh, texnc,
+                                                   clampmode, clampmode, 0.9f);
 
         texinfo = sc_place_texture_in_hash(renderstate,
                                            PRIVATE(renderstate)->scenerytexid,
@@ -1768,6 +1797,7 @@ sc_render_cb(void * closure, const int x, const int y,
              const int len, const unsigned int bitmask)
 {
   RenderState * renderstate = (RenderState *) closure;
+  const struct sc_GL * GL = GLi(PRIVATE(renderstate)->glcontextid);
 
   const signed char * normals = renderstate->normaldata;  
   const float * elev = renderstate->elevdata;
@@ -1776,94 +1806,94 @@ sc_render_cb(void * closure, const int x, const int y,
   int idx;
   if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
 
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
   idx = (y)*W + x; \
-  GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
+  GL_VERTEX_N(state, GL, x, y, elev[idx], normals+3*idx);
 
     glBegin(GL_TRIANGLE_FAN);
-    SEND_VERTEX(renderstate, x, y);
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x, y);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
     if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      SEND_VERTEX(renderstate, x, y-len);
+      SEND_VERTEX(renderstate, GL, x, y-len);
     }
-    SEND_VERTEX(renderstate, x+len, y-len);
+    SEND_VERTEX(renderstate, GL, x+len, y-len);
     if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      SEND_VERTEX(renderstate, x+len, y);
+      SEND_VERTEX(renderstate, GL, x+len, y);
     }
-    SEND_VERTEX(renderstate, x+len, y+len);
+    SEND_VERTEX(renderstate, GL, x+len, y+len);
     if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      SEND_VERTEX(renderstate, x, y+len);
+      SEND_VERTEX(renderstate, GL, x, y+len);
     }
-    SEND_VERTEX(renderstate, x-len, y+len);
+    SEND_VERTEX(renderstate, GL, x-len, y+len);
     if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      SEND_VERTEX(renderstate, x-len, y);
+      SEND_VERTEX(renderstate, GL, x-len, y);
     }
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
     glEnd();
 #undef SEND_VERTEX
   }
   else if (normals) {
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
   idx = (y)*W + x; \
-  GL_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
+  GL_VERTEX_TN(state, GL, x, y, elev[idx], normals+3*idx);
 
     glBegin(GL_TRIANGLE_FAN);
-    SEND_VERTEX(renderstate, x, y);
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x, y);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
     if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      SEND_VERTEX(renderstate, x, y-len);
+      SEND_VERTEX(renderstate, GL, x, y-len);
     }
-    SEND_VERTEX(renderstate, x+len, y-len);
+    SEND_VERTEX(renderstate, GL, x+len, y-len);
     if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      SEND_VERTEX(renderstate, x+len, y);
+      SEND_VERTEX(renderstate, GL, x+len, y);
     }
-    SEND_VERTEX(renderstate, x+len, y+len);
+    SEND_VERTEX(renderstate, GL, x+len, y+len);
     if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      SEND_VERTEX(renderstate, x, y+len);
+      SEND_VERTEX(renderstate, GL, x, y+len);
     }
-    SEND_VERTEX(renderstate, x-len, y+len);
+    SEND_VERTEX(renderstate, GL, x-len, y+len);
     if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      SEND_VERTEX(renderstate, x-len, y);
+      SEND_VERTEX(renderstate, GL, x-len, y);
     }
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
     glEnd();
 #undef SEND_VERTEX
   }
   else {
     glBegin(GL_TRIANGLE_FAN);
-    GL_VERTEX(renderstate, x, y, ELEVATION(x, y));
-    GL_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
+    GL_VERTEX(renderstate, GL, x, y, ELEVATION(x, y));
+    GL_VERTEX(renderstate, GL, x-len, y-len, ELEVATION(x-len, y-len));
     if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      GL_VERTEX(renderstate, x, y-len, ELEVATION(x, y-len));
+      GL_VERTEX(renderstate, GL, x, y-len, ELEVATION(x, y-len));
     }
-    GL_VERTEX(renderstate, x+len, y-len, ELEVATION(x+len, y-len));
+    GL_VERTEX(renderstate, GL, x+len, y-len, ELEVATION(x+len, y-len));
     if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      GL_VERTEX(renderstate, x+len, y, ELEVATION(x+len, y));
+      GL_VERTEX(renderstate, GL, x+len, y, ELEVATION(x+len, y));
     }
-    GL_VERTEX(renderstate, x+len, y+len, ELEVATION(x+len, y+len));
+    GL_VERTEX(renderstate, GL, x+len, y+len, ELEVATION(x+len, y+len));
     if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      GL_VERTEX(renderstate, x, y+len, ELEVATION(x, y+len));
+      GL_VERTEX(renderstate, GL, x, y+len, ELEVATION(x, y+len));
     }
-    GL_VERTEX(renderstate, x-len, y+len, ELEVATION(x-len, y+len));
+    GL_VERTEX(renderstate, GL, x-len, y+len, ELEVATION(x-len, y+len));
     if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      GL_VERTEX(renderstate, x-len, y, ELEVATION(x-len, y));
+      GL_VERTEX(renderstate, GL, x-len, y, ELEVATION(x-len, y));
     }
-    GL_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
+    GL_VERTEX(renderstate, GL, x-len, y-len, ELEVATION(x-len, y-len));
     glEnd();
   }
 }
 
 inline
 void
-SEND_VA_TRIANGLE_FAN(RenderState * state)
+SEND_VA_TRIANGLE_FAN(RenderState * state, const struct sc_GL * GL)
 {
   assert(PRIVATE(state)->vertexcount <= 10);
-  assert(GL.glDrawElements != NULL);
+  assert(GL->glDrawElements != NULL);
   static unsigned int indices[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-  if ( GL.glDrawRangeElements != NULL ) {
-    GL.glDrawRangeElements(GL_TRIANGLE_FAN, 0, PRIVATE(state)->vertexcount - 1, PRIVATE(state)->vertexcount, GL_UNSIGNED_INT, indices);
+  if ( GL->glDrawRangeElements != NULL ) {
+    GL->glDrawRangeElements(GL_TRIANGLE_FAN, 0, PRIVATE(state)->vertexcount - 1, PRIVATE(state)->vertexcount, GL_UNSIGNED_INT, indices);
   } else {
-    GL.glDrawElements(GL_TRIANGLE_FAN, PRIVATE(state)->vertexcount, GL_UNSIGNED_INT, indices);
+    GL->glDrawElements(GL_TRIANGLE_FAN, PRIVATE(state)->vertexcount, GL_UNSIGNED_INT, indices);
   }
 }
 
@@ -1871,12 +1901,12 @@ SEND_VA_TRIANGLE_FAN(RenderState * state)
 #define VA_TRIANGLE_FAN_START() \
   PRIVATE(renderstate)->vertexcount = 0
 #define VA_TRIANGLE_FAN_STOP() \
-  SEND_VA_TRIANGLE_FAN(renderstate)
+  SEND_VA_TRIANGLE_FAN(renderstate, GL)
 #else
 #define VA_TRIANGLE_FAN_START() \
   PRIVATE(renderstate)->vertexcount = 0
 #define VA_TRIANGLE_FAN_STOP() \
-  if ( GL.glDrawRangeElements != NULL ) { \
+  if ( GL->glDrawRangeElements != NULL ) { \
     PRIVATE(renderstate)->lenarray.append(PRIVATE(renderstate)->vertexcount); \
   }
 #endif
@@ -1886,6 +1916,7 @@ sc_va_render_cb(void * closure, const int x, const int y,
                 const int len, const unsigned int bitmask)
 {
   RenderState * renderstate = (RenderState *) closure;
+  const struct sc_GL * GL = GLi(PRIVATE(renderstate)->glcontextid);
 
   const signed char * normals = renderstate->normaldata;  
   const float * elev = renderstate->elevdata;
@@ -1894,56 +1925,56 @@ sc_va_render_cb(void * closure, const int x, const int y,
   int idx;
   if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
 
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
   idx = (y)*W + x; \
-  GL_VA_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
+  GL_VA_VERTEX_N(state, GL, x, y, elev[idx], normals+3*idx);
 
     VA_TRIANGLE_FAN_START();
-    SEND_VERTEX(renderstate, x, y);
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x, y);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
     if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      SEND_VERTEX(renderstate, x, y-len);
+      SEND_VERTEX(renderstate, GL, x, y-len);
     }
-    SEND_VERTEX(renderstate, x+len, y-len);
+    SEND_VERTEX(renderstate, GL, x+len, y-len);
     if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      SEND_VERTEX(renderstate, x+len, y);
+      SEND_VERTEX(renderstate, GL, x+len, y);
     }
-    SEND_VERTEX(renderstate, x+len, y+len);
+    SEND_VERTEX(renderstate, GL, x+len, y+len);
     if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      SEND_VERTEX(renderstate, x, y+len);
+      SEND_VERTEX(renderstate, GL, x, y+len);
     }
-    SEND_VERTEX(renderstate, x-len, y+len);
+    SEND_VERTEX(renderstate, GL, x-len, y+len);
     if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      SEND_VERTEX(renderstate, x-len, y);
+      SEND_VERTEX(renderstate, GL, x-len, y);
     }
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
 #undef SEND_VERTEX
     VA_TRIANGLE_FAN_STOP();
   }
   else if (normals) {
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
   idx = (y)*W + x; \
-  GL_VA_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
+  GL_VA_VERTEX_TN(state, GL, x, y, elev[idx], normals+3*idx);
 
     VA_TRIANGLE_FAN_START();
-    SEND_VERTEX(renderstate, x, y);
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x, y);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
     if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      SEND_VERTEX(renderstate, x, y-len);
+      SEND_VERTEX(renderstate, GL, x, y-len);
     }
-    SEND_VERTEX(renderstate, x+len, y-len);
+    SEND_VERTEX(renderstate, GL, x+len, y-len);
     if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      SEND_VERTEX(renderstate, x+len, y);
+      SEND_VERTEX(renderstate, GL, x+len, y);
     }
-    SEND_VERTEX(renderstate, x+len, y+len);
+    SEND_VERTEX(renderstate, GL, x+len, y+len);
     if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      SEND_VERTEX(renderstate, x, y+len);
+      SEND_VERTEX(renderstate, GL, x, y+len);
     }
-    SEND_VERTEX(renderstate, x-len, y+len);
+    SEND_VERTEX(renderstate, GL, x-len, y+len);
     if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      SEND_VERTEX(renderstate, x-len, y);
+      SEND_VERTEX(renderstate, GL, x-len, y);
     }
-    SEND_VERTEX(renderstate, x-len, y-len);
+    SEND_VERTEX(renderstate, GL, x-len, y-len);
 #undef SEND_VERTEX
     VA_TRIANGLE_FAN_STOP();
   }
@@ -1976,6 +2007,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
                   const unsigned int bitmask_org)
 {
   RenderState * renderstate = (RenderState *) closure;
+  const struct sc_GL * GL = GLi(PRIVATE(renderstate)->glcontextid);
 
   const signed char * normals = renderstate->normaldata;
   const float * elev = renderstate->elevdata;
@@ -1988,16 +2020,16 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
 
   if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
     int idx;
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
     idx = (y)*W + x; \
-    GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
+    GL_VERTEX_N(state, GL, x, y, elev[idx], normals+3*idx);
 
     while (numv) {
       glBegin(GL_TRIANGLE_FAN);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
+        SEND_VERTEX(renderstate, GL, tx, ty);
         numv--;
       }
       numv = *ptr++;
@@ -2007,16 +2039,16 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
   }
   else if (normals) {
     int idx;
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
     idx = (y)*W + x; \
-    GL_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
+    GL_VERTEX_TN(state, GL, x, y, elev[idx], normals+3*idx);
 
     while (numv) {
       glBegin(GL_TRIANGLE_FAN);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
+        SEND_VERTEX(renderstate, GL, tx, ty);
         numv--;
       }
       numv = *ptr++;
@@ -2030,7 +2062,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
-        GL_VERTEX(renderstate, tx, ty, ELEVATION(tx, ty));
+        GL_VERTEX(renderstate, GL, tx, ty, ELEVATION(tx, ty));
         numv--;
       }
       numv = *ptr++;
@@ -2044,6 +2076,7 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
                      const unsigned int bitmask_org)
 {
   RenderState * renderstate = (RenderState *) closure;
+  const struct sc_GL * GL = GLi(PRIVATE(renderstate)->glcontextid);
 
   const signed char * normals = renderstate->normaldata;
   const float * elev = renderstate->elevdata;
@@ -2056,16 +2089,16 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
 
   if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
     int idx;
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
     idx = (y)*W + x; \
-    GL_VA_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
+    GL_VA_VERTEX_N(state, GL, x, y, elev[idx], normals+3*idx);
 
     while (numv) {
       VA_TRIANGLE_FAN_START();
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
+        SEND_VERTEX(renderstate, GL, tx, ty);
         numv--;
       }
       VA_TRIANGLE_FAN_STOP();
@@ -2075,16 +2108,16 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
   }
   else if (normals) {
     int idx;
-#define SEND_VERTEX(state, x, y) \
+#define SEND_VERTEX(state, GL, x, y) \
     idx = (y)*W + x; \
-    GL_VA_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
+    GL_VA_VERTEX_TN(state, GL, x, y, elev[idx], normals+3*idx);
 
     while (numv) {
       VA_TRIANGLE_FAN_START();
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
+        SEND_VERTEX(renderstate, GL, tx, ty);
         numv--;
       }
       VA_TRIANGLE_FAN_STOP();
@@ -2117,59 +2150,60 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
 #if VA_INTERLEAVED
   assert(closure);
   RenderState * renderstate = (RenderState *) closure;
+  const struct sc_GL * GL = GLi(PRIVATE(renderstate)->glcontextid);
 
   sc_render_pre_cb(closure, info);
 
   assert(info);
-  assert(GL.glEnableClientState != NULL);
-  assert(GL.glDisableClientState != NULL);
-  assert(GL.glVertexPointer != NULL);
-  assert(GL.glNormalPointer != NULL);
-  assert(GL.glTexCoordPointer != NULL);
-  assert(GL.glDrawElements != NULL);
-  assert(GL.glDrawArrays != NULL);
+  assert(GL->glEnableClientState != NULL);
+  assert(GL->glDisableClientState != NULL);
+  assert(GL->glVertexPointer != NULL);
+  assert(GL->glNormalPointer != NULL);
+  assert(GL->glTexCoordPointer != NULL);
+  assert(GL->glDrawElements != NULL);
+  assert(GL->glDrawArrays != NULL);
 
   const signed char * normals = renderstate->normaldata; // used as a flag below
   // elevation data is common for all modes
-  GL.glEnableClientState(GL_VERTEX_ARRAY);
-  GL.glVertexPointer(3, GL_FLOAT, 0, PRIVATE(renderstate)->vertices);
+  GL->glEnableClientState(GL_VERTEX_ARRAY);
+  GL->glVertexPointer(3, GL_FLOAT, 0, PRIVATE(renderstate)->vertices);
 
   if ( normals != NULL && PRIVATE(renderstate)->scenerytexid == 0 ) {
     // elevation and normals
-    if ( GL.USE_BYTENORMALS ) {
-      GL.glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
+    if ( GL->USE_BYTENORMALS ) {
+      GL->glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
     } else {
-      GL.glNormalPointer(GL_FLOAT, 0, PRIVATE(renderstate)->fnormals);
+      GL->glNormalPointer(GL_FLOAT, 0, PRIVATE(renderstate)->fnormals);
     }
-    GL.glEnableClientState(GL_NORMAL_ARRAY);
+    GL->glEnableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
-    if ( GL.USE_BYTENORMALS ) {
-      GL.glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
+    if ( GL->USE_BYTENORMALS ) {
+      GL->glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
     } else {
-      GL.glNormalPointer(GL_FLOAT, 0, PRIVATE(renderstate)->fnormals);
+      GL->glNormalPointer(GL_FLOAT, 0, PRIVATE(renderstate)->fnormals);
     }
-    GL.glEnableClientState(GL_NORMAL_ARRAY);
+    GL->glEnableClientState(GL_NORMAL_ARRAY);
 
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture2);
-      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+    if ( (renderstate->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture2);
+      GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture1);
-    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture1);
+    GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture2);
-      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+    if ( (renderstate->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture2);
+      GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
 
-    GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture1);
-    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture1);
+    GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
     
 #else
@@ -2192,32 +2226,33 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
 #if VA_INTERLEAVED
   assert(closure);
   RenderState * state = (RenderState *) closure;
+  const struct sc_GL * GL = GLi(PRIVATE(state)->glcontextid);
 
   sc_render_post_cb(closure, info);
 
   const signed char * normals = state->normaldata; // used as a flag below
 
-  GL.glDisableClientState(GL_VERTEX_ARRAY);
+  GL->glDisableClientState(GL_VERTEX_ARRAY);
   if ( normals != NULL && PRIVATE(state)->scenerytexid == 0 ) {
     // elevation and normals
-    GL.glDisableClientState(GL_NORMAL_ARRAY);
+    GL->glDisableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
-    GL.glDisableClientState(GL_NORMAL_ARRAY);
-    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+    GL->glDisableClientState(GL_NORMAL_ARRAY);
+    if ( (state->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+    if ( (state->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
 
 #else
@@ -2239,13 +2274,13 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // sure the last blocks are actually rendered.
 
   assert(info);
-  assert(GL.glEnableClientState != NULL);
-  assert(GL.glDisableClientState != NULL);
-  assert(GL.glVertexPointer != NULL);
-  assert(GL.glNormalPointer != NULL);
-  assert(GL.glTexCoordPointer != NULL);
-  assert(GL.glDrawElements != NULL);
-  assert(GL.glDrawArrays != NULL);
+  assert(GL->glEnableClientState != NULL);
+  assert(GL->glDisableClientState != NULL);
+  assert(GL->glVertexPointer != NULL);
+  assert(GL->glNormalPointer != NULL);
+  assert(GL->glTexCoordPointer != NULL);
+  assert(GL->glDrawElements != NULL);
+  assert(GL->glDrawArrays != NULL);
 
   // Set up textures before rendering - we delayed this because some blocks have
   // textures, but will be tessellated to 0 triangles if the block is mostly
@@ -2260,7 +2295,18 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
         ss_render_get_texture_image(info, PRIVATE(state)->scenerytexid,
                                     &texdata, &texw, &texh, &texnc);
 
-        int clampmode = GL.CLAMP_TO_EDGE;
+	// FIXME: if the GL.CLAMP_TO_EDGE value is actually GL_CLAMP
+	// (because the driver doesn't support GL_CLAMP_TO_EDGE),
+	// rendering artifacts will be the result; there will be
+	// clearly visible "seams" inbetween the textures.
+	//
+	// This is by the way not unlikely to happen, as e.g. the
+	// Microsoft OpenGL 1.1 software renderer doesn't support
+	// GL_CLAMP_TO_EDGE, and that driver will often be used for
+	// offscreen rendering.
+	//
+	// 20040713 mortene.
+        const int clampmode = GL->CLAMP_TO_EDGE;
         assert(texture_construct);
         void * opaquetexstruct = texture_construct(texdata, texw, texh, texnc,
                                                    clampmode, clampmode, 0.9f, 0);
@@ -2293,51 +2339,51 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
 
   const signed char * normals = state->normaldata; // used as a flag below
   // elevation data is common for all modes
-  GL.glEnableClientState(GL_VERTEX_ARRAY);
-  GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
+  GL->glEnableClientState(GL_VERTEX_ARRAY);
+  GL->glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
 
   if ( normals != NULL && PRIVATE(state)->scenerytexid == 0 ) {
     // elevation and normals
     assert(PRIVATE(state)->vertexarray.getLength() == PRIVATE(state)->normalarray.getLength());
-    GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
-    GL.glEnableClientState(GL_NORMAL_ARRAY);
+    GL->glNormalPointer(GL_BYTE, 0, normalarrayptr);
+    GL->glEnableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
     assert(PRIVATE(state)->vertexarray.getLength() == PRIVATE(state)->normalarray.getLength());
-    GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
-    GL.glEnableClientState(GL_NORMAL_ARRAY);
+    GL->glNormalPointer(GL_BYTE, 0, normalarrayptr);
+    GL->glEnableClientState(GL_NORMAL_ARRAY);
 
-    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+    if ( (state->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
       assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord2array.getLength() / 2));
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
-      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
+      GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
     assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord1array.getLength() / 2));
-    GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
-    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
+    GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+    if ( (state->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
       assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord2array.getLength() / 2));
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
-      GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
+      GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
 
     assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord1array.getLength() / 2));
-    GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
-    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
+    GL->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
     
   // Indexed vertex arrays will probably perform better, so if we can create
   // the index table without too much overhead, we're going to try it out...
-  // GL.glDrawElements(GL_TRIANGLES,
+  // GL->glDrawElements(GL_TRIANGLES,
   //                   indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
-  if ( GL.glDrawRangeElements == NULL ) {
-    GL.glDrawArrays(GL_TRIANGLES, 0, vertices);
+  if ( GL->glDrawRangeElements == NULL ) {
+    GL->glDrawArrays(GL_TRIANGLES, 0, vertices);
   } else {
     int offset = 0;
     const int numstrips = PRIVATE(state)->lenarray.getLength();
@@ -2352,33 +2398,33 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
         indices[j] = offset + j;
       }
       // printf("len: %d   offset: %d\n", len, offset);
-      GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, offset + len - 1, len, GL_UNSIGNED_INT, indices);
+      GL->glDrawRangeElements(GL_TRIANGLE_FAN, offset, offset + len - 1, len, GL_UNSIGNED_INT, indices);
       offset += len;
     }
     // printf("offset: %d   vertices: %d\n", offset, PRIVATE(state)->vertexarray.getLength() / 3);
   }
 
-  GL.glDisableClientState(GL_VERTEX_ARRAY);
+  GL->glDisableClientState(GL_VERTEX_ARRAY);
   if ( normals != NULL && PRIVATE(state)->scenerytexid == 0 ) {
     // elevation and normals
-    GL.glDisableClientState(GL_NORMAL_ARRAY);
+    GL->glDisableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
-    GL.glDisableClientState(GL_NORMAL_ARRAY);
-    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+    GL->glDisableClientState(GL_NORMAL_ARRAY);
+    if ( (state->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      GL.glClientActiveTexture(GL_TEXTURE0);
+    if ( (state->etexscale != 0.0f) && (GL->glClientActiveTexture != NULL) ) {
+      GL->glClientActiveTexture(GL_TEXTURE1);
+      GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+      GL->glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
 
 #if 0
@@ -2611,7 +2657,5 @@ sc_undefraypick_cb(void * closure, const int x, const int y,
 
 #undef ELEVATION
 #undef GEN_VERTEX
-
-#undef GL_CALL
 
 /* ********************************************************************** */
