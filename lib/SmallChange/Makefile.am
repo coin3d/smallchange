@@ -25,8 +25,8 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
 	engines/engines.lst
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
-  $(libSmallChange_la_OBJECTS) \
-  $(libSmallChange_la_DEPENDENCIES)
+  $(libSmallChange_lib_OBJECTS) \
+  $(libSmallChange_lib_DEPENDENCIES)
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
 	echo "Linking $$basename.lib..."; \

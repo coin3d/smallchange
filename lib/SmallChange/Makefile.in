@@ -465,8 +465,8 @@ uninstall-am: uninstall-libLIBRARIES uninstall-libLTLIBRARIES \
 
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
-  $(libSmallChange_la_OBJECTS) \
-  $(libSmallChange_la_DEPENDENCIES)
+  $(libSmallChange_lib_OBJECTS) \
+  $(libSmallChange_lib_DEPENDENCIES)
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
 	echo "Linking $$basename.lib..."; \
