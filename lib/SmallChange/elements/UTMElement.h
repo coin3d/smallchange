@@ -1,39 +1,42 @@
+#ifndef SMALLCHANGE_UTMELEMENT_H
+#define SMALLCHANGE_UTMELEMENT_H
+
 /**************************************************************************\
  *
- *  Copyright (C) 1998-2000 by Systems in Motion.  All rights reserved.
+ *  This file is part of the SmallChange extension library for Coin.
+ *  Copyright (C) 1998-2002 by Systems in Motion.  All rights reserved.
  *
- *  This file is part of the Coin library.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  version 2 as published by the Free Software Foundation.  See the
+ *  file LICENSE.GPL at the root directory of this source distribution
+ *  for more details.
  *
- *  This file may be distributed under the terms of the Q Public License
- *  as defined by Troll Tech AS of Norway and appearing in the file
- *  LICENSE.QPL included in the packaging of this file.
+ *  If you desire to use SmallChange with software that is incompatible
+ *  licensewise with the GPL, and / or you would like to take
+ *  advantage of the additional benefits with regard to our support
+ *  services, please contact Systems in Motion about acquiring a Coin
+ *  Professional Edition License.  See <URL:http://www.coin3d.org> for
+ *  more information.
  *
- *  If you want to use Coin in applications not covered by licenses
- *  compatible with the QPL, you can contact SIM to aquire a
- *  Professional Edition license for Coin.
- *
- *  Systems in Motion AS, Prof. Brochs gate 6, N-7030 Trondheim, NORWAY
- *  http://www.sim.no/ sales@sim.no Voice: +47 22114160 Fax: +47 67172912
+ *  Systems in Motion, Prof Brochs gate 6, 7030 Trondheim, NORWAY
+ *  <URL:http://www.sim.no>, <mailto:support@sim.no>
  *
 \**************************************************************************/
-
-#ifndef COIN_UTMELEMENT_H
-#define COIN_UTMELEMENT_H
 
 #include <Inventor/elements/SoElement.h>
 #include <Inventor/elements/SoSubElement.h>
 #include <Inventor/SbLinear.h>
 
+
 class UTMElement : public SoElement {
   typedef SoElement inherited;
 
   SO_ELEMENT_HEADER(UTMElement);
-public:
-  static void initClass(void);
-protected:
-  virtual ~UTMElement();
 
 public:
+  static void initClass(void);
+
   virtual void init(SoState * state);
   virtual void push(SoState * state);
 
@@ -60,6 +63,7 @@ public:
   virtual SoElement * copyMatchInfo(void) const;
 
 protected:
+  virtual ~UTMElement();
 
   double easting;
   double northing;
@@ -69,6 +73,4 @@ protected:
   SbMatrix gtransform;
 };
 
-
-#endif // !COIN_UTMELEMENT_H
-
+#endif // !SMALLCHANGE_UTMELEMENT_H
