@@ -29,7 +29,9 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/fields/SoSFEnum.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFShort.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoMFFloat.h>
 
@@ -38,7 +40,7 @@
 typedef struct ss_system ss_system;
 typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
 
-typedef uint32_t SmSceneryTexture2CB(void * closure, double * pos, float elevation, double * spacing);
+typedef uint32_t SmSceneryTexture2CB(void * closure, double * xypos, float elevation, double * spacing);
 
 class SceneryP;
 
@@ -52,14 +54,27 @@ public:
   SmScenery(void);
 
   SoSFString filename;
-  SoMFInt32 renderSequence;
   SoSFFloat blockRottger;
   SoSFFloat loadRottger;
-  SoSFBool visualDebug;
 
-  SoSFBool colorTexture;
+  SoMFInt32 renderSequence;
+
+  enum ColorTexturing {
+    DISABLED,
+    INTERPOLATED,
+    DISCRETE
+  };
+
+  SoSFEnum colorTexturing;
   SoMFFloat colorMap; // r, g, b, a values
   SoMFFloat colorElevation;
+
+  SoSFBool elevationLines;
+  SoSFFloat elevationLineDistance;
+  SoSFFloat elevationLineOffset;
+  SoSFShort elevationLineEmphasis;
+
+  SoSFBool visualDebug;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void callback(SoCallbackAction * action);
@@ -72,17 +87,29 @@ public:
   float getBlockRottger(void) const;
   void setLoadRottger(const float c);
   float getLoadRottger(void) const;
-  void refreshTextures(const int id);
 
-  void setAttributeTextureCB(SmSceneryTexture2CB * callback, void * closure);
+  void set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closure);
+
+  // culling callbacks
+  static int box_culling_pre_cb(void * action, const double * bmin, const double * bmax);
+  static void box_culling_post_cb(void * action);
+  static int ray_culling_pre_cb(void * action, const double * bmin, const double * bmax);
+  static void ray_culling_post_cb(void * action);
+
+  // dynamic texture callbacks
+  static uint32_t colortexture_cb(void * node, double * xypos, float elevation, double * spacing);
 
 protected:
   virtual ~SmScenery(void);
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
 
+  void refreshTextures(const int id);
+
 private:
   SmScenery(ss_system * system);
+
+  SoSFBool colorTexture;
 
   SceneryP * pimpl;
   friend class SceneryP;

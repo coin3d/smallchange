@@ -15,9 +15,21 @@ typedef struct {
   float * elevdata;
   signed char * normaldata;
 
+  // global info
+  double bbmin[3];
+  double bbmax[3];
+
+  // elevation texture
+  float etexstretch;
+  float etexoffset;
+
   // temporary
   unsigned char * texdata;
   int texw, texh, texnc;
+
+  // debugging
+  void * debuglist;
+  int newtexcount;
 } RenderState;
 
 int sc_is_texturing_enabled(void);
@@ -31,12 +43,6 @@ void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
 void sc_render_cb(void * closure, const int x, const int y,
                   const int len, const unsigned int bitmask);
 
-
-int sc_box_culling_pre_cb(void * closure, const double * bmin, const double * bmax);
-void sc_box_culling_post_cb(void * closure);
-  
-int sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax);
-void sc_ray_culling_post_cb(void * closure);
 
 #ifdef __cplusplus
 } /* extern "C" */

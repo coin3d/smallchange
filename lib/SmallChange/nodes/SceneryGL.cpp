@@ -38,6 +38,7 @@
 #include <Inventor/system/gl.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbBox3f.h>
+#include <Inventor/errors/SoDebugError.h>
 #include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoCallbackAction.h>
@@ -143,23 +144,13 @@ sc_display_debug_info(float * campos, short * vpsize, void * debuglist)
 
 /* ********************************************************************** */
 
-inline void
-GL_VERTEX_OLD(RenderState * state, const int x, const int y, const float elev)
-{
-  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
-             (float) (y*state->vspacing[1] + state->voffset[1]),
-             elev);
-}
-
-inline void
-GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
-{
-  glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-               state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
-             (float) (y*state->vspacing[1] + state->voffset[1]),
-             elev);
-}
+// We provide the environment variable below to work around a bug in
+// the 3Dlabs OpenGL driver version 4.10.01.2105-2.16.0866: it doesn't
+// properly handle normals given in byte values (i.e. through
+// glNormal*b*()).
+//
+// This driver is fairly old, and 3Dlabs is more or less defunct now,
+// so we default to the faster (but bug-triggering) GL call.
 
 static inline const char *
 sm_getenv(const char * s)
@@ -171,14 +162,6 @@ sm_getenv(const char * s)
 #endif
 }
 
-// We provide the environment variable below to work around a bug in
-// the 3Dlabs OpenGL driver version 4.10.01.2105-2.16.0866: it doesn't
-// properly handle normals given in byte values (i.e. through
-// glNormal*b*()).
-//
-// This driver is fairly old, and 3Dlabs is more or less defunct now,
-// so we default to the faster (but bug-triggering) GL call.
-
 static inline SbBool
 ok_to_use_bytevalue_normals(void)
 {
@@ -188,6 +171,25 @@ ok_to_use_bytevalue_normals(void)
     okflag = env && (atoi(env) > 0);
   }
   return !okflag;
+}
+
+inline void
+GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
+{
+  if ( state->etexstretch == 0.0f ) {
+    glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+                 state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  } else {
+    glMultiTexCoord2f(GL_TEXTURE0,
+                      state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+                      state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+    float val = (state->etexstretch * elev) + state->etexoffset;
+    if ( val < 0.0f ) val = 0.0f - val;
+    glMultiTexCoord2f(GL_TEXTURE1, 0.0f, val);
+  }
+  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
+             (float) (y*state->vspacing[1] + state->voffset[1]),
+             elev);
 }
 
 inline void
@@ -209,14 +211,28 @@ inline void
 GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
   if ( ok_to_use_bytevalue_normals() ) {
-       glNormal3bv((const GLbyte *)n);
+    glNormal3bv((const GLbyte *)n);
   }
   else {
     static const float factor = 1.0f/127.0f;
     glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
   }
-  glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-               state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  if ( state->etexstretch == 0.0f ) {
+    glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+                 state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+  } else {
+    glMultiTexCoord2f(GL_TEXTURE0,
+                      state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
+                      state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
+    float val = (state->etexstretch * elev) + state->etexoffset;
+#if 0
+    static int counter = 0;
+    counter++;
+    if ( (counter % 250) == 0 )
+      fprintf(stderr, "offset: %f  elev: %f (%f)\n", state->etexoffset, elev, val);
+#endif
+    glMultiTexCoord2f(GL_TEXTURE1, 0.0f, val);
+  }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
              elev);
@@ -383,70 +399,6 @@ sc_render_cb(void * closure, const int x, const int y,
     glEnd();
 #undef ELEVATION
   }
-}
-
-/* ********************************************************************** */
-// CULLING
-
-// view volume box vs terrain block bounding box culling
-int
-sc_box_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
-{
-  assert(closure);
-  SoAction * action = (SoAction *) closure;
-  assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
-         action->isOfType(SoCallbackAction::getClassTypeId()) );
-
-  SoState * state = action->getState();
-  state->push();
-
-  if ( SoCullElement::completelyInside(state) ) { return TRUE; }
-
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);
-  if ( !SoCullElement::cullBox(state, box, TRUE) ) { return TRUE; }
-
-  return FALSE;
-}
-
-void
-sc_box_culling_post_cb(void * closure)
-{
-  assert(closure);
-  SoAction * action = (SoAction *) closure;
-  assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
-         action->isOfType(SoCallbackAction::getClassTypeId()) );
-
-  SoState * state = action->getState();
-  state->pop();
-}
-
-// ray vs terrain block bounding box culling
-int
-sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
-{
-  assert(closure);
-  SoAction * action = (SoAction *) closure;
-  assert(action->isOfType(SoRayPickAction::getClassTypeId()));
-  SoRayPickAction * rpaction = (SoRayPickAction *) action;
-
-  SoState * state = rpaction->getState();
-  state->push();
-
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
-  if ( box.isEmpty() ) return FALSE;
-  rpaction->setObjectSpace();
-  return rpaction->intersect(box, TRUE);
-}
-
-void
-sc_ray_culling_post_cb(void * closure)
-{
-  assert(closure);
-  SoAction * action = (SoAction *) closure;
-  assert(action->isOfType(SoRayPickAction::getClassTypeId()));
-  
-  SoState * state = action->getState();
-  state->pop();
 }
 
 /* ********************************************************************** */
