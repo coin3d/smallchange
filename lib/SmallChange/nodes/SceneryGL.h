@@ -2,6 +2,7 @@
 #define SS_SCENERYGL_H
 
 class SoState;
+class SoAction;
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,25 +41,29 @@ struct RenderState {
   int texisenabled;
 
   cc_hash * texhash;
-  void * reusetexlist; // SbList <TexInfo *>
-  void * tmplist; // SbList <unsigned int>
+  void * reusetexlist; // SbList<TexInfo *>
+  void * tmplist; // SbList<unsigned int>
 
   // debugging
-  void * debuglist; // SbList<float> *
+  void * debuglist; // SbList<float>
   int newtexcount;
 
+  // ugh
   SoState * state;
+  SoAction * action;
+
 };
 
 /* ********************************************************************** */
-/* initialize GL features */
+/* GL setup */
 
-void sc_set_have_clamp_to_edge(int enable);
-void sc_set_use_byte_normals(int enable);
+void sc_set_use_byte_normals(int enable); // for buggy GL drivers
 
-void sc_set_glMultiTexCoord2f(void * fptr);
+void sc_set_have_clamp_to_edge(int enable); // GL 1.x feature
+void sc_set_glMultiTexCoord2f(void * fptr); // GL 1.3 feature
 
 /* ********************************************************************** */
+/* texture management */
 
 void sc_renderstate_construct(RenderState * state);
 void sc_renderstate_destruct(RenderState * state);
@@ -68,8 +73,8 @@ void sc_delete_unused_textures(RenderState * state);
 void sc_delete_all_textures(RenderState * state);
 
 /* ********************************************************************** */
-
 /* rendering callbacks */
+
 int sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info);
 
 void sc_render_cb(void * closure, const int x, const int y,
@@ -78,6 +83,7 @@ void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
                        const unsigned int bitmask_org);
 
 /* ********************************************************************** */
+/* misc utilitites */
 
 void sc_generate_elevation_line_texture(float distance, float offset, float thickness, int emphasis, unsigned char * buffer, int components, int texturesize, float * texcoordscale, float * texcoordoffset);
 
