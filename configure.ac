@@ -292,7 +292,7 @@ if $BUILD_WITH_MSVC; then
 
   SMALLCHANGE_EXTRA_LIBS="-lSmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX} $SMALLCHANGE_EXTRA_LIBS"
 else
-  SMALLCHANGE_EXTRA_LIBS="-lSmallChange $SMALLCHANGE_EXTRA_LIBS"
+  SMALLCHANGE_EXTRA_LIBS="-lSmallChange${SUFFIX} $SMALLCHANGE_EXTRA_LIBS"
 fi
 
 # **************************************************************************
