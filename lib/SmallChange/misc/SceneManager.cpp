@@ -36,6 +36,8 @@
 #include <Inventor/elements/SoPolygonOffsetElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/elements/SoOverrideElement.h>
+#include <Inventor/elements/SoTextureOverrideElement.h>
+#include <Inventor/elements/SoTextureQualityElement.h>
 #include <Inventor/elements/SoLightModelElement.h>
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/nodes/SoInfo.h>
@@ -52,6 +54,7 @@ public:
   SmSceneManager * master;
   SmSceneManager::RenderMode rendermode;
   SmSceneManager::StereoMode stereomode;
+
   SbBool texturesenabled;
   float stereooffset;
   SoInfo * dummynode;
@@ -222,7 +225,6 @@ void
 SmSceneManager::setRenderMode(const RenderMode mode)
 {
   PRIVATE(this)->rendermode = mode;
-  this->touch();
 }
 
 /*!
@@ -309,12 +311,13 @@ SmSceneManager::getWireframeOverlayColor(void) const
   return PRIVATE(this)->overlaycolor;
 }
 
-// force a redraw
+// touch internal node (used when setting element values)
 void 
 SmSceneManager::touch(void)
 {
   PRIVATE(this)->dummynode->touch();
-  this->scheduleRedraw();
+  // do not trigger a redraw here. User might set the render mode
+  // right before calling render().
 }
 
 // render once in correct draw style
@@ -325,16 +328,20 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
                              SbBool clearzbuffer)
 {
   SoState * state = action->getState();
+  state->push();
+
   SoNode * node = PRIVATE(this)->dummynode;
-  SbBool didpush = FALSE;
+
+  if (!PRIVATE(this)->texturesenabled) {
+    SoTextureQualityElement::set(state, node, 0.0f);
+    SoTextureOverrideElement::setQualityOverride(state, TRUE);
+  }
   
   switch (PRIVATE(this)->rendermode) {
   case AS_IS:
     inherited::render(action, initmatrices, clearwindow, clearzbuffer);
     break;
   case WIREFRAME:
-    state->push();
-    didpush = TRUE;
     SoDrawStyleElement::set(state, node, SoDrawStyleElement::LINES);
     SoLightModelElement::set(state, node, SoLightModelElement::BASE_COLOR);
     SoOverrideElement::setDrawStyleOverride(state, node, TRUE);
@@ -342,8 +349,6 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
     inherited::render(action, initmatrices, clearwindow, clearzbuffer);
     break;
   case POINTS:
-    state->push();
-    didpush = TRUE;
     SoDrawStyleElement::set(state, node, SoDrawStyleElement::POINTS);
     SoLightModelElement::set(state, node, SoLightModelElement::BASE_COLOR);
     SoOverrideElement::setDrawStyleOverride(state, node, TRUE);
@@ -352,9 +357,6 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
     break;
   case HIDDEN_LINE:
     {
-      state->push();
-      didpush = TRUE;
-
       // must clear before setting draw mask
       PRIVATE(this)->clearBuffers(TRUE, TRUE);
 
@@ -380,8 +382,6 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
     }
     break;
   case WIREFRAME_OVERLAY:
-      state->push();
-      didpush = TRUE;
       SoPolygonOffsetElement::set(state, node, 1.0f, 1.0f,
                                   SoPolygonOffsetElement::FILLED, TRUE);
       SoOverrideElement::setPolygonOffsetOverride(state, node, TRUE);
@@ -402,8 +402,6 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
     break;
 
   case BOUNDING_BOX:
-    state->push();
-    didpush = TRUE;
     SoComplexityTypeElement::set(state, node, SoComplexityTypeElement::BOUNDING_BOX);
     SoOverrideElement::setComplexityTypeOverride(state, node, TRUE);
     inherited::render(action, initmatrices, clearwindow, clearzbuffer);
@@ -412,7 +410,7 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
     assert(0 && "unknown rendering mode");
     break;
   }
-  if (didpush) state->pop();
+  state->pop();
 }
 
 

@@ -66,6 +66,7 @@ public:
 
   void setRenderMode(const RenderMode mode);
   RenderMode getRenderMode(void) const;
+
   void setStereoMode(const StereoMode mode);
   StereoMode getStereoMode(void) const;
   void setStereoOffset(const float offset);
