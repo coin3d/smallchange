@@ -744,6 +744,15 @@ LegendKit::enableImage(const SbBool onoff)
 }
 
 /*!
+  Returns the width (in pixels) of the legend.
+*/
+float 
+LegendKit::getLegendWidth(void) const
+{
+  return THIS->size[0];
+}
+
+/*!
   Private static callback used to render lines.
   Simply calls LegendKit::render when the action is an
   SoGLRenderAction.

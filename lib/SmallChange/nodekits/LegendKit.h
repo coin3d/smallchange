@@ -117,8 +117,9 @@ public:
   void addDiscreteColor(double uppernval);
   
   void clearData(void);
-
   void enableImage(const SbBool onoff);
+
+  float getLegendWidth(void) const;
 
 public:
   // convenience methods for setting part attributes
