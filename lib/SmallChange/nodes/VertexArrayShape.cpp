@@ -55,6 +55,9 @@
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbDict.h>
 #include <Inventor/details/SoFaceDetail.h>
+#include <Inventor/C/tidbits.h>
+#include <stdlib.h>
+
 #include <assert.h>
 
 
@@ -79,6 +82,7 @@ public:
   SmVertexArrayShape * master;
 
   static SbBool is_little_endian;
+  static int disable_vbo;
 
   // needed when vertex buffer objects are used
   SbBool indexlistdirty;
@@ -109,6 +113,7 @@ public:
 };
 
 SbBool SmVertexArrayShapeP::is_little_endian;
+int SmVertexArrayShapeP::disable_vbo = -1;
 
 #define PRIVATE(obj) (obj)->pimpl
 #define PUBLIC(obj) (obj)->master
@@ -145,6 +150,13 @@ SmVertexArrayShape::SmVertexArrayShape()
   this->vertexIndex.setNum(0);
   this->vertexIndex.setDefault(TRUE);
 
+  if (SmVertexArrayShapeP::disable_vbo < 0) {
+    SmVertexArrayShapeP::disable_vbo = 0;
+    const char * env = coin_getenv("COIN_DISABLE_VBO");
+    if (env) {
+      SmVertexArrayShapeP::disable_vbo = atoi(env);
+    }
+  }
 }
 
 /*!
@@ -415,8 +427,8 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
-
-  if (this->renderAsVertexBufferObject.getValue() != OFF) {
+  
+  if (!SmVertexArrayShapeP::disable_vbo && this->renderAsVertexBufferObject.getValue() != OFF) {
     if (cc_glglue_has_vertex_buffer_object(glue)) {          
       if (this->renderAsVertexBufferObject.getValue() == ON ||
           numberofvertices > 32) { // Dont bother to optimize for very small tri-sets.
