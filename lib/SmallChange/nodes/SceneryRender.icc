@@ -1,0 +1,221 @@
+// max optimized render callback. Define the SEND_VERTEX macro before including
+
+(void * closure, const int x, const int y,
+  const int len, const unsigned int bitmask)
+{
+  RenderState * renderstate = (RenderState *) closure;
+
+  const signed char * normals = renderstate->normaldata;  
+  const float * elev = renderstate->elevdata;
+  const int W = ((int) renderstate->blocksize) + 1;
+
+  glBegin(GL_TRIANGLE_FAN);
+
+  switch (bitmask & (SS_RENDER_BIT_SOUTH|SS_RENDER_BIT_NORTH|SS_RENDER_BIT_EAST|SS_RENDER_BIT_WEST)) {
+    // no bits set
+  case 0:
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+
+    // one bit set
+  case SS_RENDER_BIT_EAST:
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case SS_RENDER_BIT_WEST:
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case SS_RENDER_BIT_NORTH:
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case SS_RENDER_BIT_SOUTH:
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+
+    // two bits set
+  case (SS_RENDER_BIT_WEST|SS_RENDER_BIT_SOUTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_WEST|SS_RENDER_BIT_EAST):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_WEST|SS_RENDER_BIT_NORTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_SOUTH|SS_RENDER_BIT_EAST):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_SOUTH|SS_RENDER_BIT_NORTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_EAST|SS_RENDER_BIT_NORTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+
+    // three bits set
+  case (SS_RENDER_BIT_WEST|SS_RENDER_BIT_SOUTH|SS_RENDER_BIT_EAST):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x, y+len);       // north
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_WEST|SS_RENDER_BIT_SOUTH|SS_RENDER_BIT_NORTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y);       // east
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_WEST|SS_RENDER_BIT_EAST|SS_RENDER_BIT_NORTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x, y-len);       // south
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  case (SS_RENDER_BIT_SOUTH|SS_RENDER_BIT_EAST|SS_RENDER_BIT_NORTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y);       // west
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+
+    // all bits set
+  case (SS_RENDER_BIT_EAST|SS_RENDER_BIT_WEST|SS_RENDER_BIT_NORTH|SS_RENDER_BIT_SOUTH):
+    {
+      SEND_VERTEX(renderstate, x, y);           // center
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+      SEND_VERTEX(renderstate, x+len, y-len);   // se
+      SEND_VERTEX(renderstate, x+len, y+len);   // ne
+      SEND_VERTEX(renderstate, x-len, y+len);   // nw
+      SEND_VERTEX(renderstate, x-len, y-len);   // sw
+    }
+    break;
+  default:
+    assert(0 && "should not happen");
+    break;
+  }
+  glEnd();
+}
