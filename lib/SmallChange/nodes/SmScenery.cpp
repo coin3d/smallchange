@@ -679,8 +679,8 @@ SmScenery::filenamesensor_cb(void * data, SoSensor * sensor)
 #endif
     if ( !thisp->system ) {
       int i;
-      for ( i = 0; (thisp->system == NULL) && (i <= pathlist.getLength()); i++ ) {
-        if ( i == pathlist.getLength() ) {
+      for ( i = -1; (thisp->system == NULL) && (i < pathlist.getLength()); i++ ) {
+        if ( i == -1 ) {
           thisp->system = sc_ssglue_system_open(s.getString(), 1);
         } else {
           SbString path = *(pathlist[i]);
