@@ -90,7 +90,7 @@ SmRangeTranslate1DraggerKit::~SmRangeTranslate1DraggerKit()
 void
 SmRangeTranslate1DraggerKit::initClass(void)
 {
-  SO_KIT_INIT_CLASS(SmRangeTranslate1DraggerKit, SoInteractionKit, "InteractionKit");
+  SO_KIT_INIT_CLASS(SmRangeTranslate1DraggerKit, SoDragger, "Dragger");
 }
 
 SbBool 

@@ -24,12 +24,12 @@
 #ifndef SMALLCHANGE_RANGETRANSLATE1DRAGGERKIT_H
 #define SMALLCHANGE_RANGETRANSLATE1DRAGGERKIT_H
 
-#include <Inventor/nodekits/SoInteractionKit.h>
+#include <Inventor/draggers/SoDragger.h>
 #include <Inventor/fields/SoMFVec2f.h>
 
-class SmRangeTranslate1DraggerKit : public SoInteractionKit {
+class SmRangeTranslate1DraggerKit : public SoDragger {
 
-  typedef SoInteractionKit inherited;
+  typedef SoDragger inherited;
   SO_KIT_HEADER(SmRangeTranslate1DraggerKit);
   SO_KIT_CATALOG_ENTRY_HEADER(topSep);
 
