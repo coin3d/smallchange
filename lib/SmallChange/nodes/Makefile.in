@@ -124,7 +124,9 @@ libnodes_la_SOURCES = \
 	SoText2Set.cpp \
 	SoText2Set.h \
 	SoPointCloud.cpp \
-	SoPointCloud.h
+	SoPointCloud.h \
+	SoLODExtrusion.cpp \
+	SoLODExtrusion.h
 
 
 nodes_lst_SOURCES = \
@@ -149,7 +151,9 @@ nodes_lst_SOURCES = \
 	SoText2Set.cpp \
 	SoText2Set.h \
 	SoPointCloud.cpp \
-	SoPointCloud.h
+	SoPointCloud.h \
+	SoLODExtrusion.cpp \
+	SoLODExtrusion.h
 
 
 libnodesincdir = $(includedir)/SmallChange/nodes
@@ -165,7 +169,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h
+	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h
 
 subdir = lib/SmallChange/nodes
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
@@ -180,7 +185,7 @@ am_nodes_lst_OBJECTS = DepthBuffer.$(OBJEXT) ViewportRegion.$(OBJEXT) \
 	SwitchboardOperator.$(OBJEXT) SoAudioClip.$(OBJEXT) \
 	SoAudioClipStreaming.$(OBJEXT) SoListener.$(OBJEXT) \
 	SoSound.$(OBJEXT) SoTCBCurve.$(OBJEXT) SoText2Set.$(OBJEXT) \
-	SoPointCloud.$(OBJEXT)
+	SoPointCloud.$(OBJEXT) SoLODExtrusion.$(OBJEXT)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
@@ -189,7 +194,7 @@ libnodes_la_LIBADD =
 am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo \
 	Switchboard.lo SwitchboardOperator.lo SoAudioClip.lo \
 	SoAudioClipStreaming.lo SoListener.lo SoSound.lo SoTCBCurve.lo \
-	SoText2Set.lo SoPointCloud.lo
+	SoText2Set.lo SoPointCloud.lo SoLODExtrusion.lo
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -203,6 +208,8 @@ depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/SoAudioClip.Plo $(DEPDIR)/SoAudioClip.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoAudioClipStreaming.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/SoAudioClipStreaming.Po \
+@AMDEP_TRUE@	$(DEPDIR)/SoLODExtrusion.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/SoLODExtrusion.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoListener.Plo $(DEPDIR)/SoListener.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoPointCloud.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/SoPointCloud.Po $(DEPDIR)/SoSound.Plo \
@@ -282,6 +289,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoAudioClip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoAudioClipStreaming.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoAudioClipStreaming.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoLODExtrusion.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoLODExtrusion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoListener.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoPointCloud.Plo@am__quote@

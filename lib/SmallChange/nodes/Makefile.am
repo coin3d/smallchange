@@ -30,7 +30,9 @@ libnodes_la_SOURCES = \
 	SoText2Set.cpp \
 	SoText2Set.h \
 	SoPointCloud.cpp \
-	SoPointCloud.h
+	SoPointCloud.h \
+	SoLODExtrusion.cpp \
+	SoLODExtrusion.h
 
 nodes_lst_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
@@ -54,7 +56,9 @@ nodes_lst_SOURCES = \
 	SoText2Set.cpp \
 	SoText2Set.h \
 	SoPointCloud.cpp \
-	SoPointCloud.h
+	SoPointCloud.h \
+	SoLODExtrusion.cpp \
+	SoLODExtrusion.h
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
@@ -69,7 +73,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h
+	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h
 	
 
 nodes.lst: $(nodes_lst_OBJECTS)
