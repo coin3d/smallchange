@@ -51,8 +51,10 @@ class SMALLCHANGE_DLL_API SmScenery : public SoShape {
 
 public:
   static void initClass(void);
-  static SmScenery * createInstance(double * origo, double * spacing, int * elements, float * values, const float undefval = -1.0e30f);
-  static SmScenery * createInstance(const int cols, const int rows, double * xyzgrid, const float undefz = -1.0e30f);
+
+  static SmScenery * createInstance(double * origo, double * spacing, int * elements, float * values, const float undefval = 999999.0f);
+  static SmScenery * createInstance(const int cols, const int rows, double * xyzgrid, const float undefz = 999999.0f);
+  static SmScenery * createInstance(const int points, double * xyzvals, const float reach = -1.0f);
 
   SmScenery(void);
 
@@ -91,6 +93,8 @@ public:
   void setLoadRottger(const float c);
   float getLoadRottger(void) const;
 
+  SbVec3f getRenderCoordinateOffset(void) const;
+
   void set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closure);
 
   // culling callbacks
@@ -101,6 +105,8 @@ public:
 
   // dynamic texture callbacks
   static uint32_t colortexture_cb(void * node, double * xypos, float elevation, double * spacing);
+
+  // action callbacks
   static SoCallbackAction::Response evaluateS(void * userdata, SoCallbackAction * action, const SoNode * node);
 
 protected:

@@ -365,10 +365,18 @@ SmScenery *
 SmScenery::createInstance(const int cols, const int rows, double * xyzgrid, const float undefz)
 {
   if ( !sc_scenery_available() ) { return NULL; }
-  // ss_system * system = sc_ssglue_system_construct_rotated(1, cols, rows, xyzgrid, undefz);
-  // if ( !system ) { return NULL; }
-  // return new SmScenery(system);
-  return NULL;
+  ss_system * system = sc_ssglue_system_construct_rotated(1, cols, rows, xyzgrid, undefz);
+  if ( !system ) { return NULL; }
+  return new SmScenery(system);
+}
+
+SmScenery *
+SmScenery::createInstance(const int points, double * xyzvals, const float reach)
+{
+  if ( !sc_scenery_available() ) { return NULL; }
+  ss_system * system = sc_ssglue_system_construct_randomized(1, points, xyzvals, reach);
+  if ( !system ) { return NULL; }
+  return new SmScenery(system);
 }
 
 SmScenery::SmScenery(void)
@@ -470,6 +478,9 @@ SmScenery::SmScenery(ss_system * system)
 
   PRIVATE(this)->system = system;
 
+  // this happens in the filenamesensor_cb, so must be set up specifically here
+  PRIVATE(this)->colormaptexid = 
+    sc_ssglue_system_add_runtime_texture2d(PRIVATE(this)->system, 0, SceneryP::invokecolortexturecb, PRIVATE(this));
   sc_ssglue_system_get_object_box(PRIVATE(this)->system,
                                   PRIVATE(this)->renderstate.bbmin,
                                   PRIVATE(this)->renderstate.bbmax); 
@@ -480,6 +491,22 @@ SmScenery::SmScenery(ss_system * system)
   PRIVATE(this)->viewid = sc_ssglue_view_allocate(PRIVATE(this)->system);
   assert(PRIVATE(this)->viewid >= 0);
   sc_ssglue_view_enable(PRIVATE(this)->system, PRIVATE(this)->viewid);
+
+  // FIXME: factor this piece of logic into separate function
+  // setImplicitRenderSequence() or something similar
+  const int sequencelen = this->renderSequence.getNum();
+  if ( (this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1 ) {
+    int localsequence[2] = { PRIVATE(this)->colormaptexid, 0 };
+    sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 2, localsequence);
+  } else if ( sequencelen == 0 ) {
+    sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 0, NULL);
+  } else {
+    this->renderSequence.enableNotify(FALSE);
+    int * sequence = this->renderSequence.startEditing();
+    sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, sequencelen, sequence);
+    this->renderSequence.finishEditing();
+    this->renderSequence.enableNotify(TRUE);
+  }
 }
 
 void
@@ -955,6 +982,12 @@ SmScenery::getLoadRottger(void) const
   return c;
 }
 
+SbVec3f
+SmScenery::getRenderCoordinateOffset(void) const
+{
+  return SbVec3f(PRIVATE(this)->renderstate.bbmin[0], PRIVATE(this)->renderstate.bbmin[1], 0.0f);
+}
+
 void 
 SmScenery::refreshTextures(const int id)
 {
@@ -1038,7 +1071,6 @@ SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
 
       const int sequencelen = thisp->renderSequence.getNum();
       if ( (thisp->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(thisp)->colormaptexid != -1 ) {
-        // FIXME: add runtime colortexture
         int localsequence[2] = { PRIVATE(thisp)->colormaptexid, 0 };
         sc_ssglue_view_set_render_sequence_a(PRIVATE(thisp)->system, PRIVATE(thisp)->viewid, 2, localsequence);
       } else if ( sequencelen == 0 ) {
@@ -1516,6 +1548,7 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
 
   const RenderState & rs = PRIVATE(thisp)->renderstate;
   uint32_t abgr = 0xffffffff; // default color to white
+  if ( rs.bbmax[2] == rs.bbmin[2] ) return abgr;
 
   if ( thisp->colorTexturing.getValue() == SmScenery::INTERPOLATED ) {
     if ( thisp->colorElevation.getNum() == 0 ) {
