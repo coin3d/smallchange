@@ -1,0 +1,152 @@
+/**************************************************************************\
+ *
+ *  This file is part of a set of example programs for the Coin library.
+ *  Copyright (C) 2000-2003 by Systems in Motion. All rights reserved.
+ *
+ *                   <URL:http://www.coin3d.org>
+ *
+ *  This sourcecode can be redistributed and/or modified under the
+ *  terms of the GNU General Public License version 2 as published by
+ *  the Free Software Foundation. See the file COPYING at the root
+ *  directory of the distribution for more details.
+ *
+ *  As a special exception, all sourcecode of the demo examples can be
+ *  used for any purpose for licensees of the Coin Professional
+ *  Edition License, without the restrictions of the GNU GPL. See our
+ *  web pages for information about how to acquire a Professional Edition
+ *  License.
+ *
+ *  Systems in Motion, <URL:http://www.sim.no>, <mailto:support@sim.no>
+ *
+\**************************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <Inventor/errors/SoDebugError.h>
+#include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/actions/SoCallbackAction.h>
+#include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/events/SoKeyboardEvent.h>
+
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/nodes/SmScenery.h>
+
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
+
+class Examiner : public So@Gui@ExaminerViewer {
+public:
+  Examiner(void) : So@Gui@ExaminerViewer() {
+  }
+  virtual void actualRedraw(void) {
+    // update hotspot and evaluate for SmScenery nodes
+    SoCallbackAction cbaction(this->getViewportRegion());
+    cbaction.apply(this->getSceneManager()->getSceneGraph());
+    SoSearchAction saction;
+    saction.setType(SmScenery::getClassTypeId());
+    saction.setInterest(SoSearchAction::FIRST);
+    saction.apply(this->getSceneManager()->getSceneGraph());
+    SmScenery * scenery = NULL;
+    if ( saction.getPath() ) {
+      scenery = (SmScenery *) saction.getPath()->getTail();
+      scenery->preFrame();
+    }
+    So@Gui@ExaminerViewer::actualRedraw();
+    if ( scenery ) {
+      if ( scenery->postFrame() )
+        So@Gui@ExaminerViewer::scheduleRedraw();
+    }
+  }
+  virtual SbBool processSoEvent(const SoEvent * const ev) {
+    if ( !this->isViewing() ) {
+      SoSearchAction saction;
+      saction.setType(SmScenery::getClassTypeId());
+      saction.setInterest(SoSearchAction::FIRST);
+      saction.apply(this->getSceneManager()->getSceneGraph());
+      SmScenery * scenery = NULL;
+      if ( saction.getPath() ) {
+        scenery = (SmScenery *) saction.getPath()->getTail();
+        if ( SO_KEY_PRESS_EVENT(ev, E) ) {
+          if ( scenery->elevationLines.getValue() ) {
+            scenery->elevationLines.setValue(FALSE);
+          }
+          else {
+            scenery->elevationLines.setValue(TRUE);
+          }
+        }
+        else if ( SO_KEY_RELEASE_EVENT(ev, E) ) {
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, A) ) {
+          scenery->elevationLineOffset =
+            scenery->elevationLineOffset.getValue() + 10.0f;
+          SoDebugError::postInfo("", "offset: %g\n", scenery->elevationLineOffset.getValue());
+        }
+        else if ( SO_KEY_RELEASE_EVENT(ev, A) ) {
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, Z) ) {
+          scenery->elevationLineOffset =
+            scenery->elevationLineOffset.getValue() - 10.0f;
+          SoDebugError::postInfo("", "offset: %g\n", scenery->elevationLineOffset.getValue());
+        }
+        else if ( SO_KEY_RELEASE_EVENT(ev, Z) ) {
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, S) ) {
+          scenery->elevationLineDistance =
+            scenery->elevationLineDistance.getValue() * 2.0f;
+          SoDebugError::postInfo("", "distance: %g\n", scenery->elevationLineDistance.getValue());
+        }
+        else if ( SO_KEY_RELEASE_EVENT(ev, S) ) {
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, X) ) {
+          scenery->elevationLineDistance =
+            scenery->elevationLineDistance.getValue() / 2.0f;
+          SoDebugError::postInfo("", "distance: %g\n", scenery->elevationLineDistance.getValue());
+        }
+        else if ( SO_KEY_RELEASE_EVENT(ev, X) ) {
+        }
+      }
+    }
+    return So@Gui@ExaminerViewer::processSoEvent(ev);
+  }
+};
+
+// *************************************************************************
+
+int
+main(
+  int argc,
+  char ** argv )
+{
+  So@Gui@::init( argv[0] );
+  smallchange_init();
+
+  if ( argc != 2 ) {
+    fprintf(stderr, "usage: %s file.iv\n", argv[0]);
+    exit(-1);
+  }
+
+  SoInput in;
+  if ( !in.openFile(argv[1]) ) {
+    fprintf(stderr, "%s error: unable to open '%s'\n", argv[0], argv[1]);
+    exit(-1);
+  }
+
+  SoSeparator * root = SoDB::readAll(&in);
+  if ( !root )
+    return -1;
+
+  Examiner * viewer = new Examiner();
+
+  viewer->setSceneGraph(root);
+  viewer->show();
+
+  So@Gui@::mainLoop();
+
+  delete viewer;
+  return 0;
+} // main()
+
+// *************************************************************************
