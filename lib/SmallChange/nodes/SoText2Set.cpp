@@ -279,20 +279,16 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
       glPixelStorei(GL_UNPACK_ALIGNMENT,1);
       
-      float xpos;
-      float ypos;
-      float fx, fy, rasterx, rastery, rpx, rpy, offsetx, offsety;
-      int ix, iy, charcnt, offvp;
-      SbVec2s thispos;
-      SbVec2s position;
-      SbVec2s thissize;
-      GLboolean gldbg;
-      unsigned char * buffer;
       // Find number of strings to render
+      //
+      // FIXME: this is not good, just silently ignoring "extra"
+      // items. Should warn, then use default values for too short
+      // arrays. 20031215 mortene.
       int stringcnt = this->string.getNum();
       stringcnt = SbMin(stringcnt, this->position.getNum());
       stringcnt = SbMin(stringcnt, this->rotation.getNum());
       stringcnt = SbMin(stringcnt, this->justification.getNum());
+
       for (int i = 0; i < stringcnt; i++) {
         // Find nilpoint for this string
         nilpoint = this->position[i];
@@ -302,10 +298,10 @@ SoText2Set::GLRender(SoGLRenderAction * action)
         nilpoint[2] -= 1.0f;
         nilpoint[0] = nilpoint[0] * float(vpsize[0]);
         nilpoint[1] = nilpoint[1] * float(vpsize[1]);
-        xpos = nilpoint[0];
-        ypos = nilpoint[1];
+        float xpos = nilpoint[0];
+        float ypos = nilpoint[1];
         
-        charcnt = this->string[i].getLength();
+        const unsigned int charcnt = this->string[i].getLength();
         switch (this->justification[i]) {
         case SoText2Set::LEFT:
           // No action
@@ -320,25 +316,27 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           break;
         }
 
-        for (int i2 = 0; i2 < charcnt; i2++) {
-          buffer = PRIVATE(this)->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
+        for (unsigned int i2 = 0; i2 < charcnt; i2++) {
+          SbVec2s thispos;
+          SbVec2s thissize;
+          unsigned char * buffer = PRIVATE(this)->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
 
-          ix = thissize[0];
-          iy = thissize[1];
-          position = PRIVATE(this)->positions[i][i2];
-          fx = (float)position[0];
-          fy = (float)position[1];
+          int ix = thissize[0];
+          int iy = thissize[1];
+          SbVec2s position = PRIVATE(this)->positions[i][i2];
+          float fx = (float)position[0];
+          float fy = (float)position[1];
 
 #define RENDER_TEXT(offx, offy) \
         do { \
-          rasterx = xpos + fx + float(offx); \
-          rpx = rasterx >= 0 ? rasterx : 0; \
-          offvp = rasterx < 0 ? 1 : 0; \
-          offsetx = rasterx >= 0 ? 0 : rasterx; \
-          rastery = ypos + fy + float(offy); \
-          rpy = rastery >= 0 ? rastery : 0; \
+          float rasterx = xpos + fx + float(offx); \
+          float rpx = rasterx >= 0 ? rasterx : 0; \
+          float offvp = rasterx < 0 ? 1 : 0; \
+          float offsetx = rasterx >= 0 ? 0 : rasterx; \
+          float rastery = ypos + fy + float(offy); \
+          float rpy = rastery >= 0 ? rastery : 0; \
           offvp = offvp || rastery < 0 ? 1 : 0; \
-          offsety = rastery >= 0 ? 0 : rastery; \
+          float offsety = rastery >= 0 ? 0 : rastery; \
           glRasterPos3f(rpx, rpy, -nilpoint[2]); \
           if (offvp) glBitmap(0,0,0,0,offsetx,offsety,NULL); \
           if (buffer) glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer); \
@@ -366,6 +364,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       }
       
 #undef RENDER_TEXT
+
       glPixelStorei(GL_UNPACK_ALIGNMENT,4);
       // Pop old GL state.
       glMatrixMode(GL_PROJECTION);
