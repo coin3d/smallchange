@@ -534,7 +534,11 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
       cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
     }
     else {       
+#if 1
+      assert(FALSE && "code not enabled, does not build with Coin-2");
+#else
       cc_glglue_glDrawRangeElements(glue, (GLenum) (-type-1), start, end, len, GL_UNSIGNED_INT, ptr);
+#endif
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding  
     }
     ptr += len;
