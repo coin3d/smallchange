@@ -6,7 +6,7 @@ libnodes_la_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h
 
-libnodesincdir = $(includedir)/SmallChange
+libnodesincdir = $(includedir)/SmallChange/nodes
 
 libnodesinc_HEADERS = \
 	$(top_srcdir)/src/nodes/ViewportRegion.h \
