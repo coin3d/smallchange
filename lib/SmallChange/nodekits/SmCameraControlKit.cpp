@@ -168,11 +168,11 @@ SbBool
 SmCameraControlKit::setAnyPart(const SbName & partname, SoNode * from,
                                SbBool anypart)
 {
-  inherited::setAnyPart(partname, from, anypart);
+  SbBool ret = inherited::setAnyPart(partname, from, anypart);
 
   // FIXME: consider just using the camera that is in the scene
   // instead of moving it.  pederb, 2003-10-07
-  if (partname == "scene") {
+  if (ret && partname == "scene") {
     SoSearchAction sa;
     sa.setInterest(SoSearchAction::FIRST);
     sa.setType(SoCamera::getClassTypeId());
@@ -189,6 +189,7 @@ SmCameraControlKit::setAnyPart(const SbName & partname, SoNode * from,
       }
     }
   }
+  return ret;
 }
 
 void 
