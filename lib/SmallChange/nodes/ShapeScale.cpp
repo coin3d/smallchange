@@ -24,6 +24,8 @@
 /*!
   \class ShapeScale ShapeScale.h
   \brief The ShapeScale class ...
+
+  FIXME: class doc
 */
 
 #include "ShapeScale.h"
@@ -43,9 +45,6 @@
 
 SO_KIT_SOURCE(ShapeScale);
 
-/*!
-  Constructor.
-*/
 ShapeScale::ShapeScale(void) 
 {
   SO_KIT_CONSTRUCTOR(ShapeScale);
@@ -60,27 +59,19 @@ ShapeScale::ShapeScale(void)
   SO_KIT_INIT_INSTANCE();
 }
 
-/*!
-  Destructor.
-*/
 ShapeScale::~ShapeScale()
 {
 }
 
-/*!
-  Initializes this class. Call before using it.
-*/
+// doc in superclass
 void
 ShapeScale::initClass(void)
 {
-  static int first = 1;
-  if (first) {
-    first = 0;
-    SO_KIT_INIT_CLASS(ShapeScale, SoBaseKit, "BaseKit");
-  }
+  SO_KIT_INIT_CLASS(ShapeScale, SoBaseKit, "BaseKit");
 }
 
-static void update_scale(SoScale * scale, const SbVec3f & v)
+static void
+update_scale(SoScale * scale, const SbVec3f & v)
 {
   if (scale->scaleFactor.getValue() != v) {
     scale->scaleFactor = v;
@@ -91,8 +82,9 @@ void
 ShapeScale::preRender(SoAction * action)
 {
   SoState * state = action->getState();
+
   SoNode * shape = (SoNode*) this->getAnyPart(SbName("shape"), FALSE);
-  if (!shape) return;
+  assert(shape);
 
   SoScale * scale = (SoScale*) this->getAnyPart(SbName("scale"), TRUE);
   if (!this->active.getValue()) {
@@ -112,21 +104,17 @@ ShapeScale::preRender(SoAction * action)
 #else // obsoleted
     SbVec3f center(0.0f, 0.0f, 0.0f);
 #endif
-    float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[1]);
+    const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[1]);
     SoModelMatrixElement::get(state).multVecMatrix(center, center);
-    float scalefactor = vv.getWorldToScreenScale(center, nsize);
+    const float scalefactor = vv.getWorldToScreenScale(center, nsize);
     update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
   }
 }
 
-/*!
-  Overloaded to (re)initialize image and other data before rendering.
-*/
+// Overridden to (re)initialize image and other data before rendering.
 void 
 ShapeScale::GLRender(SoGLRenderAction * action)
 {
   if (!this->threadSafe.getValue()) this->preRender(action);
   inherited::GLRender(action);
 }
-
-

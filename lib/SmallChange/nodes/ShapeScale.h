@@ -47,11 +47,8 @@ class SMALLCHANGE_DLL_API ShapeScale : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(shape);
 
 public:
-  ShapeScale(void);
-
   static void initClass(void);
-
-public:
+  ShapeScale(void);
 
   SoSFFloat active;
   SoSFFloat projectedSize;
