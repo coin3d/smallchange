@@ -22,6 +22,9 @@
 #undef ITHIS
 #define ITHIS this->ifacep
 
+#ifndef _WIN32 // FIXME: hack to compile under Linux, pederb 2001-12-01
+#define strcmpi strcasecmp
+#endif
 
 SO_NODE_SOURCE(SoAudioClipStreaming);
 

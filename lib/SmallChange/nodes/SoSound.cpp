@@ -498,8 +498,10 @@ void SoSound::audioRender(SoAudioRenderAction *action)
     // if it has, there's no point in plaing any more, is there?????
     // fixme: 20011116, think about this. Could some other node be depending on
     // exact playing time ??
-    ALint looping;
+    ALint looping = FALSE;
+#ifdef _WIN32 // FIXME: hack to compile under Linux, pederb 2001-12-01
 	  alGetSourcei(THIS->sourceId,AL_LOOPING, &looping);
+#endif
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];
