@@ -81,9 +81,12 @@
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoMaterialBinding.h>
 #include <Inventor/nodes/SoText2.h>
+#include <Inventor/nodes/SoFont.h>
 #include <Inventor/nodes/SoFaceSet.h>
 #include <Inventor/nodes/SoIndexedFaceSet.h>
 #include <Inventor/nodes/SoBaseColor.h>
+#include <Inventor/nodes/SoCoordinate3.h>
+#include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/SbViewportRegion.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SoFullPath.h>
@@ -96,6 +99,7 @@
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/elements/SoComplexityTypeElement.h>
 #include <Inventor/elements/SoComplexityElement.h>
+#include <Inventor/nodes/SoMarkerSet.h>
 
 static int (*schemescriptcb)(const char *);
 static void (*schemefilecb)(const char *);
@@ -134,7 +138,8 @@ public:
 
   SbBool flipleftright;
   SbBool flipupdown;
-  int fontsize;
+  float fontsize;
+  SbVec3f padding;
 
   float backgroundmenulow;
   float backgroundmenuhigh;
@@ -206,10 +211,13 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(position, SoTranslation, TRUE, textSeparator, textColor, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(textColor, SoBaseColor, TRUE, textSeparator, textPickStyle, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(textPickStyle, SoPickStyle, TRUE, textSeparator, textShape, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(textFont, SoFont, TRUE, textSeparator, textShape, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(textShape, SoText2, TRUE, textSeparator, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(activeMaterial, SoMaterial, TRUE, topSeparator, activeShape, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(activeShape, SoFaceSet, TRUE, topSeparator, borderShape, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(borderShape, SoIndexedFaceSet, TRUE, topSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(submenuMarkerSeparator, SoSeparator, TRUE, topSeparator, separatorSeparator, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(separatorSeparator, SoSeparator, TRUE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
 
@@ -231,7 +239,15 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   // disable depth buffer
   DepthBuffer * db = (DepthBuffer*) this->getAnyPart("depthBuffer", TRUE);
   db->enable = FALSE;
+
+  // Set font, fetch size
   
+  SoFont * font = (SoFont *) this->getAnyPart("textFont", TRUE);  
+  font->name.setValue("Verdana");
+  font->size.setValue(10);
+  PRIVATE(this)->fontsize = font->size.getValue();
+  
+
   // set justification
   SoText2 * text = (SoText2*) this->getAnyPart("textShape", TRUE);
   text->justification = SoText2::LEFT;
@@ -255,7 +271,6 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   PRIVATE(this)->itemssensor->setPriority(1);
   PRIVATE(this)->flipleftright = FALSE;
   PRIVATE(this)->flipupdown = FALSE;
-  PRIVATE(this)->fontsize = 12; // FIXME: test in GLRender() for current font
 
   PRIVATE(this)->backgroundmenulow = 0.0f;
   PRIVATE(this)->backgroundmenuhigh = 0.0f;
@@ -270,7 +285,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
 
   PRIVATE(this)->isactivesensor = new SoFieldSensor(isactive_cb, this);
   PRIVATE(this)->isactivesensor->attach(&this->isActive);
-
+  PRIVATE(this)->padding = SbVec3f(7, 7, 1);
   PRIVATE(this)->triggerscriptsensor = new SoOneShotSensor(trigger_cb, this);
 }
 
@@ -385,7 +400,7 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
       SbVec3f p = pp->getObjectPoint();
       p[1] -= PRIVATE(this)->backgroundmenulow;
       p[1] *= PRIVATE(this)->vp.getViewportSizePixels()[1];
-      p[1] /= 12.0f * 1.5f;
+      p[1] /= PRIVATE(this)->fontsize * 1.5f;
       
       if (this->itemList.getNum()) {
         int idx = (int) p[1];
@@ -412,14 +427,16 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
         sensor->schedule();
       }
       else {
-        this->itemPicked(activeitem);
-        if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
-          activeitem = -1;
-          this->isActive = FALSE;
-          this->visible = FALSE;
-          if (PRIVATE(this)->parent) {
-            PRIVATE(this)->parent->childFinished(this);
-            this->setParent(NULL);
+        if (this->itemList[activeitem].getLength() != 0) { // Is it not a separator?
+          this->itemPicked(activeitem);
+          if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
+            activeitem = -1;
+            this->isActive = FALSE;
+            this->visible = FALSE;
+            if (PRIVATE(this)->parent) {
+              PRIVATE(this)->parent->childFinished(this);
+              this->setParent(NULL);
+            }
           }
         }
       }
@@ -763,9 +780,9 @@ SmPopupMenuKit::updateActiveItem(void)
   vecdata[2][0] = PRIVATE(this)->backgroundright;
   vecdata[3][0] = PRIVATE(this)->backgroundleft;
   
-  float size = PRIVATE(this)->fontsize * this->spacing.getValue();
-  size /= PRIVATE(this)->vp.getViewportSizePixels()[1];
-  float offset = PRIVATE(this)->activeitem  * size;
+  float size = (PRIVATE(this)->fontsize * this->spacing.getValue()) / PRIVATE(this)->vp.getViewportSizePixels()[1];
+  float offset = (PRIVATE(this)->activeitem  * size) 
+    + ((PRIVATE(this)->padding[1] + 2*2) / PRIVATE(this)->vp.getViewportSizePixels()[1]) / 2.0f;
 
   vecdata[0][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
   vecdata[1][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
@@ -785,11 +802,14 @@ SmPopupMenuKit::updateActiveItem(void)
 #endif
   vp->vertex.setValues(0, 4, vecdata);
   fs->numVertices = 4;
+
 }
 
 void 
 SmPopupMenuKit::updateBackground(void)
 {
+  SbVec2s pixelsize = PRIVATE(this)->vp.getViewportSizePixels();
+
   SoPath * p = new SoPath(this->topSeparator.getValue());
   p->ref();
   p->append(this->textSeparator.getValue());
@@ -797,12 +817,67 @@ SmPopupMenuKit::updateBackground(void)
 
   SoFaceSet * fs = (SoFaceSet*) this->getAnyPart("backgroundShape", TRUE);
   fs->numVertices = 0;
-
+  
   PRIVATE(this)->bba.setViewportRegion(PRIVATE(this)->vp);
   PRIVATE(this)->bba.apply(p);
   SbBox3f bb = PRIVATE(this)->bba.getBoundingBox();
+  SbVec3f pad = SbVec3f(PRIVATE(this)->padding[0] / pixelsize[0],
+                        PRIVATE(this)->padding[1] / pixelsize[1],
+                        1);  
+  bb.extendBy(bb.getMax() + pad); 
+  bb.extendBy(bb.getMin() - pad);  
   p->unref();
 
+
+  // Add a marker for all submenu items 
+  SbVec3f bbmax = bb.getMax() + SbVec3f(9.0f / pixelsize[0], 0, 0);
+  SoSeparator * sep = (SoSeparator *) this->getAnyPart("submenuMarkerSeparator", TRUE);
+  sep->removeAllChildren();
+  SoBaseColor * markercolor = new SoBaseColor;
+  markercolor->rgb.setValue(0,0,0);
+  sep->addChild(markercolor);
+  SoTranslation * menutrans = new SoTranslation;
+  menutrans->translation.setValue(SbVec3f(bb.getMax()[0] - ((PRIVATE(this)->padding[0] - 9) / pixelsize[1]), bb.getMax()[1] - ((4.0f + PRIVATE(this)->padding[1]) / pixelsize[1]), 0));
+  sep->addChild(menutrans);  
+  const float spacing = (this->spacing.getValue() * PRIVATE(this)->fontsize) / pixelsize[1];
+  for (int i=0;i<this->itemList.getNum();++i) {
+    SmPopupMenuKit * submenu = PRIVATE(this)->getSubMenu(i);
+    if (submenu) {
+      SoMarkerSet * marker = new SoMarkerSet;
+      marker->markerIndex.setValue(SoMarkerSet::DIAMOND_FILLED_9_9);
+      sep->addChild(marker);
+      bb.extendBy(bbmax); // extend bbox so that the diamond will fit.
+    }
+    SoTranslation * trans = new SoTranslation;
+    trans->translation.setValue(0, -spacing, 0);
+    sep->addChild(trans);
+  }
+
+  // Add separators for all empty strings
+  sep = (SoSeparator *) this->getAnyPart("separatorSeparator", TRUE);
+  sep->removeAllChildren();
+  SoTranslation * septrans = new SoTranslation;
+  septrans->translation.setValue(bb.getMin()[0], bb.getMax()[1] - ((4.0f + PRIVATE(this)->padding[1]) / pixelsize[1]), 0);
+  sep->addChild(septrans);  
+  sep->addChild(markercolor);
+  for (int i=0;i<this->itemList.getNum();++i) {
+    SbString item = this->itemList[i];
+    if (item.getLength() == 0) {
+      SoCoordinate3 * lcoord = new SoCoordinate3;
+      lcoord->point.set1Value(0, SbVec3f(0, 0, 0));
+      lcoord->point.set1Value(1, SbVec3f((bb.getMax()[0] - bb.getMin()[0]), 0, 0));
+      SoLineSet * lset = new SoLineSet;
+      lset->numVertices.setValue(2);
+      sep->addChild(lcoord);
+      sep->addChild(lset);
+    }
+    SoTranslation * trans = new SoTranslation;
+    trans->translation.setValue(0, -spacing, 0);
+    sep->addChild(trans);
+  }
+
+
+  
   SoVertexProperty * vp = (SoVertexProperty*) fs->vertexProperty.getValue();
   if (vp == NULL) {
     vp = new SoVertexProperty;
@@ -812,16 +887,16 @@ SmPopupMenuKit::updateBackground(void)
     fs->numVertices = 4;
   }
   
-  float fx = this->frameSize.getValue() / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
-  float fy = this->frameSize.getValue() / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+  float fx = this->frameSize.getValue() / float(pixelsize[0]);
+  float fy = this->frameSize.getValue() / float(pixelsize[1]);
   
   SbVec3f bmin = bb.getMin();
   SbVec3f bmax = bb.getMax();
 
   PRIVATE(this)->backgroundmenulow = bmin[1];
   PRIVATE(this)->backgroundmenuhigh = bmax[1];
-  PRIVATE(this)->backgroundmenulow += 3.0f / PRIVATE(this)->vp.getViewportSizePixels()[1];
-  PRIVATE(this)->backgroundmenuhigh +=  3.0f / PRIVATE(this)->vp.getViewportSizePixels()[1];
+  PRIVATE(this)->backgroundmenulow += 3.0f / pixelsize[1];
+  PRIVATE(this)->backgroundmenuhigh +=  3.0f / pixelsize[1];
 
   bmin[0] -= fx;
   bmin[1] -= fy;
@@ -842,8 +917,8 @@ SmPopupMenuKit::updateBackground(void)
   vp->vertex.setValues(0, 4, varray);
 
   // update border as well
-  float bw = 2.0f / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
-  float bh = 2.0f / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+  float bw = 2.0f / float(pixelsize[0]);
+  float bh = 2.0f / float(pixelsize[1]);
   SoIndexedFaceSet * ifs = (SoIndexedFaceSet*) this->getAnyPart("borderShape", TRUE);
   vp = (SoVertexProperty*) ifs->vertexProperty.getValue();
   if (vp == NULL) {
@@ -871,6 +946,7 @@ SmPopupMenuKit::updateBackground(void)
 
   ifs->coordIndex.setValues(0,20, cidx);
   ifs->materialIndex.setValues(0,4,midx);
+
 }
 
 void 

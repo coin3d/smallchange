@@ -62,12 +62,15 @@ class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(justification);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundShape);
   SO_KIT_CATALOG_ENTRY_HEADER(textSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(textFont);
   SO_KIT_CATALOG_ENTRY_HEADER(textColor);
   SO_KIT_CATALOG_ENTRY_HEADER(textPickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(textShape);
   SO_KIT_CATALOG_ENTRY_HEADER(activeMaterial);
   SO_KIT_CATALOG_ENTRY_HEADER(activeShape);
   SO_KIT_CATALOG_ENTRY_HEADER(borderShape);
+  SO_KIT_CATALOG_ENTRY_HEADER(submenuMarkerSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(separatorSeparator);
 
 public:
   SmPopupMenuKit(void);
