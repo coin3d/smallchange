@@ -34,9 +34,6 @@
 #include <Inventor/actions/SoGetMatrixAction.h>
 #include <Inventor/nodes/SoTransformation.h>
 
-#define PRIVATE(obj) (obj)->pimpl
-#define PUBLIC(obj) (obj)->master
-
 SO_NODE_SOURCE(SmCoordinateSystem);
 
 /*!
@@ -134,5 +131,3 @@ SmCoordinateSystem::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   SmCoordinateSystem::doAction((SoAction *)action);
 }
-
-#undef PRIVATE
