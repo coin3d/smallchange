@@ -8844,7 +8844,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   case $host in
   *-*-irix*)
     ### Turn on all warnings ######################################
-    if test x"$CC" = xcc || test x"$CC" = xCC; then
+    # we try to catch settings like CC="CC -n32" too, even though the
+    # -n32 option belongs to C[XX]FLAGS
+    case $CC in
+    cc | "cc "* | CC | "CC "* )
 
 
 
@@ -8913,8 +8916,10 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-    fi
-    if test x"$CXX" = xCC; then
+      ;;
+    esac
+    case $CXX in
+    CC | "CC "* )
 
 
 
@@ -8983,7 +8988,8 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-    fi
+      ;;
+    esac
 
     ### Turn off specific (bogus) warnings ########################
 
@@ -9012,7 +9018,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
     sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110,1506,1169"
 
-    if test x"$CC" = xcc || test x"$CC" = xCC; then
+    case $CC in
+    cc | "cc "* | CC | "CC "* )
 
 
 
@@ -9081,8 +9088,9 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-    fi
-    if test x"$CXX" = xCC; then
+    esac
+    case $CXX in
+    CC | "CC "* )
 
 
 
@@ -9151,7 +9159,8 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-    fi
+      ;;
+    esac
   ;;
   esac
 fi
@@ -9162,9 +9171,14 @@ yes | true)  SMALLCHANGE_STATIC=true;;
 *)           SMALLCHANGE_STATIC=false;;
 esac
 
+# Cut off any attempt to use SmallChange as a dynamic link library.
+# This is done as we don't support building as a DLL under MSWindows
+# yet (we don't export any of the symbols with __declspec(), for
+# instance). -mortene.
 case $enable_shared in
-yes | true)  SMALLCHANGE_STATIC=false;;
-*)           SMALLCHANGE_STATIC=true;;
+yes | true)  { { echo "$as_me:$LINENO: error: SmallChange should not be built as a shared library." >&5
+echo "$as_me: error: SmallChange should not be built as a shared library." >&2;}
+   { (exit 1); exit 1; }; } ;;
 esac
 
 echo "$as_me:$LINENO: checking for strcasecmp() function" >&5
