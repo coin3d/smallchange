@@ -251,7 +251,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   // Set font, fetch size  
   SoFont * font = (SoFont *) this->getAnyPart("textFont", TRUE);  
   font->name.setValue("Verdana");
-  font->size.setValue(10);
+  font->size.setValue(12);
   PRIVATE(this)->fontsize = font->size.getValue();
   
   SoSeparator * itemsep = (SoSeparator *) this->getAnyPart("itemSeparator", TRUE);
@@ -944,9 +944,9 @@ SmPopupMenuKitP::buildTextScenegraph()
     SoTranslation * trans = new SoTranslation;
     trans->translation.setValue(0, spacing, 0); 
     SoBaseColor * graycolor = new SoBaseColor;
-    titlecolor1->rgb.setValue(0.2f, 0.2f, 0.2f);
+    graycolor->rgb.setValue(0.2f, 0.2f, 0.2f);
     SoBaseColor * whitecolor = new SoBaseColor;
-    titlecolor2->rgb.setValue(1.0f, 1.0f, 1.0f);
+    whitecolor->rgb.setValue(1.0f, 1.0f, 1.0f);
     SoText2 * title = new SoText2;
     title->string = PUBLIC(this)->menuTitle.getValue();
     textsep->addChild(trans);
