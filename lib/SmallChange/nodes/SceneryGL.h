@@ -50,6 +50,12 @@ struct RenderState {
   float etexoffset;
 
   // internal state data
+  int vertexcount;
+  void * varray;
+  void * narray;
+  void * t1array;
+  void * t2array;
+  void * idxarray;
 
   // temporary
   unsigned int currtexid;
@@ -108,12 +114,22 @@ void sc_delete_all_textures(RenderState * state);
 /* ********************************************************************** */
 /* rendering callbacks */
 
+/* direct rendering with triangle fans */
 void sc_render_pre_cb(void * closure, ss_render_block_cb_info * info);
 void sc_render_post_cb(void * closure, ss_render_block_cb_info * info);
 
 void sc_render_cb(void * closure, const int x, const int y, const int len,
                   const unsigned int bitmask);
 void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
+                       const unsigned int bitmask_org);
+
+/* delayed rendering with vertex arrays */
+void sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info);
+void sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info);
+
+void sc_va_render_cb(void * closure, const int x, const int y, const int len,
+                  const unsigned int bitmask);
+void sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
                        const unsigned int bitmask_org);
 
 /* ********************************************************************** */

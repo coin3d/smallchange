@@ -253,6 +253,8 @@ public:
   uint8_t * elevationlinesdata;
   int elevationlinestexturesize;
 
+  int usevertexarrays;
+
   SceneryP(void);
   void commonConstructor(void);
 
@@ -288,7 +290,8 @@ SceneryP::SceneryP(void)
   facedetail(NULL), currhotspot(0.0f, 0.0f, 0.0f), curraction(NULL),
   currstate(NULL), viewid(-1), dummyimage(NULL),
   elevationlinesimage(NULL), elevationlinesdata(NULL),
-  elevationlinestexturesize(0)
+  elevationlinestexturesize(0),
+  usevertexarrays(TRUE)
 {
   this->renderstate.bbmin[0] = 0.0;
   this->renderstate.bbmin[1] = 0.0;
@@ -750,22 +753,28 @@ SmScenery::GLRender(SoGLRenderAction * action)
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
 
-  // callback to initialize for each block
-  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
-                                         PRIVATE(this)->viewid,
-                                         sc_render_pre_cb,
-                                         &PRIVATE(this)->renderstate);
+  if ( PRIVATE(this)->usevertexarrays ) {
+    sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                           sc_va_render_pre_cb, &PRIVATE(this)->renderstate);
+    sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                            sc_va_render_post_cb, &PRIVATE(this)->renderstate);
 
-  sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
-                                          PRIVATE(this)->viewid,
-                                          sc_render_post_cb,
-                                          &PRIVATE(this)->renderstate);
+    sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                       sc_va_render_cb, &PRIVATE(this)->renderstate);
+    sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                             sc_va_undefrender_cb, &PRIVATE(this)->renderstate); 
+  }
+  else {
+    sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                           sc_render_pre_cb, &PRIVATE(this)->renderstate);
+    sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                            sc_render_post_cb, &PRIVATE(this)->renderstate);
 
-  // set up rendering callbacks
-  sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                     sc_render_cb, &PRIVATE(this)->renderstate);
-  sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           sc_undefrender_cb, &PRIVATE(this)->renderstate); 
+    sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                       sc_render_cb, &PRIVATE(this)->renderstate);
+    sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                             sc_undefrender_cb, &PRIVATE(this)->renderstate); 
+  }
 
   double hotspot[3];
   hotspot[0] = campos[0];
