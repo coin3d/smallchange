@@ -82,7 +82,7 @@ SmAxisKit::SmAxisKit()
 
   SO_KIT_ADD_FIELD(axisRange, (SbVec2f(0.0f, 30.0f)));
   SO_KIT_ADD_FIELD(markerInterval, (1.0f));
-  SO_KIT_ADD_FIELD(markerWidth, (0.1f));
+  SO_KIT_ADD_FIELD(markerHeight, (0.2f));
   SO_KIT_ADD_FIELD(textInterval, (5.0f));
   SO_KIT_ADD_FIELD(digits, (2));
   SO_KIT_ADD_FIELD(axisName, (SbString("")));
@@ -193,14 +193,14 @@ SmAxisKitP::setupMasterNodes(void) const
   sep1->addChild(axisLine);
     
   SoSeparator * axisnamesep = new SoSeparator;
-  SoTranslation * trans3 = new SoTranslation;
-  trans3->translation.setValue(0.0f, 2.0f, 0.0f);
+  SoTranslation * nameTrans = new SoTranslation;
+  nameTrans->translation.setValue((range/2)*1.05f, 0.0f, 0.0f);
 
   SoText2 * newaxisname = new SoText2;  
   newaxisname->string.connectFrom(&PUBLIC(this)->axisName);
-    
+     
   axisnamesep->addChild(axisColor);
-  axisnamesep->addChild(trans1);
+  axisnamesep->addChild(nameTrans);
   axisnamesep->addChild(newaxisname);
 
   masterAxis->addChild(sep1);
@@ -231,9 +231,9 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoBaseColor * markerColor = new SoBaseColor;
 
   markerCoords1->point.set1Value(0, 0.0f, 0.0f, 0.0f);
-  markerCoords1->point.set1Value(1, 0.0f, 0.2f, 0.0f);
+  markerCoords1->point.set1Value(1, 0.0f, PUBLIC(this)->markerHeight.getValue(), 0.0f);
   markerCoords2->point.set1Value(0, 0.0f, 0.0f, 0.0f);
-  markerCoords2->point.set1Value(1, 0.0f, 0.4f, 0.0f);
+  markerCoords2->point.set1Value(1, 0.0f, PUBLIC(this)->markerHeight.getValue() * 2, 0.0f);
 
   marker1->numVertices = 2;
   marker2->numVertices = 2;
@@ -297,7 +297,7 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoTranslation * ttrans2 = new SoTranslation;
 
   ttrans1->translation.setValue(PUBLIC(this)->textInterval.getValue(), 0.0f, 0.0f);
-  ttrans2->translation.setValue(0.0f, 1.0f, 0.0f);  
+  ttrans2->translation.setValue(0.0f, PUBLIC(this)->markerHeight.getValue() * 2.2f, 0.0f);  
 
   textsep->addChild(centerTrans);
   textsep->addChild(ttrans2);

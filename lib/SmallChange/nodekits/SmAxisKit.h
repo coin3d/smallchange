@@ -46,7 +46,7 @@ public:
 
   SoSFVec2f axisRange;
   SoSFFloat markerInterval;
-  SoSFFloat markerWidth;
+  SoSFFloat markerHeight;
   SoSFFloat textInterval;
   SoSFInt32 digits;
   SoSFString axisName;
