@@ -410,7 +410,8 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
     if (pp) {
       SbVec3f p = pp->getObjectPoint();
       p[1] -= PRIVATE(this)->backgroundmenulow;
-      p[1] += (PRIVATE(this)->padding[1] + 2.0f) /  PRIVATE(this)->vp.getViewportSizePixels()[1];
+      if (this->menuTitle.getValue().getLength() != 0)
+        p[1] += (PRIVATE(this)->padding[1] + 2.0f) /  PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] *= PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] /= PRIVATE(this)->fontsize * this->spacing.getValue();
       
@@ -467,15 +468,12 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
       }
     }
   }
+
   if (activeitem != PRIVATE(this)->activeitem) {
     PRIVATE(this)->activeitem = activeitem;
     PRIVATE(this)->activeitemchanged->schedule();
   }
   
-
-  
-
-
   if (handled) action->setHandled();
   else inherited::handleEvent(action);
 }
@@ -800,7 +798,7 @@ SmPopupMenuKit::updateActiveItem(void)
   if (this->menuTitle.getValue().getLength() != 0) ++item; // Take the title into account?
 
   float offset = (item  * size) 
-    + ((PRIVATE(this)->padding[1] + 2.0f) / PRIVATE(this)->vp.getViewportSizePixels()[1]);
+    + ((PRIVATE(this)->padding[1] - 2.0f/2) / PRIVATE(this)->vp.getViewportSizePixels()[1]);
   
   vecdata[0][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
   vecdata[1][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
