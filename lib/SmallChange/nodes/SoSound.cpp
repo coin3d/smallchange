@@ -137,7 +137,7 @@ SbBool SoSoundP::stopPlaying(SbBool force)
   if (force || (audioClip->isActive.getValue()))
   { 
     // we were playing, so stop
-    printf("SoSound::stopPlaying stopping \n");
+    // printf("SoSound::stopPlaying stopping \n");
     // stop playing
     alSourceStop(this->sourceId);
 	  if ((error = alGetError()) != AL_NO_ERROR)
@@ -197,7 +197,7 @@ SbBool SoSoundP::startPlaying(SbBool force)
         if (this->audioBuffer == NULL)
         {
           SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
-          this->audioBuffer = new short int[audioClipStreaming->getBufferSize()];
+          this->audioBuffer = new short int[audioClipStreaming->getBufferSize() * audioClipStreaming->getNumChannels()];
         };
       };
 
@@ -335,7 +335,26 @@ int SoSoundP::fillBuffers()
 
 
       // send buffer to OpenAL
-			alBufferData(BufferID, AL_FORMAT_MONO16, audioBuffer, audioClipStreaming->getBufferSize()*sizeof(short int), 44100);
+      int channels;
+      int samplerate;
+      int bitspersample;
+      audioClipStreaming->getSampleFormat(channels, samplerate, bitspersample);
+
+	    ALenum	alformat = 0;;
+
+      if ( (channels==1) && (bitspersample==8) )
+        alformat = AL_FORMAT_MONO8;
+      else if ( (channels==1) && (bitspersample==16) )
+        alformat = AL_FORMAT_MONO16;
+      else if ( (channels==2) && (bitspersample==8) )
+        alformat = AL_FORMAT_STEREO8;
+      else if ( (channels==2) && (bitspersample==16) )
+        alformat = AL_FORMAT_STEREO16;
+
+
+			alBufferData(BufferID, alformat, audioBuffer, 
+        audioClipStreaming->getBufferSize() * sizeof(short int) * audioClipStreaming->getNumChannels(), 
+        samplerate);
 	    if ((error = alGetError()) != AL_NO_ERROR)
       {
         char errstr[256];
@@ -611,7 +630,7 @@ SoSoundP::sourceSensorCB(SoSensor *)
     if (this->audioBuffer != NULL)
       delete[] this->audioBuffer;
     SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
-    this->audioBuffer = new short int[audioClipStreaming->getBufferSize()];
+    this->audioBuffer = new short int[audioClipStreaming->getBufferSize()  * audioClipStreaming->getNumChannels()];
   };
 
   // FIXME: should probably sync with streaming thread (if we're doing async streaming)

@@ -42,6 +42,10 @@ public:
   void closeOggFile();
 #endif // HAVE_OGGVORBIS
 
+  int channels;
+  int samplerate;
+  int bitspersample;
+
   enum urlFileTypes { AUDIO_UNKNOWN = 0, AUDIO_WAVPCM, AUDIO_OGGVORBIS };
   urlFileTypes urlFileType;
 

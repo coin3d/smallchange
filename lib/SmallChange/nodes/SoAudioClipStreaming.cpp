@@ -51,6 +51,7 @@ SoAudioClipStreaming::SoAudioClipStreaming()
 #endif // HAVE_OGGVORBIS
 
   THIS->urlFileType = SoAudioClipStreamingP::AUDIO_UNKNOWN;
+  this->setSampleFormat(1, 44100, 16);
   this->loop.setValue(FALSE); 
 };
 
@@ -93,6 +94,26 @@ void SoAudioClipStreaming::setBufferInfo(int bufferSize, int numBuffers)
   THIS->numBuffers = numBuffers;
 };
 
+void SoAudioClipStreaming::setSampleFormat(int channels, int samplerate, int bitspersample)
+{
+  THIS->channels = channels;
+  THIS->samplerate = samplerate;
+  THIS->bitspersample = bitspersample;
+};
+
+void SoAudioClipStreaming::getSampleFormat(int &channels, int &samplerate, int &bitspersample)
+{
+  channels = THIS->channels;
+  samplerate = THIS->samplerate;
+  bitspersample = THIS->bitspersample;
+};
+
+int SoAudioClipStreaming::getNumChannels()
+{
+  return THIS->channels;
+};
+
+
 void SoAudioClipStreaming::setUserCallback(SbBool (*usercallback)(void *buffer, int length, void * userdataptr),
   void *userdata)
 {
@@ -120,11 +141,23 @@ SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
   // Fill buffer with data
 
   int loop;
-  short int *buf = new short int[this->bufferSize];
+  short int *buf = new short int[this->bufferSize * this->channels ];
 	for (loop = 0; loop < this->numBuffers; loop++)
 	{
     this->fillBuffer(buf, this->bufferSize);
-		alBufferData(this->alBuffers[loop], AL_FORMAT_MONO16, buf, this->bufferSize*sizeof(short int), 44100);
+//		alBufferData(this->alBuffers[loop], AL_FORMAT_MONO16, buf, this->bufferSize*sizeof(short int), 44100);
+	  ALenum	alformat = 0;;
+
+    if ( (this->channels==1) && (this->bitspersample==8) )
+      alformat = AL_FORMAT_MONO8;
+    else if ( (this->channels==1) && (this->bitspersample==16) )
+      alformat = AL_FORMAT_MONO16;
+    else if ( (this->channels==2) && (this->bitspersample==8) )
+      alformat = AL_FORMAT_STEREO8;
+    else if ( (this->channels==2) && (this->bitspersample==16) )
+      alformat = AL_FORMAT_STEREO16;
+
+		alBufferData(this->alBuffers[loop], alformat, buf, this->bufferSize*sizeof(short int), this->samplerate);
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];

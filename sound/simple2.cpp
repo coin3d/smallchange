@@ -82,6 +82,37 @@ int errno;
 #include <vorbis/vorbisfile.h>
 */
 
+SbList<SoSound *> sounds;
+
+void deleteFinishedSounds()
+{
+  SoSound *sound = NULL;
+  int length = sounds.getLength();
+  for (int i=0; i<length; i++)
+  {
+    sound = sounds[i];
+    SoAudioClip *audioClip = NULL;
+    audioClip = (SoAudioClip *)sound->source.getValue();
+
+    if (audioClip != NULL)
+    {
+      if (!audioClip->isActive.getValue())
+      { // it's not playing
+        SbTime stop;
+        stop = audioClip->stopTime.getValue();
+        if (SbTime::getTimeOfDay() > stop)
+        {
+          // it's not scheduled to start
+          printf("Deleting sound\n");
+          // delete sosound and audioclip
+          sounds.remove(i);
+          break;
+        }
+      };
+    };
+  }
+};
+
 SoSeparator * root;
 SoPerspectiveCamera * camera;
 SoTransform *xf;
@@ -90,6 +121,7 @@ SoTransform *xf2;
 
 static void timerSensorCallback(void *data, SoSensor *)
 {
+  deleteFinishedSounds();
 
   float x, y, z;
   static int counter=0;
@@ -174,6 +206,8 @@ static SbBool fill_from_ogg_callback(void *buffer, int length, void *userdata)
 };
 */
 
+int numchannels = 2;
+
 static SbBool fill_callback(void *buffer, int length, void *userdata)
 {
     short int *ibuffer = (short int *)buffer;
@@ -181,7 +215,7 @@ static SbBool fill_callback(void *buffer, int length, void *userdata)
   static double ffreq = 600.0;
   static int counter = 0;
   //ffreq +=10.0;
-  freq +=10.0;
+  // freq +=10.0;
   int a=100;
   int h=800;
   int d=100;
@@ -190,10 +224,13 @@ static SbBool fill_callback(void *buffer, int length, void *userdata)
   // det klikker av og til fordi vi forandrer p og mod'er med denne
 
   int c;
+  static bool flip = false;
   double value;
   for (int i=0; i< length; i++)
   {
     c = (counter+i)%p;
+    if (c==0)
+      flip = !flip;
     value = sin( ((float)(counter+i))/44100.0*2*3.14159265358979323846264383*freq*2);
     value=0;
 
@@ -201,14 +238,29 @@ static SbBool fill_callback(void *buffer, int length, void *userdata)
 
 
     if (c<=a)
-      ibuffer[i]= (double)c/(double)a * value;
+      value= (double)c/(double)a * value;
     else if (c<=a+h)
-      ibuffer[i]= value;
+      value= value;
     else if (c<=a+h+d)
-      ibuffer[i]= (1.0-(double)(c-(a+h))/(double)d) * value;
+      value= (1.0-(double)(c-(a+h))/(double)d) * value;
     else
-      ibuffer[i] = 0.0;
+      value = 0.0;
 
+    if (numchannels==1)
+      ibuffer[i] = value;
+    else
+    {
+      if (flip)
+      {
+        ibuffer[i*2] = 0;
+        ibuffer[i*2+1] = value;
+      }
+      else
+      {
+        ibuffer[i*2] = value;
+        ibuffer[i*2+1] = 0;
+      }
+    }
 
 //      ibuffer[i]= value;
 
@@ -335,8 +387,10 @@ main(
   // or "very round values) (0.1 sec, 0.2 sec, 
   // I have no idea why this happens !!!
 //  buffernode->url.setValue("lyd1.wav");
-  buffernode->url.setValue("allways.ogg");
-//  buffernode->loop.setValue(TRUE);
+  
+//  buffernode->url.setValue("allways.ogg");
+
+  //  buffernode->loop.setValue(TRUE);
 //  buffernode->loop.setValue(FALSE); 
   buffernode->startTime.setValue(SbTime::getTimeOfDay() + SbTime(2));
   buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
@@ -346,7 +400,8 @@ main(
 
 //  openoggfile("allways.ogg");
 
-//    buffernode->setUserCallback(fill_callback, NULL);
+    buffernode->setUserCallback(fill_callback, NULL);
+    buffernode->setSampleFormat(numchannels);
 //  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
 //  buffernode->pitch.setValue(2.0f);
 
@@ -369,9 +424,10 @@ main(
   clip2->loop.setValue(TRUE);
 //  clip2->loop.setValue(FALSE);
   clip2->startTime.setValue(SbTime::getTimeOfDay() + SbTime(1));
-  clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
+  clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(4));
   source2->source.setValue(clip2);
   root->addChild(sep2);
+  sounds.push(source2);
 
 
   listener->orientation.connectFrom(&camera->orientation);
