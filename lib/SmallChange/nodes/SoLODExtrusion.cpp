@@ -39,16 +39,6 @@
   \sa SoVRMLExtrusion
 */
 
-/*! \var SoSFBool SoLODExtrusion::beginCap
-  Whether or not to render \e crossSection as a polygon at the
-  beginning of the extrusion.
- */
-
-/*! \var SoSFBool SoLODExtrusion::endCap
-  Whether or not to render \e crossSection as a polygon at the
-  end of the extrusion.
- */
-
 /*! \var SoSFBool SoLODExtrusion::ccw
   Whether or not \e crossSection vertices are ordered counter-clockwise
   or not.
@@ -121,7 +111,6 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
-#include <Inventor/SbTesselator.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
 #include <Inventor/misc/SoState.h>
@@ -167,27 +156,22 @@ public:
      color_idx(32),
      segidx(32),
      striplens(32),
-     gen(NULL),
-     tess(tess_callback, this),
      dirty(TRUE)
   {
   }
 
   SoLODExtrusion * master;
   SbList <SbVec3f> coord;
+  SbList <SbVec3f> normals;
   SbList <SbVec2f> tcoord;
   SbList <int> idx;     // vertex index
   SbList <int> color_idx;     // per coord color index (into master->color), matches coord list
   SbList <int> segidx;  // index into idx, for each spine segment
   SbList <int32_t> striplens;  // lengths of tri-strips
   SbList <float> spinelens;    // geometric length of each spine segment, precalculated
-  SoNormalGenerator * gen;
-  SbTesselator tess;
   SbBool dirty;
 
-  static void tess_callback(void *, void *, void *, void *);
   void generateCoords(void);
-  void generateNormals(void);
   void renderSegidx( const int, const SbBool);
   void makeCircleCrossSection( const float, const int);
 };
@@ -211,8 +195,6 @@ SoLODExtrusion::SoLODExtrusion(void)
 
   SO_NODE_CONSTRUCTOR(SoLODExtrusion);
 
-  SO_NODE_ADD_FIELD(beginCap, (TRUE));
-  SO_NODE_ADD_FIELD(endCap, (TRUE));
   SO_NODE_ADD_FIELD(ccw, (FALSE));
   SO_NODE_ADD_FIELD(creaseAngle, (0.0f));
 
@@ -239,11 +221,11 @@ SoLODExtrusion::SoLODExtrusion(void)
   SO_NODE_ADD_FIELD(lodDistance1, (1000.0));
   SO_NODE_ADD_FIELD(lodDistance2, (-1.0));   // default lines to infinity
   SO_NODE_ADD_FIELD(zAxis, (0.0f, 0.0f, 0.0f));
+  THIS->dirty = TRUE;
 }
 
 SoLODExtrusion::~SoLODExtrusion()
 {
-  delete THIS->gen;
   delete THIS;
 }
 
@@ -261,9 +243,9 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
 
   // Find camera position in local coordinate space
   SbVec3f cameralocal;
-  const SbMatrix &tempmat = SoModelMatrixElement::get(state);
-  const SbMatrix &matrix = tempmat.inverse();
-  const SbViewVolume &vv = SoViewVolumeElement::get(state);
+  const SbMatrix & tempmat = SoModelMatrixElement::get(state);
+  const SbMatrix matrix = tempmat.inverse();
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
   matrix.multVecMatrix(vv.getProjectionPoint(), cameralocal);
 
   int spinelength = this->spine.getNum();
@@ -279,7 +261,9 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   int lodmode, i = 0;
   float dist, ld1dist, ld2dist, accdist;
 
+
   while (i < spinelength-1) {
+    int oldi = i;
     accdist = 0.0;
     dist = (cameralocal - sv[i]).length();
     ld1dist = SbAbs(dist - this->lodDistance1.getValue());
@@ -300,15 +284,10 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     }
     switch (lodmode) {
     case 0:    // render extrusion until above lodDistance1
-      if (i == 0)
-	THIS->renderSegidx(i, use_color);  // render begin cap
       while (accdist < ld1dist && i < spinelength-1) {
-	THIS->renderSegidx(i + 1, use_color);
+	THIS->renderSegidx(i, use_color);
 	accdist += lengths[i];
 	i++;
-      }
-      if (i == spinelength - 1) { 
-	THIS->renderSegidx(i+1, use_color);  // render end cap
       }
       break;
     case 1:    // render line until crossing a lodDistance
@@ -316,7 +295,7 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
         SbBool wasenabled = glIsEnabled(GL_LIGHTING);
         if (wasenabled) glDisable(GL_LIGHTING);
         glBegin(GL_LINE_STRIP);
-        while (accdist < ld1dist && accdist < ld2dist && i < spinelength-1) {
+        while (accdist < ld1dist && accdist < ld2dist && i < spinelength-2) {
           if( use_color )
             glColor3fv((const GLfloat*)colorv[i].getValue());
           glVertex3fv((const GLfloat*)sv[i].getValue());
@@ -337,11 +316,13 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
       }
       break;
     default:
+      assert(0);
       i = spinelength + 1;  // exit loop on error
       break;
     }
+    // to avoid hangs
+    if (i == oldi) i++;
   } 
-  // don't auto cache SoText2 nodes.
   SoGLCacheContextElement::shouldAutoCache(action->getState(),
                                            SoGLCacheContextElement::DONT_AUTO_CACHE);
 
@@ -422,7 +403,6 @@ SoLODExtrusion::updateCache(void)
 {
   if (THIS->dirty) {
     THIS->generateCoords();
-    THIS->generateNormals();
     THIS->dirty = FALSE;
   }
 }
@@ -455,8 +435,6 @@ SoLODExtrusion::createTriangleDetail(SoRayPickAction * action,
 void
 SoLODExtrusionP::generateCoords(void)
 {
-  int cursegidx = 0;
-
   this->coord.truncate(0);
   this->color_idx.truncate(0);
   this->tcoord.truncate(0);
@@ -464,6 +442,7 @@ SoLODExtrusionP::generateCoords(void)
   this->segidx.truncate(0);
   this->striplens.truncate(0);
   this->spinelens.truncate(0);
+  this->normals.truncate(0);
 
   // Create circular cross section if radius > 0.0
   if (this->master->radius.getValue() > 0.0) {
@@ -703,7 +682,14 @@ SoLODExtrusionP::generateCoords(void)
       c[2] = cross[j][1];
 
       matrix.multVecMatrix(c, c);
+
+      // calc vertex normal
+      SbVec3f t(0.0f, 0.0f, 0.0f); // assumes cross section is centered in (0,0)
+      matrix.multVecMatrix(t, t);
       this->coord.append(c);
+      c -= t;
+      c.normalize();
+      this->normals.append(c);
       this->tcoord.append(SbVec2f(float(j)/float(numcross-1),
                                   float(i)/float(closed ? numspine : numspine-1)));
       this->color_idx.append(i);
@@ -732,28 +718,11 @@ SoLODExtrusionP::generateCoords(void)
     this->idx.append((i0)*numcross+(j0)); \
   } while (0)
 
-  // create begin cap, walls and end cap
+  int cursegidx = 0;
+  // create walls
   for (i = 0; i < numspine-1; i++) {
-    // create beginCap polygon if first segment
-    if (i == 0) {
-      this->segidx.append(cursegidx);
-      int cnt0 = 0;
-      int cnt1 = numcross-1;
-      
-      for (j = 0; j < numcross; j++) {
-        if (j & 1) {
-          ADD_VERTEX(i, cnt0);
-          cnt0++;
-        }
-        else {
-          ADD_VERTEX(i, cnt1);
-          cnt1--;
-        }
-      }
-      cursegidx += numcross;
-      this->striplens.append(numcross);
-    }
     // Create walls
+    assert(cursegidx == this->idx.getLength());
     this->segidx.append( cursegidx );
     for (j = 0; j < numcross; j++) {
       ADD_VERTEX(i, j);
@@ -771,84 +740,12 @@ SoLODExtrusionP::generateCoords(void)
     }
     //  this->idx.append(-1);
     //  cursegidx += 1;
-    // create endCap polygon if last segment
-    if (i == numspine - 2) {
-      this->segidx.append(cursegidx);
-      int cnt0 = 0;
-      int cnt1 = numcross-1;
-      for (j = 0; j < numcross; j++) {
-        if (!(j & 1)) {
-          ADD_VERTEX(i+1, cnt0);
-          cnt0++;
-        }
-        else {
-          ADD_VERTEX(i+1, cnt1);
-          cnt1--;
-            
-        }
-      }
-      cursegidx += numcross;
-      this->striplens.append(numcross);
-    }
   }
+  this->segidx.append(cursegidx);
 #undef ADD_TRIANGLE
 #undef ADD_VERTEX
   //  printf("generateCoords: done, segidx length = %d \n", this->segidx.getLength() );
 }
-
-void
-SoLODExtrusionP::generateNormals(void)
-{
-#if 0 // reset() is only available in Coin-2
-  if (this->gen) this->gen->reset(this->master->ccw.getValue());
-  else this->gen = new SoNormalGenerator(this->master->ccw.getValue());
-#else // only Coin-2
-  delete this->gen;
-  this->gen = new SoNormalGenerator(this->master->ccw.getValue());
-#endif // Coin-1 fix
-
-  const SbVec3f * vertices = this->coord.getArrayPtr();
-
-  const int32_t * ptr = this->striplens.getArrayPtr();
-  const int32_t * start = ptr;
-  const int32_t * end = ptr + this->striplens.getLength();
-
-  const int32_t * idxptr = this->idx.getArrayPtr();
-
-  int cnt = 0;
-  while (ptr < end) {
-    int num = *ptr++ - 3;
-    assert(num >= 0);
-    SbVec3f striptri[3];
-    striptri[0] = vertices[idxptr[cnt++]];
-    striptri[1] = vertices[idxptr[cnt++]];
-    striptri[2] = vertices[idxptr[cnt++]];
-    this->gen->triangle(striptri[0], striptri[1], striptri[2]);
-    SbBool flag = FALSE;
-    while (num--) {
-      if (flag) striptri[1] = striptri[2];
-      else striptri[0] = striptri[2];
-      flag = !flag;
-      striptri[2] = vertices[idxptr[cnt++]];
-      this->gen->triangle(striptri[0], striptri[1], striptri[2]);
-    }
-  }
-
-  this->gen->generate(this->master->creaseAngle.getValue(),
-                      this->striplens.getArrayPtr(),
-                      this->striplens.getLength());
-}
-
-void
-SoLODExtrusionP::tess_callback(void * v0, void * v1, void * v2, void * data)
-{
-  SoLODExtrusionP * thisp = (SoLODExtrusionP*) data;
-  thisp->idx.append((int) v0);
-  thisp->idx.append((int) v1);
-  thisp->idx.append((int) v2);
-  thisp->idx.append(-1);
-}
-
 
 //
 // Render triangles for segidx[index]
@@ -857,14 +754,12 @@ SoLODExtrusionP::tess_callback(void * v0, void * v1, void * v2, void * data)
 void 
 SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
 {
-  //  printf("renderSegidx: segidx=%d \n", index);
-
   assert( index >=0 && index < this->segidx.getLength() );
 
   const int * siv = this->segidx.getArrayPtr();
   const int * iv = this->idx.getArrayPtr();
   const SbVec3f * cv = this->coord.getArrayPtr();
-  const SbVec3f * nv = this->gen->getNormals();
+  const SbVec3f * nv = this->normals.getArrayPtr();
   const SbColor * colorv = this->master->color.getValues(0);
   const int * coloridx = this->color_idx.getArrayPtr();
   int vcnt = this->coord.getLength();
@@ -875,12 +770,15 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   else
     stopindex = idx.getLength();
 
+  assert(stopindex > startindex);
+
   int curidx = startindex;
   int newmode;
   int32_t v1, v2, v3, v4, v5 = 0; // v5 init unnecessary, but kills a compiler warning.
   int32_t nv1, nv2, nv3;
-
+  
   if( iv[curidx+3] < 0) {  /* Triangle */
+    assert(0 && "should never get here");
     //    printf("renderSegidx: triangles. \n");
     glBegin(GL_TRIANGLES);
     while( curidx < stopindex ) {
@@ -915,12 +813,13 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   else {   /* Tristrip(s) */
     glBegin(GL_TRIANGLE_STRIP);
     while( curidx < stopindex ) {
+      assert(curidx < this->idx.getLength());
       v1 = iv[curidx];
-      //      assert(v1 >= 0 && v1 < vcnt);
+      assert(v1 >= 0 && v1 < vcnt);
       if( use_color ) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
       }
-      glNormal3fv((const GLfloat*)nv[curidx].getValue());
+      glNormal3fv((const GLfloat*)nv[v1].getValue());
       glVertex3fv((const GLfloat*)cv[v1].getValue());
       curidx++;
     }

@@ -46,11 +46,9 @@ public:
   static void initClass(void);
   SoLODExtrusion(void);
 
-  SoSFBool beginCap;
   SoSFBool ccw;
   SoSFFloat creaseAngle;
   SoMFVec2f crossSection;
-  SoSFBool endCap;
   SoMFVec3f spine;
   SoSFFloat radius;
   SoSFInt32 circleSegmentCount;
