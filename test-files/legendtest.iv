@@ -1,0 +1,13 @@
+#Inventor V2.1 ascii
+
+Separator {
+  PerspectiveCamera { position 0 0 4 }
+  Material { 
+     diffuseColor 1 0.1 0.1 
+     specularColor 1 1 1 
+     shininess 0.1 
+     transparency 0.6
+  }
+  Cylinder { }
+  LegendKit { delayedRender TRUE }
+}
