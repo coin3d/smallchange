@@ -263,6 +263,21 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   //  sc_ssglue_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, 400.0f);
 
+  const int sequencelen = this->renderSequence.getNum();
+  if ( this->colorTexture.getValue() && this->colormaptexid != -1 ) {
+    // FIXME: add runtime colortexture
+    int localsequence[2] = { this->colormaptexid, 0 };
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 2, localsequence);
+  } else if ( sequencelen == 0 ) {
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 0, NULL);
+  } else {
+    this->renderSequence.enableNotify(FALSE);
+    int * sequence = this->renderSequence.startEditing();
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, sequencelen, sequence);
+    this->renderSequence.finishEditing();
+    this->renderSequence.enableNotify(TRUE);
+  }
+
   SoState * state = action->getState();
   SbVec2s vpsize = SoViewportRegionElement::get(state).getViewportSizePixels();
   state->push();
@@ -307,20 +322,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
   this->debuglist.truncate(0);
   this->numnewtextures = 0;
 
-  const int sequencelen = this->renderSequence.getNum();
-  if ( this->colorTexture.getValue() && this->colormaptexid != -1 ) {
-    // FIXME: add runtime colortexture
-    int localsequence[2] = { this->colormaptexid, 0 };
-    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 2, localsequence);
-  } else if ( sequencelen == 0 ) {
-    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 0, NULL);
-  } else {
-    this->renderSequence.enableNotify(FALSE);
-    int * sequence = this->renderSequence.startEditing();
-    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, sequencelen, sequence);
-    this->renderSequence.finishEditing();
-    this->renderSequence.enableNotify(TRUE);
-  }
   sc_ssglue_view_render(this->system, this->viewid);
 //   fprintf(stderr,"num boxes: %d, new texs: %d\n",
 //           this->debuglist.getLength()/4, this->numnewtextures);
@@ -639,11 +640,11 @@ SmScenery::colortexgen_cb(void * closure, double * pos, float elevation, double 
 void
 SmScenery::colormaptexchange(void)
 {
-  if ( this->colorTexture.getValue() ) {
+  // if ( this->colorTexture.getValue() ) {
     if ( this->colormaptexid != -1 ) {
       this->refreshTextures(this->colormaptexid);
     }
-  }
+  // }
 }
 
 void 
@@ -713,6 +714,21 @@ SmScenery::filenamesensor_cb(void * data, SoSensor * sensor)
       assert(thisp->viewid >= 0);
       sc_ssglue_view_enable(thisp->system, thisp->viewid);
       //      fprintf(stderr,"system: %p, viewid: %d\n", thisp->system, thisp->viewid);
+
+      const int sequencelen = thisp->renderSequence.getNum();
+      if ( thisp->colorTexture.getValue() && thisp->colormaptexid != -1 ) {
+        // FIXME: add runtime colortexture
+        int localsequence[2] = { thisp->colormaptexid, 0 };
+        sc_ssglue_view_set_render_sequence_a(thisp->system, thisp->viewid, 2, localsequence);
+      } else if ( sequencelen == 0 ) {
+        sc_ssglue_view_set_render_sequence_a(thisp->system, thisp->viewid, 0, NULL);
+      } else {
+        thisp->renderSequence.enableNotify(FALSE);
+        int * sequence = thisp->renderSequence.startEditing();
+        sc_ssglue_view_set_render_sequence_a(thisp->system, thisp->viewid, sequencelen, sequence);
+        thisp->renderSequence.finishEditing();
+        thisp->renderSequence.enableNotify(TRUE);
+      }
     }
   }
   }
