@@ -691,7 +691,7 @@ SmScenery::filenamesensor_cb(void * data, SoSensor * sensor)
       }
     }
     if (!thisp->system) {
-      fprintf(stderr,"Unable to open SmScenery system\n");
+      (void)fprintf(stderr, "Unable to open SmScenery system '%s'\n", s.getString());
     }
     else {
 #if 0 && SS_RTTEXTURE2D_TEST
