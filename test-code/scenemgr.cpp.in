@@ -22,6 +22,9 @@
 #include <SmallChange/nodekits/SmPopupMenuKit.h>
 #include <stdio.h>
 
+// FIXME: need some kind of wrapper kit for menus to make it
+// a bit easier to create and manage them
+
 typedef struct {
   SmSceneManager * scenemgr;
   SmPopupMenuKit * menu;
@@ -61,6 +64,35 @@ handle_key_press_event(const SoEvent * e, SmSceneManager * scenemgr)
   }
   scenemgr->scheduleRedraw();
 }
+
+static void
+submenusensor_cb(void * userdata, SoSensor * s)
+{
+  scenedata * data = (scenedata*) userdata;
+  SmSceneManager * scenemgr = data->scenemgr;
+  SmPopupMenuKit * menu = data->menu;
+
+  SoKeyboardEvent::Key key = SoKeyboardEvent::ANY;
+
+  int idx = menu->pickedItem.getValue();
+  switch (idx) {
+  case 0:
+    key = SoKeyboardEvent::S;
+    break;
+  case 1:
+    key = SoKeyboardEvent::S;
+    break;
+  default:
+    break;
+  }
+  if (key != SoKeyboardEvent::ANY) {
+    SoKeyboardEvent ke;
+    ke.setKey(key);
+    ke.setState(SoButtonEvent::DOWN);
+    handle_key_press_event(&ke, scenemgr);
+  }
+}
+
 
 static void
 menusensor_cb(void * userdata, SoSensor * s)
@@ -109,12 +141,25 @@ mbevent_cb(void * userdata, SoEventCallback * node)
 {
   const SoEvent * e = node->getEvent();
   SoHandleEventAction * a = node->getAction();
-  if (SO_MOUSE_RELEASE_EVENT(e, BUTTON2)) {
-    SmPopupMenuKit * kit = (SmPopupMenuKit*) userdata;
-    if (!kit->visible.getValue()) {
-      kit->visible = TRUE;
-      kit->isActive = TRUE;
-      kit->setNormalizedPosition(e->getNormalizedPosition(a->getViewportRegion()));
+
+  static SbVec2s mousedownpos(-1, -1);
+  static double mousedowntime = 0.0;
+  if (SO_MOUSE_PRESS_EVENT(e, BUTTON2)) {
+    mousedowntime = SbTime::getTimeOfDay().getValue();
+    mousedownpos = e->getPosition();
+  }
+  else if (SO_MOUSE_RELEASE_EVENT(e, BUTTON2)) {
+    SbVec2s p = e->getPosition();
+    double t = SbTime::getTimeOfDay().getValue();
+    if (SbAbs(p[0] - mousedownpos[0]) <= 2 &&
+        SbAbs(p[1] - mousedownpos[1]) <= 2 &&
+        t < mousedowntime + 1.0) {
+      SmPopupMenuKit * kit = (SmPopupMenuKit*) userdata;
+      if (!kit->visible.getValue()) {
+        kit->visible = TRUE;
+        kit->isActive = TRUE;
+        kit->setNormalizedPosition(e->getNormalizedPosition(a->getViewportRegion()));
+      }
     }
   }
 }
@@ -231,11 +276,13 @@ main(int argc, char ** argv )
   scenemgr->activate();
 
   SmPopupMenuKit * menu = new SmPopupMenuKit;
+  SmPopupMenuKit * submenu = new SmPopupMenuKit;
 
   if (menutex) {
     SoTexture2 * tex = new SoTexture2;
     tex->filename = menutex;
     menu->setPart("backgroundTexture", tex);
+    submenu->setPart("backgroundTexture", tex);
   }  
   const char * items[] = {
     "As Is",
@@ -243,21 +290,49 @@ main(int argc, char ** argv )
     "Wireframe overlay",
     "Points",
     "BBox",
-    "Hidden line"
+    "Hidden line",
+    "Stereo"
   };
-  menu->itemList.setValues(0, 6, items);
+  const char * subitems[] = {
+    "Off",
+    "Red/Cyan"
+  };
 
+  const SoNode * itemdata[] = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    submenu
+  };
+  
+  menu->itemList.setValues(0, 7, items);
+  menu->itemData.setValues(0, 7, itemdata);
+  submenu->itemList.setValues(0,2, subitems);
+  
   scenedata data;
   data.scenemgr = scenemgr;
   data.menu = menu;
 
+  scenedata subdata;
+  subdata.scenemgr = scenemgr;
+  subdata.menu = submenu;
+
+
   SoFieldSensor * menusensor = new SoFieldSensor(menusensor_cb, &data);
   menusensor->attach(&menu->pickedItem);
+
+  SoFieldSensor * submenusensor = new SoFieldSensor(submenusensor_cb, 
+                                                    &subdata);
+  submenusensor->attach(&submenu->pickedItem);
 
   SoEventCallback * ec = new SoEventCallback;
   ec->addEventCallback(SoKeyboardEvent::getClassTypeId(), event_cb, scenemgr);
   ec->addEventCallback(SoMouseButtonEvent::getClassTypeId(), mbevent_cb, menu);
   root->insertChild(ec, 0);
+  root->insertChild(submenu, 0);
   root->insertChild(menu, 0);
 
   renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
@@ -273,6 +348,7 @@ main(int argc, char ** argv )
 
   delete renderarea;
   delete menusensor;
+  delete submenusensor;
   
 
   root->unref();
