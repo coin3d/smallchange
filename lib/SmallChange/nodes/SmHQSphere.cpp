@@ -98,6 +98,7 @@ class SmHQSphereP {
 public:
   SbBSPTree bsp;
   SbList <int32_t> idx;
+  SbList <SbVec3f> coord;
   SbList <SbVec2f> texcoord;
   HQSphereGenerator generator;
   int currlevel;
@@ -195,7 +196,7 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
 
   int n = PRIVATE(this)->idx.getLength();
   const int32_t * idx = PRIVATE(this)->idx.getArrayPtr();
-  const SbVec3f * pts = PRIVATE(this)->bsp.getPointsArrayPtr();
+  const SbVec3f * pts = PRIVATE(this)->coord.getArrayPtr();
   const SbVec2f * tc = PRIVATE(this)->texcoord.getArrayPtr();
   
   float r = this->radius.getValue();
@@ -318,7 +319,7 @@ SmHQSphere::generatePrimitives(SoAction * action)
 
   int n = PRIVATE(this)->idx.getLength();
   const int32_t * idx = PRIVATE(this)->idx.getArrayPtr();
-  const SbVec3f * pts = PRIVATE(this)->bsp.getPointsArrayPtr();
+  const SbVec3f * pts = PRIVATE(this)->coord.getArrayPtr();
   const SbVec2f * tc = PRIVATE(this)->texcoord.getArrayPtr();
   
   float r = this->radius.getValue();
@@ -354,12 +355,20 @@ SmHQSphere::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 void 
 SmHQSphereP::genGeom(const int level)
 {
-  int i;
+  int i, n;
   this->generator.generate(SbClamp(level, 1, 12), this->bsp, this->idx);  
-  int n = this->bsp.numPoints();
   const SbVec3f * pts = this->bsp.getPointsArrayPtr();
   this->texcoord.truncate(0, TRUE);
+  this->coord.truncate(0, TRUE);
+
+  n = this->bsp.numPoints();
+  for (i = 0; i < n; i++) {
+    this->coord.append(pts[i]);
+  }
+  this->bsp.clear();
+  pts = this->coord.getArrayPtr();
   
+  // generate texcoords for all vertices
   for (i = 0; i < n; i++) {
     SbVec3f v = pts[i];
     
@@ -375,7 +384,42 @@ SmHQSphereP::genGeom(const int level)
     
     if (v[0] > 0.0f) a0 = 2.0 * M_PI - a0;
     
-    this->texcoord.append(SbVec2f((float) (a0/(2.0*M_PI)), (float)(a1/M_PI)));
+    SbVec2f tc((float) (a0/(2.0*M_PI)), (float)(a1/M_PI));
+    tc[0] = SbClamp(tc[0], 0.0f, 1.0f);
+    tc[1] = SbClamp(tc[1], 0.0f, 1.0f);
+    // so that right-side-of-texture can be detected below
+    if (tc[0] == 1.0f) tc[0] == 0.0f;
+    this->texcoord.append(tc);
+  }
+
+  // detect triangles that are on the back side of the sphere, on the
+  // right side, with at least one vertex on the right-side-edge of
+  // the texture. Fix texture coordinates for those trianges
+  n = this->idx.getLength();
+  int32_t * iptr = (int32_t*) this->idx.getArrayPtr();
+  
+  SbVec3f p[3];
+  SbVec2f t[3];
+  int cnt = 0;
+  int j;
+  for (i = 0; i < n; i += 3) {
+    SbBool rightside = FALSE;
+    for (j = 0; j < 3; j++) {
+      if (p[j][0] > 0.0f) rightside = TRUE;
+      p[j] = pts[iptr[i+j]];
+      t[j] = this->texcoord[iptr[i+j]];
+      if (p[j][2] > 0.0f) break; // not on the back of the sphere
+    }    
+    if (rightside && j == 3 && ((p[0][0] == 0.0f || p[1][0] == 0.0f || p[2][0] == 0.0f))) {
+      // just create new vertices for these triangles
+      int len = this->coord.getLength();
+      for (j = 0; j < 3; j++) {
+        iptr[i+j] = len+j;
+        this->coord.append(p[j]);
+        if (t[j][0] == 0.0f) t[j][0] = 1.0f;
+        this->texcoord.append(t[j]);
+      }
+    }
   }
 }
 
