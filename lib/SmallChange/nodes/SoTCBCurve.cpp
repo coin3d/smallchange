@@ -84,6 +84,8 @@ public:
 
   int linesPerSegment;
 
+  int getLinesPerSegment(SoAction * action);
+
 private:
   SoTCBCurve * master;
 };
@@ -125,12 +127,12 @@ void
 SoTCBCurve::GLRender(SoGLRenderAction *action)
 {
   SoState * state = action->getState();
-  if (!shouldGLRender(action)) return;
+  if (!this->shouldGLRender(action)) return;
 
   if (this->numControlpoints.getValue() < 2) return;
 
   const SoCoordinateElement *coordElement= SoCoordinateElement::getInstance(state);
-  const SbVec3f * coords =  coordElement->getArrayPtr3();
+  const SbVec3f * coords = coordElement->getArrayPtr3();
 
 
   //---- Rendering...
@@ -140,15 +142,15 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
   // any examples or reasonable text in that stupid book. This is
   // probably trivial for the other guys here. 20020612 torbjorv
 
-  glColor3f(1.0, 1.0, 1.0);
-  glDisable(GL_LIGHTING);
-  glBegin(GL_LINE_STRIP);
-
-
   // Renders each curvesegment as [complexity*100] lines, using a
   // for-loop. Mark that this baby guarantees the curve always touches
   // perfectly all controlpoints (avoiding floating point errors)
-  PRIVATE(this)->linesPerSegment = (int)(this->getComplexityValue(action)*100.0);
+  PRIVATE(this)->linesPerSegment = PRIVATE(this)->getLinesPerSegment(action);
+  if (PRIVATE(this)->linesPerSegment == 0) { return; }
+
+  glColor3f(1.0, 1.0, 1.0);
+  glDisable(GL_LIGHTING);
+  glBegin(GL_LINE_STRIP);
 
   glVertex3f(coords[0][0], coords[0][1], coords[0][2]);
   for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
@@ -157,10 +159,11 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
     // and just distribute timevalues uniformly. 20030108 mortene.
     assert(segment + 1 < this->timestamp.getNum());
 
-    float timestep  = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
-    float time      = this->timestamp[segment].getValue() + timestep;
+    float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+    float time = this->timestamp[segment].getValue() + timestep;
     SbVec3f vec;
 
+    // FIXME: investigate what happens if linesPerSegment==1. 20030109 mortene.
     for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
       SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
       glVertex3f(vec[0], vec[1], vec[2]);
@@ -182,7 +185,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
   SoState * state = action->getState();
 
   const SoCoordinateElement *coordElement= SoCoordinateElement::getInstance(state);
-  const SbVec3f * coords =  coordElement->getArrayPtr3();
+  const SbVec3f * coords = coordElement->getArrayPtr3();
 
 
   //---- Generating...
@@ -195,7 +198,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
   SoLineDetail lineDetail;
   SoPointDetail pointDetail;
 
-  beginShape(action, SoShape::LINE_STRIP, &lineDetail);
+  this->beginShape(action, SoShape::LINE_STRIP, &lineDetail);
 
   // Generates each curvesegment as [resolution] lines using a for-loop. Mark
   // that this baby guarantees the curve always touches perfectly all controlpoints
@@ -215,8 +218,8 @@ SoTCBCurve::generatePrimitives(SoAction * action)
       // case. 20030108 mortene.
       assert(segment + 1 < this->timestamp.getNum());
 
-      float timestep  = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
-      float time      = this->timestamp[segment].getValue() + timestep;
+      float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+      float time = this->timestamp[segment].getValue() + timestep;
       SbVec3f vec;
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
@@ -224,7 +227,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
         point.setValue(vec[0], vec[1], vec[2]);
 
         pv.setPoint(point);
-        shapeVertex(&pv);
+        this->shapeVertex(&pv);
         lineDetail.incPartIndex();
 
         time += timestep;
@@ -232,12 +235,12 @@ SoTCBCurve::generatePrimitives(SoAction * action)
 
       point.setValue(coords[segment + 1][0], coords[segment + 1][1], coords[segment + 1][2]);
       pv.setPoint(point);
-      shapeVertex(&pv);
+      this->shapeVertex(&pv);
       lineDetail.incLineIndex();
       lineDetail.setPartIndex(0);
     }
 
-  endShape();
+  this->endShape();
 }
 
 // Doc from parent class.
@@ -250,20 +253,20 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
     curve will most likely run outside this box. 20020613 torbjorv
   */
 
+  // FIXME: the checks for when to _not_ compute a bbox below should
+  // be copied to generatePrimitives() and GLRender(). 20030109 mortene.
+
+  if (this->numControlpoints.getValue() == 0) return;
+
   SoState * state = action->getState();
+  const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
+  if ((coordElement == NULL) || (coordElement->getNum() == 0)) return;
 
-  const SoCoordinateElement *coordElement= SoCoordinateElement::getInstance(state);
-  const SbVec3f * coords =  coordElement->getArrayPtr3();
+  const SbVec3f * coords = coordElement->getArrayPtr3();
 
-  //---- Generating geometry...
-  float minx = coords[0][0];
-  float miny = coords[0][1];
-  float minz = coords[0][2];
-  float maxx = coords[0][0];
-  float maxy = coords[0][1];
-  float maxz = coords[0][2];
+  box.extendBy(coords[0]);
 
-  if (this->numControlpoints.getValue() > 1)
+  if (this->numControlpoints.getValue() > 1) {
     for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
 
       // FIXME: should handle timestamp.getNum()==0 as a special
@@ -276,27 +279,15 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
         SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
-
-        if (vec[0] < minx) minx = vec[0];
-        if (vec[1] < miny) miny = vec[1];
-        if (vec[2] < minz) minz = vec[2];
-        if (vec[0] < maxx) maxx = vec[0];
-        if (vec[1] < maxy) maxy = vec[1];
-        if (vec[2] < maxz) maxz = vec[2];
-
+        box.extendBy(vec);
         time += timestep;
       }
 
-      if (coords[segment + 1][0] < minx) minx = coords[segment + 1][0];
-      if (coords[segment + 1][1] < miny) miny = coords[segment + 1][1];
-      if (coords[segment + 1][2] < minz) minz = coords[segment + 1][2];
-      if (coords[segment + 1][0] > maxx) maxx = coords[segment + 1][0];
-      if (coords[segment + 1][1] > maxy) maxy = coords[segment + 1][1];
-      if (coords[segment + 1][2] > maxz) maxz = coords[segment + 1][2];
+      box.extendBy(coords[segment + 1]);
     }
+  }
 
-  box.setBounds(minx, miny, minz, maxx, maxy, maxz);
-  center.setValue(0.5*(minx + maxx), 0.5*(miny + maxy), 0.5*(minz + maxz));
+  center = box.getCenter();
 
   return;
 }
@@ -305,11 +296,11 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   Static function to interpolate values along a curve.
 
   This function is based on the Lightwave SDK (ftp.newtek.com) and
-  calculates a TCB-type curve. Code for handling
-  continuity/tension/bias is removed (values = 1).  Quit ironic as
-  this is how the curve got it's name. :) The timestamp-table must be
-  sorted in increasing order. Timevalues specified outside the range
-  of timestamps will be clipped to the nearest value.
+  calculates a TCB-type curve. Code for handling continuity / tension
+  / bias is removed (values = 1).  Quite ironic as this is how the
+  curve got it's name. :) The timestamp-table must be sorted in
+  increasing order. Time values specified outside the range of
+  timestamps will be clipped to the nearest value.
 
   This function is totally independent of the rest of the class, and
   may be used for general curvecalculations.
@@ -399,5 +390,19 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpo
 int
 SoTCBCurve::getLinesPerSegment(void)
 {
+  // FIXME: try to get rid of this method. 20030109 mortene.
+
   return PRIVATE(this)->linesPerSegment;
+}
+
+/*!
+  Returns an integer with the number of lines per segment to render.
+*/
+int
+SoTCBCurveP::getLinesPerSegment(SoAction * action)
+{
+  // FIXME: the magic number (100.0f) should really be replaced with
+  // something based on the screenspace the curve occupies
+  // instead. 20030109 mortene.
+  return (int)(PUBLIC(this)->getComplexityValue(action) * 100.0f);
 }
