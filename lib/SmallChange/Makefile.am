@@ -54,7 +54,7 @@ install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
 	  if test -s "$$file"; then \
 	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
 	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
-	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
+	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file" || exit 1; \
 	  fi \
 	done
 else
@@ -68,7 +68,7 @@ install-data-local:
 	  if test -s "$$file"; then \
 	    $(mkinstalldirs) "$(DESTDIR)$(libdir)"; \
 	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file"; \
-	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file"; \
+	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file" || exit 1; \
 	  fi \
 	done
 

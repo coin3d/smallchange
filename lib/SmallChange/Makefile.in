@@ -647,7 +647,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
 @BUILD_WITH_MSVC_TRUE@	  if test -s "$$file"; then \
 @BUILD_WITH_MSVC_TRUE@	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
 @BUILD_WITH_MSVC_TRUE@	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
-@BUILD_WITH_MSVC_TRUE@	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
+@BUILD_WITH_MSVC_TRUE@	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file" || exit 1; \
 @BUILD_WITH_MSVC_TRUE@	  fi \
 @BUILD_WITH_MSVC_TRUE@	done
 @BUILD_WITH_MSVC_FALSE@install-exec-local:
@@ -659,7 +659,7 @@ install-data-local:
 	  if test -s "$$file"; then \
 	    $(mkinstalldirs) "$(DESTDIR)$(libdir)"; \
 	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file"; \
-	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file"; \
+	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file" || exit 1; \
 	  fi \
 	done
 
