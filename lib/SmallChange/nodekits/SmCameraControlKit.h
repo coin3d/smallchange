@@ -35,6 +35,7 @@
 class SmCameraControlKitP;
 class SoCamera;
 class SbMatrix;
+class SbViewportRegion;
 
 class SMALLCHANGE_DLL_API SmCameraControlKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -59,6 +60,9 @@ public:
     VARIABLE_NEAR_PLANE,
     CONSTANT_NEAR_PLANE
   };
+
+  void viewAll(const SbViewportRegion & vp,
+               const float slack = 1.0f);
 
 protected:
 

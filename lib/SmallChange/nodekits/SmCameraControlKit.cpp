@@ -51,7 +51,9 @@
 #include <float.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
-
+#include <Inventor/errors/SoDebugError.h>
+#include <SmallChange/nodes/UTMPosition.h>
+#include <SmallChange/nodes/UTMCamera.h>
 
 class SmCameraControlKitP {
 public:
@@ -162,6 +164,43 @@ SmCameraControlKit::handleEvent(SoHandleEventAction * action)
     SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
     if (eh) eh->handleEvent(action);
   }
+}
+
+/*!  
+  Convenience function for viewAll-functionality. Has special
+  handling for UTMCamera and UTMPosition nodes.
+*/
+void 
+SmCameraControlKit::viewAll(const SbViewportRegion & vp,
+                            const float slack)
+{
+  SoCamera * cam = (SoCamera*) this->getPart("camera", TRUE);
+  SoNode * root = this->getAnyPart("topSeparator", TRUE);
+
+  SbBool oldsearch = SoBaseKit::isSearchingChildren();
+  SoBaseKit::setSearchingChildren(TRUE);
+  
+  if (cam->isOfType(UTMCamera::getClassTypeId())) {
+    SoSearchAction sa;
+    sa.setSearchingAll(TRUE);
+    sa.setInterest(SoSearchAction::FIRST);
+    sa.setType(UTMPosition::getClassTypeId());
+    
+    sa.apply(root);
+    if (sa.getPath()) {
+      SoFullPath * p = (SoFullPath*) sa.getPath();
+      UTMPosition * utm = (UTMPosition*) p->getTail();  
+      ((UTMCamera*)cam)->utmposition = utm->utmposition;
+    }
+    else {
+      SoDebugError::postWarning("SoQtRIMSViewer::setSceneGraph",
+                                "You're using a UTM Camera. "
+                                "Please consider supplying at least one UTMPosition node "
+                                "in your scene graph.");
+    }
+  }
+  SoBaseKit::setSearchingChildren(oldsearch);
+  cam->viewAll(root, vp, slack);
 }
 
 SbBool 
