@@ -1,3 +1,6 @@
+#ifndef SMALLCHANGE_AXISKIT_H
+#define SMALLCHANGE_AXISKIT_H
+
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
@@ -21,18 +24,16 @@
  *
 \**************************************************************************/
 
-
-#ifndef SMALLCHANGE_AXISKIT_H
-#define SMALLCHANGE_AXISKIT_H
-
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoMFFloat.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoMFColor.h>
 #include <Inventor/fields/SoMFVec2f.h>
+#include <SmallChange/basic.h>
 
-class SmAxisKit : public SoBaseKit {
+
+class SMALLCHANGE_DLL_API SmAxisKit : public SoBaseKit {
   
   typedef SoBaseKit inherited;
   SO_KIT_HEADER(SmAxisKit);
@@ -57,8 +58,6 @@ protected:
 private:
   friend class SmAxisKitP;
   class SmAxisKitP * pimpl;
-  void initSmAxisKit();
-  
 };
 
 #endif // !SMALLCHANGE_AXISKIT_H

@@ -74,8 +74,8 @@ SmAxisKit::SmAxisKit()
 
 #if defined(__COIN__) 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, TRUE, this, "", TRUE);
-#else // the Inventor way of doing it (order is very important)
-#define EMPTY \x0 // Inventor doesn't handle "" either...
+#else
+#define EMPTY \x0 // Inventor doesn't handle ""...
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, TRUE, this, EMPTY, TRUE);
 #undef EMPTY
 #endif // OIV kit specification
@@ -94,7 +94,8 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->axisRoot = new SoSeparator;
   PRIVATE(this)->axisRoot->ref();
 
-  initSmAxisKit();
+  PRIVATE(this)->generateLOD();
+
   setPart("topSeparator", PRIVATE(this)->axisRoot);
 
   PRIVATE(this)->axisRangeSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
@@ -124,12 +125,12 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->arrowColorSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->arrowColorSensor->setPriority(0);
   PRIVATE(this)->arrowColorSensor->attach(&this->arrowColor);
-
 }
 
 SmAxisKit::~SmAxisKit()
 {
-
+  // FIXME: looks like there are leaks here? From a quick look, the
+  // sensors should at least be deallocated, methinks. 20031020 mortene.
 }
 
 void
@@ -144,12 +145,6 @@ SmAxisKit::affectsState(void) const
   return FALSE;
 }
 
-void
-SmAxisKit::initSmAxisKit()
-{
-  PRIVATE(this)->generateLOD();
-}
-
 void 
 SmAxisKitP::generateLOD()
 {
@@ -158,6 +153,9 @@ SmAxisKitP::generateLOD()
  
   // FIXME: The user should be able to control these values during
   // runtime. (20031020 handegar)
+  //
+  // UPDATE: use an SoLevelOfDetail node instead, as that can be set
+  // once and for all with ~ universally valid values. 20031020 mortene.
   LODnode->range.set1Value(0, 50);
   LODnode->range.set1Value(1, 80);
   LODnode->range.set1Value(2, 110);
