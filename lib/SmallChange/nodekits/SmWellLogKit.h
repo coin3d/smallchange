@@ -72,7 +72,7 @@ public:
   SoSFFloat undefVal;
   SoSFString name;
   SoMFVec3d wellCoord;
-
+  
   SoMFString fieldNames;
   SoMFFloat fieldDataValues;
   SoSFFloat leftSize;

@@ -44,6 +44,7 @@
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/elements/SoCacheElement.h>
+#include <float.h>
 
 #define DEFAULT_SIZE 100.0f
 
@@ -78,6 +79,8 @@ public:
 
   SbList <well_pos> poslist;
   SbVec3f axis;
+  SbVec3f prevaxis;
+  SbBool processingoneshot;
 
   uint32_t find_col(const SbName & name);
   int find_colidx(const SbName & name);
@@ -107,12 +110,14 @@ SO_KIT_SOURCE(SmWellLogKit);
 SmWellLogKit::SmWellLogKit(void)
 {
   PRIVATE(this) = new SmWellLogKitP(this);
-  PRIVATE(this)->axis = SbVec3f(0.0f, 0.0f, 0.0f);
+  PRIVATE(this)->axis = SbVec3f(1.0f, 0.0f, 0.0f);
+  PRIVATE(this)->prevaxis = SbVec3f(0.0f, 0.0f, 0.0f);
   PRIVATE(this)->oneshot = new SoOneShotSensor(SmWellLogKitP::oneshot_cb, PRIVATE(this));
+  PRIVATE(this)->processingoneshot = FALSE;
 
   SO_KIT_CONSTRUCTOR(SmWellLogKit);
   
-  SO_KIT_ADD_FIELD(undefVal, (999999.0f));
+  SO_KIT_ADD_FIELD(undefVal, (-999.25));
   SO_KIT_ADD_FIELD(name,(""));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
 
@@ -178,6 +183,9 @@ SmWellLogKit::SmWellLogKit(void)
 
   SoLOD * facelod = (SoLOD*) this->getAnyPart("lod", TRUE);
   facelod->range.connectFrom(&this->lodDistance2);
+
+  SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
+  cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
 }
 
 SmWellLogKit::~SmWellLogKit(void)
@@ -259,10 +267,22 @@ SmWellLogKit::getRightData(const int idx) const
 void 
 SmWellLogKit::notify(SoNotList * l)
 {
-  if (!PRIVATE(this)->oneshot->isScheduled()) {
+  if (!PRIVATE(this)->oneshot->isScheduled() && !PRIVATE(this)->processingoneshot) {
     SoField * f = l->getLastField();
     if (f) {
-      PRIVATE(this)->oneshot->schedule();
+      SoFieldContainer * c = f->getContainer();
+      if (c == this && f->getTypeId() != SoSFNode::getClassTypeId()) {
+        SbName name;
+        if (this->getFieldName(f, name)) {
+//           fprintf(stderr,"notify from field: %s\n",
+//                   name.getString());
+        }
+        PRIVATE(this)->oneshot->schedule();
+      }
+      else {
+//         fprintf(stderr,"notify from: %s\n",
+//                 c->getTypeId().getName().getString());
+      }
     }
   }
   inherited::notify(l);
@@ -278,7 +298,7 @@ SmWellLogKitP::find_col(const SbName & name)
   int idx = find_colidx(name);
   if (idx < 0) {
     //    myfprintf(stderr,"undef col: \"%s\"\n", name.getString());
-    return 0x000000ff;
+    return 0x4477ccff;
   }
   return cm_col[idx];
 }
@@ -310,7 +330,10 @@ SmWellLogKitP::callback_cb(void * userdata, SoAction * action)
     axis[2] = 0.0f;
     if (axis == SbVec3f(0.0f, 0.0f, 0.0f)) axis = SbVec3f(1.0f, 0.0f, 0.0f);
     else axis.normalize();
-    thisp->generateFaces(axis);
+    if (axis != thisp->prevaxis) {
+      thisp->prevaxis = axis;
+      thisp->generateFaces(axis);
+    }
   }
 }
 
@@ -434,13 +457,14 @@ SmWellLogKitP::setLithOrFluid(const SbList <double> & limits,
 void
 SmWellLogKitP::generateFaces(const SbVec3f & newaxis)
 {
-
   SoCoordinate3 * coord = (SoCoordinate3*) PUBLIC(this)->getAnyPart("coord", TRUE);
   
   int i, n = this->poslist.getLength();
-  //  coord->point.setNum(3*n);
+  coord->point.setNum(3*n);
   SbVec3f * dst = coord->point.startEditing();
-  
+ 
+  fprintf(stderr,"generate faces: %d\n", n);
+ 
   for (i = 0; i < n; i++) {
     dst[n+i] = this->poslist[i].pos + newaxis * this->leftoffset[i];
     dst[2*n+i] = this->poslist[i].pos - newaxis * this->rightoffset[i];
@@ -462,25 +486,41 @@ SmWellLogKitP::buildGeometry(void)
 
   int i, n = this->poslist.getLength();
 
-  double leftmax = 0.0f;
-  double rightmax = 0.0f;
+  double leftmax = -DBL_MIN;
+  double rightmax = -DBL_MAX;
+  double leftmin = DBL_MAX;
+  double rightmin = DBL_MAX;
+  double undef = PUBLIC(this)->undefVal.getValue();
 
   for (i = 0; i < n; i++) {
-    if (this->poslist[i].left > leftmax &&
-        this->poslist[i].left != PUBLIC(this)->undefVal.getValue()) leftmax = this->poslist[i].left;
-    if (this->poslist[i].right > rightmax &&
-        this->poslist[i].right != PUBLIC(this)->undefVal.getValue()) rightmax = this->poslist[i].right;
+    double l = this->poslist[i].left;
+    double r = this->poslist[i].right;
+    
+    if (l != undef) {
+      if (l < leftmin) leftmin = l;
+      if (l > leftmax) leftmax = l;
+    }
+    if (r != undef) {
+      if (r < rightmin) rightmin = r;
+      if (r > rightmax) rightmax = r;
+    }
   }
   
-  if (PUBLIC(this)->leftUseLog.getValue()) {
-    leftmax = log_func(leftmax);
-  }
-  if (PUBLIC(this)->rightUseLog.getValue()) {
-    rightmax = log_func(rightmax);
-  }
+  double leftdiff = leftmax - leftmin;
+  double rightdiff = rightmax - rightmin;
   
-  float leftscale = leftmax ? PUBLIC(this)->leftSize.getValue() * 0.5f/ leftmax : 1.0f;
-  float rightscale = rightmax ? PUBLIC(this)->rightSize.getValue() * 0.5f / rightmax : 1.0f;
+  double leftscale = leftdiff ? 1.0 / leftdiff : 1.0;
+  double rightscale = rightdiff ? 1.0 / rightdiff : 1.0;
+
+  if (leftdiff && PUBLIC(this)->leftUseLog.getValue()) {
+    leftscale = 1.0 / log_func(leftdiff);
+  }
+  if (rightdiff && PUBLIC(this)->rightUseLog.getValue()) {
+    rightscale = 1.0 / log_func(rightdiff);
+  }
+
+  leftscale *= PUBLIC(this)->leftSize.getValue() * 0.5;
+  rightscale *= PUBLIC(this)->rightSize.getValue() * 0.5;
 
   int numleft = 0;
   int numright = 0;
@@ -512,7 +552,7 @@ SmWellLogKitP::buildGeometry(void)
     }
   }
 
-  SoCoordinate3 * lscoord = (SoCoordinate3*) PUBLIC(this)->getAnyPart("lineCoord", TRUE);
+  SoCoordinate3 * lscoord = (SoCoordinate3*) PUBLIC(this)->getAnyPart("lineCoords", TRUE);
   
   lscoord->point.setNum(redlist.getLength());
   SbVec3f * lsdst = lscoord->point.startEditing();
@@ -538,31 +578,31 @@ SmWellLogKitP::buildGeometry(void)
   }
 
   for (i = 0; i < n; i++) {
-    float g = this->poslist[i].left;
+    float l = this->poslist[i].left;
     float r = this->poslist[i].right;
 
-    if (PUBLIC(this)->leftUseLog.getValue()) {
-      g = log_func(g);
+    if (l == undef) {
+      this->leftoffset.append(0.0);
     }
-    if (PUBLIC(this)->rightUseLog.getValue()) {
-      r = log_func(r);
+    else {
+      l -= leftmin;
+      if (PUBLIC(this)->leftUseLog.getValue()) {
+        l = log_func(l);
+      }
+      l *= leftscale;
+      this->leftoffset.append(l + PUBLIC(this)->leftSize.getValue() * 0.5f);
     }
-
-    this->leftoffset.append(g < 0 ? 0.0f : leftscale * g + PUBLIC(this)->leftSize.getValue()*0.5f);
-    this->rightoffset.append(r < 0.0f ? 0.0f : rightscale * r + PUBLIC(this)->rightSize.getValue() * 0.5f);
-
-    dst[n+i] = this->poslist[i].pos + 
-      this->axis * (float)(leftscale * this->poslist[i].left + PUBLIC(this)->leftSize.getValue()*0.5f);
-    dst[2*n+i] = this->poslist[i].pos - 
-      this->axis * (float) (rightscale * this->poslist[i].right + PUBLIC(this)->rightSize.getValue() * 0.5f);
-
-//      fprintf(stderr,"pos: %g %g %g, %g %g %g\n",
-//              dst[n+i][0],
-//              dst[n+i][1],
-//              dst[n+i][2],
-//              dst[2*n+i][0],
-//              dst[2*n+i][1],
-//              dst[2*n+i][2]);
+    if (r == undef) {
+      this->rightoffset.append(0.0);
+    }
+    else {
+      r -= rightmin;
+      if (PUBLIC(this)->rightUseLog.getValue()) {
+        r = log_func(r);
+      }
+      r *= rightscale;
+      this->rightoffset.append(r + PUBLIC(this)->rightSize.getValue() * 0.5f);
+    }
   }
 
   SoIndexedFaceSet * ifs = (SoIndexedFaceSet*) PUBLIC(this)->getAnyPart("faceSet", TRUE);
@@ -576,8 +616,8 @@ SmWellLogKitP::buildGeometry(void)
   for (i = 0; i < n-1; i++) {
     if (this->poslist[i].left != PUBLIC(this)->undefVal.getValue() &&
         this->poslist[i+1].left != PUBLIC(this)->undefVal.getValue()) {
-      assert(this->poslist[i].left >= 0.0f);
-      assert(this->poslist[i+1].left >= 0.0f);
+//       assert(this->poslist[i].left >= 0.0f);
+//       assert(this->poslist[i+1].left >= 0.0f);
 
       *dsti++ = i;
       *dsti++ = n+i;
@@ -588,8 +628,8 @@ SmWellLogKitP::buildGeometry(void)
     }
     if (this->poslist[i].right != PUBLIC(this)->undefVal.getValue() &&
         this->poslist[i+1].right != PUBLIC(this)->undefVal.getValue()) {
-      assert(this->poslist[i].right >= 0.0f);
-      assert(this->poslist[i+1].right >= 0.0f);
+//       assert(this->poslist[i].right >= 0.0f);
+//       assert(this->poslist[i+1].right >= 0.0f);
 
       *dsti++ = i;
       *dsti++ = i+1;
@@ -767,10 +807,15 @@ void
 SmWellLogKitP::oneshot_cb(void * closure, SoSensor * s)
 {
   SmWellLogKitP * thisp = (SmWellLogKitP*) closure;
+  thisp->processingoneshot = TRUE;
+  fprintf(stderr,"oneshot cb\n");
 
+  thisp->prevaxis = SbVec3f(0.0f, 0.0f, 0.0f);
   thisp->updateList();
-
   thisp->buildGeometry();
+  thisp->generateFaces(SbVec3f(1.0f, 0.0f, 0.0f));
+  if (thisp->oneshot->isScheduled()) thisp->oneshot->unschedule();
+  thisp->processingoneshot = FALSE;;
 }
 
 void
@@ -815,6 +860,7 @@ SmWellLogKitP::updateList(void)
     
     pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.tvdepth = - t[2];
+    // FIXME: remove fabs
     pos.left = PUBLIC(this)->getLeftData(i);
     pos.right = PUBLIC(this)->getRightData(i);
     
