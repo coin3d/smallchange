@@ -46,7 +46,7 @@ sim_ac_smallchange_includedir=
 sim_ac_smallchange_version=
 
 # internal variables
-: ${sim_ac_smallchange_desired=false}
+: ${sim_ac_smallchange_desired=true}
 sim_ac_smallchange_extrapath=
 
 AC_ARG_WITH([smallchange],

@@ -464,7 +464,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os BUILD_WITH_MSVC BUILD_WITH_MSVC_TRUE BUILD_WITH_MSVC_FALSE SMALLCHANGE_MAJOR_VERSION SMALLCHANGE_MINOR_VERSION SMALLCHANGE_MICRO_VERSION SMALLCHANGE_BETA_VERSION SMALLCHANGE_VERSION LT_CURRENT LT_REVISION LT_AGE smallchange_build_dir smallchange_src_dir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP SMALLCHANGE_EXTRA_CPPFLAGS SMALLCHANGE_EXTRA_CFLAGS SMALLCHANGE_EXTRA_CXXFLAGS SMALLCHANGE_EXTRA_LDFLAGS SMALLCHANGE_EXTRA_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB F77 FFLAGS ac_ct_F77 LIBTOOL DSUFFIX CONFIG SUFFIX sim_ac_coin_configcmd LIBFLAGS SMALLCHANGE_COMPILER ac_compiler_gnu SMALLCHANGE_DSP_LIBS SMALLCHANGE_DSP_INCS SMALLCHANGE_DSP_DEFS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os sim_ac_mks_make BUILD_WITH_MSVC BUILD_WITH_MSVC_TRUE BUILD_WITH_MSVC_FALSE SMALLCHANGE_MAJOR_VERSION SMALLCHANGE_MINOR_VERSION SMALLCHANGE_MICRO_VERSION SMALLCHANGE_BETA_VERSION SMALLCHANGE_VERSION LT_CURRENT LT_REVISION LT_AGE smallchange_build_dir smallchange_src_dir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP SMALLCHANGE_EXTRA_CPPFLAGS SMALLCHANGE_EXTRA_CFLAGS SMALLCHANGE_EXTRA_CXXFLAGS SMALLCHANGE_EXTRA_LDFLAGS SMALLCHANGE_EXTRA_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB F77 FFLAGS ac_ct_F77 LIBTOOL DSUFFIX CONFIG SUFFIX sim_ac_coin_configcmd LIBFLAGS SMALLCHANGE_COMPILER ac_compiler_gnu SMALLCHANGE_DSP_LIBS SMALLCHANGE_DSP_INCS SMALLCHANGE_DSP_DEFS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1611,6 +1611,56 @@ test -n "$target_alias" &&
   program_prefix=${target_alias}-
 
 
+case $build in
+*-mks )
+  AR=ar
+  # Extract the first word of "gmake", so it can be a program name with args.
+set dummy gmake; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_sim_ac_mks_make+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $sim_ac_mks_make in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_sim_ac_mks_make="$sim_ac_mks_make" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_sim_ac_mks_make="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_sim_ac_mks_make" && ac_cv_path_sim_ac_mks_make="make"
+  ;;
+esac
+fi
+sim_ac_mks_make=$ac_cv_path_sim_ac_mks_make
+
+if test -n "$sim_ac_mks_make"; then
+  echo "$as_me:$LINENO: result: $sim_ac_mks_make" >&5
+echo "${ECHO_T}$sim_ac_mks_make" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  MAKE="$sim_ac_mks_make"
+  SET_MAKE="MAKE=\"$sim_ac_mks_make\""
+  export AR MAKE
+  ;;
+esac
+
+
 # *******************************************************************
 # If the Microsoft Visual C++ cl.exe compiler is available, set us up for
 # compiling with it and to generate an MSWindows .dll file.
@@ -1896,6 +1946,19 @@ smallchange_src_dir=`cd $srcdir; pwd`
 #  Locate C++ compiler and set C++ as the default language to use
 #  in tests. The configure script will automatically terminate if
 #  it doesn't find a C++ compiler.
+
+# cross_compiling: On MKS, configure will open a window when trying to run
+# the executable a.out in the cross-compilation test because it is not
+# named *.exe, halting the configure script until it has been closed, even
+# resulting in a faulty conclusion for the test (cross_compiling=yes).
+# By setting the $cross_compiling variable to yes in advance, this test is
+# skipped.  We are of course not cross-compiling, so we correct the variable
+# afterwards.  2003-06-25 larsa
+
+case $build in
+*-mks ) cross_compiling=yes ;;
+esac
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2763,6 +2826,11 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+case $build in
+*-mks ) cross_compiling=no ;;
+esac
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4800,7 +4868,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4803 "configure"' > conftest.$ac_ext
+  echo '#line 4871 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5411,7 +5479,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5414:" \
+echo "$as_me:5482:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6422,11 +6490,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6425: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6493: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6429: \$? = $ac_status" >&5
+   echo "$as_me:6497: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -6654,11 +6722,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6657: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6725: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6661: \$? = $ac_status" >&5
+   echo "$as_me:6729: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -6721,11 +6789,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6724: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6792: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:6728: \$? = $ac_status" >&5
+   echo "$as_me:6796: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8733,7 +8801,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8736 "configure"
+#line 8804 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8831,7 +8899,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8834 "configure"
+#line 8902 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10965,11 +11033,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:10968: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11036: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:10972: \$? = $ac_status" >&5
+   echo "$as_me:11040: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -11032,11 +11100,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11035: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11103: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11039: \$? = $ac_status" >&5
+   echo "$as_me:11107: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12275,7 +12343,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 12278 "configure"
+#line 12346 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12373,7 +12441,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 12376 "configure"
+#line 12444 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13195,11 +13263,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13198: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13266: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13202: \$? = $ac_status" >&5
+   echo "$as_me:13270: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -13262,11 +13330,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13265: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13333: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13269: \$? = $ac_status" >&5
+   echo "$as_me:13337: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15202,11 +15270,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15205: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15273: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15209: \$? = $ac_status" >&5
+   echo "$as_me:15277: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -15434,11 +15502,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15437: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15505: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15441: \$? = $ac_status" >&5
+   echo "$as_me:15509: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -15501,11 +15569,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15504: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15572: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15508: \$? = $ac_status" >&5
+   echo "$as_me:15576: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17513,7 +17581,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 17516 "configure"
+#line 17584 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17611,7 +17679,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 17614 "configure"
+#line 17682 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19247,7 +19315,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
     ## 1169: External/internal linkage conflicts with a previous declaration.
     ##       We get this for the "friend operators" in SbString.h
 
-    sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110,1506,1169"
+    sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110,1506,1169,1210"
 
     case $CC in
     cc | "cc "* | CC | "CC "* )
@@ -22541,6 +22609,18 @@ fi
 # **************************************************************************
 
                                                                                                                                   ac_config_files="$ac_config_files Makefile bin/Makefile lib/Makefile lib/SmallChange/Makefile lib/SmallChange/actions/Makefile lib/SmallChange/misc/Makefile lib/SmallChange/nodekits/Makefile lib/SmallChange/nodes/Makefile lib/SmallChange/elements/Makefile lib/SmallChange/engines/Makefile lib/SmallChange/draggers/Makefile lib/SmallChange/eventhandlers/Makefile lib/SmallChange/basic.h"
+
+
+# MKS will have "\c" as $ECHO_C, but that string in the config.status
+# substitution command will cause config.status to hang because it is
+# somehow translated to "&c".  We therefore blank it here, and restore
+# it further below, after AC_OUTPUT.
+
+sim_ac_ECHO_C=$ECHO_C
+case $build in
+*-mks ) ECHO_C="" ;;
+esac
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -23222,6 +23302,7 @@ s,@target@,$target,;t t
 s,@target_cpu@,$target_cpu,;t t
 s,@target_vendor@,$target_vendor,;t t
 s,@target_os@,$target_os,;t t
+s,@sim_ac_mks_make@,$sim_ac_mks_make,;t t
 s,@BUILD_WITH_MSVC@,$BUILD_WITH_MSVC,;t t
 s,@BUILD_WITH_MSVC_TRUE@,$BUILD_WITH_MSVC_TRUE,;t t
 s,@BUILD_WITH_MSVC_FALSE@,$BUILD_WITH_MSVC_FALSE,;t t
@@ -23940,6 +24021,10 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
+
+ECHO_C=$sim_ac_ECHO_C
+
+# **************************************************************************
 
 case "$sim_ac_framework:$sim_ac_make_dsp" in
 true:* | *:true )

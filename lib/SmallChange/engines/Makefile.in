@@ -158,6 +158,7 @@ program_transform_name = @program_transform_name@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
+sim_ac_mks_make = @sim_ac_mks_make@
 smallchange_build_dir = @smallchange_build_dir@
 smallchange_src_dir = @smallchange_src_dir@
 sysconfdir = @sysconfdir@

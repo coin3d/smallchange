@@ -12,6 +12,28 @@
 # PARTICULAR PURPOSE.
 
 # **************************************************************************
+# SIM_AC_SETUP_MKS
+#
+# This macro contains some customizations needed for being able to use
+# the configure script in the MKS environment.
+#
+#   Lars J
+
+AC_DEFUN([SIM_AC_SETUP_MKS],
+[
+case $build in
+*-mks )
+  AR=ar
+  AC_PATH_PROG([sim_ac_mks_make], [gmake], [make])
+  MAKE="$sim_ac_mks_make"
+  SET_MAKE="MAKE=\"$sim_ac_mks_make\""
+  export AR MAKE
+  ;;
+esac
+])
+
+
+# **************************************************************************
 # SIM_AC_SETUP_MSVC_IFELSE( IF-FOUND, IF-NOT-FOUND )
 #
 # This macro invokes IF-FOUND if the wrapmsvc wrapper can be run, and
@@ -7554,7 +7576,7 @@ if test x"$enable_warnings" = x"yes"; then
     ## 1169: External/internal linkage conflicts with a previous declaration.
     ##       We get this for the "friend operators" in SbString.h
 
-    sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110,1506,1169"
+    sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110,1506,1169,1210"
 
     case $CC in
     cc | "cc "* | CC | "CC "* )
