@@ -46,7 +46,7 @@ public:
   int getLinesPerSegment(void);
 
   static void TCB(const SbVec3f * vec, const SoMFTime &timestamp,
-                  int numControlpoints, const SbTime &time, SbVec3f &res);
+                  const int numControlpoints, const SbTime &time, SbVec3f &res);
 
 protected:
   virtual ~SoTCBCurve();

@@ -209,7 +209,7 @@ SoTCBCurve::generatePrimitives(SoAction * action)
   point.setValue(coords[0][0], coords[0][1], coords[0][2]);
   pv.setPoint(point);
   pv.setDetail(&pointDetail);
-  shapeVertex(&pv);
+  this->shapeVertex(&pv);
 
   if (this->numControlpoints.getValue() > 1)
     for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
@@ -261,30 +261,28 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   SoState * state = action->getState();
   const SoCoordinateElement * coordElement = SoCoordinateElement::getInstance(state);
   if ((coordElement == NULL) || (coordElement->getNum() == 0)) return;
+  assert(this->numControlpoints.getValue() <= coordElement->getNum());
+
+  // FIXME: should handle timestamp.getNum()==0 as a special
+  // case. 20030108 mortene.
+  assert(this->timestamp.getNum() == this->numControlpoints.getValue());
 
   const SbVec3f * coords = coordElement->getArrayPtr3();
 
   box.extendBy(coords[0]);
 
-  if (this->numControlpoints.getValue() > 1) {
-    for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
+  for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
+    float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+    float time = this->timestamp[segment].getValue() + timestep;
+    SbVec3f vec;
 
-      // FIXME: should handle timestamp.getNum()==0 as a special
-      // case. 20030108 mortene.
-      assert(segment + 1 < this->timestamp.getNum());
-
-      float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
-      float time = this->timestamp[segment].getValue() + timestep;
-      SbVec3f vec;
-
-      for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
-        SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
-        box.extendBy(vec);
-        time += timestep;
-      }
-
-      box.extendBy(coords[segment + 1]);
+    for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
+      SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
+      box.extendBy(vec);
+      time += timestep;
     }
+
+    box.extendBy(coords[segment + 1]);
   }
 
   center = box.getCenter();
@@ -306,81 +304,59 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   may be used for general curvecalculations.
 */
 void
-SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp, int numControlpoints, const SbTime &time, SbVec3f &res)
+SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
+                const int numControlpoints, const SbTime &time, SbVec3f &res)
 {
   assert(numControlpoints > 0);
 
-  int k1, k2;
-  int c1, c2;
-  float h1, h2, h3, h4;
-  float t, t2, t3;
+  if (numControlpoints == 1) {
+    res = vec[0];
+    return;
+  }
 
-  float d10_x, d10_y, d10_z;
-  float dd0_x, dd0_y, dd0_z;
-  float ds1_x, ds1_y, ds1_z;
+  //---- Find segment...
+  int k = -1;
+  for (int i = 0; i < numControlpoints - 1; i++) {
+    if (timestamp[i] <= time) k++;
+  }
 
-  //---- Find object's position and angles...
-  if ( numControlpoints > 1 ) {
+  //---- Calculating t = (T - T0)/(T1 - T0)
+  float t = (time - timestamp[k])/(timestamp[k + 1] - timestamp[k]);
 
-    //---- Find segment...
-    k2 = 0;
-    c1 = numControlpoints - 1;
-    for (c2 = 0; c2 < c1; c2++)
-      if (timestamp[c2] <= time) k2++;
-    k1 = k2 - 1;
+  //---- Calculating curve-location.
 
-    //---- Calculating t = (T - T0)/(T1 - T0)
-    t = (time - timestamp[k1])/(timestamp[k2] - timestamp[k1]);
+  SbVec3f d10 = vec[k + 1] - vec[k];
+  SbVec3f dd0, ds1;
 
-    d10_x = vec[k2][0] - vec[k1][0];
-    d10_y = vec[k2][1] - vec[k1][1];
-    d10_z = vec[k2][2] - vec[k1][2];
-
-    t2 = t*t;
-    t3 = t2*t;
-
-    //---- Calculating some magic stuff...
-    h1 = 1.0 - (3*t2 - 2*t3);
-    h2 = 3*t2 - 2*t3;
-    h3 = t3 - 2*t2 + t;
-    h4 = t3 - t2;
-
-    //---- Calculating TCB-values...
-    if (k1 == 0) {
-      dd0_x = d10_x;
-      dd0_y = d10_y;
-      dd0_z = d10_z;
-    }
-    else {
-      float adj0 = (timestamp[k2] - timestamp[k1])/(timestamp[k2] - timestamp[k1 - 1]);
-
-      dd0_x = adj0*((vec[k1][0] - vec[k1 - 1][0]) + d10_x);
-      dd0_y = adj0*((vec[k1][1] - vec[k1 - 1][1]) + d10_y);
-      dd0_z = adj0*((vec[k1][2] - vec[k1 - 1][2]) + d10_z);
-    }
-
-    if (k2 == (numControlpoints - 1)) {
-      ds1_x = d10_x;
-      ds1_y = d10_y;
-      ds1_z = d10_z;
-    }
-    else {
-      float adj1 = (timestamp[k2] - timestamp[k1])/(timestamp[k2+1] - timestamp[k1]);
-
-      ds1_x = adj1*((vec[k2 + 1][0] - vec[k2][0]) + d10_x);
-      ds1_y = adj1*((vec[k2 + 1][1] - vec[k2][1]) + d10_y);
-      ds1_z = adj1*((vec[k2 + 1][2] - vec[k2][2]) + d10_z);
-    }
-
-    res[0] = vec[k1][0]*h1 + vec[k2][0]*h2 + dd0_x*h3 + ds1_x*h4;
-    res[1] = vec[k1][1]*h1 + vec[k2][1]*h2 + dd0_y*h3 + ds1_y*h4;
-    res[2] = vec[k1][2]*h1 + vec[k2][2]*h2 + dd0_z*h3 + ds1_z*h4;
+  if (k == 0) {
+    dd0 = d10;
   }
   else {
-    res[0] = vec[0][0];
-    res[1] = vec[0][1];
-    res[2] = vec[0][2];
+    const float adj =
+      (timestamp[k + 1] - timestamp[k]) / (timestamp[k + 1] - timestamp[k - 1]);
+
+    dd0 = adj * (vec[k] - vec[k - 1] + d10);
   }
+
+  if (k + 2 == numControlpoints) {
+    ds1 = d10;
+  }
+  else {
+    const float adj =
+      (timestamp[k + 1] - timestamp[k]) / (timestamp[k + 2] - timestamp[k]);
+
+    ds1 = adj * (vec[k + 2] - vec[k + 1] + d10);
+  }
+
+  //---- Parametrization constants.
+  const float t2 = t*t;
+  const float t3 = t2*t;
+  const float h1 = 1.0 - (3*t2 - 2*t3);
+  const float h2 = 3*t2 - 2*t3;
+  const float h3 = t3 - 2*t2 + t;
+  const float h4 = t3 - t2;
+
+  res = vec[k] * h1 + vec[k + 1] * h2 + dd0 * h3 + ds1 * h4;
 }
 
 /*!
