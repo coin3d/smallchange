@@ -133,8 +133,8 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(leftUseLog, (FALSE));
   SO_KIT_ADD_FIELD(rightUseLog, (FALSE));
 
-  SO_KIT_ADD_FIELD(lodDistance1, (5000.0f));
-  SO_KIT_ADD_FIELD(lodDistance2, (10000.0f));
+  SO_KIT_ADD_FIELD(lodDistance1, (50000.0f));
+  SO_KIT_ADD_FIELD(lodDistance2, (100000.0f));
   
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
@@ -204,6 +204,19 @@ SmWellLogKit::initClass(void)
     first = 0;
     SO_KIT_INIT_CLASS(SmWellLogKit, SoBaseKit, "BaseKit");
   }
+}
+
+void 
+SmWellLogKit::getBoundingBox(SoGetBoundingBoxAction * action)
+{
+  // the kit has changed but the sensor has not triggered
+  // yet. Calculate manually and unschedule() so that we get the
+  // correct bounding box.
+  if (PRIVATE(this)->oneshot->isScheduled()) {
+    PRIVATE(this)->oneshot->unschedule();
+    SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
+  }
+  inherited::getBoundingBox(action);
 }
 
 int 
@@ -465,7 +478,7 @@ SmWellLogKitP::generateFaces(const SbVec3f & newaxis)
   coord->point.setNum(3*n);
   SbVec3f * dst = coord->point.startEditing();
  
-  fprintf(stderr,"generate faces: %d\n", n);
+  //  fprintf(stderr,"generate faces: %d\n", n);
  
   for (i = 0; i < n; i++) {
     dst[n+i] = this->poslist[i].pos + newaxis * this->leftoffset[i];
@@ -810,7 +823,6 @@ SmWellLogKitP::oneshot_cb(void * closure, SoSensor * s)
 {
   SmWellLogKitP * thisp = (SmWellLogKitP*) closure;
   thisp->processingoneshot = TRUE;
-  fprintf(stderr,"oneshot cb\n");
 
   thisp->prevaxis = SbVec3f(0.0f, 0.0f, 0.0f);
   thisp->updateList();

@@ -87,24 +87,12 @@ public:
 
   SoSFFloat lodDistance1;
   SoSFFloat lodDistance2;
-  
-  void reset(void);
 
-//   virtual void GLRender(SoGLRenderAction * action);
-//   virtual void handleEvent(SoHandleEventAction * action);
-//   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
-//   virtual void search(SoSearchAction * action);
-//   virtual void callback(SoCallbackAction * action);
-//   virtual void getMatrix(SoGetMatrixAction * action);
-//   virtual void pick(SoPickAction * action);
-//   virtual void rayPick(SoRayPickAction * action);
-//   virtual void audioRender(SoAudioRenderAction * action);
-//   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
+  virtual void getBoundingBox(SoGetBoundingBoxAction * action);
 
 protected:
   virtual void notify(SoNotList * l);
   virtual ~SmWellLogKit();
-
   
 public:
   
