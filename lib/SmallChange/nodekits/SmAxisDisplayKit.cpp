@@ -386,7 +386,7 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
     axissep->addChild(axiscol);
     axissep->addChild(axistrans);
     axissep->addChild(linesep);
-    bool enableAxis;
+    SbBool enableAxis;
     if (PUBLIC(thisp)->enableArrows.getNum() <= i)
       enableAxis = PUBLIC(thisp)->enableArrows[PUBLIC(thisp)->enableArrows.getNum()-1];
     else
