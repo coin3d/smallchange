@@ -289,18 +289,23 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
       }
       break;
     case 1:    // render line until crossing a lodDistance
-      glBegin(GL_LINE_STRIP);
-      while (accdist < ld1dist && accdist < ld2dist && i < spinelength-1) {
-	if( use_color )
-	  glColor3fv((const GLfloat*)colorv[i].getValue());
-	glVertex3fv((const GLfloat*)sv[i].getValue());
-	accdist += lengths[i];
-	i++;
+      {
+        SbBool wasenabled = glIsEnabled(GL_LIGHTING);
+        if (wasenabled) glDisable(GL_LIGHTING);
+        glBegin(GL_LINE_STRIP);
+        while (accdist < ld1dist && accdist < ld2dist && i < spinelength-1) {
+          if( use_color )
+            glColor3fv((const GLfloat*)colorv[i].getValue());
+          glVertex3fv((const GLfloat*)sv[i].getValue());
+          accdist += lengths[i];
+          i++;
+        }
+        if( use_color )
+          glColor3fv((const GLfloat*)colorv[i].getValue());
+        glVertex3fv((const GLfloat*)sv[i].getValue());
+        glEnd();
+        if (wasenabled) glEnable(GL_LIGHTING);
       }
-      if( use_color )
-	glColor3fv((const GLfloat*)colorv[i].getValue());
-      glVertex3fv((const GLfloat*)sv[i].getValue());
-      glEnd();
       break;
     case 2:    // render nothing until beneath lodDistance2
       while (accdist < ld2dist && i < spinelength-1) {
