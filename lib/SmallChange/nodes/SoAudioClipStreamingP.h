@@ -4,6 +4,13 @@
 #include <AL/al.h>
 #include <AL/alut.h>
 
+#if HAVE_OGGVORBIS
+
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
+
+#endif // HAVE_OGGVORBIS
+
 class SoAudioClipStreamingP
 {
 public:
@@ -23,5 +30,20 @@ public:
   int numBuffers;
 
   SbBool (*usercallback)(void *buffer, int length, void * userdataptr);
+  static SbBool defaultCallbackWrapper(void *buffer, int length, void *userdata);
+  SbBool defaultCallback(void *buffer, int length);
   void *userdata;
+
+#if HAVE_OGGVORBIS
+  FILE *ovFile;
+  OggVorbis_File ovOvFile;
+  int ovCurrentSection;
+
+  SbBool openOggFile(const char *filename);
+  void closeOggFile();
+#endif // HAVE_OGGVORBIS
+
+  enum urlFileTypes { AUDIO_UNKNOWN = 0, AUDIO_WAVPCM, AUDIO_OGGVORBIS };
+  urlFileTypes urlFileType;
+
 };

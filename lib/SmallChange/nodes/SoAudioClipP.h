@@ -15,7 +15,6 @@ public:
   SoFieldSensor * urlsensor;
   static void urlSensorCBWrapper(void *, SoSensor *);
   void urlSensorCB(SoSensor *);
-  SbBool loadUrl(void); 
 };
 
 #endif // DOXYGEN_SKIP_THIS

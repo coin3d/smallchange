@@ -33,6 +33,10 @@ protected:
 
   virtual ~SoAudioClip();
 
+  virtual SbBool loadUrl(void); 
+  virtual void unloadUrl(void);
+
+
 protected:
 	class SoAudioClipP *soaudioclip_impl;
 	friend class SoAudioClipP;

@@ -67,17 +67,21 @@ SoAudioClip::~SoAudioClip()
   if (alIsBuffer(THIS->bufferId))
 	  alDeleteBuffers(1, &THIS->bufferId);
 
+  this->unloadUrl();
+
   delete THIS->urlsensor;
   delete THIS;
 };
 
-SbBool SoAudioClipP::loadUrl(void)
+SbBool SoAudioClip::loadUrl(void)
 {
   // similar to SoTexture2::loadFilename()
 
-  if (ITHIS->url.getNum() <1)
+  this->unloadUrl();
+
+  if (this->url.getNum() <1)
     return FALSE; // no url specified
-  const char * str = ITHIS->url[0].getString();
+  const char * str = this->url[0].getString();
   if ( (str == NULL) || (strlen(str)==0) )
     return FALSE; // url is blank
 
@@ -96,16 +100,16 @@ SbBool SoAudioClipP::loadUrl(void)
 
   // Delete previous buffer
 
-  if (alIsBuffer(this->bufferId))
-	  alDeleteBuffers(1, &this->bufferId);
+  if (alIsBuffer(THIS->bufferId))
+	  alDeleteBuffers(1, &THIS->bufferId);
 
   // Generate new buffer
 
-  alGenBuffers(1, &this->bufferId);
+  alGenBuffers(1, &THIS->bufferId);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClipP::loadUrl",
+		SoDebugError::postWarning("SoAudioCli::loadUrl",
                               "alGenBuffers failed. %s",
                               GetALErrorString(errstr, error));
 		return FALSE;
@@ -156,13 +160,15 @@ SbBool SoAudioClipP::loadUrl(void)
 	ALvoid	*data;
 	ALboolean loop;
 
+  // fixme: use filename.getString() instead of str
+
 	// Load .wav
   alutLoadWAVFile(const_cast<ALbyte *>(str), &format, &data, &size, &freq, &loop);
 //	alutLoadWAV(str, &data, &format, &size, &bits, &freq);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClipP::loadUrl",
+		SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "Couldn't load file %s. %s",
 //                              text.getString(), 
                               str, 
@@ -171,11 +177,11 @@ SbBool SoAudioClipP::loadUrl(void)
 	}
 
 	// Copy wav data into buffer
-	alBufferData(this->bufferId, format, data, size, freq);
+	alBufferData(THIS->bufferId, format, data, size, freq);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClipP::loadUrl",
+		SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "alBufferData failed for data read from file %s. %s",
 //                              text.getString(),
                               str,
@@ -199,6 +205,10 @@ SbBool SoAudioClipP::loadUrl(void)
 //  delete data; // 20010803 thh
 
   return TRUE;
+};
+
+void SoAudioClip::unloadUrl()
+{
 };
 
 //
@@ -225,7 +235,7 @@ SoAudioClipP::urlSensorCB(SoSensor *)
     if ( (str != NULL) && (strlen(str)>0) )
     {
 
-      if (this->loadUrl())
+      if (ITHIS->loadUrl())
       {
         this->readstatus = 1;
       }

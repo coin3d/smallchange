@@ -651,11 +651,11 @@ SoSoundP::sourceSensorCB(SoSensor *)
 
   if (ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()))
   {
-
+    // if we're streaming, the buffers will be filled in fillBuffer()
   }
   else
   {
-
+    // when we're not streaming, fill buffer once
 	  alSourcei(this->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {

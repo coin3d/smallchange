@@ -264,8 +264,8 @@ main(
 
   openoggfile("allways.ogg");
 
-  //  buffernode->setUserCallback(fill_callback, NULL);
-  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
+//    buffernode->setUserCallback(fill_callback, NULL);
+//  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
 //  buffernode->pitch.setValue(2.0f);
 
   sourcenode->source.setValue(buffernode);

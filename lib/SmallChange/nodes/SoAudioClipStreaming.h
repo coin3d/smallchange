@@ -23,6 +23,9 @@ public:
 protected:
 	virtual ~SoAudioClipStreaming();
 
+  virtual SbBool loadUrl(void); 
+  virtual void unloadUrl(void);
+
 protected:
   class SoAudioClipStreamingP *soaudioclipstreaming_impl;
   friend class SoAudioClipStreamingP;
