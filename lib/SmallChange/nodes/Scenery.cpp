@@ -238,6 +238,8 @@ public:
   SoFieldSensor * elevationthicknesssensor;
   SoFieldSensor * elevationemphasissensor;
 
+  SbBool didevaluate;
+
   SmSceneryTexture2CB * cbtexcb;
   void * cbtexclosure;
 
@@ -690,8 +692,16 @@ SmScenery::rayPick(SoRayPickAction * action)
                                            NULL, NULL);
 }
 
+SoCallbackAction::Response 
+SmScenery::evaluateS(void * userdata, SoCallbackAction * action, const SoNode * node)
+{
+  assert(node->isOfType(SmScenery::getClassTypeId()));
+  ((SmScenery*)node)->evaluate(action);
+  return SoCallbackAction::CONTINUE;
+}
+
 void 
-SmScenery::callback(SoCallbackAction * action)
+SmScenery::evaluate(SoAction * action)
 {
   if ( !sc_scenery_available() ) { return; }
 
@@ -721,9 +731,6 @@ SmScenery::callback(SoCallbackAction * action)
     PRIVATE(this)->firstGLRender = FALSE;
   }
 
-  // FIXME: not correct to just evaluate in the callback()
-  // method. SoCallbackAction can be executed for a a number of
-  // reasons. Consider creating a SoSimlaEvaluateAction or something...
   if (PRIVATE(this)->system == NULL) return;
   SoState * state = action->getState();
 

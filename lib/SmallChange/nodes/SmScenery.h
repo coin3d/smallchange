@@ -27,6 +27,7 @@
 #include <Inventor/SbBasic.h>
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoShape.h>
+#include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFEnum.h>
@@ -78,7 +79,6 @@ public:
   SoSFBool visualDebug;
 
   virtual void GLRender(SoGLRenderAction * action);
-  virtual void callback(SoCallbackAction * action);
   virtual void rayPick(SoRayPickAction * action);
 
   void preFrame(void);
@@ -99,11 +99,13 @@ public:
 
   // dynamic texture callbacks
   static uint32_t colortexture_cb(void * node, double * xypos, float elevation, double * spacing);
+  static SoCallbackAction::Response evaluateS(void * userdata, SoCallbackAction * action, const SoNode * node);
 
 protected:
   virtual ~SmScenery(void);
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
+  virtual void evaluate(SoAction * action);
 
   void refreshTextures(const int id);
 

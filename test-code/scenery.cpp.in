@@ -45,6 +45,7 @@ public:
   Examiner(void) : So@Gui@ExaminerViewer() {
     saction = new SoSearchAction;
     cbaction = new SoCallbackAction(SbViewportRegion(100, 100));
+    cbaction->addPreCallback(SmScenery::getClassTypeId(), SmScenery::evaluateS, NULL);
   }
   ~Examiner() {
     delete saction;
