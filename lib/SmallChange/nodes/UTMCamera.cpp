@@ -183,11 +183,28 @@ UTMCamera::setReferencePosition(SoState * state)
   SbVec3d utm = this->utmposition.getValue();
   UTMElement::setReferencePosition(state,
                                    utm[0], utm[1], utm[2]);
-  
+  (void) UTMElement::setPosition(state, utm[0], utm[1], utm[2]);
+
+  SoAction * action = state->getAction();
+
   if (this->moveTransform.getValue() && state->isElementEnabled(SoModelMatrixElement::getClassStackIndex())) {
     SbMatrix m = SoModelMatrixElement::get(state);
-    SoModelMatrixElement::makeIdentity(state, this);
+    if (action->isOfType(SoGetBoundingBoxAction::getClassTypeId())) {
+      SoModelMatrixElement::mult(state, this, m.inverse());
+    }
+    else {
+      SoModelMatrixElement::makeIdentity(state, this);
+    }
     UTMElement::setGlobalTransform(state, m);
+  }
+  else if (state->isElementEnabled(SoModelMatrixElement::getClassStackIndex())) {
+    if (action->isOfType(SoGetBoundingBoxAction::getClassTypeId())) {
+      SbMatrix m = SoModelMatrixElement::get(state);
+      SoModelMatrixElement::mult(state, this, m.inverse());
+    }
+    else {
+      SoModelMatrixElement::makeIdentity(state, this);
+    }
   }
 }
 
@@ -200,6 +217,10 @@ UTMCamera::getMatrix(SoGetMatrixAction * action)
     action->getMatrix() = SbMatrix::identity();
     action->getInverse() = SbMatrix::identity();
     UTMElement::setGlobalTransform(action->getState(), m);
+  }
+  else {
+    action->getMatrix() = SbMatrix::identity();
+    action->getInverse() = SbMatrix::identity();
   }
 }
 

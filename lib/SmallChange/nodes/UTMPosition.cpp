@@ -138,11 +138,24 @@ UTMPosition::doAction(SoAction * action)
   oldm[3][2] = 0.0f;
   SbVec3f trans = UTMElement::setPosition(action->getState(),
                                           utm[0], utm[1], utm[2]);
-                                          
-  SoModelMatrixElement::makeIdentity(action->getState(), this);
+  
+  
+  if (SoModelMatrixElement::get(state) != SbMatrix::identity()) {
+    if (action->isOfType(SoGetBoundingBoxAction::getClassTypeId())) {
+      SoModelMatrixElement::mult(state, 
+                                 this, 
+                                 SoModelMatrixElement::get(state).inverse());
+    }
+    else {
+      SoModelMatrixElement::makeIdentity(action->getState(), this);
+    }
+  }
   SoModelMatrixElement::translateBy(action->getState(), this, trans);
-  SoModelMatrixElement::mult(action->getState(), this, UTMElement::getGlobalTransform(action->getState()));
-
+  
+  const SbMatrix & gtransform = UTMElement::getGlobalTransform(action->getState());
+  if (gtransform != SbMatrix::identity()) {
+    SoModelMatrixElement::mult(action->getState(), this, gtransform);
+  }
   if (oldm != SbMatrix::identity()) {
     SoModelMatrixElement::mult(action->getState(), this, oldm); 
   }

@@ -66,7 +66,8 @@ main(int argc, char ** argv )
   
   So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
   renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
-  camera->viewAll(root, renderarea->getViewportRegion() );
+  //  camera->viewAll(root, renderarea->getViewportRegion() );
+  ck->viewAll(renderarea->getViewportRegion());
   renderarea->setSceneGraph(ck);
   renderarea->setBackgroundColor( SbColor( 0.0f, 0.2f, 0.3f )  );
   renderarea->show();
