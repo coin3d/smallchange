@@ -477,6 +477,18 @@ SmCameraControlKit::getCameraCoordinateSystem(SoCamera * camera,
 }
 
 SbBool 
+SmCameraControlKit::isAnimating(void)
+{
+  if (PRIVATE(this)->seek.seeking) return TRUE;
+  
+  SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
+  if (eh) {
+    return eh->isAnimating();
+  }
+  return FALSE;
+}
+
+SbBool 
 SmCameraControlKit::isBusy(void) const
 {
   return PRIVATE(this)->seek.seeking;

@@ -61,7 +61,8 @@ public:
     VARIABLE_NEAR_PLANE,
     CONSTANT_NEAR_PLANE
   };
-  
+
+  SbBool isAnimating(void);
   SbBool isBusy(void) const;
   SbBool seek(const SoEvent * event, const SbViewportRegion & vp);
   void viewAll(const SbViewportRegion & vp,
