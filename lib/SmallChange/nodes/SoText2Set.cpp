@@ -76,6 +76,8 @@
 
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoViewingMatrixElement.h>
+#include <Inventor/elements/SoProjectionMatrixElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoFontNameElement.h>
 #include <Inventor/elements/SoFontSizeElement.h>
@@ -299,6 +301,9 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     const SbViewVolume & vv = SoViewVolumeElement::get(state);
     const SbViewportRegion & vp = SoViewportRegionElement::get(state);
     const SbVec2s vpsize = vp.getViewportSizePixels();
+    const SbMatrix & projmatrix = (mat * SoViewingMatrixElement::get(state) *
+                                   SoProjectionMatrixElement::get(state));
+    
     // Set new state.
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -340,7 +345,6 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       }
     }
 
-
     // FIXME: Is this warning enough? Should there be a warning at
     // all? (20040206 handegar)
     if (stringcnt > (unsigned int)this->position.getNum())
@@ -349,21 +353,16 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     unsigned int counter = (this->maxStringsToRender.getValue() != -1) ? 
       this->maxStringsToRender.getValue() : stringcnt;
     if (counter > stringcnt) counter = stringcnt; // Failsafe
-    
-
+  
     for (unsigned int i = 0; i < counter; i++) {
 
       const unsigned int index = PRIVATE(this)->textdistancelist[i].index;
-
       SbVec3f nilpoint;
       if (index < (unsigned int)this->position.getNum())
         nilpoint = this->position[index];
       else
         nilpoint = SbVec3f(0 ,0, 0); // Default position
-
-      // transform to world coordinate system
-      mat.multVecMatrix(nilpoint, nilpoint);
-
+           
       // FIXME: should make this selection available in public API?
       //
       // Note that the View'EM application currently depends on the
@@ -374,13 +373,12 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       // left-side and top borders of the rendering canvas.
       //
       // 20031222 mortene.
-      
-#if 1
+#if 1      
       // Frustum cull each string, checking just its position point.
       const SbBox3f stringbbox(nilpoint, nilpoint);
-      // FIXME: there should be a
-      // SoCullElement::cullTest(..,SbVec3f,...) method. 20031222 mortene.
-      if (SoCullElement::cullTest(state, stringbbox, FALSE)) { continue; }
+      // FIXME: there should be a SoCullElement::cullTest(..,SbVec3f,...) 
+      // method. 20031222 mortene.
+      if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
 #else
       // This culls versus the whole string, i.e. if just a single
       // piece of the string is within the view volume (+ other
@@ -389,11 +387,9 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
 #endif
       
-      vv.projectToScreen(nilpoint, nilpoint);
-      nilpoint[2] *= 2.0f;
-      nilpoint[2] -= 1.0f;
-      nilpoint[0] = nilpoint[0] * float(vpsize[0]);
-      nilpoint[1] = nilpoint[1] * float(vpsize[1]);
+      projmatrix.multVecMatrix(nilpoint, nilpoint);
+      nilpoint[0] = (nilpoint[0] + 1.0f) * 0.5f * vpsize[0];
+      nilpoint[1] = (nilpoint[1] + 1.0f) * 0.5f * vpsize[1];      
       float xpos = nilpoint[0];
       float ypos = nilpoint[1];
 
@@ -411,7 +407,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
         ypos -= PRIVATE(this)->stringheight[index]/2.0f;
         break;
       }
-
+      
       for (unsigned int i2 = 0; i2 < charcnt; i2++) {
         SbVec2s thispos;
         SbVec2s thissize;
@@ -551,7 +547,7 @@ SoText2Set::rayPick(SoRayPickAction * action)
       ptonline = vert.getClosestPoint(isect);
       float hdist = (ptonline-isect).length();
       hdist /= w;
-
+      
       // find the character
       int charidx = -1;
       int strlength = this->string[stringidx].getLength();
@@ -561,16 +557,16 @@ SoText2Set::rayPick(SoRayPickAction * action)
       float bbheight = (float)(maxy - miny);
       float charleft, charright, charbottom, chartop;
       SbVec2s thissize, thispos;
-
+      
       for (int i=0; i<strlength; i++) {
         PRIVATE(this)->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
         charleft = (PRIVATE(this)->positions[stringidx][i][0] - minx) / bbwidth;
         charright = (PRIVATE(this)->positions[stringidx][i][0] + PRIVATE(this)->charbboxes[stringidx][i][0] - minx) / bbwidth;
-
+        
         if (hdist >= charleft && hdist <= charright) {
           chartop = (maxy - PRIVATE(this)->positions[stringidx][i][1] - PRIVATE(this)->charbboxes[stringidx][i][1]) / bbheight;
           charbottom = (maxy - PRIVATE(this)->positions[stringidx][i][1]) / bbheight;
-
+          
           if (vdist >= chartop && vdist <= charbottom) {
             charidx = i;
             i = strlength;
@@ -887,13 +883,13 @@ SoText2SetP::buildGlyphCache(SoState * state)
         SbVec2s kerning;
         if (j > 0) kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
         else kerning = SbVec2s(0,0);
-
+        
         this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
-
+        
         SbVec2s pos = penpos +
           SbVec2s((short) thispos[0], (short) thispos[1]) +
           SbVec2s(0, (short) -thissize[1]);
-
+        
         stringbox.extendBy(pos);
         stringbox.extendBy(pos + SbVec2s(advance[0] + kerning[0] + thissize[0], thissize[1]));
 
