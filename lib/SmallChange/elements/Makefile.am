@@ -8,11 +8,11 @@ endif
 
 libelements_la_SOURCES = \
 	GLDepthBufferElement.cpp GLDepthBufferElement.h \
-	UTMElement.cpp UTMElement.h \
+	UTMElement.cpp UTMElement.h
 
 elements_lst_SOURCES = \
 	GLDepthBufferElement.cpp GLDepthBufferElement.h \
-	UTMElement.cpp UTMElement.h \
+	UTMElement.cpp UTMElement.h
 
 libelementsincdir = $(includedir)/SmallChange/elements
 libelementsinc_HEADERS = \
