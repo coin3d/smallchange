@@ -23,17 +23,19 @@
 
 /*!
   \class SmColorGradient SmColorGradient.h
-  \brief The SmColorGradient class is a node used to control the GL depth buffer. 
+  \brief The SmColorGradient class is a node for specifying color gradients for Scenery nodes.
   \ingroup nodes
 */
 
 #include <SmallChange/nodes/SmColorGradient.h>
 #include <SmallChange/elements/SmColorGradientElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/errors/SoReadError.h>
 #include <Inventor/lists/SbList.h>
+#include <Inventor/lists/SbStringList.h>
 #include <stdio.h>
 
 SO_NODE_SOURCE(SmColorGradient);
@@ -48,6 +50,7 @@ SmColorGradient::SmColorGradient(void)
   SO_NODE_ADD_FIELD(mapping, (SmColorGradient::RELATIVE));
   SO_NODE_ADD_FIELD(color, (1.0f, 1.0f, 1.0f));
   SO_NODE_ADD_FIELD(parameter, (0.0f));
+  SO_NODE_ADD_FIELD(filename, (""));
   
   SO_NODE_DEFINE_ENUM_VALUE(Mapping, RELATIVE);
   SO_NODE_DEFINE_ENUM_VALUE(Mapping, ABSOLUTE);
@@ -81,6 +84,35 @@ SmColorGradient::initClass(void)
     SmColorGradientElement::initClass();
     SO_NODE_INIT_CLASS(SmColorGradient, SoNode, "Node");
     SO_ENABLE(SoGLRenderAction, SmColorGradientElement);
+    SO_ENABLE(SoCallbackAction, SmColorGradientElement);
+  }
+}
+
+void
+SmColorGradient::doAction(SoAction * action)
+{
+  SoState * state = action->getState();
+  
+  int numparams = this->parameter.getNum();
+  int numcols = (numparams-2) * 2 + 2;
+  
+  if (numparams >= 2 && this->color.getNum() == numcols) {
+    SmColorGradientElement::set(state, this,
+                                (SmColorGradientElement::Mapping) this->mapping.getValue(),
+                                this->parameter.getNum(),
+                                this->parameter.getValues(0),
+                                this->color.getValues(0));
+  }
+  else {
+    if (numparams >= 2) {
+      static int didwarn = 0;
+      if (!didwarn) {
+        SoDebugError::postWarning("SmColorGradient::doAction",
+                                  "Incorrect number of color values (this warning will be printed only once).");
+        
+        didwarn = 1;
+      }
+    }
   }
 }
 
@@ -90,12 +122,16 @@ SmColorGradient::initClass(void)
 void
 SmColorGradient::GLRender(SoGLRenderAction * action)
 {
-  SoState * state = action->getState();
-  SmColorGradientElement::set(state, this,
-                              (SmColorGradientElement::Mapping) this->mapping.getValue(),
-                              this->parameter.getNum(),
-                              this->parameter.getValues(0),
-                              this->color.getValues(0));
+  SmColorGradient::doAction(action);
+}
+
+/*!
+  Coin method.
+*/
+void
+SmColorGradient::callback(SoCallbackAction * action)
+{
+  SmColorGradient::doAction(action);
 }
 
 void
@@ -145,12 +181,23 @@ SmColorGradient::readInstance(SoInput * in, unsigned short flags)
 SbBool 
 SmColorGradient::loadFilename(void)
 {
-  const SbString & s = this->filename.getValue();
+  // very basic
+
+  SbString s = this->filename.getValue();
   if (!s.getLength()) return FALSE;
  
   FILE * fp = fopen(s.getString(), "r");
-  if (!fp) return FALSE;
+  if (!fp) {
+    SbStringList sublist;
+    sublist.append(new SbString("grad"));
+    s = SoInput::searchForFile(s,
+                               SoInput::getDirectories(),
+                               sublist);
+    delete sublist[0];
 
+    if (s.getLength()) fp = fopen(s.getString(), "r");
+    if (!fp) return FALSE;
+  }
   int num;
   if (fscanf(fp, "%d", &num) != 1) {
     fclose(fp);
@@ -173,6 +220,14 @@ SmColorGradient::loadFilename(void)
     return FALSE;
   }
 
+  union colorgrad_endiantest {
+    uint8_t bytes[2];
+    uint16_t test;
+  };
+  colorgrad_endiantest test;
+  test.test = 1;
+  SbBool bigendian = test.bytes[0] == 0;
+  
   SbList <SbColor> cols;
   SbColor c;
   float t;
@@ -182,10 +237,14 @@ SmColorGradient::loadFilename(void)
       fclose(fp);
       return FALSE;
     }
+    if (!bigendian) {
+      v = (v>>24) | ((v>>8)&0xff00) | (v<<24) | ((v<<8)&0xff0000);
+    }
     c.setPackedValue(v, t);
     cols.append(c);
     num--;
   }
+
   fclose(fp);
   
   this->color.setNum(0);

@@ -81,14 +81,25 @@ SmColorGradientElement::set(SoState * state,
                             const float * params,
                             const SbColor * colors)
 {
-  SmColorGradientElement * elem = (SmColorGradientElement*)
-    SoReplacedElement::getElement(state, classStackIndex, node);
-
-  elem->mapping = mapping;
-  elem->numparams = numparams;
-  elem->params = params;
-  elem->colors = colors;
+  if (numparams) {
+    SmColorGradientElement * elem = (SmColorGradientElement*)
+      SoReplacedElement::getElement(state, classStackIndex, node);
+    
+    elem->mapping = mapping;
+    elem->numparams = numparams;
+    elem->params = params;
+    elem->colors = colors;
+  }
+  else {
+    SmColorGradientElement * elem = (SmColorGradientElement*)
+      SoReplacedElement::getElement(state, classStackIndex, NULL);
+    elem->mapping = mapping;
+    elem->numparams = 0;
+    elem->params = NULL;
+    elem->colors = NULL;
+  }
 }
+
   
 void 
 SmColorGradientElement::get(SoState * const state,
