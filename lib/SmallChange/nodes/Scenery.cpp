@@ -323,6 +323,7 @@ SceneryP::SceneryP(void)
   facedetail(NULL), currhotspot(0.0f, 0.0f, 0.0f), curraction(NULL),
   currstate(NULL), viewid(-1), dummyimage(NULL),
   elevationlinesimage(NULL), elevationlinesdata(NULL),
+  elevationlinestexturesize(0),
   dotex(FALSE), texisenabled(FALSE),
   currtexid(0)
 {
@@ -549,8 +550,6 @@ SceneryP::commonConstructor(void)
   // elevation texture test
   this->renderstate.etexscale = 0.0f;
   this->renderstate.etexoffset = 0.0f;
-
-  this->elevationlinestexturesize = 0;
 
   this->cbtexcb = SmScenery::colortexture_cb;
   this->cbtexclosure = PUBLIC(this);
