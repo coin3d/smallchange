@@ -99,6 +99,9 @@ Scenery::initClass(void)
   static int first = 1;
   if (first) {
     first = 0;
+#ifdef HAVE_LIBSCENERY
+    ss_initialize();
+#endif // HAVE_LIBSCENERY
     SO_NODE_INIT_CLASS(Scenery, SoShape, "Shape");
   }
 }
