@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <limits.h>
 
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/misc/SoState.h>
@@ -243,6 +244,7 @@ public:
 
   int colormaptexid;
   SbBool firstGLRender;
+  uint32_t lastglcontext;
 
   // the rest of the data should really be stored in tls
   SoFaceDetail * facedetail;
@@ -293,6 +295,7 @@ SceneryP::SceneryP(void)
   elevationthicknesssensor(NULL), elevationemphasissensor(NULL),
   cbtexcb(NULL), cbtexclosure(NULL),
   system(NULL), blocksize(0), pvertex(NULL), colormaptexid(-1), firstGLRender(TRUE),
+  lastglcontext(UINT_MAX),
   facedetail(NULL), currhotspot(0.0f, 0.0f, 0.0f), curraction(NULL),
   currstate(NULL), viewid(-1), dummyimage(NULL),
   elevationlinesimage(NULL), elevationlinesdata(NULL),
@@ -630,6 +633,34 @@ SmScenery::GLRender(SoGLRenderAction * action)
   if (!this->shouldGLRender(action)) { return; }
 
   // printf("SmScenery::GLRender\n");
+
+  // FIXME: this code block is just a very quick and dirty hack to
+  // work around *serious* problems with how the SceneryGL interface
+  // lacks any handling of multiple OpenGL contexts:
+  //
+  // textures are allocated, used and destructed with no regard to
+  // which OpenGL context is current (if any at all!), which will fail
+  // miserably on "true" stereo systems, when doing offscreen
+  // rendering, and in multi-pipe environments.
+  //
+  // I needed this work-around, which just deletes all old textures to
+  // force re-generation when a new GL context is detected, because
+  // the EMGS View'EM applications screenshot export feature triggered
+  // the bugs that are to be expected from this.
+  //
+  // Note that this work-around is also dangerous, in the sense that
+  // OpenGL textures may be destructed out of the context they were
+  // allocated and used in -- something which can theoretically cause
+  // any sort of mayhem (but which seems to work out ok for most
+  // drivers). This is only a stop-gap solution, to make it possible
+  // for oso to grab a few high-res screenshots for EMGS.
+  //
+  // 20040426 mortene.
+  if (PRIVATE(this)->lastglcontext == UINT_MAX) { PRIVATE(this)->lastglcontext = action->getCacheContext(); }
+  if (PRIVATE(this)->lastglcontext != action->getCacheContext()) {
+    sc_delete_all_textures(&PRIVATE(this)->renderstate);
+    PRIVATE(this)->lastglcontext = action->getCacheContext();
+  }
 
   SbBool needpostframe = FALSE;
 
