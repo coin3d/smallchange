@@ -29,6 +29,9 @@
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/nodes/SoTransformation.h>
 
+class SbMatrix;
+
+
 class SMALLCHANGE_DLL_API SmCoordinateSystem : public SoTransformation {
   typedef SoTransformation inherited;
 
@@ -52,7 +55,9 @@ public:
   
 protected:
   virtual ~SmCoordinateSystem();
- 
+
+private:
+  void calcMatrix(SbMatrix & m) const;
 };
 
 

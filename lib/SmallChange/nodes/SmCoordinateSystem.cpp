@@ -66,28 +66,31 @@ SmCoordinateSystem::initClass(void)
   } 
 }
 
+void
+SmCoordinateSystem::calcMatrix(SbMatrix & m) const
+{
+  m.makeIdentity();
+  
+  m[0][0] = this->xAxis.getValue()[0];
+  m[0][1] = this->xAxis.getValue()[1];
+  m[0][2] = this->xAxis.getValue()[2];
+
+  m[1][0] = this->yAxis.getValue()[0];
+  m[1][1] = this->yAxis.getValue()[1];
+  m[1][2] = this->yAxis.getValue()[2];
+
+  m[2][0] = this->zAxis.getValue()[0];
+  m[2][1] = this->zAxis.getValue()[1];
+  m[2][2] = this->zAxis.getValue()[2];
+}
+
 // Doc from superclass.
 void
 SmCoordinateSystem::doAction(SoAction * action)
 {
-
-  SbMatrix newmatrix;
-  newmatrix.makeIdentity();
-  
-  newmatrix[0][0] = this->xAxis.getValue()[0];
-  newmatrix[0][1] = this->xAxis.getValue()[1];
-  newmatrix[0][2] = this->xAxis.getValue()[2];
-
-  newmatrix[1][0] = this->yAxis.getValue()[0];
-  newmatrix[1][1] = this->yAxis.getValue()[1];
-  newmatrix[1][2] = this->yAxis.getValue()[2];
-
-  newmatrix[2][0] = this->zAxis.getValue()[0];
-  newmatrix[2][1] = this->zAxis.getValue()[1];
-  newmatrix[2][2] = this->zAxis.getValue()[2];
-  
-  SoModelMatrixElement::mult(action->getState(), this, newmatrix);
-
+  SbMatrix m;
+  this->calcMatrix(m);
+  SoModelMatrixElement::mult(action->getState(), this, m);
 }
 
 // Doc from superclass.
@@ -115,7 +118,11 @@ SmCoordinateSystem::getBoundingBox(SoGetBoundingBoxAction * action)
 void 
 SmCoordinateSystem::getMatrix(SoGetMatrixAction * action)
 {
-  SmCoordinateSystem::doAction((SoAction *)action);
+  SbMatrix m;
+  this->calcMatrix(m);
+
+  action->getMatrix().multLeft(m);
+  action->getInverse().multRight(m.inverse());
 }
 
 // Doc from superclass.
