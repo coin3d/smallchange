@@ -52,8 +52,6 @@ public:
   SoFieldSensor * axisNameSensor;
   SoFieldSensor * arrowColorSensor;
 
-  SoText2 * axisName;
-
   SoSeparator * axisRoot;
   SoSeparator * generateAxis(int LODlevel) const;
   SoLevelOfDetail * generateLOD(void) const;
