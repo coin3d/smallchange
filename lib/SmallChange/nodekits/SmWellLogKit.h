@@ -60,11 +60,13 @@ class SMALLCHANGE_DLL_API SmWellLogKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(lightModel);
   SO_KIT_CATALOG_ENTRY_HEADER(lod);
   SO_KIT_CATALOG_ENTRY_HEADER(lodSeparator);
-  SO_KIT_CATALOG_ENTRY_HEADER(callback);
+  SO_KIT_CATALOG_ENTRY_HEADER(callbackNode);
   SO_KIT_CATALOG_ENTRY_HEADER(coord);
   SO_KIT_CATALOG_ENTRY_HEADER(materialBinding);
   SO_KIT_CATALOG_ENTRY_HEADER(faceSetColor);
   SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);
+  SO_KIT_CATALOG_ENTRY_HEADER(drawStyleSwitch);
+  SO_KIT_CATALOG_ENTRY_HEADER(lineSet);
   SO_KIT_CATALOG_ENTRY_HEADER(faceSet);
   SO_KIT_CATALOG_ENTRY_HEADER(info);
   SO_KIT_CATALOG_ENTRY_HEADER(topsSep);
@@ -106,9 +108,15 @@ public:
   SoSFColor topsColor;
   SoSFFloat topsSize;
 
+  virtual void GLRender(SoGLRenderAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void handleEvent(SoHandleEventAction * action);
 
+  virtual void callback(SoCallbackAction * action);
+  virtual void getMatrix(SoGetMatrixAction * action);
+  virtual void rayPick(SoRayPickAction * action);
+  virtual void search(SoSearchAction * action);
+  virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
 
 protected:
   virtual SbBool readInstance(SoInput * in, unsigned short flags);

@@ -175,8 +175,13 @@
 #include <SmallChange/nodes/SoLODExtrusion.h>
 #include <SmallChange/nodekits/SmTooltipKit.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
+#include <Inventor/actions/SoGetMatrixAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoHandleEventAction.h>
+#include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/actions/SoCallbackAction.h>
+#include <Inventor/actions/SoGetPrimitiveCountAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoLOD.h>
 #include <Inventor/nodes/SoMaterial.h>
@@ -189,6 +194,7 @@
 #include <Inventor/nodes/SoMaterialBinding.h>
 #include <Inventor/nodes/SoPickStyle.h>
 #include <Inventor/nodes/SoIndexedFaceSet.h>
+#include <Inventor/nodes/SoIndexedLineSet.h>
 #include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/nodes/SoPolygonOffset.h>
 #include <Inventor/nodes/SoInfo.h>
@@ -200,12 +206,15 @@
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoRotation.h>
 #include <Inventor/nodes/SoText3.h>
+#include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/VRMLnodes/SoVRMLBillboard.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoDrawStyleElement.h>
+#include <Inventor/elements/SoSwitchElement.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/events/SoLocation2Event.h>
 #include <Inventor/SoPickedPoint.h>
@@ -330,11 +339,13 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, FALSE, topLodGroup, lod, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lod, SoLOD, FALSE, topLodGroup, topsSep, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lodSeparator, SoSeparator, FALSE, lod, info, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, lodSeparator, materialBinding, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(callbackNode, SoCallback, FALSE, lodSeparator, materialBinding, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(materialBinding, SoMaterialBinding, FALSE, lodSeparator, faceSetColor, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(faceSetColor, SoPackedColor, FALSE, lodSeparator, coord, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(coord, SoCoordinate3, FALSE, lodSeparator, faceSet, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(faceSet, SoIndexedFaceSet, FALSE, lodSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(coord, SoCoordinate3, FALSE, lodSeparator, drawStyleSwitch, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(drawStyleSwitch, SoSwitch, FALSE, lodSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(lineSet, SoIndexedLineSet, FALSE, drawStyleSwitch, faceSet, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(faceSet, SoIndexedFaceSet, FALSE, drawStyleSwitch, "", TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(info, SoInfo, FALSE, lod, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(topsSep, SoSeparator, FALSE, topLodGroup, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(topsFontStyle, SoFontStyle, FALSE, topsSep, topsBaseColor, FALSE);
@@ -373,9 +384,13 @@ SmWellLogKit::SmWellLogKit(void)
   SoLOD * facelod = (SoLOD*) this->getAnyPart("lod", TRUE);
   facelod->range.connectFrom(&this->lodDistance2);
 
-  SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
+  SoCallback * cb = (SoCallback*) this->getAnyPart("callbackNode", TRUE);
   cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
 
+  SoSwitch * sw = (SoSwitch*) this->getAnyPart("drawStyleSwitch", TRUE);
+  // use SoSwitchElement to decide which child to traverse
+  sw->whichChild = SO_SWITCH_INHERIT;
+  
   //FIXME: Connect from new fields (kintel)
   SoBaseColor *topsBaseColor = (SoBaseColor *)this->getAnyPart("topsBaseColor", TRUE);
   topsBaseColor->rgb.connectFrom(&this->topsColor);
@@ -391,6 +406,7 @@ SmWellLogKit::SmWellLogKit(void)
   PRIVATE(this)->radiusEngine->expression.set1Value(1, "oA[0] = a*1.4");
   PRIVATE(this)->radiusEngine->expression.set1Value(2, "oA[1] = -b/2");
   PRIVATE(this)->radiusEngine->expression.set1Value(3, "oA[2] = a*1.2");
+
 }
 
 SmWellLogKit::~SmWellLogKit(void)
@@ -411,8 +427,78 @@ SmWellLogKit::initClass(void)
 }
 
 void 
+SmWellLogKit::GLRender(SoGLRenderAction * action)
+{
+  // use SoSwitchElement to control whether we should render with the
+  // faceset or the lineset
+  SoState * state = action->getState();
+  state->push();
+  if (SoDrawStyleElement::get(state) == SoDrawStyleElement::LINES) {
+    SoSwitchElement::set(state, this, 0);
+  }
+  else {
+    SoSwitchElement::set(state, this, 1);
+  }
+  inherited::GLRender(action);
+  state->pop();
+}
+
+void 
+SmWellLogKit::callback(SoCallbackAction * action)
+{
+  SoState * state = action->getState();
+  state->push();
+  SoSwitchElement::set(state, this, 1);
+  inherited::callback(action);
+  state->pop();
+}
+
+void 
+SmWellLogKit::getMatrix(SoGetMatrixAction * action)
+{
+  SoState * state = action->getState();
+  state->push();
+  SoSwitchElement::set(state, this, 1);
+  inherited::getMatrix(action);
+  state->pop();
+}
+
+void 
+SmWellLogKit::rayPick(SoRayPickAction * action)
+{
+  SoState * state = action->getState();
+  state->push();
+  SoSwitchElement::set(state, this, 1);
+  inherited::rayPick(action);
+  state->pop();
+}
+
+void 
+SmWellLogKit::search(SoSearchAction * action)
+{
+  SoState * state = action->getState();
+  state->push();
+  SoSwitchElement::set(state, this, 1);
+  inherited::search(action);
+  state->pop();
+}
+
+void 
+SmWellLogKit::getPrimitiveCount(SoGetPrimitiveCountAction * action)
+{
+  SoState * state = action->getState();
+  // state->push();
+  SoSwitchElement::set(state, this, 1);
+  inherited::getPrimitiveCount(action);
+  //state->pop();
+}
+
+void 
 SmWellLogKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
+  SoState * state = action->getState();
+  state->push();
+  SoSwitchElement::set(state, this, 1);
   // the kit has changed but the sensor has not triggered
   // yet. Calculate manually and unschedule() so that we get the
   // correct bounding box.
@@ -421,6 +507,7 @@ SmWellLogKit::getBoundingBox(SoGetBoundingBoxAction * action)
     SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
   }
   inherited::getBoundingBox(action);
+  state->pop();
 }
 
 void 
@@ -565,7 +652,7 @@ SmWellLogKit::connectNodes(void)
   SoLOD * facelod = (SoLOD*) this->getAnyPart("lod", TRUE);
   facelod->range.connectFrom(&this->lodDistance2);
 
-  SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
+  SoCallback * cb = (SoCallback*) this->getAnyPart("callbackNode", TRUE);
   cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
 }
 
@@ -934,6 +1021,47 @@ SmWellLogKitP::buildGeometry(void)
   coord->point.finishEditing();
   ifs->coordIndex.finishEditing();
   ifs->materialIndex.finishEditing();
+
+  SoIndexedLineSet * ils = (SoIndexedLineSet*)
+    PUBLIC(this)->getPart("lineSet", TRUE);
+  
+  int num = 0;
+  if (numleft > 1 && numright > 1) num = numleft + numright + 2;
+  else {
+    if (numleft > 1) num += numleft;
+    if (numright > 1) num += numright;
+    num++;
+  }
+
+  ils->coordIndex.setNum(num);
+  ils->materialIndex.setNum(num);
+  dsti = ils->coordIndex.startEditing();
+  dstm = ils->materialIndex.startEditing();
+  
+
+  if (numleft > 1) {
+    for (i = 0; i < n-1; i++) {
+      if (this->poslist[i].left != PUBLIC(this)->undefVal.getValue()) {
+        *dsti++ = i + n;
+        *dstm++ = i;
+      }
+    }
+    *dsti++ = -1;
+    *dstm++ = -1;
+  }
+  if (numright > 1) {
+    for (i = 0; i < n-1; i++) {
+      if (this->poslist[i].right != PUBLIC(this)->undefVal.getValue()) {
+        *dsti++ = i + 2*n;
+        *dstm++ = i + n;
+      }
+    }
+    *dsti++ = -1;
+    *dstm++ = -1;
+  }
+  
+  ils->coordIndex.finishEditing();
+  ils->materialIndex.finishEditing();
 }
 
 /*!
