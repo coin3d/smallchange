@@ -8,6 +8,7 @@
 #include <SmallChange/nodekits/SmCameraControlKit.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
+#include <SmallChange/eventhandlers/SmSphereEventHandler.h>
 
 #include <stdio.h>
 
@@ -49,6 +50,9 @@ main(int argc, char ** argv )
     }
     else if (strcmp(argv[2], "examiner") == 0) {
       // the default. do nothing
+    } 
+    else if (strcmp(argv[2], "sphere") == 0) {
+      ck->eventHandler = new SmSphereEventHandler;
     }
     else {
       fprintf(stderr,"Unknown event handler. Using examiner\n");
