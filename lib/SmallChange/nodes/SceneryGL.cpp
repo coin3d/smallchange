@@ -689,117 +689,6 @@ sc_set_max_defensive_settings(void)
 }
 
 /* ********************************************************************** */
-/* texture management */
-
-struct texture_info {
-  GLuint id;
-  unsigned char * data;
-  int texwidth;
-  int texheight;
-  int components;
-  int wraps;
-  int wrapt;
-  float quality;
-};
-
-static void *
-sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
-{
-  texture_info * info = new texture_info;
-  assert(info != NULL);
-
-  info->id = 0;
-  info->data = data;
-  info->texwidth = texw;
-  info->texheight = texw;
-  info->components = nc;
-  info->wraps = wraps;
-  info->wrapt = wrapt;
-  info->quality = q;
-
-  assert(GL.glGenTextures);
-
-  GL.glGenTextures(1, &info->id);
-
-  return info;
-}
-
-static void
-sc_default_texture_activate(RenderState * state, void * handle)
-{
-  texture_info * info = (texture_info *) handle;
-  assert(info != NULL);
-  
-  assert(GL.glBindTexture);
-  assert(GL.glTexImage2D);
-
-  GL.glBindTexture(GL_TEXTURE_2D, info->id);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, info->wraps);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, info->wrapt);
-#if 1
-  // FIXME:  Consider mipmapping.  I'm not sure it's needed for
-  // anything but the top block, since the texture is LODed along
-  // with the terrain blocks already.  However, for sattelite view
-  // of the top block, it would definitely be a good idea.
-  // 20031123 larsa
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-#else
-  // for non bi-linear filtering (for hard texel-edges)
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-#endif
-
-  // void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * pixels);
-
-  GL.glTexImage2D(GL_TEXTURE_2D, 0, info->components,
-                  info->texwidth, info->texheight, 0,
-                  GL_RGBA, GL_UNSIGNED_BYTE, info->data);
-
-  // glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-}
-
-static void
-sc_default_texture_release(void * handle)
-{
-  texture_info * info = (texture_info *) handle;
-  assert(info);
-  assert(GL.glDeleteTextures);
-  GL.glDeleteTextures(1, &info->id);
-  delete info;
-}
-
-typedef void * sc_texture_construct_f(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey);
-typedef void sc_texture_activate_f(RenderState * state, void * handle);
-typedef void sc_texture_release_f(void * handle);
-
-static sc_texture_construct_f * texture_construct = sc_default_texture_construct;
-static sc_texture_activate_f * texture_activate = sc_default_texture_activate;
-static sc_texture_release_f * texture_release = sc_default_texture_release;
-
-void
-sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release)
-{
-  texture_construct = construct;
-  texture_activate = activate;
-  texture_release = release;
-}
-
-/* ********************************************************************** */
-
-typedef void * sc_texture_create(void);
-
-class TexInfo {
-public:
-  TexInfo() {
-    this->clienttexdata = NULL;
-  }
-  void * clienttexdata;
-  int unusedcount;
-};
-
-/* ********************************************************************** */
 
 struct RenderStateP {
   RenderStateP(void)
@@ -823,7 +712,7 @@ struct RenderStateP {
     // structs. 20040602 mortene.
   }
 
-  SbHash<SbHash<TexInfo *, unsigned int> *, unsigned int> contexthashes;
+  SbHash<SbHash<class TexInfo *, unsigned int> *, unsigned int> contexthashes;
   SbList<int> cullstate;
 
   unsigned int glcontextid;
@@ -870,6 +759,123 @@ struct RenderStateP {
 };
 
 #define PRIVATE(s) ((s)->pimpl)
+
+/* ********************************************************************** */
+/* texture management */
+
+struct texture_info {
+  GLuint id;
+  unsigned char * data;
+  int texwidth;
+  int texheight;
+  int components;
+  int wraps;
+  int wrapt;
+  float quality;
+  GLboolean isbound; // if glBindTexture()+glTexImage2D() has been done
+};
+
+static void *
+sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
+{
+  texture_info * info = new texture_info;
+  assert(info != NULL);
+
+  info->id = 0;
+  info->data = data;
+  info->texwidth = texw;
+  info->texheight = texw;
+  info->components = nc;
+  info->wraps = wraps;
+  info->wrapt = wrapt;
+  info->quality = q;
+  info->isbound = GL_FALSE;
+
+  assert(GL.glGenTextures);
+
+  GL.glGenTextures(1, &info->id);
+
+  return info;
+}
+
+static void
+sc_default_texture_activate(RenderState * state, void * handle)
+{
+  texture_info * info = (texture_info *) handle;
+  assert(info != NULL);
+  
+  assert(GL.glBindTexture);
+  assert(GL.glTexImage2D);
+
+  GL.glBindTexture(GL_TEXTURE_2D, info->id);
+  if (info->isbound) { return; }
+
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, info->wraps);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, info->wrapt);
+#if 1
+  // FIXME:  Consider mipmapping.  I'm not sure it's needed for
+  // anything but the top block, since the texture is LODed along
+  // with the terrain blocks already.  However, for sattelite view
+  // of the top block, it would definitely be a good idea.
+  // 20031123 larsa
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#else
+  // for non bi-linear filtering (for hard texel-edges)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+#endif
+
+  // void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * pixels);
+
+  GL.glTexImage2D(GL_TEXTURE_2D, 0, info->components,
+                  info->texwidth, info->texheight, 0,
+                  GL_RGBA, GL_UNSIGNED_BYTE, info->data);
+
+  info->isbound = GL_TRUE;
+
+  // glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+}
+
+static void
+sc_default_texture_release(void * handle)
+{
+  texture_info * info = (texture_info *) handle;
+  assert(info);
+  assert(GL.glDeleteTextures);
+  GL.glDeleteTextures(1, &info->id);
+  delete info;
+}
+
+typedef void * sc_texture_construct_f(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey);
+typedef void sc_texture_activate_f(RenderState * state, void * handle);
+typedef void sc_texture_release_f(void * handle);
+
+static sc_texture_construct_f * texture_construct = sc_default_texture_construct;
+static sc_texture_activate_f * texture_activate = sc_default_texture_activate;
+static sc_texture_release_f * texture_release = sc_default_texture_release;
+
+void
+sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release)
+{
+  texture_construct = construct;
+  texture_activate = activate;
+  texture_release = release;
+}
+
+/* ********************************************************************** */
+
+typedef void * sc_texture_create(void);
+
+class TexInfo {
+public:
+  TexInfo() {
+    this->clienttexdata = NULL;
+  }
+  void * clienttexdata;
+  int unusedcount;
+};
 
 /* ********************************************************************** */
 
