@@ -40,11 +40,12 @@ class SMALLCHANGE_DLL_API SmExaminerEventHandler : public SmEventHandler {
   typedef SmEventHandler inherited;
 
   SO_NODE_HEADER(SmExaminerEventHandler);
-  SoSFBool enableSpin;
   
 public:
   SmExaminerEventHandler(void);
   static void initClass(void);
+
+  SoSFBool enableSpin;
 
   virtual void handleEvent(SoHandleEventAction * action);
   virtual SbBool isAnimating(void);
