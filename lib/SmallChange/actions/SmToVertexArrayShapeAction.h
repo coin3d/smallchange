@@ -27,9 +27,11 @@
 #include <Inventor/actions/SoAction.h>
 #include <Inventor/actions/SoSubAction.h>
 
+#include <SmallChange/basic.h>
+
 class SmToVertexArrayShapeActionP;
 
-class SmToVertexArrayShapeAction : public SoAction {
+class SMALLCHANGE_DLL_API SmToVertexArrayShapeAction : public SoAction {
   typedef SoAction inherited;
 
   SO_ACTION_HEADER(SmToVertexArrayShapeAction);

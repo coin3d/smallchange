@@ -30,9 +30,11 @@
 #include <Inventor/fields/SoSFNode.h>
 #include <Inventor/fields/SoSFEnum.h>
 
+#include <SmallChange/basic.h>
+
 class SmVertexArrayShapeP;
 
-class SmVertexArrayShape : public SoShape {
+class SMALLCHANGE_DLL_API SmVertexArrayShape : public SoShape {
   typedef SoShape inherited;
 
   SO_NODE_HEADER(SmVertexArrayShape);
