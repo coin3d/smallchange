@@ -1,19 +1,28 @@
 #include "SoAudioClip.h"
 
 #include <Inventor/errors/SoDebugError.h>
-#include <Inventor/sensors/SoFieldSensor.h>
 
 #ifdef SOAL_SUB
+#include <AL/altypes.h>
 #include <AL/al.h>
 #include <AL/alut.h>
 #else
 #include <al.h>
 #include <alut.h>
+#include <altypes.h>
 #endif
 
 #include <string.h>
 
 #include "ALTools.h"
+
+#include "SoAudioClipP.h"
+
+#undef THIS
+#define THIS this->soaudioclip_impl
+
+#undef ITHIS
+#define ITHIS this->ifacep
 
 SO_NODE_SOURCE(SoAudioClip);
 
@@ -26,6 +35,8 @@ void SoAudioClip::initClass()
 
 SoAudioClip::SoAudioClip()
 {
+  THIS = new SoAudioClipP(this);
+
   SO_NODE_CONSTRUCTOR(SoAudioClip);
 
   SO_NODE_ADD_FIELD(description, (""));
@@ -37,35 +48,36 @@ SoAudioClip::SoAudioClip()
   SO_NODE_ADD_FIELD(duration_changed, (0.0f)); //  eventOut
   SO_NODE_ADD_FIELD(isActive, (FALSE)); //  eventOut
 
-  this->size = 0;
-  this->frequency = 0;
-  this->bufferId = 0; // no buffer (NULL), see alIsBuffer(...)
-  this->readstatus = 0; // ?
+  THIS->size = 0;
+  THIS->frequency = 0;
+  THIS->bufferId = 0; // no buffer (NULL), see alIsBuffer(...)
+  THIS->readstatus = 0; // ?
 
   // use field sensor for url since we will load an image if
   // url changes. This is a time-consuming task which should
   // not be done in notify().
-  this->urlsensor = new SoFieldSensor(urlSensorCB, this);
-  this->urlsensor->setPriority(0);
-  this->urlsensor->attach(&this->url);
+  THIS->urlsensor = new SoFieldSensor(THIS->urlSensorCBWrapper, THIS);
+  THIS->urlsensor->setPriority(0);
+  THIS->urlsensor->attach(&this->url);
 
 };
 
 SoAudioClip::~SoAudioClip()
 {
-  if (alIsBuffer(bufferId))
-	  alDeleteBuffers(1, &bufferId);
+  if (alIsBuffer(THIS->bufferId))
+	  alDeleteBuffers(1, &THIS->bufferId);
 
-  delete this->urlsensor;
+  delete THIS->urlsensor;
+  delete THIS;
 };
 
-SbBool SoAudioClip::loadUrl(void)
+SbBool SoAudioClipP::loadUrl(void)
 {
   // similar to SoTexture2::loadFilename()
 
-  if (this->url.getNum() <1)
+  if (ITHIS->url.getNum() <1)
     return FALSE; // no url specified
-  const char * str = this->url[0].getString();
+  const char * str = ITHIS->url[0].getString();
   if ( (str == NULL) || (strlen(str)==0) )
     return FALSE; // url is blank
 
@@ -84,16 +96,16 @@ SbBool SoAudioClip::loadUrl(void)
 
   // Delete previous buffer
 
-  if (alIsBuffer(bufferId))
-	  alDeleteBuffers(1, &bufferId);
+  if (alIsBuffer(this->bufferId))
+	  alDeleteBuffers(1, &this->bufferId);
 
   // Generate new buffer
 
-  alGenBuffers(1, &bufferId);
+  alGenBuffers(1, &this->bufferId);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
+		SoDebugError::postWarning("SoAudioClipP::loadUrl",
                               "alGenBuffers failed. %s",
                               GetALErrorString(errstr, error));
 		return FALSE;
@@ -118,7 +130,7 @@ SbBool SoAudioClip::loadUrl(void)
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
+		SoDebugError::postWarning("SoAudioClipP::loadUrl",
                               "Couldn't load file %s. %s",
 //                              text.getString(), 
                               str, 
@@ -127,11 +139,11 @@ SbBool SoAudioClip::loadUrl(void)
 	}
 
 	// Copy wav data into buffer
-	alBufferData(bufferId, format, data, size, freq);
+	alBufferData(this->bufferId, format, data, size, freq);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::GLRender",
+		SoDebugError::postWarning("SoAudioClipP::loadUrl",
                               "alBufferData failed for data read from file %s. %s",
 //                              text.getString(),
                               str,
@@ -144,7 +156,7 @@ SbBool SoAudioClip::loadUrl(void)
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::GLRender",
+		SoDebugError::postWarning("SoAudioClipP::LoadUrl",
                               "alutUnloadWAV failed for data read from file %s. %s",
 //                              text.getString(),
                               str,
@@ -161,29 +173,37 @@ SbBool SoAudioClip::loadUrl(void)
 // called when filename changes
 //
 void
-SoAudioClip::urlSensorCB(void * data, SoSensor *)
+SoAudioClipP::urlSensorCBWrapper(void * data, SoSensor *)
 {
-  SoAudioClip * thisp = (SoAudioClip*) data;
+  SoAudioClipP * thisp = (SoAudioClipP*) data;
+  thisp->urlSensorCB(NULL);
+}
 
+//
+// called when filename changes
+//
+void
+SoAudioClipP::urlSensorCB(SoSensor *)
+{
 //   printf("SoAudioClip::urlSensorCB()\n");
 
-  if (thisp->url.getNum()>0)
+  if (ITHIS->url.getNum()>0)
   {
-    const char * str = thisp->url[0].getString();
+    const char * str = ITHIS->url[0].getString();
     if ( (str != NULL) && (strlen(str)>0) )
     {
 
-      if (thisp->loadUrl())
+      if (this->loadUrl())
       {
-        thisp->readstatus = 1;
+        this->readstatus = 1;
       }
       else
       {
-        SoDebugError::postWarning("SoAudioClip::urlSensorCB",
+        SoDebugError::postWarning("SoAudioClipP::urlSensorCB",
                                   "Sound file could not be read: %s",
                                   str);
 //                                  text.getString());
-        thisp->readstatus = 0;
+        this->readstatus = 0;
       }
     }
   }

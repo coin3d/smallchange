@@ -15,18 +15,15 @@ public:
   void setAsyncMode(SbBool flag=FALSE);
   SbBool getAsyncMode();
   void setBufferInfo(int bufferSize, int numBuffers);
+  int getBufferSize();
+  int getNumBuffers();
 
 protected:
 	virtual ~SoAudioClipStreaming();
-  virtual SbBool fillBuffer(void *buffer, int size);
-  SbBool stopPlaying(SbBool force = FALSE);
-  SbBool startPlaying(SbBool force = FALSE);
 
-  SbBool asyncMode;
-  ALuint *streamingBuffers;
-  int bufferSize;
-  int numBuffers;
-
+protected:
+  class SoAudioClipStreamingP *soaudioclipstreaming_impl;
+  friend class SoAudioClipStreamingP;
 };
 
 #endif // COIN_SOAUDIOCLIPSTREAMING_H

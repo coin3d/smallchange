@@ -15,7 +15,9 @@
 
 #include "ALTools.h"
 #include "SoAudioClip.h"
+#include "SoAudioClipP.h"
 #include "SoAudioClipStreaming.h"
+#include "SoAudioClipStreamingP.h"
 
 //#include "SbAsyncBuffer.h"
 
@@ -23,6 +25,15 @@
 
 
 #include <math.h>
+
+#include "SoSoundP.h"
+
+#undef THIS
+#define THIS this->sosound_impl
+
+#undef ITHIS
+#define ITHIS this->ifacep
+
 
 SO_NODE_SOURCE(SoSound);
 
@@ -33,6 +44,9 @@ void SoSound::initClass()
 
 SoSound::SoSound() 
 {
+
+  THIS = new SoSoundP(this);
+
   SO_NODE_CONSTRUCTOR(SoSound);
 
   SO_NODE_ADD_FIELD(direction, (0.0f, 0.0f, 1.0f));
@@ -46,15 +60,15 @@ SoSound::SoSound()
   SO_NODE_ADD_FIELD(source, (NULL));
   SO_NODE_ADD_FIELD(spatialize, (TRUE));
 
-  this->currentAudioClip = NULL;
+  THIS->currentAudioClip = NULL;
 
-  this->timersensor = NULL;
-  this->isStreaming = FALSE;
-  this->asyncStreamingMode = FALSE;
+  THIS->timersensor = NULL;
+  THIS->isStreaming = FALSE;
+  THIS->asyncStreamingMode = FALSE;
 
 	ALint	error;
 
-  alGenSources(1, &(this->sourceId));
+  alGenSources(1, &(THIS->sourceId));
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
@@ -68,57 +82,57 @@ SoSound::SoSound()
   // use field sensor for filename since we will load an image if
   // filename changes. This is a time-consuming task which should
   // not be done in notify().
-  this->sourcesensor = new SoFieldSensor(sourceSensorCB, this);
-  this->sourcesensor->setPriority(0);
-  this->sourcesensor->attach(&this->source);
+  THIS->sourcesensor = new SoFieldSensor(THIS->sourceSensorCBWrapper, THIS);
+  THIS->sourcesensor->setPriority(0);
+  THIS->sourcesensor->attach(&this->source);
 
-  this->workerThread = new SbAudioWorkerThread(SoSound::threadCallbackWrapper, this);
-  this->audioBuffer = NULL;
+  THIS->workerThread = new SbAudioWorkerThread(THIS->threadCallbackWrapper, THIS);
+  THIS->audioBuffer = NULL;
 
 };
 
 SoSound::~SoSound()
 {
-  delete this->sourcesensor;
+  delete THIS->sourcesensor;
 
-  stopPlaying(TRUE);
+  THIS->stopPlaying(TRUE);
 
-  delete workerThread;
+  delete THIS->workerThread;
 
-  if (this->audioBuffer != NULL)
-    delete[] this->audioBuffer;
+  if (THIS->audioBuffer != NULL)
+    delete[] THIS->audioBuffer;
 
 	ALint	error;
 
-  alDeleteSources(1, &(this->sourceId));
+  alDeleteSources(1, &(THIS->sourceId));
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoSoundBuffer::xxx",
+		SoDebugError::postWarning("SoSound::~SoSound",
                               "alDeleteSources() failed. %s",
                               GetALErrorString(errstr, error));
-    return;
   }
+  delete THIS;
 };
 
-int SoSound::threadCallbackWrapper(void *userdata)
+int SoSoundP::threadCallbackWrapper(void *userdata)
 {
-  SoSound *thisp = (SoSound *)userdata;
+  SoSoundP *thisp = (SoSoundP *)userdata;
   return thisp->threadCallback();
 };
 
-int SoSound::threadCallback()
+int SoSoundP::threadCallback()
 {
   return this->fillBuffers();
 };
 
 
-SbBool SoSound::stopPlaying(SbBool force)
+SbBool SoSoundP::stopPlaying(SbBool force)
 {
   ALint error;
   SbBool retval = TRUE;
   SoAudioClip *audioClip = NULL;
-  audioClip = (SoAudioClip *)this->source.getValue();
+  audioClip = (SoAudioClip *)ITHIS->source.getValue();
 
   if (force || (audioClip->isActive.getValue()))
   { 
@@ -162,31 +176,29 @@ SbBool SoSound::stopPlaying(SbBool force)
   // fixme: delete audio buffers
   if (this->isStreaming)
   {
-    SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->source.getValue();
-    audioClipStreaming->stopPlaying();
+    SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)ITHIS->source.getValue();
+    audioClipStreaming->soaudioclipstreaming_impl->stopPlaying();
+
   }
 
   return retval;
 };
 
-//#define BUFFERSIZE 8820
-
-SbBool SoSound::startPlaying(SbBool force)
+SbBool SoSoundP::startPlaying(SbBool force)
 {
 //  stopPlaying();
 
-  // fixme: check if it's a streaming node before starting thread
   ALint error;
-  SoAudioClip *audioClip = (SoAudioClip *)this->source.getValue();
+  SoAudioClip *audioClip = (SoAudioClip *)ITHIS->source.getValue();
 
   if (force || (!audioClip->isActive.getValue()))
   {
    
     this->isStreaming = FALSE;
-    if (this->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()))
+    if (ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()))
     {
-      SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->source.getValue();
-      this->asyncStreamingMode = audioClipStreaming->asyncMode;
+      SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)ITHIS->source.getValue();
+      this->asyncStreamingMode = audioClipStreaming->getAsyncMode();
       this->isStreaming = TRUE;
 
       // create class-local buffers (used in fillBuffers)
@@ -195,19 +207,19 @@ SbBool SoSound::startPlaying(SbBool force)
         if (this->audioBuffer == NULL)
         {
           SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)this->currentAudioClip;
-          this->audioBuffer = new short int[audioClipStreaming->bufferSize];
+          this->audioBuffer = new short int[audioClipStreaming->getBufferSize()];
         };
       };
 
       // create AL buffers
-      audioClipStreaming->startPlaying();
+      audioClipStreaming->soaudioclipstreaming_impl->startPlaying();
 
     	  // Queue the buffers on the source
-	    alSourceQueueBuffers(this->sourceId, audioClipStreaming->numBuffers, audioClipStreaming->streamingBuffers);
+	    alSourceQueueBuffers(this->sourceId, audioClipStreaming->getNumBuffers(), audioClipStreaming->soaudioclipstreaming_impl->streamingBuffers);
 	    if ((error = alGetError()) != AL_NO_ERROR)
       {
         char errstr[256];
-		    SoDebugError::postWarning("SoSoundBuffer::xxx",
+		    SoDebugError::postWarning("SoSoundP::startPlaying",
                                   "alSourceQueueBuffers failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
@@ -219,7 +231,7 @@ SbBool SoSound::startPlaying(SbBool force)
 	    if ((error = alGetError()) != AL_NO_ERROR)
       {
         char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
+		    SoDebugError::postWarning("SoSoundP::StartPlaying",
                                   "alSourcePlay failed. %s",
                                   GetALErrorString(errstr, error));
         return FALSE;
@@ -279,7 +291,7 @@ int SoSound::fillBuffers()
 
 	ALuint buffersreturned = 0;
 	ALboolean bFinishedPlaying = AL_FALSE;
-	ALuint buffersinqueue = audioClipStreaming->numBuffers;
+	ALuint buffersinqueue = audioClipStreaming->getNumBuffers();
 	ALuint			BufferID;
 	ALint			error;
 
@@ -303,10 +315,11 @@ int SoSound::fillBuffers()
       }
 
       // fill buffer
-      audioClipStreaming->fillBuffer(audioBuffer, audioClipStreaming->bufferSize);
+      audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(audioBuffer, audioClipStreaming->getBufferSize());
+
 
       // send buffer to OpenAL
-			alBufferData(BufferID, AL_FORMAT_MONO16, audioBuffer, audioClipStreaming->bufferSize*sizeof(short int), 44100);
+			alBufferData(BufferID, AL_FORMAT_MONO16, audioBuffer, audioClipStreaming->getBufferSize()*sizeof(short int), 44100);
 	    if ((error = alGetError()) != AL_NO_ERROR)
       {
         char errstr[256];
@@ -534,7 +547,7 @@ SoSound::sourceSensorCB(void * data, SoSensor *)
     if (thisp->audioBuffer != NULL)
       delete[] thisp->audioBuffer;
     SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)thisp->currentAudioClip;
-    thisp->audioBuffer = new short int[audioClipStreaming->bufferSize];
+    thisp->audioBuffer = new short int[audioClipStreaming->getBufferSize()];
   };
 
   // FIXME: should probably sync with streaming thread (if we're doing async streaming)
@@ -576,7 +589,7 @@ SoSound::sourceSensorCB(void * data, SoSensor *)
   else
   {
 
-	  alSourcei(thisp->sourceId, AL_BUFFER, audioClip->bufferId);
+	  alSourcei(thisp->sourceId, AL_BUFFER, audioClip->soaudioclip_impl->bufferId);
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];

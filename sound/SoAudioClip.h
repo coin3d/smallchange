@@ -8,13 +8,6 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFTime.h>
 
-
-#ifdef SOAL_SUB
-#include <AL/altypes.h>
-#else
-#include <altypes.h>
-#endif
-
 class SoAudioClip : public SoNode
 {
   SO_NODE_HEADER(SoAudioClip);
@@ -38,17 +31,11 @@ public:
 
 protected:
 
-  class SoFieldSensor * urlsensor;
-  static void urlSensorCB(void *, SoSensor *);
-  SbBool loadUrl(void); 
-
-  unsigned int size;
-  float frequency;
-  ALuint	bufferId;
-  int readstatus;
-//  static ALuint buffers[SoAudioClip_MAXNUMBUFFERS]; 
-
   virtual ~SoAudioClip();
+
+protected:
+	class SoAudioClipP *soaudioclip_impl;
+	friend class SoAudioClipP;
 
 };
 

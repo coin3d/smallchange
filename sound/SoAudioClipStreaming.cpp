@@ -9,6 +9,15 @@
 #endif
 
 #include "ALTools.h"
+#include "SoAudioClipP.h"
+#include "SoAudioClipStreamingP.h"
+
+#undef THIS
+#define THIS this->soaudioclipstreaming_impl
+
+#undef ITHIS
+#define ITHIS this->ifacep
+
 
 SO_NODE_SOURCE(SoAudioClipStreaming);
 
@@ -20,39 +29,52 @@ void SoAudioClipStreaming::initClass()
 
 SoAudioClipStreaming::SoAudioClipStreaming()
 {
+  THIS = new SoAudioClipStreamingP(this);
+
   SO_NODE_CONSTRUCTOR(SoAudioClipStreaming);
 
-  this->asyncMode = FALSE;
-  this->streamingBuffers = NULL;
-  this->numBuffers = 0;
-  setBufferInfo(0, 0);
+  THIS->asyncMode = FALSE;
+  THIS->streamingBuffers = NULL;
+  THIS->numBuffers = 0;
+  this->setBufferInfo(0, 0);
 };
 
 SoAudioClipStreaming::~SoAudioClipStreaming()
 {
-  if (this->bufferId != NULL)
-    delete[] this->streamingBuffers;
+  if (this->soaudioclip_impl->bufferId != NULL)
+    delete[] THIS->streamingBuffers;
+  delete THIS;
 };
 
 void SoAudioClipStreaming::setAsyncMode(SbBool flag)
 {
-  this->asyncMode = flag;
+  THIS->asyncMode = flag;
 };
 
 SbBool SoAudioClipStreaming::getAsyncMode()
 {
-  return this->asyncMode;
+  return THIS->asyncMode;
+};
+
+int SoAudioClipStreaming::getBufferSize()
+{
+  return THIS->bufferSize;
+};
+
+int SoAudioClipStreaming::getNumBuffers()
+{
+  return THIS->numBuffers;
 };
 
 void SoAudioClipStreaming::setBufferInfo(int bufferSize, int numBuffers)
 {
   //fixme: delete old buffers first (AL-buffers) - or du it in startPlaying
-  this->bufferSize = bufferSize;
-  this->numBuffers = numBuffers;
+  THIS->bufferSize = bufferSize;
+  THIS->numBuffers = numBuffers;
 };
 
 
-SbBool SoAudioClipStreaming::startPlaying(SbBool force)
+SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
 {
 	ALint	error;
   // fixme: delete old buffers
@@ -61,7 +83,7 @@ SbBool SoAudioClipStreaming::startPlaying(SbBool force)
 	if ((error = alGetError()) != AL_NO_ERROR)
   {
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClipStreaming::startPlaying",
+		SoDebugError::postWarning("SoAudioClipStreamingP::startPlaying",
                               "alGenBuffers failed. %s",
                               GetALErrorString(errstr, error));
     return FALSE;
@@ -76,7 +98,7 @@ SbBool SoAudioClipStreaming::startPlaying(SbBool force)
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];
-		  SoDebugError::postWarning("SoAudioClipStreaming::startPlaying",
+		  SoDebugError::postWarning("SoAudioClipStreamingP::startPlaying",
                                 "alBufferData failed. %s",
                                 GetALErrorString(errstr, error));
       delete buf;
@@ -88,13 +110,13 @@ SbBool SoAudioClipStreaming::startPlaying(SbBool force)
   return TRUE;
 };
 
-SbBool SoAudioClipStreaming::stopPlaying(SbBool force)
+SbBool SoAudioClipStreamingP::stopPlaying(SbBool force)
 {
   return TRUE;
 };
 
 
-SbBool SoAudioClipStreaming::fillBuffer(void *buffer, int size)
+SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
 {
   short int *ibuffer = (short int *)buffer;
   static double freq = 880.0;

@@ -160,7 +160,15 @@ SOURCE=.\SoAudioClip.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SoAudioClipP.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SoAudioClipStreaming.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SoAudioClipStreamingP.h
 # End Source File
 # Begin Source File
 
@@ -184,11 +192,11 @@ SOURCE=.\SoSoundBuffer.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoSoundscape.h
+SOURCE=.\SoSoundP.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SoSoundSource.h
+SOURCE=.\SoSoundscape.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
