@@ -31,6 +31,7 @@
 #include <Inventor/SbVec2s.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbPlane.h>
+#include <Inventor/fields/SoSFBool.h>
 
 class SbSphereSheetProjector;
 class SoCamera;
@@ -39,7 +40,8 @@ class SMALLCHANGE_DLL_API SmExaminerEventHandler : public SmEventHandler {
   typedef SmEventHandler inherited;
 
   SO_NODE_HEADER(SmExaminerEventHandler);
-
+  SoSFBool enableSpin;
+  
 public:
   SmExaminerEventHandler(void);
   static void initClass(void);

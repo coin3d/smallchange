@@ -66,6 +66,7 @@ SmExaminerEventHandler::SmExaminerEventHandler(void)
 {
   SO_NODE_CONSTRUCTOR(SmExaminerEventHandler);
 
+  SO_NODE_ADD_FIELD(enableSpin, (TRUE));
   this->currentmode = IDLE;
 
   this->prevRedrawTime = SbTime::getTimeOfDay();
@@ -327,8 +328,8 @@ SmExaminerEventHandler::handleEvent(SoHandleEventAction * action)
         SbVec3f axis;
         float radians;
         rot.getValue(axis, radians);
-
-        if ((radians > 0.01f) && (deltatime < 0.300)) {
+        
+        if (this->enableSpin.getValue() && (radians > 0.01f) && (deltatime < 0.300)) {
           newmode = SPINNING;
           this->spinRotation = rot;
         }
