@@ -424,6 +424,13 @@ SmCameraControlKit::setClippingPlanes(void)
   if (oldnear) (void) camera->nearDistance.enableNotify(TRUE);
   if (oldfar) (void) camera->farDistance.enableNotify(TRUE);
 
+#if 0 // debug
+  SoDebugError::postInfo("SmCameraControlKit::setClippingPlanes",
+                         "nearDistance==%f, farDistance==%f\n",
+                         camera->nearDistance.getValue(),
+                         camera->farDistance.getValue());
+#endif // debug
+
   // FIXME: there's a possible optimization to take advantage of here,
   // since we are able to sometimes know for sure that all geometry is
   // completely inside the view volume. I quote from the "OpenGL FAQ
