@@ -54,6 +54,7 @@
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/lists/SbStringList.h>
 #include <Inventor/SbLine.h>
+#include <SmallChange/elements/SmColorGradientElement.h>
 
 #include <Inventor/SoInput.h>
 
@@ -257,6 +258,7 @@ public:
   int elevationlinestexturesize;
 
   int usevertexarrays;
+  uint32_t colorgradientid;
 
   SceneryP(void);
   void commonConstructor(void);
@@ -295,7 +297,7 @@ SceneryP::SceneryP(void)
   currstate(NULL), viewid(-1), dummyimage(NULL),
   elevationlinesimage(NULL), elevationlinesdata(NULL),
   elevationlinestexturesize(0),
-  usevertexarrays(TRUE)
+  usevertexarrays(TRUE), colorgradientid(0)
 {
   this->renderstate.bbmin[0] = 0.0;
   this->renderstate.bbmin[1] = 0.0;
@@ -884,6 +886,62 @@ SmScenery::evaluate(SoAction * action)
 {
   if (!sc_scenery_available()) { return; }
 
+  SoState * state = action->getState();
+  const SmColorGradientElement * gelem = (const SmColorGradientElement *)
+    state->getConstElement(SmColorGradientElement::getClassStackIndex());
+  if (gelem->getNodeId() != PRIVATE(this)->colorgradientid) {
+    PRIVATE(this)->colormapsensor->detach();
+    PRIVATE(this)->colorelevationsensor->detach();
+
+    SmColorGradientElement::Mapping mapping;
+    int numparams;
+    const float * params;
+    const SbColor * colors;
+
+    SmColorGradientElement::get(state, mapping, numparams,
+                                params, colors);
+
+    if (numparams == 0) {
+      this->colorMap.setNum(0);
+      this->colorElevation.setNum(0);
+      this->colorTexturing = SmScenery::DISABLED;
+    }
+    else {
+      float minelev = 0.0f;
+      float maxelev = 1.0f;
+      if (mapping == SmColorGradientElement::RELATIVE) {
+        const RenderState & rs = PRIVATE(this)->renderstate;
+        minelev = (float) rs.bbmin[2];
+        maxelev = (float) rs.bbmax[2];
+      }
+      int i;
+      int numcolors = (numparams-2)*2 + 2;
+      this->colorMap.setNum(numcolors*4);
+      float * cptr = this->colorMap.startEditing();
+      for (i = 0; i < numcolors; i++) {
+        cptr[i*4] = colors[i][0];
+        cptr[i*4+1] = colors[i][1];
+        cptr[i*4+2] = colors[i][2];
+        cptr[i*4+3] = 1.0f;
+      } 
+      this->colorMap.finishEditing();
+
+      this->colorElevation.setNum(numcolors);
+      float * eptr = this->colorElevation.startEditing();
+      for (i = 0; i < numcolors; i++) {
+        eptr[i] = minelev + params[(i+1)/2] * (maxelev-minelev); 
+      }
+      this->colorElevation.finishEditing();
+      this->colorTexturing = SmScenery::INTERPOLATED;
+    }
+    this->colorMap.setDefault(TRUE);
+    this->colorElevation.setDefault(TRUE);
+    PRIVATE(this)->colormaptexchange();
+    PRIVATE(this)->colorgradientid = gelem->getNodeId();
+    PRIVATE(this)->colormapsensor->attach(&this->colorMap);
+    PRIVATE(this)->colorelevationsensor->attach(&this->colorElevation);
+  }
+
   PRIVATE(this)->didevaluate = TRUE;
   PRIVATE(this)->didevaluateonce = TRUE;
 
@@ -913,7 +971,6 @@ SmScenery::evaluate(SoAction * action)
   }
 
   if (PRIVATE(this)->system == NULL) return;
-  SoState * state = action->getState();
 
   SbVec3f campos = SoViewVolumeElement::get(state).getProjectionPoint();
   //  transform into local coordinate system
