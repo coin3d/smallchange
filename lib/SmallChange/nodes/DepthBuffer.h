@@ -15,9 +15,9 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/nodes/SoSubNode.h>
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinLeaveScope.h>
-#endif
+#endif // win
 
 class DepthBuffer : public SoNode {
   typedef SoNode inherited;
@@ -49,8 +49,8 @@ protected:
   virtual ~DepthBuffer();
 };
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinEnterScope.h>
-#endif
+#endif // win
 
 #endif // !COIN_SODRAWSTYLE_H

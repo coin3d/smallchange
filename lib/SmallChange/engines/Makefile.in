@@ -99,26 +99,22 @@ install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
 
-noinst_LTLIBRARIES = libnodes.la
+noinst_LTLIBRARIES = libengines.la
 
 INCLUDES = -I$(top_srcdir)/lib
 
-libnodes_la_SOURCES = \
-	DepthBuffer.cpp DepthBuffer.h \
-	ViewportRegion.cpp ViewportRegion.h \
-	Coinboard.cpp Coinboard.h
+libengines_la_SOURCES = \
+	Rot2Heading.cpp Rot2Heading.h
 
 
-libnodesincdir = $(includedir)/SmallChange/nodes
+libenginesincdir = $(includedir)/SmallChange/engines
 
-libnodesinc_HEADERS = \
-	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
-	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
-	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h
+libenginesinc_HEADERS = \
+	$(top_srcdir)/lib/SmallChange/engines/Rot2Heading.h
 
 EXEEXT =
 OBJEXT = o
-subdir = lib/SmallChange/nodes
+subdir = lib/SmallChange/engines
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
@@ -129,10 +125,10 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libnodes_la_LDFLAGS = 
-libnodes_la_LIBADD = 
-am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo
-libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
+libengines_la_LDFLAGS = 
+libengines_la_LIBADD = 
+am_libengines_la_OBJECTS = Rot2Heading.lo
+libengines_la_OBJECTS = $(am_libengines_la_OBJECTS)
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXFLAGS = @CXXFLAGS@
@@ -143,16 +139,15 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(libnodes_la_SOURCES)
-HEADERS = $(libnodesinc_HEADERS)
+DIST_SOURCES = $(libengines_la_SOURCES)
+HEADERS = $(libenginesinc_HEADERS)
 
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
-@AMDEP@DEP_FILES = $(DEPDIR)/Coinboard.Plo $(DEPDIR)/DepthBuffer.Plo \
-@AMDEP@ $(DEPDIR)/ViewportRegion.Plo
-DIST_COMMON = $(libnodesinc_HEADERS) Makefile.am Makefile.in
+@AMDEP@DEP_FILES = $(DEPDIR)/Rot2Heading.Plo
+DIST_COMMON = $(libenginesinc_HEADERS) Makefile.am Makefile.in
 
-SOURCES = $(libnodes_la_SOURCES)
-OBJECTS = $(am_libnodes_la_OBJECTS)
+SOURCES = $(libengines_la_SOURCES)
+OBJECTS = $(am_libengines_la_OBJECTS)
 
 all: all-am
 
@@ -161,7 +156,7 @@ all: all-am
 
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  lib/SmallChange/nodes/Makefile
+	  $(AUTOMAKE) --gnu  lib/SmallChange/engines/Makefile
 
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
@@ -186,24 +181,24 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 
-libnodes.la: $(libnodes_la_OBJECTS) $(libnodes_la_DEPENDENCIES)
-	$(CXXLINK)  $(libnodes_la_LDFLAGS) $(libnodes_la_OBJECTS) $(libnodes_la_LIBADD) $(LIBS)
-install-libnodesincHEADERS: $(libnodesinc_HEADERS)
+libengines.la: $(libengines_la_OBJECTS) $(libengines_la_DEPENDENCIES)
+	$(CXXLINK)  $(libengines_la_LDFLAGS) $(libengines_la_OBJECTS) $(libengines_la_LIBADD) $(LIBS)
+install-libenginesincHEADERS: $(libenginesinc_HEADERS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(libnodesincdir)
-	@list='$(libnodesinc_HEADERS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(libenginesincdir)
+	@list='$(libenginesinc_HEADERS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_HEADER) $$d$$p $(DESTDIR)$(libnodesincdir)/$$f"; \
-	  $(INSTALL_HEADER) $$d$$p $(DESTDIR)$(libnodesincdir)/$$f; \
+	  echo " $(INSTALL_HEADER) $$d$$p $(DESTDIR)$(libenginesincdir)/$$f"; \
+	  $(INSTALL_HEADER) $$d$$p $(DESTDIR)$(libenginesincdir)/$$f; \
 	done
 
-uninstall-libnodesincHEADERS:
+uninstall-libenginesincHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(libnodesinc_HEADERS)'; for p in $$list; do \
+	@list='$(libenginesinc_HEADERS)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(libnodesincdir)/$$f"; \
-	  rm -f $(DESTDIR)$(libnodesincdir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(libenginesincdir)/$$f"; \
+	  rm -f $(DESTDIR)$(libenginesincdir)/$$f; \
 	done
 
 tags: TAGS
@@ -238,9 +233,7 @@ GTAGS:
 distclean-tags:
 	-rm -f TAGS ID
 
-@AMDEP@@_am_include@ $(DEPDIR)/Coinboard.Plo
-@AMDEP@@_am_include@ $(DEPDIR)/DepthBuffer.Plo
-@AMDEP@@_am_include@ $(DEPDIR)/ViewportRegion.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/Rot2Heading.Plo
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -272,7 +265,7 @@ top_distdir = ../../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/$(top_srcdir)/lib/SmallChange/nodes
+	$(mkinstalldirs) $(distdir)/$(top_srcdir)/lib/SmallChange/engines
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -289,7 +282,7 @@ check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(libnodesincdir)
+	$(mkinstalldirs) $(DESTDIR)$(libenginesincdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -335,7 +328,7 @@ info:
 
 info-am:
 
-install-data-am: install-libnodesincHEADERS
+install-data-am: install-libenginesincHEADERS
 
 install-exec-am:
 
@@ -354,19 +347,19 @@ mostlyclean: mostlyclean-am
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-uninstall-am: uninstall-libnodesincHEADERS
+uninstall-am: uninstall-libenginesincHEADERS
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	clean-noinstLTLIBRARIES distclean distclean-compile \
 	distclean-depend distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-libnodesincHEADERS \
+	install-exec-am install-info install-libenginesincHEADERS \
 	install-man install-strip installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool tags uninstall uninstall-am \
-	uninstall-libnodesincHEADERS
+	uninstall-libenginesincHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

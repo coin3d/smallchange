@@ -11,9 +11,6 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-@SET_MAKE@
-
-
 SHELL = @SHELL@
 
 srcdir = @srcdir@
@@ -66,6 +63,9 @@ host_alias = @host_alias@
 host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
+
+@SET_MAKE@
+AMDEP = @AMDEP@
 AMTAR = @AMTAR@
 AS = @AS@
 AWK = @AWK@
@@ -95,11 +95,11 @@ SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
 STRIP = @STRIP@
 VERSION = @VERSION@
 _am_include = @_am_include@
-_am_quote = @_am_quote@
 install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
-SUBDIRS = nodekits nodes elements .
+
+SUBDIRS = nodekits nodes elements engines .
 
 INCLUDES = -I$(top_srcdir)/lib
 
@@ -108,7 +108,8 @@ lib_LTLIBRARIES = libSmallChange.la
 libSmallChange_la_SOURCES = 
 
 libSmallChange_la_LIBADD = \
-	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la
+	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
+	engines/libengines.la
 
 
 libSmallChange_la_LDFLAGS = \
@@ -123,29 +124,22 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
-libSmallChange_la_DEPENDENCIES = nodekits/libnodekits.la \
-	nodes/libnodes.la elements/libelements.la
-am_libSmallChange_la_OBJECTS =
-libSmallChange_la_OBJECTS = $(am_libSmallChange_la_OBJECTS)
-CFLAGS = @CFLAGS@
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+libSmallChange_la_DEPENDENCIES = nodekits/libnodekits.la \
+nodes/libnodes.la elements/libelements.la engines/libengines.la
+libSmallChange_la_OBJECTS = $(am_libSmallChange_la_OBJECTS)
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libSmallChange_la_SOURCES)
-
-RECURSIVE_TARGETS = all-recursive install-data-recursive \
-	install-exec-recursive installdirs-recursive install-recursive \
-	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = Makefile.am Makefile.in
+
 DIST_SUBDIRS = $(SUBDIRS)
 SOURCES = $(libSmallChange_la_SOURCES)
 OBJECTS = $(am_libSmallChange_la_OBJECTS)
@@ -153,6 +147,7 @@ OBJECTS = $(am_libSmallChange_la_OBJECTS)
 all: all-recursive
 
 .SUFFIXES:
+.SUFFIXES: .c .lo .o .obj
 
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
@@ -182,9 +177,6 @@ uninstall-libLTLIBRARIES:
 clean-libLTLIBRARIES:
 	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
 
-libSmallChange.la: $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
-	$(LINK) -rpath $(libdir) $(libSmallChange_la_LDFLAGS) $(libSmallChange_la_OBJECTS) $(libSmallChange_la_LIBADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
 
@@ -200,13 +192,19 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 
+libSmallChange.la: $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(libSmallChange_la_LDFLAGS) $(libSmallChange_la_OBJECTS) $(libSmallChange_la_LIBADD) $(LIBS)
+
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
 # To change the values of `make' variables: instead of editing Makefiles,
 # (1) if the variable is set in `config.status', edit `config.status'
 #     (which will cause the Makefiles to be regenerated when you run `make');
 # (2) otherwise, pass the desired values on the `make' command line.
-$(RECURSIVE_TARGETS):
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive \
+install-info-recursive uninstall-info-recursive \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
 	@set fnord $(MAKEFLAGS); amf=$$2; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -271,9 +269,9 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	tags=; \
 	here=`pwd`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
-	  if test "$$subdir" = .; then :; else \
+   if test "$$subdir" = .; then :; else \
 	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
-	  fi; \
+   fi; \
 	done; \
 	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -395,21 +393,23 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 
 uninstall-am: uninstall-libLTLIBRARIES uninstall-local
 
-.PHONY: $(RECURSIVE_TARGETS) all all-am all-local check check-am clean \
-	clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-recursive distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-recursive distclean-tags distdir \
-	dvi dvi-am info info-am install install-am install-data \
-	install-data-am install-data-local install-data-recursive \
-	install-exec install-exec-am install-exec-local \
-	install-exec-recursive install-info install-libLTLIBRARIES \
+.PHONY: all all-am all-local all-recursive check check-am \
+	check-recursive clean clean-generic clean-libLTLIBRARIES \
+	clean-libtool clean-recursive distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-recursive \
+	distclean-tags distdir dvi dvi-am dvi-recursive info info-am \
+	info-recursive install install-am install-data install-data-am \
+	install-data-local install-data-recursive install-exec \
+	install-exec-am install-exec-local install-exec-recursive \
+	install-info install-info-recursive install-libLTLIBRARIES \
 	install-man install-recursive install-strip installcheck \
-	installcheck-am installdirs installdirs-am \
-	installdirs-recursive maintainer-clean maintainer-clean-generic \
-	maintainer-clean-recursive mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool mostlyclean-recursive \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-libLTLIBRARIES uninstall-local uninstall-recursive
+	installcheck-am installcheck-recursive installdirs \
+	installdirs-am installdirs-recursive maintainer-clean \
+	maintainer-clean-generic maintainer-clean-recursive mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	mostlyclean-recursive tags tags-recursive uninstall \
+	uninstall-am uninstall-info-recursive uninstall-libLTLIBRARIES \
+	uninstall-local uninstall-recursive
 
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)

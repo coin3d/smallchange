@@ -17,9 +17,9 @@
 #include <Inventor/fields/SoSFColor.h>
 #include <Inventor/fields/SoSFBool.h>
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinLeaveScope.h>
-#endif
+#endif // win
 
 class ViewportRegion : public SoNode {
   typedef SoNode inherited;
@@ -58,8 +58,8 @@ private:
   SbBool usepixelorigin;
 };
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinEnterScope.h>
-#endif
+#endif // win
 
 #endif // COIN_VIEWPORTREGION_H

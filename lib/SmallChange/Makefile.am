@@ -1,4 +1,4 @@
-SUBDIRS = nodekits nodes elements .
+SUBDIRS = nodekits nodes elements engines .
 
 INCLUDES = -I$(top_srcdir)/lib
 
@@ -7,7 +7,8 @@ lib_LTLIBRARIES = libSmallChange.la
 libSmallChange_la_SOURCES =
 
 libSmallChange_la_LIBADD = \
-	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la
+	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
+	engines/libengines.la
 
 libSmallChange_la_LDFLAGS = \
 	-no-undefined \

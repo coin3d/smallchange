@@ -11,9 +11,6 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-@SET_MAKE@
-
-
 SHELL = @SHELL@
 
 srcdir = @srcdir@
@@ -66,6 +63,9 @@ host_alias = @host_alias@
 host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
+
+@SET_MAKE@
+AMDEP = @AMDEP@
 AMTAR = @AMTAR@
 AS = @AS@
 AWK = @AWK@
@@ -95,9 +95,9 @@ SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
 STRIP = @STRIP@
 VERSION = @VERSION@
 _am_include = @_am_include@
-_am_quote = @_am_quote@
 install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
+
 
 noinst_LTLIBRARIES = libnodekits.la
 
@@ -120,44 +120,39 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
-libnodekits_la_LDFLAGS =
-libnodekits_la_LIBADD =
-am_libnodekits_la_OBJECTS = LegendKit.lo
-libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
-CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXFLAGS = @CXXFLAGS@
-CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-CFLAGS = @CFLAGS@
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+libnodekits_la_LDFLAGS = 
+libnodekits_la_LIBADD = 
+am_libnodekits_la_OBJECTS = LegendKit.lo
+libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXFLAGS = @CXXFLAGS@
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libnodekits_la_SOURCES)
 HEADERS = $(libnodekitsinc_HEADERS)
 
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/LegendKit.Plo
+@AMDEP@DEP_FILES = $(DEPDIR)/LegendKit.Plo
 DIST_COMMON = $(libnodekitsinc_HEADERS) Makefile.am Makefile.in
+
 SOURCES = $(libnodekits_la_SOURCES)
 OBJECTS = $(am_libnodekits_la_OBJECTS)
 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cpp .lo .o .obj
+.SUFFIXES: .c .cpp .h .lo .o .obj
 
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
@@ -170,9 +165,6 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-
-libnodekits.la: $(libnodekits_la_OBJECTS) $(libnodekits_la_DEPENDENCIES)
-	$(CXXLINK)  $(libnodekits_la_LDFLAGS) $(libnodekits_la_OBJECTS) $(libnodekits_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -188,6 +180,9 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+
+libnodekits.la: $(libnodekits_la_OBJECTS) $(libnodekits_la_DEPENDENCIES)
+	$(CXXLINK)  $(libnodekits_la_LDFLAGS) $(libnodekits_la_OBJECTS) $(libnodekits_la_LIBADD) $(LIBS)
 install-libnodekitsincHEADERS: $(libnodekitsinc_HEADERS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libnodekitsincdir)
@@ -238,29 +233,29 @@ GTAGS:
 distclean-tags:
 	-rm -f TAGS ID
 
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/LegendKit.Plo@_am_quote@
+@AMDEP@@_am_include@ $(DEPDIR)/LegendKit.Plo
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
 
-CXXDEPMODE = @CXXDEPMODE@
+@AMDEP@CXXDEPMODE = @CXXDEPMODE@
 
 .cpp.o:
-	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
-	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@AMDEP@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CXXCOMPILE) -c -o $@ `test -f $< || echo '$(srcdir)/'`$<
 
 .cpp.lo:
-	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
-	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@AMDEP@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
+@AMDEP@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LTCXXCOMPILE) -c -o $@ `test -f $< || echo '$(srcdir)/'`$<
 
 .cpp.obj:
-	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
-	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@AMDEP@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CXXCOMPILE) -c -o $@ `cygpath -w $<`
 
 

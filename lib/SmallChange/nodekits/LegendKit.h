@@ -18,9 +18,9 @@
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoMFString.h>
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinLeaveScope.h>
-#endif
+#endif // win
 
 class SbViewport;
 class SoState;
@@ -133,8 +133,8 @@ private:
   friend class LegendKitP;
 };
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinEnterScope.h>
-#endif
+#endif // win
 
 #endif // !COIN_LEGENDKIT_H

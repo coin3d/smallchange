@@ -13,9 +13,9 @@
 #include <Inventor/elements/SoElement.h>
 #include <Inventor/elements/SoSubElement.h>
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinLeaveScope.h>
-#endif
+#endif // win
 
 class GLDepthBufferElement : public SoElement {
   typedef SoElement inherited;
@@ -52,7 +52,7 @@ private:
   Func func;
 };
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <SoWinEnterScope.h>
 #endif
 
