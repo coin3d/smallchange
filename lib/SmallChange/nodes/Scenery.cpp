@@ -843,6 +843,29 @@ SmScenery::GLRender(SoGLRenderAction * action)
   }
 }
 
+static int
+raypick_pre_cb(void * closure, const double * bmin, const double * bmax)
+{
+  SoRayPickAction * action = (SoRayPickAction*) closure;
+  SoState * state = action->getState();
+  state->push();
+
+  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
+  if (box.isEmpty()) return 0;
+  action->setObjectSpace();
+  return action->intersect(box, TRUE);
+}
+
+
+static void
+raypick_post_cb(void * closure)
+{
+  SoRayPickAction * action = (SoRayPickAction*) closure;
+  SoState * state = action->getState();
+  state->pop();
+}
+
+
 void 
 SmScenery::rayPick(SoRayPickAction * action)
 {
@@ -860,10 +883,17 @@ SmScenery::rayPick(SoRayPickAction * action)
   PRIVATE(this)->renderstate.raydir[1] = raydir[1];
   PRIVATE(this)->renderstate.raydir[2] = raydir[2];
 
+#if 0 // buggy
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                           sc_ray_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            sc_ray_culling_post_cb, &PRIVATE(this)->renderstate);
+#else // the below version works ok
+  sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                          raypick_pre_cb, action);
+  sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+                                           raypick_post_cb, action);
+#endif // ok version
 
   inherited::rayPick(action); // just generate primitives
   
@@ -1035,19 +1065,18 @@ SmScenery::generatePrimitives(SoAction * action)
   if (!sc_scenery_available()) { return; }
   if (PRIVATE(this)->system == NULL) return;
   if (!PRIVATE(this)->didevaluateonce) return;
-  
+
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                      SceneryP::gen_cb, this);
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            SceneryP::undefgen_cb, this);
-
+  
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
                                          PRIVATE(this)->viewid,
                                          SceneryP::gen_pre_cb, this);
   sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
                                           PRIVATE(this)->viewid,
                                           NULL, NULL);
-
   SoPointDetail pointDetail;
   PRIVATE(this)->pvertex->setDetail(&pointDetail);
   PRIVATE(this)->curraction = action;
@@ -1454,12 +1483,12 @@ SceneryP::gen_pre_cb(void * closure, ss_render_block_cb_info * info)
   RenderState & renderstate = PRIVATE(thisp)->renderstate;
   
   sc_ssglue_render_get_elevation_measures(info, 
-                                   renderstate.voffset,
-                                   renderstate.vspacing,
-                                   NULL,
-                                   &renderstate.elevdata,
-                                   &renderstate.normaldata,
-                                   NULL);
+                                          renderstate.voffset,
+                                          renderstate.vspacing,
+                                          NULL,
+                                          &renderstate.elevdata,
+                                          &renderstate.normaldata,
+                                          NULL);
 }
 
 void 
