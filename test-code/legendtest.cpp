@@ -94,7 +94,8 @@ main(
         kit->addSmallTick(double(i)/double(16));
       }
     }
-    //    kit->setDiscreteMode(TRUE);
+    //    kit->discreteUseLower = TRUE;
+    kit->setDiscreteMode(TRUE);
     //    kit->enableBackground(FALSE);
   }
 
