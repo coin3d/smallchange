@@ -149,6 +149,13 @@ typedef void (APIENTRY * glDrawRangeElements_f)( GLenum mode, GLuint start, GLui
 // instead of this duplicated effort.
 //
 // 20040426 mortene.
+//
+// UPDATE 20040713 mortene: I'm getting real errors from this, on a
+// platform where the NVIDIA drivers are used for onscreen contexts,
+// but for some reason the Microsoft OpenGL 1.1 software renderer is
+// used for offscreen contexts. MS OGL 1.1 doesn't support
+// GL_CLAMP_TO_EDGE, which causes textures (and all geometry with
+// them) to simply disappear.
 
 // state container definition
 struct sc_GL {
@@ -366,6 +373,9 @@ sc_probe_gl(sc_msghandler_fp msghandler)
 
   // Note that this function can be called multiple times, each time
   // for new contexts, so old state information must be scrapped.
+  //
+  // See my FIXME from 20040426 a few hundred lines above this
+  // comment.  20040713 mortene.
 
   const int bufsize = 1024*16;
   char * buf = (char *) malloc(bufsize); /* *this* should be long enough */
@@ -1707,7 +1717,19 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
                                     &texh,
                                     &texnc);
 
-        int clampmode = GL.CLAMP_TO_EDGE;
+	// FIXME: if the GL.CLAMP_TO_EDGE value is actually GL_CLAMP
+	// (because the driver doesn't support GL_CLAMP_TO_EDGE),
+	// rendering artifacts will be the result; there will be
+	// clearly visible "seams" inbetween the textures.
+	//
+	// This is by the way not unlikely to happen, as e.g. the
+	// Microsoft OpenGL 1.1 software renderer doesn't support
+	// GL_CLAMP_TO_EDGE, and that driver will often be used for
+	// offscreen rendering.
+	//
+	// 20040713 mortene.
+	const int clampmode = GL.CLAMP_TO_EDGE;
+
         assert(texture_construct);
         void * opaquetexstruct = texture_construct(texdata, texw, texh, texnc,
                                                    clampmode, clampmode, 0.9f, 0);
