@@ -37,6 +37,19 @@
   useful if you want to place objects using, for instance, UTM
   coordinates.
 
+  To perhaps better understand how it works, think of it this way:
+  when scene graph traversal arrives at an UTMCamera, all
+  transformation matrices will be set to identity, i.e. no
+  transformations, so the camera position (for OpenGL) will be set at
+  world origo (0,0,0). When a UTMPosition node is then later
+  encountered during traversal, a transformation will be added which
+  translates geometry to its correct position relative to the
+  UTMCamera setting.
+
+  As the camera will always be positioned in (0,0,0) for OpenGL with
+  this scheme, we get the advantage of maximum precision for floating
+  point numbers.
+
   \sa UTMPosition, UTMCoordinate 
 */
 
