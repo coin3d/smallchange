@@ -169,6 +169,31 @@ yes | true)  SMALLCHANGE_STATIC=false;;
 *)           SMALLCHANGE_STATIC=true;;
 esac
 
+AC_MSG_CHECKING([for strcasecmp() function])
+AC_TRY_LINK([
+#include <string.h>
+], [
+  (void)strcasecmp(NULL, NULL);
+], [
+  AC_MSG_RESULT([yes])
+  AC_DEFINE([HAVE_STRCASECMP],, [Define to use BSD4.3 strncasecmp()])
+], [
+  AC_MSG_RESULT([no])
+])
+
+
+AC_MSG_CHECKING([for strcmpi() function])
+AC_TRY_LINK([
+#include <string.h>
+], [
+  (void)strcmpi(NULL, NULL);
+], [
+  AC_MSG_RESULT([yes])
+  AC_DEFINE([HAVE_STRCMPI],, [Define to use strcmpi()])
+], [
+  AC_MSG_RESULT([no])
+])
+
 SIM_AC_COMPILE_DEBUG([
 #  CPPFLAGS="$CPPFLAGS"
 ], [

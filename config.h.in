@@ -18,6 +18,12 @@
 /* pthread extensions available */
 #undef HAVE_PTHREAD
 
+/* Define to use BSD4.3 strncasecmp() */
+#undef HAVE_STRCASECMP
+
+/* Define to use strcmpi() */
+#undef HAVE_STRCMPI
+
 /* Define if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 

@@ -25,9 +25,11 @@
 
 #define SOAS_PAUSE_BETWEEN_TRACKS 5
 
-#ifndef _WIN32 // FIXME: hack to compile under Linux, pederb 2001-12-01
+#ifndef HAVE_STRCMPI
+#ifdef HAVE_STRCASECMP
 #define strcmpi strcasecmp
-#endif
+#endif // HAVE_STRCASECMP
+#endif // HAVE_STRCMPI
 
 SO_NODE_SOURCE(SoAudioClipStreaming);
 
