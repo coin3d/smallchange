@@ -286,7 +286,7 @@ PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
 //         fprintf(stderr,"schedule: %d %d (%d %d)\n",
 //                 data->mousepress, data->buttonnum, data->eventpos[0], data->eventpos[1]);
 
-        sensor->setPriority(mousepress ? 999 : 1000);
+        sensor->setPriority(mousepress ? 1 : 2);
         sensor->schedule();
         return TRUE;
       }
