@@ -333,12 +333,12 @@ SIM_AC_UNIQIFY_OPTION_LIST(LIBS, $LIBS)
 # **************************************************************************
 
 AC_OUTPUT([
-        Makefile
+	Makefile
 
-        bin/Makefile
+	bin/Makefile
 
-        lib/Makefile
-        lib/SmallChange/Makefile
+	lib/Makefile
+	lib/SmallChange/Makefile
 	lib/SmallChange/actions/Makefile
 	lib/SmallChange/misc/Makefile
 	lib/SmallChange/nodekits/Makefile
