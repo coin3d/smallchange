@@ -429,7 +429,9 @@ LegendKit::LegendKit(void)
   SoTranslation * t = (SoTranslation*) this->getAnyPart("imageTranslation", TRUE);
   t->translation = SbVec3f(0.5f, 0.5f, 0.0f);
   
-  this->setBackgroundColor(SbColor(1.0f, 1.0f, 1.0f), 0.0f);
+  // set texture material to 1,1,1
+  mat = (SoMaterial*) this->getPart("imageMaterial", TRUE);
+  mat->diffuseColor = SbColor(1.0f, 1.0f, 1.0f);
 }
 
 /*!
