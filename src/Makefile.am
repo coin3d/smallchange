@@ -65,13 +65,13 @@ uninstall-local:
 	    echo " rm -f" "$$file"; \
 	    rm -f "$$file"; \
 	  fi \
-	done \
+	done; \
 	incbasedir="$(DESTDIR)$(includedir)/SmallChange"; \
 	for dir in \
 	  "$$incbasedir/elements" \
 	  "$$incbasedir/nodekits" \
 	  "$$incbasedir/nodes" \
-	  "$#incbasedir"; do \
+	  "$$incbasedir"; do \
 	  if test -d "$$dir"; then \
 	    echo " rmdir" "$$dir"; \
 	    rmdir "$$dir"; \
