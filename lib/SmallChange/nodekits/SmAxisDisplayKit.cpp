@@ -339,6 +339,8 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
   SoSeparator *linesep = NULL;
   SoSeparator *conesep = NULL;
   for (int i=0;i<PUBLIC(thisp)->axes.getNum();i++) {
+    SbVec3f axis = PUBLIC(thisp)->axes[i];
+    if (axis.length() == 0.0f) continue; // Don't render null vectors.
     SoSeparator *axissep = new SoSeparator; // One separator per axis
     SoBaseColor *axiscol = new SoBaseColor;
     if (PUBLIC(thisp)->colors.getNum() <= i)
@@ -347,7 +349,7 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
       axiscol->rgb.setValue(PUBLIC(thisp)->colors[i]);
 
     // Rotate to correct orientation
-    SbRotation rot(SbVec3f(0.0f, 1.0f, 0.0f), PUBLIC(thisp)->axes[i]);
+    SbRotation rot(SbVec3f(0.0f, 1.0f, 0.0f), axis);
     SoRotation *axistrans = new SoRotation;
     axistrans->rotation = rot;
 
