@@ -656,6 +656,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
       PRIVATE(this)->usevertexarrays = FALSE;
     } else {
       PRIVATE(this)->usevertexarrays = sc_suggest_vertexarrays();
+      PRIVATE(this)->usevertexarrays = TRUE; // FIXME: hack
     }
     sc_set_use_bytenormals(sc_suggest_bytenormals());
 
@@ -797,8 +798,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
     if (texwasenabled) glEnable(GL_TEXTURE_2D);
     else glDisable(GL_TEXTURE_2D);
   } 
-  SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
-
   state->pop();
 
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -812,8 +811,9 @@ SmScenery::GLRender(SoGLRenderAction * action)
     state->push();
     sc_display_debug_info(&PRIVATE(this)->renderstate, &campos[0], &vpsize[0]);
     state->pop();
-    SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
   }
+  
+  SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK|SoLazyElement::GLIMAGE_MASK);
 }
 
 void 

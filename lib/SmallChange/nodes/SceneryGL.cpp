@@ -541,8 +541,6 @@ sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, i
   assert(GL.glBindTexture);
 
   GL.glGenTextures(1, &info->id);
-  GL.glBindTexture(GL_TEXTURE_2D, info->id);
-
   return info;
 }
 
@@ -554,6 +552,7 @@ sc_default_texture_activate(RenderState * state, void * handle)
   
   assert(GL.glTexImage2D);
 
+  GL.glBindTexture(GL_TEXTURE_2D, info->id);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, info->wraps);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, info->wrapt);
 #if 1
