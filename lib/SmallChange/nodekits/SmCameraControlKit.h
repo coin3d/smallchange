@@ -63,10 +63,11 @@ public:
   SbBool isAnimating(void);
   SbBool isBusy(void) const;
   SbBool seek(const SoEvent * event, const SbViewportRegion & vp);
-  void viewAll(const SbViewportRegion & vp,
-               const float slack = 1.0f);
+  void viewAll(const SbViewportRegion & vp, const float slack = 1.0f);
   void pointDir(const SbVec3f & dir, const SbBool resetroll = TRUE);
   void resetCameraRoll(void);
+
+  void resetCameraFocalDistance(const SbViewportRegion & vpr);
 
 protected:
 

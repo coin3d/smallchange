@@ -29,6 +29,8 @@
   FIXME: doc
 */
 
+// *************************************************************************
+
 #include "SmCameraControlKit.h"
 
 #include <float.h>
@@ -51,17 +53,20 @@
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/sensors/SoTimerSensor.h>
 #include <Inventor/events/SoKeyboardEvent.h>
-#include <Inventor/SbVec2s.h>
-#include <Inventor/SbVec2f.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/system/gl.h>
 #include <Inventor/errors/SoDebugError.h>
+#include <Inventor/SbLinear.h>
+#include <Inventor/C/tidbits.h>
 
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
+#include <SmallChange/eventhandlers/SmSphereEventHandler.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/UTMCamera.h>
 #include <SmallChange/nodes/SmHeadlight.h>
+
+// *************************************************************************
 
 class SmCameraControlKitP {
 public:
@@ -70,6 +75,8 @@ public:
   SmCameraControlKit * master;
   SoOneShotSensor * autoclippingsensor;
   static void autoclip_update(void * closure, SoSensor * sensor);
+
+  static SbBool debug(void);
   
   SoSearchAction * searchaction;
   SoGetMatrixAction * matrixaction;
@@ -90,9 +97,20 @@ public:
   static void seeksensorCB(void * userdata, SoSensor * sensor);
 };
 
+SbBool
+SmCameraControlKitP::debug(void)
+{
+  static const char * debug = coin_getenv("SMALLCHANGE_CAMERACONTROLKIT_DEBUG");
+  return debug ? TRUE : FALSE;
+}
+
 #define PRIVATE(obj) (obj)->pimpl
 
+// *************************************************************************
+
 SO_KIT_SOURCE(SmCameraControlKit);
+
+// *************************************************************************
 
 /*!
   Constructor. 
@@ -163,6 +181,8 @@ SmCameraControlKit::initClass(void)
     SO_KIT_INIT_CLASS(SmCameraControlKit, SoBaseKit, "BaseKit");
   }
 }
+
+// *************************************************************************
 
 void 
 SmCameraControlKit::GLRender(SoGLRenderAction * action)
@@ -605,6 +625,108 @@ SmCameraControlKit::resetCameraRoll(void)
   camera->orientation = SbRotation(camerarot);
 }
 
+
+// Will set up a decent, best-guess focal distance for the camera,
+// based e.g. on what is in the scene.
+//
+// FIXME: I believe this code would be better spread out to the
+// individual SmEventHandler classes. 20040213 mortene.
+void
+SmCameraControlKit::resetCameraFocalDistance(const SbViewportRegion & vpr)
+{
+  SoCamera * camera = (SoCamera *)this->getPart("camera", FALSE);
+  if (camera == NULL) { return; }
+
+  UTMCamera * utmcamera = NULL;
+
+  SbVec3f cameraposition;
+  if (camera->isOfType(UTMCamera::getClassTypeId())) {
+    utmcamera = (UTMCamera *)camera;
+    cameraposition = utmcamera->utmposition.getValue();
+  }
+  else {
+    cameraposition = camera->position.getValue();
+  }
+
+  SoNode * eventhandler = this->eventHandler.getValue();
+
+  if (eventhandler->isOfType(SmHelicopterEventHandler::getClassTypeId())) {
+    // Focal distance is not used for helicopter mode. When rotating,
+    // it just rotates around itself.
+    return;
+  }
+
+  if (eventhandler->isOfType(SmSphereEventHandler::getClassTypeId())) {
+    // camera *should* be pointing towards 0,0,0, and so the focal
+    // distance (to decide how to rotate around the sphere) should be
+    // at 0,0,0
+    camera->focalDistance = (cameraposition - SbVec3f(0, 0, 0)).length();
+    return;
+  }
+
+  // Our strategy for examiner-mode is to
+  // 
+  // a) set the focal distance as the distance to the point a raypick
+  // hit from the middle of the window
+  //
+  // b) ..or if no geometry is hit, set it to the radius of the
+  // bounding sphere of the scene
+
+  if (eventhandler->isOfType(SmExaminerEventHandler::getClassTypeId())) {
+
+    SoNode * root = this->getAnyPart("topSeparator", TRUE);
+
+    // raypick-intersection attempt
+
+    SoRayPickAction raypick(vpr);
+    raypick.setPoint(vpr.getViewportSizePixels() / 2);
+    raypick.apply(root);
+    
+    const SoPickedPoint * pp = raypick.getPickedPoint();
+    if (pp) {
+      SbVec3f hitpoint = pp->getPoint();
+      if (utmcamera) { hitpoint += SbVec3f(utmcamera->utmposition.getValue()); }
+
+      camera->focalDistance = (cameraposition - hitpoint).length();
+
+      if (SmCameraControlKitP::debug()) {
+        SoDebugError::postInfo("SmCameraControlKit::resetCameraFocalDistance",
+                               "raypick, focaldistance==%f",
+                               camera->focalDistance.getValue());
+      }
+      return;
+    }
+
+    // failed raypick-intersection attempt, try with bounding box
+
+    SoGetBoundingBoxAction bba(vpr);
+    bba.apply(root);
+    const SbBox3f bbox = bba.getBoundingBox();
+    if (bbox.hasVolume()) {
+      SbSphere boundingsphere;
+      boundingsphere.circumscribe(bbox);
+      camera->focalDistance = boundingsphere.getRadius();
+
+      if (SmCameraControlKitP::debug()) {
+        SoDebugError::postInfo("SmCameraControlKit::resetCameraFocalDistance",
+                               "bbox, focaldistance==%f",
+                               camera->focalDistance.getValue());
+      }
+      return;
+    }
+
+    if (SmCameraControlKitP::debug()) {
+      SoDebugError::postInfo("SmCameraControlKit::resetCameraFocalDistance",
+                             "focaldistance not set for examiner-mode");
+    }
+
+    return;
+  }
+
+  assert(FALSE && "no focal distance can be set for this event mode");
+}
+
+// *************************************************************************
 
 #undef PRIVATE
 #define PUBLIC(obj) (obj)->master
