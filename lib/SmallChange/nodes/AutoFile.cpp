@@ -64,6 +64,30 @@
 /*!
   \var SoSFBool AutoFile::stripTopSeparator
 
+  ** OBSOLETED, mortene 20031217: **
+
+  I have now changed the semantics of SoFile, so it will no longer
+  always have an SoSeparator as its root, and never add an extra such
+  node at the top. The contents of an SoFile / AutoFile will always
+  match exactly what is found in the file.
+  
+  FIXME: this means the stripTopSeparator field is not really needed
+  any more, and it should therefore be removed in a design
+  cleanup. Will not do that yet, as we have software out at customers
+  which have files with AutoFile nodes using this field (and they will
+  then stop loading). Also, it's a change of semantics, which may be
+  dangerous.
+
+  The best way to proceed is perhaps to make a clean break and rename
+  this node to SmAutoFile and then kill the old cruft. Before that
+  happens, should also kill at least the "delay" field, possibly also
+  the "interval" field (should use some kind of proper monitor
+  technique instead of a lame polling technique) -- see related
+  FIXMEs.
+
+
+  ** OLD DOCS: **
+
   If set to \c TRUE, the root SoSeparator node of the loaded iv-file
   will be stripped off. This is useful for letting appearance settings
   in the loaded sub-scene graph, like e.g. materials or textures,
@@ -97,6 +121,8 @@
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/misc/SoChildList.h>
+#include <Inventor/errors/SoDebugError.h>
+#include <Inventor/C/tidbits.h>
 
 // *************************************************************************
 
@@ -110,6 +136,8 @@ public:
   SbBool mtimevalid;
   time_t mtime;
   off_t size;
+
+  SbBool debug;
 
   SoTimerSensor * toucher;
   SoTimerSensor * rescheduler;
@@ -166,6 +194,9 @@ AutoFile::initClass(void)
 void 
 AutoFile::doAction(SoAction * action)
 {
+  // FIXME: as far as I can tell, this method is exactly the same as
+  // its superclass -- can we remove it? 20031217 mortene.
+
   int numindices;
   const int * indices;
   if (action->getPathCode(numindices, indices) == SoAction::IN_PATH) {
@@ -188,6 +219,17 @@ void
 AutoFile::notify(SoNotList * list)
 {
   SoField *f = list->getLastField();
+
+  if (f == &this->stripTopSeparator) {
+    static SbBool first = TRUE;
+    if (first) {
+      SoDebugError::postWarning("AutoFile::notify",
+                                "AutoFile::stripTopSeparator field has "
+                                "been obsoleted");
+      first = FALSE;
+    }
+  }
+
   if (f == &this->active) {
     if (this->active.getValue()) {
       if (!PRIVATE(this)->rescheduler->isScheduled() && 
@@ -206,15 +248,12 @@ AutoFile::notify(SoNotList * list)
   inherited::notify(list);
 }
 
-/*!
-  Overridden to detect when file is read.
-*/
+// Overridden to strip off top SoSeparator, if requested.
 SbBool
 AutoFile::readNamedFile(SoInput * in)
 {
   SbBool ret = inherited::readNamedFile(in);
   
-
   if (this->stripTopSeparator.getValue()) {
     SoChildList * children = this->getChildren();
     SoNode * child = children->getLength() == 1 ?
@@ -241,6 +280,8 @@ AutoFile::readNamedFile(SoInput * in)
 AutoFileP::AutoFileP(AutoFile * master)
   : master(master)
 {
+  this->debug = coin_getenv("SMALLCHANGE_AUTOFILE_DEBUG") ? TRUE : FALSE;
+
   this->currname.makeEmpty();
   this->fullname.makeEmpty();
   this->mtimevalid = FALSE;
@@ -273,8 +314,14 @@ AutoFileP::idler_cb(void * data, SoSensor *)
     if (PUBLIC(thisp)->name.getValue() != thisp->currname) {
       thisp->currname = PUBLIC(thisp)->name.getValue();
       thisp->fullname = PUBLIC(thisp)->getFullName();
+      if (thisp->debug) {
+        SoDebugError::postInfo("AutoFileP::idler_cb", "loading file '%s'",
+                               thisp->fullname.getString());
+      }
       if (thisp->fullname.getLength()) {
         struct stat statbuf;
+        // FIXME: stat() errors are just silently ignored. Should do
+        // proper reporting. 20031217 mortene.
         if (stat(thisp->fullname.getString(), &statbuf) == 0) {
           thisp->mtimevalid = TRUE;
           thisp->mtime = statbuf.st_mtime;
@@ -300,6 +347,8 @@ AutoFileP::idler_cb(void * data, SoSensor *)
      */
     else if (thisp->fullname.getLength()) {
       struct stat statbuf;
+      // FIXME: stat() errors are just silently ignored. Should do
+      // proper reporting. 20031217 mortene.
       if (stat(thisp->fullname.getString(), &statbuf) == 0) {
         if (thisp->mtimevalid) {
           if ( (thisp->mtime != statbuf.st_mtime) || (thisp->size != statbuf.st_size) ) {
@@ -313,6 +362,10 @@ AutoFileP::idler_cb(void * data, SoSensor *)
               // delay time? What if a file write is interrupted by
               // some other task on the system for longer than the
               // delay time?
+              //
+              // And of course it is bad design to push the
+              // responsibility of guessing how much time to wait onto
+              // the client code.
               //
               // I presume there is some manner which one can find out
               // when a file write has been completed through system
@@ -359,9 +412,17 @@ AutoFileP::toucher_cb(void * data, SoSensor *)
   AutoFileP * thisp = (AutoFileP*) data;
   if (PUBLIC(thisp)->active.getValue()) {
     struct stat statbuf;
+    // FIXME: stat() errors are just silently ignored. Should do
+    // proper reporting. 20031217 mortene.
     if (stat(thisp->fullname.getString(), &statbuf) == 0) {
       // only load if size and mtime hasn't changed 
       if (statbuf.st_size == thisp->size && statbuf.st_mtime == thisp->mtime) {
+
+        if (thisp->debug) {
+          SoDebugError::postInfo("AutoFileP::toucher_cb", "reloading '%s'",
+                                 thisp->fullname.getString());
+        }
+
         PUBLIC(thisp)->name.touch(); // force reload
       }
     }

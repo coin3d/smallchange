@@ -46,7 +46,6 @@ public:
   SoSFFloat delay;
   SoSFInt32 priority;
   SoSFBool active;
-  SoSFBool stripTopSeparator;
 
   virtual void search(SoSearchAction * action);
   virtual void doAction(SoAction * action);
@@ -55,9 +54,13 @@ protected:
   virtual ~AutoFile();
   virtual void notify(SoNotList * list);
   virtual SbBool readNamedFile(SoInput * in);
+
 private:
   class AutoFileP * pimpl;
   friend class AutoFileP;
+
+  // obsoleted, kept around for compatibility with older .iv-files using it
+  SoSFBool stripTopSeparator;
 };
 
 #endif // !SMALLCHANGE_AUTOFILE_H
