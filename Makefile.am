@@ -7,7 +7,14 @@ BUILT_SOURCES = \
 
 CLEANFILES = \
 	smallchange1.dsp \
-	smallchange1.dsw
+	smallchange1.dsw \
+	smallchange1.ncb \
+	smallchange1.opt \
+	smallchange1.plg \
+	smallchange1.dll \
+	smallchange1.ilk \
+	smallchange1d.dll \
+	smallchange1d.ilk
 
 DISTCLEANFILES = \
 	smallchange-@CONFIG@.cfg
