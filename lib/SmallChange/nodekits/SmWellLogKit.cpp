@@ -1279,7 +1279,7 @@ SmWellLogKitP::updateList(void)
     SoIndexedFaceSet * fs = (SoIndexedFaceSet*) PUBLIC(this)->getPart("faceSet", TRUE);
     fs->coordIndex.setNum(0);
 
-    SoLODExtrusion * lod = (SoLODExtrusion*) PUBLIC(this)->getPart("well", TRUE);
+    SoLODExtrusion * lod = (SoLODExtrusion*) PUBLIC(this)->getAnyPart("well", TRUE);
     lod->spine.setNum(0);
     return;
   }
