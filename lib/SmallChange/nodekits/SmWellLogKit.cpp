@@ -55,8 +55,8 @@ typedef struct {
   SbVec3f pos;
   double mdepth;  // measured depth
   double tvdepth; // true vertical depth
-  double gamma;
-  double res;
+  double left;
+  double right;
   SbName lith;
   SbName fluid;
 } well_pos;
@@ -73,8 +73,8 @@ public:
   SbList <SbName> cm_name;
   SbList <uint32_t> cm_col;
 
-  SbList <float> gammaoffset;
-  SbList <float> resoffset;
+  SbList <float> leftoffset;
+  SbList <float> rightoffset;
 
   SbList <well_pos> poslist;
   SbVec3f axis;
@@ -115,23 +115,27 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(undefVal, (999999.0f));
   SO_KIT_ADD_FIELD(name,(""));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
-  SO_KIT_ADD_FIELD(wellDepth, (0.0f));
-  SO_KIT_ADD_FIELD(gammaSize, (100.0f));
-  SO_KIT_ADD_FIELD(resSize, (100.0f));
-  SO_KIT_ADD_FIELD(gamma, (0.0f));
-  SO_KIT_ADD_FIELD(res, (0.0f));
+
+  SO_KIT_ADD_FIELD(fieldNames, (""));
+  SO_KIT_ADD_FIELD(fieldDataValues, (0.0f));
+  SO_KIT_ADD_FIELD(leftSize, (50.0f));
+  SO_KIT_ADD_FIELD(rightSize, (50.0f));
+  
+  SO_KIT_ADD_FIELD(leftFieldIndex, (-1));
+  SO_KIT_ADD_FIELD(rightFieldIndex, (-1));
+
+  SO_KIT_ADD_FIELD(leftUseLog, (FALSE));
+  SO_KIT_ADD_FIELD(rightUseLog, (FALSE));
+
   SO_KIT_ADD_FIELD(lodDistance1, (5000.0f));
   SO_KIT_ADD_FIELD(lodDistance2, (10000.0f));
   
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
-  
-  this->gamma.setNum(0);
-  this->res.setNum(0);
-  this->wellDepth.setNum(0);
-  this->gamma.setDefault(TRUE);
-  this->res.setDefault(TRUE);
-  this->wellDepth.setDefault(TRUE);
+  this->fieldNames.setNum(0);
+  this->fieldNames.setDefault(TRUE);
+  this->fieldDataValues.setNum(0);
+  this->fieldDataValues.setDefault(TRUE);
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(utm, UTMPosition, FALSE, topSeparator, topLod, TRUE);
@@ -192,17 +196,72 @@ SmWellLogKit::initClass(void)
   }
 }
 
+int 
+SmWellLogKit::getNumFields(void) const
+{
+  return this->fieldNames.getNum();
+}
+
+int 
+SmWellLogKit::getNumFieldValues(void) const
+{
+  int num = this->getNumFields();
+  if (num) {
+    return this->fieldDataValues.getNum() / num;
+  }
+  return 0;
+}
+
+float 
+SmWellLogKit::getDepth(const int idx) const
+{
+  // FIXME: assumes depth is always first. Add depthIndex field?
+  int num = this->getNumFields();
+  if (num) {
+    int fidx = idx*num;
+    assert(fidx < this->fieldDataValues.getNum());
+    if (fidx < this->fieldDataValues.getNum()) {
+      return this->fieldDataValues[fidx];
+    }
+  }
+  return 0.0f;
+}
+
+float 
+SmWellLogKit::getLeftData(const int idx) const
+{
+  int num = this->getNumFields();
+  if (num && this->leftFieldIndex.getValue() >= 0) {
+    int fidx = idx*num + this->leftFieldIndex.getValue();
+    assert(fidx < this->fieldDataValues.getNum());
+    if (fidx < this->fieldDataValues.getNum()) {
+      return this->fieldDataValues[fidx];
+    }
+  }
+  return this->undefVal.getValue();
+}
+
+float 
+SmWellLogKit::getRightData(const int idx) const
+{
+  int num = this->getNumFields();
+  if (num && this->rightFieldIndex.getValue() >= 0) {
+    int fidx = idx*num + this->rightFieldIndex.getValue();
+    assert(fidx < this->fieldDataValues.getNum());
+    if (fidx < this->fieldDataValues.getNum()) {
+      return this->fieldDataValues[fidx];
+    }
+  }
+  return this->undefVal.getValue();
+}
+
+
 void 
 SmWellLogKit::notify(SoNotList * l)
 {
   if (!PRIVATE(this)->oneshot->isScheduled()) {
     SoField * f = l->getLastField();
-    if (f == &this->undefVal ||
-        f == &this->name ||
-        f == &this->wellCoord ||
-        f == &this->wellDepth ||
-        f == &this->gammaSize ||
-        f == &this->resSize) {
+    if (f) {
       PRIVATE(this)->oneshot->schedule();
     }
   }
@@ -263,30 +322,30 @@ SmWellLogKitP::fillInfo(SbString & str, int idx)
 
   const well_pos & pos = this->poslist[idx];
   
-  SbString gamma("UNDEFINED");
-  SbString res("UNDEFINED");
+  SbString left("UNDEFINED");
+  SbString right("UNDEFINED");
   
-  if (pos.gamma != PUBLIC(this)->undefVal.getValue()) {
-    gamma.sprintf("%g", pos.gamma);
+  if (pos.left != PUBLIC(this)->undefVal.getValue()) {
+    left.sprintf("%g", pos.left);
   }
-  if (pos.res != PUBLIC(this)->undefVal.getValue()) {
-    res.sprintf("%g", pos.res);
+  if (pos.right != PUBLIC(this)->undefVal.getValue()) {
+    right.sprintf("%g", pos.right);
   }
 
   str.sprintf("%s\n"
               "Depth: %g\n"
               "TVDSS: %g\n"
               "Time:  %g\n"
-              "Gamma: %s\n"
-              "Res:   %s\n"
+              "Left:  %s\n" // FIXME: replace with proper name
+              "Right: %s\n" // FIXME: replace with proper name
               "Lith:  %s\n"
               "Fluid: %s",
               PUBLIC(this)->name.getValue().getString(),
               pos.mdepth,
               -pos.tvdepth,
               -pos.pos[2],
-              gamma.getString(),
-              res.getString(),
+              left.getString(),
+              right.getString(),
               pos.lith.getString(),
               pos.fluid.getString());
             
@@ -383,8 +442,8 @@ SmWellLogKitP::generateFaces(const SbVec3f & newaxis)
   SbVec3f * dst = coord->point.startEditing();
   
   for (i = 0; i < n; i++) {
-    dst[n+i] = this->poslist[i].pos + newaxis * this->gammaoffset[i];
-    dst[2*n+i] = this->poslist[i].pos - newaxis * this->resoffset[i];
+    dst[n+i] = this->poslist[i].pos + newaxis * this->leftoffset[i];
+    dst[2*n+i] = this->poslist[i].pos - newaxis * this->rightoffset[i];
   }
   coord->point.finishEditing();
 }
@@ -398,34 +457,39 @@ static double log_func(double val)
 void
 SmWellLogKitP::buildGeometry(void)
 {
-  this->gammaoffset.truncate(0);
-  this->resoffset.truncate(0);
+  this->leftoffset.truncate(0);
+  this->rightoffset.truncate(0);
 
   int i, n = this->poslist.getLength();
 
-  double gammamax = 0.0f;
-  double resmax = 0.0f;
+  double leftmax = 0.0f;
+  double rightmax = 0.0f;
 
   for (i = 0; i < n; i++) {
-    if (this->poslist[i].gamma > gammamax &&
-        this->poslist[i].gamma != PUBLIC(this)->undefVal.getValue()) gammamax = this->poslist[i].gamma;
-    if (this->poslist[i].res > resmax &&
-        this->poslist[i].res != PUBLIC(this)->undefVal.getValue()) resmax = this->poslist[i].res;
+    if (this->poslist[i].left > leftmax &&
+        this->poslist[i].left != PUBLIC(this)->undefVal.getValue()) leftmax = this->poslist[i].left;
+    if (this->poslist[i].right > rightmax &&
+        this->poslist[i].right != PUBLIC(this)->undefVal.getValue()) rightmax = this->poslist[i].right;
   }
   
-  resmax = log_func(resmax);
+  if (PUBLIC(this)->leftUseLog.getValue()) {
+    leftmax = log_func(leftmax);
+  }
+  if (PUBLIC(this)->rightUseLog.getValue()) {
+    rightmax = log_func(rightmax);
+  }
   
-  float gammascale = gammamax ? PUBLIC(this)->gammaSize.getValue() * 0.5f/ gammamax : 1.0f;
-  float resscale = resmax ? PUBLIC(this)->resSize.getValue() * 0.5f / resmax : 1.0f;
+  float leftscale = leftmax ? PUBLIC(this)->leftSize.getValue() * 0.5f/ leftmax : 1.0f;
+  float rightscale = rightmax ? PUBLIC(this)->rightSize.getValue() * 0.5f / rightmax : 1.0f;
 
-  int numgamma = 0;
-  int numres = 0;
+  int numleft = 0;
+  int numright = 0;
 
   for (i = 0; i < n-1; i++) {
-    if (this->poslist[i].gamma != PUBLIC(this)->undefVal.getValue() &&
-        this->poslist[i+1].gamma != PUBLIC(this)->undefVal.getValue()) numgamma++;
-    if (this->poslist[i].res != PUBLIC(this)->undefVal.getValue() &&
-        this->poslist[i+1].res != PUBLIC(this)->undefVal.getValue()) numres++;
+    if (this->poslist[i].left != PUBLIC(this)->undefVal.getValue() &&
+        this->poslist[i+1].left != PUBLIC(this)->undefVal.getValue()) numleft++;
+    if (this->poslist[i].right != PUBLIC(this)->undefVal.getValue() &&
+        this->poslist[i+1].right != PUBLIC(this)->undefVal.getValue()) numright++;
   }
 
   SbList <SbVec3f> redlist(this->poslist.getLength());
@@ -474,15 +538,23 @@ SmWellLogKitP::buildGeometry(void)
   }
 
   for (i = 0; i < n; i++) {
-    float g = this->poslist[i].gamma;
-    float r = this->poslist[i].res;
-    this->gammaoffset.append(g < 0 ? 0.0f : gammascale * g + PUBLIC(this)->gammaSize.getValue()*0.5f);
-    this->resoffset.append(r < 0.0f ? 0.0f : resscale * log_func(r) + PUBLIC(this)->resSize.getValue() * 0.5f);
+    float g = this->poslist[i].left;
+    float r = this->poslist[i].right;
+
+    if (PUBLIC(this)->leftUseLog.getValue()) {
+      g = log_func(g);
+    }
+    if (PUBLIC(this)->rightUseLog.getValue()) {
+      r = log_func(r);
+    }
+
+    this->leftoffset.append(g < 0 ? 0.0f : leftscale * g + PUBLIC(this)->leftSize.getValue()*0.5f);
+    this->rightoffset.append(r < 0.0f ? 0.0f : rightscale * r + PUBLIC(this)->rightSize.getValue() * 0.5f);
 
     dst[n+i] = this->poslist[i].pos + 
-      this->axis * (float)(gammascale * this->poslist[i].gamma + PUBLIC(this)->gammaSize.getValue()*0.5f);
+      this->axis * (float)(leftscale * this->poslist[i].left + PUBLIC(this)->leftSize.getValue()*0.5f);
     dst[2*n+i] = this->poslist[i].pos - 
-      this->axis * (float) (resscale * this->poslist[i].res + PUBLIC(this)->resSize.getValue() * 0.5f);
+      this->axis * (float) (rightscale * this->poslist[i].right + PUBLIC(this)->rightSize.getValue() * 0.5f);
 
 //      fprintf(stderr,"pos: %g %g %g, %g %g %g\n",
 //              dst[n+i][0],
@@ -495,17 +567,17 @@ SmWellLogKitP::buildGeometry(void)
 
   SoIndexedFaceSet * ifs = (SoIndexedFaceSet*) PUBLIC(this)->getAnyPart("faceSet", TRUE);
 
-  ifs->coordIndex.setNum(numgamma * 5 + numres * 5);
+  ifs->coordIndex.setNum(numleft * 5 + numright * 5);
   int32_t * dsti = ifs->coordIndex.startEditing();
 
-  ifs->materialIndex.setNum(numgamma + numres);
+  ifs->materialIndex.setNum(numleft + numright);
   int32_t * dstm = ifs->materialIndex.startEditing();
 
   for (i = 0; i < n-1; i++) {
-    if (this->poslist[i].gamma != PUBLIC(this)->undefVal.getValue() &&
-        this->poslist[i+1].gamma != PUBLIC(this)->undefVal.getValue()) {
-      assert(this->poslist[i].gamma >= 0.0f);
-      assert(this->poslist[i+1].gamma >= 0.0f);
+    if (this->poslist[i].left != PUBLIC(this)->undefVal.getValue() &&
+        this->poslist[i+1].left != PUBLIC(this)->undefVal.getValue()) {
+      assert(this->poslist[i].left >= 0.0f);
+      assert(this->poslist[i+1].left >= 0.0f);
 
       *dsti++ = i;
       *dsti++ = n+i;
@@ -514,10 +586,10 @@ SmWellLogKitP::buildGeometry(void)
       *dsti++ = -1;
       *dstm++ = i;
     }
-    if (this->poslist[i].res != PUBLIC(this)->undefVal.getValue() &&
-        this->poslist[i+1].res != PUBLIC(this)->undefVal.getValue()) {
-      assert(this->poslist[i].res >= 0.0f);
-      assert(this->poslist[i+1].res >= 0.0f);
+    if (this->poslist[i].right != PUBLIC(this)->undefVal.getValue() &&
+        this->poslist[i+1].right != PUBLIC(this)->undefVal.getValue()) {
+      assert(this->poslist[i].right >= 0.0f);
+      assert(this->poslist[i+1].right >= 0.0f);
 
       *dsti++ = i;
       *dsti++ = i+1;
@@ -553,8 +625,8 @@ interpolate(well_pos & p, const well_pos & prev, const well_pos & next,
 
   SbVec3f vec = next.pos - prev.pos;
   p.pos = prev.pos + vec * ft;
-  p.gamma = prev.gamma; // FIXME: interpolate?
-  p.res = prev.res;
+  p.left = prev.left; // FIXME: interpolate?
+  p.right = prev.right;
   p.mdepth = prev.mdepth + (next.mdepth-prev.mdepth) * t;
   p.tvdepth = newdepth;
 
@@ -729,14 +801,6 @@ SmWellLogKitP::updateList(void)
   int cnt = 0;
   double undefval = PUBLIC(this)->undefVal.getValue();
 
-  int numgamma = PUBLIC(this)->gamma.getNum();
-  int numres = PUBLIC(this)->res.getNum();
-  int numdepth = PUBLIC(this)->wellDepth.getNum();
-
-  const float * gammaarray = numgamma ? PUBLIC(this)->gamma.getValues(0) : NULL;
-  const float * resarray = numres ? PUBLIC(this)->res.getValues(0) : NULL;
-  const float * deptharray = numdepth ? PUBLIC(this)->wellDepth.getValues(0) : NULL;
-
   double prevdepth = 0.0;
   SbVec3f prev(0.0f, 0.0f, 0.0f);
   
@@ -749,14 +813,11 @@ SmWellLogKitP::updateList(void)
 
     pos.pos = SbVec3f((float) t[0], (float) t[1], (float) t[2]);
     
-    pos.mdepth = i < numdepth ? deptharray[i] : pos.pos[2];
+    pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.tvdepth = - t[2];
-    pos.gamma = i < numgamma ? gammaarray[i] : -1.0f;
-    pos.res = i < numres ? resarray[i] : -1.0f;
+    pos.left = PUBLIC(this)->getLeftData(i);
+    pos.right = PUBLIC(this)->getRightData(i);
     
-    if (pos.gamma < 0.0f) pos.gamma = undefval;
-    if (pos.res < 0.0f) pos.res = undefval;
-
     if (!this->poslist.getLength() || SbAbs(pos.mdepth-prevdepth) >= EPS) {
       this->poslist.append(pos);
       prevdepth = pos.mdepth;

@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFString.h>
+#include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoMFString.h>
@@ -71,11 +72,18 @@ public:
   SoSFFloat undefVal;
   SoSFString name;
   SoMFVec3d wellCoord;
-  SoMFFloat wellDepth;
-  SoSFFloat gammaSize;
-  SoSFFloat resSize;;
-  SoMFFloat gamma;
-  SoMFFloat res;
+
+  SoMFString fieldNames;
+  SoMFFloat fieldDataValues;
+  SoSFFloat leftSize;
+  SoSFFloat rightSize;
+
+  SoSFInt32 leftFieldIndex;
+  SoSFInt32 rightFieldIndex;
+
+  SoSFBool leftUseLog;
+  SoSFBool rightUseLog;
+
   SoSFFloat lodDistance1;
   SoSFFloat lodDistance2;
   
@@ -100,6 +108,13 @@ protected:
 public:
   
 private:
+  
+  int getNumFields(void) const;
+  int getNumFieldValues(void) const;
+  float getDepth(const int idx) const;
+  float getLeftData(const int idx) const;
+  float getRightData(const int idx) const;
+
   friend class SmWellLogKitP;
   SmWellLogKitP * pimpl;
 };
