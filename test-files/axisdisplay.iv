@@ -1,0 +1,11 @@
+#Inventor V2.1 ascii
+
+Separator {
+  DEF CAM PerspectiveCamera { }
+  Cone { }
+  SmAxisDisplayKit {
+    orientation 0 0 0 0 = USE CAM.orientation
+    axes [1 0 0, 0 1 0, 0 0 1]
+    colors [1 0 0, 0 1 0, 0 0 1]
+  }
+}
