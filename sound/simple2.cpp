@@ -618,6 +618,7 @@ main(
   clip2->startTime.setValue(SbTime::getTimeOfDay() + SbTime(0.0));
   clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(60));
   source2->source.setValue(clip2);
+  source2->intensity.setValue(0.5f);
   root->addChild(sep2);
   sounds.push(source2);
 
