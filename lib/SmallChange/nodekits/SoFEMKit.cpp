@@ -129,9 +129,11 @@ SoFEMKit::SoFEMKit(void)
 
   SoMaterialBinding * mb = (SoMaterialBinding*) this->getAnyPart("mbind", TRUE);
   mb->value = SoMaterialBinding::PER_VERTEX_INDEXED;
+  this->mbind.setDefault(TRUE);
 
   SoNormalBinding * nb = (SoNormalBinding*) this->getAnyPart("nbind", TRUE);
   nb->value = SoNormalBinding::PER_VERTEX_INDEXED;
+  this->nbind.setDefault(TRUE);
 
   THIS->ccwsensor = new SoFieldSensor(ccw_cb, this);
   THIS->ccwsensor->setPriority(0);
@@ -139,6 +141,7 @@ SoFEMKit::SoFEMKit(void)
   
   // set up shape hints
   SoFEMKit::ccw_cb(this, THIS->ccwsensor);
+  this->shapehints.setDefault(TRUE);
 }
 
 void
