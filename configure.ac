@@ -229,12 +229,12 @@ fi
 
 SIM_AC_HAVE_LIBSCENERY_IFELSE([
   AC_DEFINE([HAVE_LIBSCENERY], 1, [define if you have the SIM Scenery lib])
-  CPPFLAGS="$CPPFLAGS $sim_ac_scenery_cppflags"
-  LDFLAGS="$LDFLAGS $sim_ac_scenery_ldflags"
-  LIBS="$sim_ac_scenery_libs $LIBS"
-  SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS $sim_ac_scenery_cppflags"
-  SMALLCHANGE_EXTRA_LDFLAGS="$SMALLCHANGE_EXTRA_LDFLAGS $sim_ac_scenery_ldflags"
-  SMALLCHANGE_EXTRA_LIBS="$sim_ac_scenery_libs $SMALLCHANGE_EXTRA_LIBS"
+  CPPFLAGS="$CPPFLAGS $sim_ac_libscenery_cppflags"
+  LDFLAGS="$LDFLAGS $sim_ac_libscenery_ldflags"
+  LIBS="$sim_ac_libscenery_libs $LIBS"
+  SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS $sim_ac_libscenery_cppflags"
+  SMALLCHANGE_EXTRA_LDFLAGS="$SMALLCHANGE_EXTRA_LDFLAGS $sim_ac_libscenery_ldflags"
+  SMALLCHANGE_EXTRA_LIBS="$sim_ac_libscenery_libs $SMALLCHANGE_EXTRA_LIBS"
 ], [])
 
 # *******************************************************************
