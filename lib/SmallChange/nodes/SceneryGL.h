@@ -10,8 +10,15 @@ extern "C" {
 
 /* ********************************************************************** */
 
-typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
+typedef struct ss_render_block_cb_info ss_render_block_cb_info;
 typedef struct RenderState RenderState;
+
+/*
+ * The below RenderState structure is arbitrary - one we have chosen
+ * to use, common for all the callback implementations in
+ * SceneryGL.cpp.  There are no ties between this structure and the
+ * Scenery library.
+ */
 
 struct RenderState {
   // local block info
@@ -20,6 +27,7 @@ struct RenderState {
   double voffset[2];
   float tscale[2];
   float toffset[2];
+  float invtsizescale[2]; // (1.0f / blocksize) * tscale[n]
   unsigned int texid;
   float * elevdata;
   signed char * normaldata;
@@ -66,10 +74,18 @@ struct RenderState {
 /* ********************************************************************** */
 /* GL setup */
 
-void sc_set_use_byte_normals(int enable); // for buggy GL drivers
+void sc_set_use_byte_normals(int enable); // for buggy GL drivers (3Dlabs)
 
-void sc_set_have_clamp_to_edge(int enable); // GL 1.x feature
-void sc_set_glMultiTexCoord2f(void * fptr); // GL 1.3 feature
+void sc_set_have_clamp_to_edge(int enable);      // GL 1.x feature
+
+void sc_set_glEnableClientState(void * fptr);    // GL 1.2 feature
+void sc_set_glDisableClientState(void * fptr);   // GL 1.2 feature
+void sc_set_glVertexPointer(void * fptr);        // GL 1.2 feature
+void sc_set_glNormalPointer(void * fptr);        // GL 1.2 feature
+void sc_set_glTexCoordPointer(void * fptr);      // GL 1.2 feature
+void sc_set_glDrawElements(void * fptr);         // GL 1.2 feature
+
+void sc_set_glMultiTexCoord2f(void * fptr);      // GL 1.3 feature
 
 /* ********************************************************************** */
 /* texture management */
@@ -90,7 +106,8 @@ void sc_delete_all_textures(RenderState * state);
 /* ********************************************************************** */
 /* rendering callbacks */
 
-int sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info);
+void sc_render_pre_cb(void * closure, ss_render_block_cb_info * info);
+void sc_render_post_cb(void * closure, ss_render_block_cb_info * info);
 
 void sc_render_cb(void * closure, const int x, const int y, const int len,
                   const unsigned int bitmask);
@@ -100,7 +117,7 @@ void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
 /* ********************************************************************** */
 /* raypick callbacks */
 
-int sc_raypick_pre_cb(void * closure, ss_render_pre_cb_info * info);
+void sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info);
 
 void sc_raypick_cb(void * closure, const int x, const int y, const int len,
                    const unsigned int bitmask);

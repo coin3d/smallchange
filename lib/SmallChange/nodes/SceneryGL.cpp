@@ -61,7 +61,10 @@
 
 /* ********************************************************************** */
 
-#define DRAW_AS_TRIANGLES 1
+#define DRAW_AS_TRIANGLES 0
+
+#define GL_SHAPE_FLUSH() /* glFlush */
+#define GL_BLOCK_FLUSH() glFlush
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
@@ -91,23 +94,87 @@
 /* ********************************************************************** */
 /* GL setup */
 
-typedef void glMultiTexCoord2f_f(GLint unit, float fx, float fy);
+typedef void glMultiTexCoord2f_f(GLenum target, GLfloat x, GLfloat y);
+
+typedef void glEnableClientState_f(GLenum cap);
+typedef void glDisableClientState_f(GLenum cap);
+typedef void glVertexPointer_f(GLint size, GLenum type, GLsizei stride, const GLvoid * ptr);
+typedef void glNormalPointer_f(GLenum type, GLsizei stride, const GLvoid * ptr);
+typedef void glTexCoordPointer_f(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
+typedef void glDrawElements_f(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
 
 struct sc_GL {
   glMultiTexCoord2f_f * glMultiTexCoord2f;
+  glEnableClientState_f * glEnableClientState;
+  glDisableClientState_f * glDisableClientState;
+  glVertexPointer_f * glVertexPointer;
+  glNormalPointer_f * glNormalPointer;
+  glTexCoordPointer_f * glTexCoordPointer;
+  glDrawElements_f * glDrawElements;
+
   GLenum CLAMP_TO_EDGE;
   int use_byte_normals;
 };
 
 static struct sc_GL GL = {
-  NULL,
-  GL_CLAMP,
-  TRUE
+  NULL, // glMultiTexCoord2f
+  NULL, // glEnableClientState
+  NULL, // glDisableClientState
+  NULL, // glVertexPointer
+  NULL, // glNormalPointer
+  NULL, // glTexCoordPointer
+  NULL, // glDrawElements
+
+  GL_CLAMP, // clamp_to_edge
+  TRUE  // use_byte_normals
 };
+
+void
+sc_set_glEnableClientState(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glEnableClientState = (glEnableClientState_f *) fptr;
+}
+
+void
+sc_set_glDisableClientState(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glDisableClientState = (glDisableClientState_f *) fptr;
+}
+
+void
+sc_set_glVertexPointer(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glVertexPointer = (glVertexPointer_f *) fptr;
+}
+
+void
+sc_set_glNormalPointer(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glNormalPointer = (glNormalPointer_f *) fptr;
+}
+
+void
+sc_set_glTexCoordPointer(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glTexCoordPointer = (glTexCoordPointer_f *) fptr;
+}
+
+void
+sc_set_glDrawElements(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glDrawElements = (glDrawElements_f *) fptr;
+}
 
 void
 sc_set_glMultiTexCoord2f(void * fptr)
 {
+  assert(fptr != NULL);
   GL.glMultiTexCoord2f = (glMultiTexCoord2f_f *) fptr;
 }
 
@@ -616,6 +683,12 @@ sc_ray_culling_post_cb(void * closure)
 
 /* ********************************************************************** */
 
+static SbList<float> * vertexarray = NULL;
+static SbList<float> * texcoordarray = NULL;
+static SbList<float> * texcoord2array = NULL; // second texture unit
+static SbList<float> * normalarray = NULL;
+
+static int flushcount = 0;
 static int vertices = 0;
 
 static signed char normal[3][3];
@@ -649,8 +722,7 @@ GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
   vertices++;
   if ( vertices >= 3 ) {
     glBegin(GL_POLYGON);
-    int v;
-    for ( v = 0; v < 3; v++ ) {
+    for ( int v = 0; v < 3; v++ ) {
       glTexCoord2f(texture1[v][0], texture1[v][1]);
       if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
         GL.glMultiTexCoord2f(GL_TEXTURE1, texture2[v][0], texture2[v][1]);
@@ -697,9 +769,8 @@ GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, con
   vertices++;
   if ( vertices >= 3 ) {
     glBegin(GL_POLYGON);
-    int v;
-    for ( v = 0; v < 3; v++ ) {
-      if ( GL.use_byte_normals ) { glNormal3bv((const GLbyte *) &(normal[v][0])); }
+    for ( int v = 0; v < 3; v++ ) {
+      if ( GL.use_byte_normals ) { glNormal3bv((const GLbyte *) normal[v]); }
       else {
         static const float factor = 1.0f/127.0f;
         glNormal3f(normal[v][0] * factor, normal[v][1] * factor, normal[v][2] * factor);
@@ -743,8 +814,10 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
   normal[idx][0] = n[0];
   normal[idx][1] = n[1];
   normal[idx][2] = n[2];
-  texture1[idx][0] = state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0];
-  texture1[idx][1] = state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1];
+  texture1[idx][0] = state->toffset[0] + float(x) * state->invtsizescale[0];
+  // was (float(x)/state->blocksize) * state->tscale[0];
+  texture1[idx][1] = state->toffset[1] + float(y) * state->invtsizescale[1];
+  // was (float(y)/state->blocksize) * state->tscale[1];
   texture2[idx][0] = 0.0f;
   texture2[idx][1] = (state->etexscale * elev) + state->etexoffset;
   vertex[idx][0] = (float) (x*state->vspacing[0] + state->voffset[0]);
@@ -753,21 +826,43 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
 
   vertices++;
   if ( vertices >= 3 ) {
+#if 0
     glBegin(GL_POLYGON);
-    int v;
-    for ( v = 0; v < 3; v++ ) {
-      if ( GL.use_byte_normals ) { glNormal3bv((const GLbyte *) &(normal[v][0])); }
+    for ( int v = 0; v < 3; v++ ) {
+      glTexCoord2f(texture1[v][0], texture1[v][1]);
+      if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
+        // GL.glMultiTexCoord2f(GL_TEXTURE1, texture2[v][0], texture2[v][1]);
+      }
+      if ( GL.use_byte_normals ) {
+        GLbyte norm[3] = { normal[v][0], normal[v][1], normal[v][2] };
+        glNormal3bv((const GLbyte *) norm);
+      }
       else {
         static const float factor = 1.0f/127.0f;
         glNormal3f(normal[v][0] * factor, normal[v][1] * factor, normal[v][2] * factor);
       }
-      glTexCoord2f(texture1[v][0], texture1[v][1]);
-      if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
-        GL.glMultiTexCoord2f(GL_TEXTURE1, texture2[v][0], texture2[v][1]);
-      }
       glVertex3f(vertex[v][0], vertex[v][1], vertex[v][2]);
     }
     glEnd();
+    GL_SHAPE_FLUSH();
+#else // vertex array code
+    // post-block vertex arrays implementation
+    for ( int v = 0; v < 3; v++ ) {
+      texcoordarray->append(texture1[v][0]);
+      texcoordarray->append(texture1[v][1]);
+      if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
+	texcoord2array->append(texture2[v][0]);
+	texcoord2array->append(texture2[v][1]);
+      }
+      static const float factor = 1.0f/127.0f;
+      normalarray->append(normal[v][0] * factor);
+      normalarray->append(normal[v][1] * factor);
+      normalarray->append(normal[v][2] * factor);
+      vertexarray->append(vertex[v][0]);
+      vertexarray->append(vertex[v][1]);
+      vertexarray->append(vertex[v][2]);
+    }
+#endif // vertex array code
   }
 #else // !DRAW_AS_TRIANGLES
   if ( GL.use_byte_normals ) { glNormal3bv((const GLbyte *)n); }
@@ -789,14 +884,31 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
 
 /* ********************************************************************** */
 
-int 
-sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
+void
+sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
 {
 #ifndef SS_SCENERY_H
   assert(sc_scenery_available());
 #endif
   assert(closure);
   RenderState * renderstate = (RenderState *) closure;
+
+  if ( (vertexarray == NULL) && (texcoordarray == NULL) &&
+       (texcoord2array == NULL) && (normalarray == NULL) ) {
+    vertexarray = new SbList<float>;
+    texcoordarray = new SbList<float>;
+    texcoord2array = new SbList<float>;
+    normalarray = new SbList<float>;
+    assert(vertexarray);
+    assert(texcoordarray);
+    assert(texcoord2array);
+    assert(normalarray);
+  }
+
+  // reset lists
+  vertexarray->truncate(0);
+  texcoordarray->truncate(0);
+  normalarray->truncate(0);
 
   ss_render_get_elevation_measures(info, 
                                    renderstate->voffset,
@@ -823,6 +935,12 @@ sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
                                  &renderstate->texid,
                                  renderstate->toffset,
                                  renderstate->tscale);
+
+  // optimize some calculations
+  renderstate->invtsizescale[0] =
+    (1.0f / renderstate->blocksize) * renderstate->tscale[0];
+  renderstate->invtsizescale[1] =
+    (1.0f / renderstate->blocksize) * renderstate->tscale[1];
   
   if (renderstate->dotex && renderstate->texid) {
     if (renderstate->texid != renderstate->currtexid) {
@@ -862,7 +980,59 @@ sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
       renderstate->texisenabled = FALSE;
     }
   }
-  return 1;
+}
+
+void 
+sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
+{
+  assert(closure);
+  assert(info);
+
+  if ( vertexarray->getLength() == 0 ) {
+    printf("yay - nothing rendered for this block - optimize!\n");
+    return;
+  } else {
+    printf("pushing %d triangles as one vertex array\n",
+	   vertexarray->getLength() / 9);
+  }
+
+  const float * vertexarrayptr = vertexarray->getArrayPtr();
+  const float * texcoordarrayptr = texcoordarray->getArrayPtr();
+  const float * normalarrayptr = normalarray->getArrayPtr();
+  static SbList<uint32_t> * indexarray = NULL;
+  if ( indexarray == NULL ) {
+    indexarray = new SbList<uint32_t>;
+    assert(indexarray);
+  }
+  int i;
+  int num = vertexarray->getLength() / 3;
+  indexarray->truncate(0);
+  for ( i = 0; i < num; i++ ) {
+    indexarray->append((uint32_t) i);
+  }
+  const uint32_t * indexarrayptr = indexarray->getArrayPtr();
+
+  // push vertex arrays
+  assert(GL.glEnableClientState);
+  assert(GL.glDisableClientState);
+  assert(GL.glVertexPointer);
+  assert(GL.glNormalPointer);
+  assert(GL.glTexCoordPointer);
+  assert(GL.glDrawElements);
+  GL.glEnableClientState(GL_VERTEX_ARRAY);
+  GL.glEnableClientState(GL_NORMAL_ARRAY);
+  GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
+  GL.glNormalPointer(GL_FLOAT, 0, normalarrayptr);
+  GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoordarrayptr);
+  GL.glDrawElements(GL_TRIANGLES,
+		    indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
+  GL.glDisableClientState(GL_VERTEX_ARRAY);
+  GL.glDisableClientState(GL_NORMAL_ARRAY);
+  GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+  // truncate arrays here?
+  GL_BLOCK_FLUSH();
 }
 
 /* ********************************************************************** */
@@ -912,7 +1082,8 @@ sc_render_cb(void * closure, const int x, const int y,
 #if DRAW_AS_TRIANGLES
     vertices = 0;
 #else
-    glBegin(GL_TRIANGLE_FAN);
+    glEnd();
+    GL_SHAPE_FLUSH();
 #endif
 #undef SEND_VERTEX
   }
@@ -948,6 +1119,7 @@ sc_render_cb(void * closure, const int x, const int y,
     vertices = 0;
 #else
     glEnd();
+    GL_SHAPE_FLUSH();
 #endif
 #undef SEND_VERTEX
   }
@@ -979,6 +1151,7 @@ sc_render_cb(void * closure, const int x, const int y,
     vertices = 0;
 #else
     glEnd();
+    GL_SHAPE_FLUSH();
 #endif
   }
 }
@@ -1021,6 +1194,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
       vertices = 0;
 #else
       glEnd();
+      GL_SHAPE_FLUSH();
 #endif
 
     }
@@ -1049,6 +1223,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
       vertices = 0;
 #else
       glEnd();
+      GL_SHAPE_FLUSH();
 #endif
     }
 #undef SEND_VERTEX
@@ -1071,6 +1246,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
       vertices = 0;
 #else
       glEnd();
+      GL_SHAPE_FLUSH();
 #endif
     }
   }
@@ -1136,8 +1312,8 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
 /*!
 */
 
-int
-sc_raypick_pre_cb(void * closure, ss_render_pre_cb_info * info)
+void
+sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info)
 {
   assert(closure);
   RenderState * renderstate = (RenderState *) closure;
@@ -1146,7 +1322,6 @@ sc_raypick_pre_cb(void * closure, ss_render_pre_cb_info * info)
                                    renderstate->vspacing,
                                    &renderstate->elevdata,
                                    &renderstate->normaldata);
-  return TRUE;
 }
 
 #define ELEVATION(x, y) elev[(y)*W+(x)]

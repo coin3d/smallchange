@@ -268,7 +268,7 @@ public:
 
   // generate primitives / raypick
   void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
-  static int gen_pre_cb(void * closure, ss_render_pre_cb_info * info);
+  static void gen_pre_cb(void * closure, ss_render_block_cb_info * info);
   static void gen_cb(void * closure, const int x, const int y,
                      const int len, const unsigned int bitmask);
   static void undefgen_cb(void * closure, const int x, const int y, const int len,
@@ -693,6 +693,14 @@ SmScenery::GLRender(SoGLRenderAction * action)
     if ( cc_glglue_has_multitexture(gl) ) {
       sc_set_glMultiTexCoord2f(cc_glglue_getprocaddress("glMultiTexCoord2f"));
     }
+    if ( cc_glglue_has_vertex_array(gl) ) {
+      sc_set_glEnableClientState(cc_glglue_getprocaddress("glEnableClientState"));
+      sc_set_glDisableClientState(cc_glglue_getprocaddress("glDisableClientState"));
+      sc_set_glVertexPointer(cc_glglue_getprocaddress("glVertexPointer"));
+      sc_set_glNormalPointer(cc_glglue_getprocaddress("glNormalPointer"));
+      sc_set_glTexCoordPointer(cc_glglue_getprocaddress("glTexCoordPointer"));
+      sc_set_glDrawElements(cc_glglue_getprocaddress("glDrawElements"));
+    }
     if ( cc_glglue_has_texture_edge_clamp(gl) ) {
       sc_set_have_clamp_to_edge(TRUE);
     }
@@ -735,8 +743,15 @@ SmScenery::GLRender(SoGLRenderAction * action)
                                            SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
 
   // callback to initialize for each block
-  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                         sc_render_pre_cb, &PRIVATE(this)->renderstate);
+  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
+					 PRIVATE(this)->viewid,
+                                         sc_render_pre_cb,
+					 &PRIVATE(this)->renderstate);
+
+  sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
+					  PRIVATE(this)->viewid,
+					  sc_render_post_cb,
+					  &PRIVATE(this)->renderstate);
 
   // set up rendering callbacks
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -885,8 +900,12 @@ SmScenery::evaluate(SoAction * action)
                                           SmScenery::box_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
-  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                         NULL, this);
+  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
+					 PRIVATE(this)->viewid,
+                                         NULL, NULL);
+  sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
+					  PRIVATE(this)->viewid,
+					  NULL, NULL);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
@@ -911,8 +930,12 @@ SmScenery::generatePrimitives(SoAction * action)
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            SceneryP::undefgen_cb, this);
 
-  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
+  sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
+					 PRIVATE(this)->viewid,
                                          SceneryP::gen_pre_cb, this);
+  sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
+					  PRIVATE(this)->viewid,
+					  NULL, NULL);
 
   SoPointDetail pointDetail;
   PRIVATE(this)->pvertex->setDetail(&pointDetail);
@@ -1279,8 +1302,8 @@ SceneryP::GEN_VERTEX(RenderState * state, const int x, const int y, const float 
   PUBLIC(this)->shapeVertex(this->pvertex);
 }
 
-int 
-SceneryP::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
+void
+SceneryP::gen_pre_cb(void * closure, ss_render_block_cb_info * info)
 {
   SmScenery * thisp = (SmScenery*) closure; 
 
@@ -1291,7 +1314,6 @@ SceneryP::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
                                    renderstate.vspacing,
                                    &renderstate.elevdata,
                                    &renderstate.normaldata);
-  return 1;
 }
 
 void 
