@@ -77,6 +77,7 @@
 #include <SmallChange/nodes/SmMarkerSet.h>
 #include <SmallChange/nodes/SmCoordinateSystem.h>
 #include <SmallChange/nodes/SmViewpointWrapper.h>
+#include <SmallChange/nodekits/SmPopupMenuKit.h>
 
 void
 smallchange_init(void)
@@ -136,4 +137,5 @@ smallchange_init(void)
 
   SmCoordinateSystem::initClass();
   SmViewpointWrapper::initClass();
+  SmPopupMenuKit::initClass();
 }

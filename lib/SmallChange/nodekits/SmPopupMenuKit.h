@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFInt32.h>
+#include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFVec2s.h>
 #include <Inventor/fields/SoMFString.h>
 #include <SmallChange/basic.h>
@@ -54,12 +55,17 @@ class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(materialBinding);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundColor);
+  SO_KIT_CATALOG_ENTRY_HEADER(backgroundTexture);
   SO_KIT_CATALOG_ENTRY_HEADER(justification);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundShape);
+  SO_KIT_CATALOG_ENTRY_HEADER(textSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(textColor);
   SO_KIT_CATALOG_ENTRY_HEADER(textPickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(textShape);
-  
+  SO_KIT_CATALOG_ENTRY_HEADER(activeMaterial);
+  SO_KIT_CATALOG_ENTRY_HEADER(activeTransparencyType);
+  SO_KIT_CATALOG_ENTRY_HEADER(activeShape);
+
 public:
   SmPopupMenuKit(void);
   static void initClass(void);
@@ -87,13 +93,17 @@ public:
   SoMFString items;
   SoSFInt32 frameSize;
   SoSFVec2s offset;
-  
+  SoSFFloat spacing;
+  SoSFInt32 pickedItem;
+
 private:
 
   void updateBackground(void);
+  void updateActiveItem(void);
 
   static void items_changed_cb(void * closure, SoSensor * s);
   static void oneshot_cb(void * closure, SoSensor * s);
+  static void activeitemchanged_cb(void * closure, SoSensor * s);
   friend class SmPopupMenuKitP;
   SmPopupMenuKitP * pimpl;
 };

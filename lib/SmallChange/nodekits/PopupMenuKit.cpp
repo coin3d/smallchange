@@ -58,9 +58,13 @@
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoTransformSeparator.h>
+#include <Inventor/nodes/SoTransparencyType.h>
 #include <SmallChange/nodes/DepthBuffer.h>
 #include <Inventor/nodes/SoResetTransform.h>
 #include <Inventor/nodes/SoLightModel.h>
+#include <Inventor/nodes/SoTexture2.h>
+#include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoVertexProperty.h>
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/nodes/SoPickStyle.h>
@@ -78,6 +82,7 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoDrawStyleElement.h>
 #include <Inventor/events/SoLocation2Event.h>
+#include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/elements/SoComplexityTypeElement.h>
 #include <Inventor/elements/SoComplexityElement.h>
 
@@ -89,6 +94,7 @@ public:
   { }
   SoFieldSensor * itemssensor;
   SoOneShotSensor * oneshot;
+  SoOneShotSensor * activeitemchanged;
   SoSearchAction sa;
   SoGetBoundingBoxAction bba;
   SoRayPickAction rpa;
@@ -100,6 +106,13 @@ public:
   SbBool flipleftright;
   SbBool flipupdown;
   int fontsize;
+
+  float backgroundmenulow;
+  float backgroundmenuhigh;
+  float backgroundleft;
+  float backgroundright;
+  
+  int activeitem;
 
   void updateViewport(SoState * state) {
     const SbViewportRegion & vp = SoViewportRegionElement::get(state);
@@ -128,6 +141,8 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_FIELD(items, (""));
   SO_KIT_ADD_FIELD(frameSize, (3));
   SO_KIT_ADD_FIELD(offset, (16, 0));
+  SO_KIT_ADD_FIELD(spacing, (1.5f));
+  SO_KIT_ADD_FIELD(pickedItem, (-1));
   
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
@@ -138,13 +153,19 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, pickStyle, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, TRUE, topSeparator, materialBinding, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(materialBinding, SoMaterialBinding, TRUE, topSeparator, backgroundColor, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(backgroundColor, SoBaseColor, TRUE, topSeparator, justification, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(backgroundColor, SoBaseColor, TRUE, topSeparator, backgroundTexture, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(backgroundTexture, SoTexture2, TRUE, topSeparator, justification, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(justification, SoTranslation, TRUE, topSeparator, backgroundShape, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(backgroundShape, SoFaceSet, TRUE, topSeparator, position, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(position, SoTranslation, TRUE, topSeparator, textColor, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(textColor, SoBaseColor, TRUE, topSeparator, textPickStyle, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(textPickStyle, SoPickStyle, TRUE, topSeparator, textShape, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(textShape, SoText2, TRUE, topSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(backgroundShape, SoFaceSet, TRUE, topSeparator, textSeparator, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(textSeparator, SoSeparator, TRUE, topSeparator, activeMaterial, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(position, SoTranslation, TRUE, textSeparator, textColor, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(textColor, SoBaseColor, TRUE, textSeparator, textPickStyle, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(textPickStyle, SoPickStyle, TRUE, textSeparator, textShape, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(textShape, SoText2, TRUE, textSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(activeMaterial, SoMaterial, TRUE, topSeparator, activeTransparencyType, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(activeTransparencyType, SoTransparencyType, TRUE, topSeparator, activeShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(activeShape, SoFaceSet, TRUE, topSeparator, "", FALSE);
+
 
   SO_KIT_INIT_INSTANCE();
 
@@ -170,12 +191,19 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   // set justification
   SoText2 * text = (SoText2*) this->getAnyPart("textShape", TRUE);
   text->justification = SoText2::LEFT;
-
+  text->spacing.connectFrom(&this->spacing);
+  
   SoBaseColor * col = (SoBaseColor*) this->getAnyPart("textColor", TRUE);
   col->rgb = SbColor(0.0f, 0.0f, 0.0f);
 
   col = (SoBaseColor*) this->getAnyPart("backgroundColor", TRUE);
   col->rgb = SbColor(0.8f, 0.8f, 0.8f);
+
+  SoMaterial * amat = (SoMaterial*) this->getAnyPart("activeMaterial", TRUE);
+  amat->diffuseColor = SbColor(0.0f, 0.0f, 0.0f);
+  amat->transparency = 0.5f;
+
+  //  SoTransparencyType * tt = (SoTransparencyType*) 
   
   PRIVATE(this)->itemssensor = new SoFieldSensor(items_changed_cb, this);
   PRIVATE(this)->itemssensor->attach(&this->items);
@@ -184,8 +212,16 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   PRIVATE(this)->flipupdown = FALSE;
   PRIVATE(this)->fontsize = 12; // FIXME: test in GLRender() for current font
 
+  PRIVATE(this)->backgroundmenulow = 0.0f;
+  PRIVATE(this)->backgroundmenuhigh = 0.0f;
+  PRIVATE(this)->backgroundleft = 0.0f;
+  PRIVATE(this)->backgroundright = 0.0f;
+  PRIVATE(this)->activeitem = -1;
+
   PRIVATE(this)->oneshot = new SoOneShotSensor(oneshot_cb, this);
   PRIVATE(this)->oneshot->setPriority(1);
+
+  PRIVATE(this)->activeitemchanged = new SoOneShotSensor(activeitemchanged_cb, this);  
 }
 
 /*!
@@ -193,6 +229,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
 */
 SmPopupMenuKit::~SmPopupMenuKit(void)
 {
+  delete PRIVATE(this)->activeitemchanged;
   delete PRIVATE(this)->itemssensor;
   delete PRIVATE(this)->oneshot;
   delete PRIVATE(this);
@@ -235,21 +272,40 @@ SmPopupMenuKit::GLRender(SoGLRenderAction * action)
 void 
 SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
 {
-  PRIVATE(this)->updateViewport(action->getState());
-
-#if 0 // testing menu picking
-  const SoEvent * event = action->getEvent();
-  PRIVATE(this)->rpa.setViewportRegion(PRIVATE(this)->vp);
-  PRIVATE(this)->rpa.setPoint(event->getPosition());
-  PRIVATE(this)->rpa.setPickAll(FALSE);
-  PRIVATE(this)->rpa.apply(this->topSeparator.getValue());
-  
-  SoPickedPoint * pp = PRIVATE(this)->rpa.getPickedPoint();
-  if (pp) {
-    fprintf(stderr,"pp!!\n");
+  int activeitem = -1;
+  if (this->isActive.getValue()) {  
+    PRIVATE(this)->updateViewport(action->getState());
+    
+    const SoEvent * event = action->getEvent();
+    PRIVATE(this)->rpa.setViewportRegion(PRIVATE(this)->vp);
+    PRIVATE(this)->rpa.setPoint(event->getPosition());
+    PRIVATE(this)->rpa.setPickAll(FALSE);
+    PRIVATE(this)->rpa.apply(this->topSeparator.getValue());
+    
+    SoPickedPoint * pp = PRIVATE(this)->rpa.getPickedPoint();
+    if (pp) {
+      SbVec3f p = pp->getObjectPoint();
+      p[1] -= PRIVATE(this)->backgroundmenulow;
+      p[1] *= PRIVATE(this)->vp.getViewportSizePixels()[1];
+      p[1] /= 12.0f * 1.5f;
+      
+      if (this->items.getNum()) {
+        int idx = (int) p[1];
+        activeitem = (this->items.getNum()-1) - idx;
+        if (activeitem >= this->items.getNum()) activeitem = this->items.getNum()-1;
+      }
+    }
+    if (activeitem >= 0 && SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
+      //      fprintf(stderr,"picked item: %d\n", activeitem);
+      this->pickedItem = activeitem;
+      activeitem = -1;
+      this->isActive = FALSE;
+    }
   }
-#endif
-
+  if (activeitem != PRIVATE(this)->activeitem) {
+    PRIVATE(this)->activeitem = activeitem;
+    PRIVATE(this)->activeitemchanged->schedule();
+  }
   inherited::handleEvent(action);
 }
 
@@ -319,7 +375,7 @@ SmPopupMenuKit::setViewportRegion(const SbViewportRegion & vp)
 
 /*!
   Convenience function that uses an SoPickedPoint to calculate the
-  position of the tooltip.
+  position of the tooltip. pp == NULL will deactivate the menu.
 */
 void 
 SmPopupMenuKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & vp)
@@ -422,10 +478,70 @@ SmPopupMenuKit::oneshot_cb(void * closure, SoSensor * s)
 }
 
 void 
+SmPopupMenuKit::activeitemchanged_cb(void * closure, SoSensor * s)
+{
+  SmPopupMenuKit * thisp = (SmPopupMenuKit*) closure;
+  thisp->updateActiveItem();
+}
+
+void 
+SmPopupMenuKit::updateActiveItem(void)
+{
+  SoFaceSet * fs = (SoFaceSet*) this->getAnyPart("activeShape", TRUE);
+  
+  if (PRIVATE(this)->activeitem < 0) {
+    this->setAnyPart("activeShape", NULL);
+    return;
+  }
+
+  SoVertexProperty * vp = (SoVertexProperty*) fs->vertexProperty.getValue();
+  if (!vp) {
+    vp = new SoVertexProperty;
+    fs->vertexProperty = vp;
+  }
+
+  float vecdata[4][3];
+  
+  vecdata[0][2] = 0.0f;
+  vecdata[1][2] = 0.0f;
+  vecdata[2][2] = 0.0f;
+  vecdata[3][2] = 0.0f;
+
+  vecdata[0][0] = PRIVATE(this)->backgroundleft;
+  vecdata[1][0] = PRIVATE(this)->backgroundright;
+  vecdata[2][0] = PRIVATE(this)->backgroundright;
+  vecdata[3][0] = PRIVATE(this)->backgroundleft;
+  
+  float size = PRIVATE(this)->fontsize * this->spacing.getValue();
+  size /= PRIVATE(this)->vp.getViewportSizePixels()[1];
+  float offset = PRIVATE(this)->activeitem  * size;
+
+  vecdata[0][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
+  vecdata[1][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
+  vecdata[2][1] = PRIVATE(this)->backgroundmenuhigh - offset;
+  vecdata[3][1] = PRIVATE(this)->backgroundmenuhigh - offset;
+
+#if 0
+  fprintf(stderr,"active: %g %g, %g %g, %g %g, %g %g\n",
+          vecdata[0][0],
+          vecdata[0][1],
+          vecdata[1][0],
+          vecdata[1][1],
+          vecdata[2][0],
+          vecdata[2][1],
+          vecdata[3][0],
+          vecdata[3][1]);
+#endif
+  vp->vertex.setValues(0, 4, vecdata);
+  fs->numVertices = 4;
+}
+
+void 
 SmPopupMenuKit::updateBackground(void)
 {
   SoPath * p = new SoPath(this->topSeparator.getValue());
   p->ref();
+  p->append(this->textSeparator.getValue());
   p->append(this->textShape.getValue());
 
   SoFaceSet * fs = (SoFaceSet*) this->getAnyPart("backgroundShape", TRUE);
@@ -450,6 +566,14 @@ SmPopupMenuKit::updateBackground(void)
   
   SbVec3f bmin = bb.getMin();
   SbVec3f bmax = bb.getMax();
+
+  PRIVATE(this)->backgroundmenulow = bmin[1];
+  PRIVATE(this)->backgroundmenuhigh = bmax[1];
+  PRIVATE(this)->backgroundmenulow += 3.0f / PRIVATE(this)->vp.getViewportSizePixels()[1];
+  PRIVATE(this)->backgroundmenuhigh +=  3.0f / PRIVATE(this)->vp.getViewportSizePixels()[1];
+
+  PRIVATE(this)->backgroundleft = bmin[0];
+  PRIVATE(this)->backgroundright = bmax[0];
 
   bmin[0] -= fx;
   bmin[1] -= fy;
