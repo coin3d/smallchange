@@ -1006,14 +1006,21 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   cullstate->push(mask | bits); // push culling state for next iteration
 
   // Use the GL_HP_occlusion_test extension to check if bounding box will
-  // be totally occluded.  If it is not occluded, better bounding box granularity
-  // can be achieved by checking against the bounding box of each child sub-block,
-  // and potentially recursively so.  It might not be such a good idea to exhaust
-  // this technique by doing full recursion all the way down though...  One or two
-  // levels on the other hand...
+  // be totally occluded.
+
+  // FIXME: If it is not occluded, better bounding box granularity
+  // can be achieved by checking against the bounding box of each child
+  // sub-block, and potentially recursively so.  It might not be such a
+  // good idea to exhaust this technique by doing full recursion all the
+  // way down though...  One or two levels on the other hand...  But for
+  // this to be possible, the sdm_block needs to be made available.
 
   if ( state->renderpass && GL.HAVE_OCCLUSIONTEST ) {
-    // disable updates to color and depth buffer (optional)
+    // save GL state
+    glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
+    // disable backface culling
+    glDisable(GL_CULL_FACE);
+    // disable updates to color and depth buffer
     glDepthMask(GL_FALSE);
     glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
     // enable occlusion test
@@ -1042,9 +1049,8 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
     glEnd();
     // disable occlusion test
     glDisable(GL_OCCLUSION_TEST_HP);
-    // enable updates to color and depth buffer
-    glDepthMask(GL_TRUE);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    // restore state
+    glPopAttrib();
     // read occlusion test result
     GLboolean result;
     glGetBooleanv(GL_OCCLUSION_TEST_RESULT_HP, &result);
