@@ -121,7 +121,7 @@ AM_CONFIG_HEADER(config.h)
 
 #  Default to not building a shared library.
 #  Can be overridden by the user with --enable-shared.
-AM_DISABLE_SHARED
+# AM_DISABLE_SHARED
 
 #  Turn off default maintainer make-rules -- use ./bootstrap instead.
 AM_MAINTAINER_MODE
@@ -165,13 +165,24 @@ SIM_AC_DETECT_COMMON_COMPILER_FLAGS
 
 CPPFLAGS="$CPPFLAGS -DSMALLCHANGE_INTERNAL"
 
-case $enable_static in
-yes | true)  SMALLCHANGE_STATIC=true;;
-*)           SMALLCHANGE_STATIC=false;;
+# **************************************************************************
+# Figure out if library should be built static or dynamic.
+
+case ${enable_static-no} in
+yes | true) SMALLCHANGE_STATIC=true
+            enable_shared=no ;; # fix --enable-static bug? in autoconf 2.58
+*)          SMALLCHANGE_STATIC=false ;;
 esac
 
-# *******************************************************************
+case ${enable_shared-default} in
+default)    ;;
+yes | true) SMALLCHANGE_STATIC=false ;;
+*)          SMALLCHANGE_STATIC=true ;;
+esac
+
+# **************************************************************************
 # Configure an alternate installation?
+# **************************************************************************
 
 AC_ARG_WITH(
   [alternate],
@@ -190,7 +201,7 @@ AC_ARG_WITH(
 AC_SUBST(CONFIG)
 AC_SUBST(SUFFIX)
 
-# *******************************************************************
+# **************************************************************************
 # System tests.
 
 # The last argument consists of a space character, because the macro
@@ -226,6 +237,9 @@ AC_TRY_LINK([
   AC_MSG_RESULT([no])
 ])
 
+sim_ac_configure_save_ldflags=$LDFLAGS
+sim_ac_configure_save_libs=$LIBS
+
 if test x"${with_inventor+set}" = x"set" &&
    test x"${with_inventor}" != x"no"; then
   SIM_AC_HAVE_INVENTOR_IFELSE([
@@ -254,7 +268,7 @@ fi
 CFLAGS="$CFLAGS $sim_ac_compiler_CFLAGS"
 CXXFLAGS="$CXXFLAGS $sim_ac_compiler_CXXFLAGS"
 
-# *******************************************************************
+# **************************************************************************
 
 AC_SUBST([LIBFLAGS], [])
 
@@ -269,6 +283,15 @@ SIM_AC_CHECK_OPENGL(
     SIM_AC_ERROR([no-opengl])
   ]
 )
+
+# **************************************************************************
+
+if $SMALLCHANGE_STATIC && $BUILD_WITH_MSVC; then
+  LDFLAGS=$sim_ac_configure_save_ldflags
+  LIBS=$sim_ac_configure_save_libs
+fi
+
+# **************************************************************************
 
 if $BUILD_WITH_MSVC; then
   rm -f vc60.pdb
