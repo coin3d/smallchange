@@ -46,12 +46,9 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClip.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipP.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreaming.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreamingP.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoSoundP.h
+	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h 
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
