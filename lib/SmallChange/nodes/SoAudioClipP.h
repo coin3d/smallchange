@@ -9,7 +9,6 @@ public:
   SoAudioClip *ifacep;
 
   unsigned int size;
-  float frequency;
   ALuint	bufferId;
   int readstatus;
   SoFieldSensor * urlsensor;

@@ -30,6 +30,8 @@ public:
   SoSFTime   duration_changed; //  eventOut
   SoSFBool   isActive; //  eventOut
 
+  SbBool setBuffer(void *buffer, int length, int channels, int bitspersample, int samplerate);
+
 protected:
 
   virtual ~SoAudioClip();

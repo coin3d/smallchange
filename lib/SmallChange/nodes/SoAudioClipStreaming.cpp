@@ -60,10 +60,15 @@ SoAudioClipStreaming::~SoAudioClipStreaming()
   // fixme: we cannot delete until the thread has stopped
   // which means the SoSound must be deleted first ...
 
-  printf("~SoAudioClipStreaming()\n");
+#ifndef NDEBUG
+  fprintf(stderr, "~SoAudioClipStreaming()\n");
+#endif
 
-  if (this->soaudioclip_impl->bufferId != 0)
-    delete[] THIS->alBuffers;
+  THIS->deleteAlBuffers();
+
+// 20010821 thammer
+//  if (this->soaudioclip_impl->bufferId != 0)
+//    delete[] THIS->alBuffers;
   delete THIS;
 };
 
@@ -87,9 +92,20 @@ int SoAudioClipStreaming::getNumBuffers()
   return THIS->numBuffers;
 };
 
+void SoAudioClipStreamingP::deleteAlBuffers()
+{
+  if (this->alBuffers != NULL)
+  {
+    alDeleteBuffers(this->numBuffers, this->alBuffers);
+    delete [] this->alBuffers;
+    this->alBuffers = NULL;
+  }
+};
+
 void SoAudioClipStreaming::setBufferInfo(int bufferSize, int numBuffers)
 {
-  //fixme: delete old buffers first (AL-buffers) - or du it in startPlaying
+  THIS->deleteAlBuffers();
+
   THIS->bufferSize = bufferSize;
   THIS->numBuffers = numBuffers;
 };
@@ -125,7 +141,14 @@ void SoAudioClipStreaming::setUserCallback(SbBool (*usercallback)(void *buffer, 
 SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
 {
 	ALint	error;
-  // fixme: delete old buffers
+  this->deleteAlBuffers();
+/*
+  20010821 thammer
+  if (this->alBuffers != NULL)
+  {
+    alDeleteBuffers(this->alBuffers)
+  }
+*/
   // Create new buffers
   this->alBuffers = new ALuint[this->numBuffers];
   alGenBuffers(this->numBuffers, this->alBuffers);
@@ -140,22 +163,15 @@ SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
 
   // Fill buffer with data
 
+  ALenum	alformat = 0;;
+  alformat = getALSampleFormat(this->channels, this->bitspersample);
+
   int loop;
   short int *buf = new short int[this->bufferSize * this->channels ];
 	for (loop = 0; loop < this->numBuffers; loop++)
 	{
     this->fillBuffer(buf, this->bufferSize);
 //		alBufferData(this->alBuffers[loop], AL_FORMAT_MONO16, buf, this->bufferSize*sizeof(short int), 44100);
-	  ALenum	alformat = 0;;
-
-    if ( (this->channels==1) && (this->bitspersample==8) )
-      alformat = AL_FORMAT_MONO8;
-    else if ( (this->channels==1) && (this->bitspersample==16) )
-      alformat = AL_FORMAT_MONO16;
-    else if ( (this->channels==2) && (this->bitspersample==8) )
-      alformat = AL_FORMAT_STEREO8;
-    else if ( (this->channels==2) && (this->bitspersample==16) )
-      alformat = AL_FORMAT_STEREO16;
 
 		alBufferData(this->alBuffers[loop], alformat, buf, this->bufferSize*sizeof(short int), this->samplerate);
 	  if ((error = alGetError()) != AL_NO_ERROR)

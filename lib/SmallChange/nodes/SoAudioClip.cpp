@@ -48,7 +48,6 @@ SoAudioClip::SoAudioClip()
   SO_NODE_ADD_FIELD(isActive, (FALSE)); //  eventOut
 
   THIS->size = 0;
-  THIS->frequency = 0;
   THIS->bufferId = 0; // no buffer (NULL), see alIsBuffer(...)
   THIS->readstatus = 0; // ?
 
@@ -63,7 +62,9 @@ SoAudioClip::SoAudioClip()
 
 SoAudioClip::~SoAudioClip()
 {
-  printf("~SoAudioClip()\n");
+#ifndef NDEBUG
+  fprintf(stderr, "~SoAudioClip()\n");
+#endif
   if (alIsBuffer(THIS->bufferId))
 	  alDeleteBuffers(1, &THIS->bufferId);
 
@@ -71,6 +72,49 @@ SoAudioClip::~SoAudioClip()
 
   delete THIS->urlsensor;
   delete THIS;
+};
+
+SbBool SoAudioClip::setBuffer(void *buffer, int length, int channels, int bitspersample, int samplerate)
+{
+  // for setting data directly (doesn't use url)
+
+  ALint	error;
+
+  // Delete previous buffer
+
+  if (alIsBuffer(THIS->bufferId))
+	  alDeleteBuffers(1, &THIS->bufferId);
+
+  // Generate new buffer
+
+  alGenBuffers(1, &THIS->bufferId);
+	if ((error = alGetError()) != AL_NO_ERROR)
+	{
+    char errstr[256];
+		SoDebugError::postWarning("SoAudioClip::setBuffer",
+                              "alGenBuffers failed. %s",
+                              GetALErrorString(errstr, error));
+		return FALSE;
+	}
+
+	ALenum	alformat = 0;;
+
+  alformat = getALSampleFormat(channels, bitspersample);
+
+
+	// Copy wav data into buffer
+	alBufferData(THIS->bufferId, alformat, (ALvoid *)buffer, length*bitspersample/8*channels,
+    samplerate);
+	if ((error = alGetError()) != AL_NO_ERROR)
+	{
+    char errstr[256];
+		SoDebugError::postWarning("SoAudioClip::setBuffer",
+                              "alBufferData failed for data read from file. %s",
+                              GetALErrorString(errstr, error));
+		return FALSE;
+	}
+
+  return TRUE;
 };
 
 SbBool SoAudioClip::loadUrl(void)
@@ -137,14 +181,9 @@ SbBool SoAudioClip::loadUrl(void)
 	ALvoid	*aldata = (ALvoid	*)buffer;
 	ALenum	alformat = 0;;
 
-  if ( (format==1) && (channels==1) && (bitspersample==8) )
-    alformat = AL_FORMAT_MONO8;
-  else if ( (format==1) && (channels==1) && (bitspersample==16) )
-    alformat = AL_FORMAT_MONO16;
-  else if ( (format==1) && (channels==2) && (bitspersample==8) )
-    alformat = AL_FORMAT_STEREO8;
-  else if ( (format==1) && (channels==2) && (bitspersample==16) )
-    alformat = AL_FORMAT_STEREO16;
+  if (format == 1)
+    alformat = getALSampleFormat(channels, bitspersample);
+
 
 	// Copy wav data into buffer
 	alBufferData(THIS->bufferId, alformat, aldata, alsize, alfreq);

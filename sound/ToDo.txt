@@ -1,5 +1,10 @@
 
 
+*** Bør egentlig flytte all buffer-kode fra SoAudioClip etc. til SoSound. 
+ det er der de hører hjemme ihht OpenAL. AudioClip'ene blir dermed bare 
+ skall i forhold til OpenAL
+
+
 * Flyttet til SimWiki
 
 

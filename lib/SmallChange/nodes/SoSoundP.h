@@ -28,4 +28,8 @@ public:
   static int threadCallbackWrapper(void *userdata);
   int threadCallback();
   int fillBuffers();
+
+#ifdef HAVE_PTHREAD
+  pthread_mutex_t syncmutex;
+#endif
 };

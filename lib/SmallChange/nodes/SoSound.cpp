@@ -88,16 +88,26 @@ SoSound::SoSound()
   THIS->workerThread = new SbAudioWorkerThread(THIS->threadCallbackWrapper, THIS, 10);
   THIS->audioBuffer = NULL;
 
+#ifdef HAVE_PTHREAD
+  pthread_mutex_init(&THIS->syncmutex, NULL);
+#endif
+
 };
 
 SoSound::~SoSound()
 {
-  printf("~SoSound()\n");
+#ifndef NDEBUG
+  fprintf(stderr, "~SoSound()\n");
+#endif
   delete THIS->sourcesensor;
 
   THIS->stopPlaying(TRUE);
 
   delete THIS->workerThread;
+
+#ifdef HAVE_PTHREAD
+  pthread_mutex_destroy(&THIS->syncmutex);
+#endif
 
   if (THIS->audioBuffer != NULL)
     delete[] THIS->audioBuffer;
@@ -163,7 +173,6 @@ SbBool SoSoundP::stopPlaying(SbBool force)
   if (workerThread->isActive())
     workerThread->stop();
 
-  // fixme: delete audio buffers
   if (this->isStreaming)
   {
     SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)ITHIS->source.getValue();
@@ -215,7 +224,6 @@ SbBool SoSoundP::startPlaying(SbBool force)
         return FALSE;
       }
 
-      // fixme: move... debugging
 	    alSourcei(this->sourceId,AL_LOOPING, FALSE);
 	    if ((error = alGetError()) != AL_NO_ERROR)
       {
@@ -286,6 +294,7 @@ SbBool SoSoundP::startPlaying(SbBool force)
 
 int SoSoundP::fillBuffers()
 {
+  SbAutoLock autoLock(&(this->syncmutex)); // synchronize with main thread
 
 	ALint			processed;
 
@@ -318,7 +327,7 @@ int SoSoundP::fillBuffers()
 		while (processed)
 		{
 
-
+//      printf(">");
 			alSourceUnqueueBuffers(this->sourceId, 1, &BufferID);
 	    if ((error = alGetError()) != AL_NO_ERROR)
       {
@@ -330,8 +339,7 @@ int SoSoundP::fillBuffers()
       }
 
       // fill buffer
-      // as an experiment, move fill-routine outside while-loop
-      audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(audioBuffer, audioClipStreaming->getBufferSize());
+      audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(this->audioBuffer, audioClipStreaming->getBufferSize());
 
 
       // send buffer to OpenAL
@@ -341,18 +349,9 @@ int SoSoundP::fillBuffers()
       audioClipStreaming->getSampleFormat(channels, samplerate, bitspersample);
 
 	    ALenum	alformat = 0;;
+      alformat = getALSampleFormat(channels, bitspersample);
 
-      if ( (channels==1) && (bitspersample==8) )
-        alformat = AL_FORMAT_MONO8;
-      else if ( (channels==1) && (bitspersample==16) )
-        alformat = AL_FORMAT_MONO16;
-      else if ( (channels==2) && (bitspersample==8) )
-        alformat = AL_FORMAT_STEREO8;
-      else if ( (channels==2) && (bitspersample==16) )
-        alformat = AL_FORMAT_STEREO16;
-
-
-			alBufferData(BufferID, alformat, audioBuffer, 
+			alBufferData(BufferID, alformat, this->audioBuffer, 
         audioClipStreaming->getBufferSize() * sizeof(short int) * audioClipStreaming->getNumChannels(), 
         samplerate);
 	    if ((error = alGetError()) != AL_NO_ERROR)
@@ -404,7 +403,9 @@ int SoSoundP::fillBuffers()
                                   GetALErrorString(errstr, error));
         return FALSE;
       }
-      printf("state == AL_STOPPED. Had to restart source\n");
+#ifndef NDEBUG
+      fprintf(stderr, "state == AL_STOPPED. Had to restart source\n");
+#endif
     }
     else
     {
@@ -416,7 +417,9 @@ int SoSoundP::fillBuffers()
       case AL_STOPPED : sprintf(statestr, "stopped"); break;
       default : sprintf(statestr, "unknown"); break;
       };
-      printf("state == %s. Don't know what to do about it...\n", statestr);
+#ifndef NDEBUG
+      fprintf(stderr, "state == %s. Don't know what to do about it...\n", statestr);
+#endif
     }
   };
 
@@ -429,73 +432,6 @@ SoSoundP::timercb(void * data, SoSensor * s)
 {
   SoSoundP * thisp = (SoSoundP*) data;
   thisp->fillBuffers();
-/*
-  // used only when isStreaming and not in asyncStreamingMode
-	ALint			processed;
-  SoSound * thisp = (SoSound*) data;
-  SoAudioClipStreaming *audioClipStreaming = (SoAudioClipStreaming *)thisp->source.getValue();
-
-	// Get status
-	alGetSourcei(thisp->sourceId, AL_BUFFERS_PROCESSED, &processed);
-
-	ALuint buffersreturned = 0;
-	ALboolean bFinishedPlaying = AL_FALSE;
-	ALuint buffersinqueue = audioClipStreaming->numBuffers;
-	ALuint			BufferID;
-	ALint			error;
-
-	if (processed > 0)
-	{
-		buffersreturned += processed;
-		printf("Buffers Completed is %d   \r", buffersreturned);
- 
-    // fixme: use class local variable so we don't have to new each time
-    short int *buffer = new short int[audioClipStreaming->bufferSize];
-
-		while (processed)
-		{
-			alSourceUnqueueBuffers(thisp->sourceId, 1, &BufferID);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
-        char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
-                                  "alSourceUnqueueBuffers failed. %s",
-                                  GetALErrorString(errstr, error));
-        return;
-      }
-
-      // fill buffer
-      audioClipStreaming->fillBuffer(buffer, audioClipStreaming->bufferSize);
-
-      // send buffer to OpenAL
-			alBufferData(BufferID, AL_FORMAT_MONO16, buffer, audioClipStreaming->bufferSize*sizeof(short int), 44100);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
-        char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
-                                  "alBufferData failed. %s",
-                                  GetALErrorString(errstr, error));
-        return;
-      }
-
-			// Queue buffer
-			alSourceQueueBuffers(thisp->sourceId, 1, &BufferID);
-	    if ((error = alGetError()) != AL_NO_ERROR)
-      {
-        char errstr[256];
-		    SoDebugError::postWarning("SoSound::audioRender",
-                                  "alSourceQueueBuffers failed. %s",
-                                  GetALErrorString(errstr, error));
-        return;
-      }
-
-			processed--;
-		}
-    delete buffer;
-  }
-
-  return;
-*/
 }
 
 
@@ -522,22 +458,15 @@ void SoSound::audioRender(SoAudioRenderAction *action)
   SbString now_str = now.format("%D %h %m %s");
 
 //  if ((now<start) && (!audioClip->isActive))
-  if (now<start)
+  if ( (now<start) || (now>=stop) )
   {
     // we shouldn't be playing now
     THIS->stopPlaying();
     return; 
   }
 
-  if (now>=stop)
-  {
-    THIS->stopPlaying();
-    return;
-  }
-
   // If we got this far, then  ( start <= now < stop ) and we should be playing
-
-  THIS->startPlaying(); // if we're not playing, playing will start
+// moved down  THIS->startPlaying(); // if we're not playing, playing will start
 
   // audio source is now playing, update OpenAL parameters
  
@@ -590,6 +519,9 @@ void SoSound::audioRender(SoAudioRenderAction *action)
     return;
   }
 
+  THIS->startPlaying(); // if we're not playing, playing will start
+
+
   // FIXME: check if anything has changed in the audioClip (like buffer, loop-points, etc, and react accordingly)
 }
 
@@ -609,18 +541,26 @@ void
 SoSoundP::sourceSensorCB(SoSensor *)
 {
 
+  SbAutoLock autoLock(&(this->syncmutex)); // synchronize with fill-thread
 //  printf("SoSound::sourceSensorCB()\n");
   ALint error;
 
   if (!ITHIS->source.getValue())
     return;
 
+  if ( !ITHIS->source.getValue()->isOfType(SoAudioClipStreaming::getClassTypeId()) 
+    && !ITHIS->source.getValue()->isOfType(SoAudioClip::getClassTypeId()) )
+  {
+		SoDebugError::postWarning("SoSound::sourceSensorCB",
+                              "Unknown source node type");
+    return;
+  };
+
   SoAudioClip *audioClip = (SoAudioClip *)ITHIS->source.getValue();
-  // FIXME: use OI convenience method for checking node type before using
 
   if (audioClip == this->currentAudioClip)
     return; 
-    // for some obscure reason, the sensor was called, even though the field haven't changed .....
+    // for some obscure reason, the sensor was called, even though the field hasn't changed .....
     // FIXME: ask mortene about this --^
 
   this->currentAudioClip = audioClip;
@@ -633,8 +573,6 @@ SoSoundP::sourceSensorCB(SoSensor *)
     this->audioBuffer = new short int[audioClipStreaming->getBufferSize()  * audioClipStreaming->getNumChannels()];
   };
 
-  // FIXME: should probably sync with streaming thread (if we're doing async streaming)
-  // especially important for the buffer...
 
   alSourceStop(this->sourceId);
 	if ((error = alGetError()) != AL_NO_ERROR)
