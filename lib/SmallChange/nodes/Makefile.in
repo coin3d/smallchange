@@ -118,7 +118,11 @@ libnodes_la_SOURCES = \
 	SoListener.h \
 	SoSound.cpp \
 	SoSound.h \
-	SoSoundP.h
+	SoSoundP.h \
+	SoTCBCurve.cpp \
+	SoTCBCurve.h \
+	SoText2Set.cpp \
+	SoText2Set.h
 
 
 nodes_lst_SOURCES = \
@@ -137,7 +141,11 @@ nodes_lst_SOURCES = \
 	SoListener.h \
 	SoSound.cpp \
 	SoSound.h \
-	SoSoundP.h
+	SoSoundP.h \
+	SoTCBCurve.cpp \
+	SoTCBCurve.h \
+	SoText2Set.cpp \
+	SoText2Set.h
 
 
 libnodesincdir = $(includedir)/SmallChange/nodes
@@ -150,7 +158,9 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClip.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreaming.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h 
+	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h
 
 subdir = lib/SmallChange/nodes
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
@@ -164,7 +174,7 @@ am_nodes_lst_OBJECTS = DepthBuffer.$(OBJEXT) ViewportRegion.$(OBJEXT) \
 	Coinboard.$(OBJEXT) Switchboard.$(OBJEXT) \
 	SwitchboardOperator.$(OBJEXT) SoAudioClip.$(OBJEXT) \
 	SoAudioClipStreaming.$(OBJEXT) SoListener.$(OBJEXT) \
-	SoSound.$(OBJEXT)
+	SoSound.$(OBJEXT) SoTCBCurve.$(OBJEXT) SoText2Set.$(OBJEXT)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
@@ -172,7 +182,8 @@ libnodes_la_LDFLAGS =
 libnodes_la_LIBADD =
 am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo \
 	Switchboard.lo SwitchboardOperator.lo SoAudioClip.lo \
-	SoAudioClipStreaming.lo SoListener.lo SoSound.lo
+	SoAudioClipStreaming.lo SoListener.lo SoSound.lo SoTCBCurve.lo \
+	SoText2Set.lo
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -188,6 +199,8 @@ depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/SoAudioClipStreaming.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoListener.Plo $(DEPDIR)/SoListener.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoSound.Plo $(DEPDIR)/SoSound.Po \
+@AMDEP_TRUE@	$(DEPDIR)/SoTCBCurve.Plo $(DEPDIR)/SoTCBCurve.Po \
+@AMDEP_TRUE@	$(DEPDIR)/SoText2Set.Plo $(DEPDIR)/SoText2Set.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Switchboard.Plo $(DEPDIR)/Switchboard.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SwitchboardOperator.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/SwitchboardOperator.Po \
@@ -265,6 +278,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoListener.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoSound.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoSound.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoTCBCurve.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoTCBCurve.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoText2Set.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoText2Set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Switchboard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Switchboard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SwitchboardOperator.Plo@am__quote@

@@ -766,6 +766,7 @@ if test x"$with_pthread" != xno; then
     sim_ac_pthread_cppflags="-I${with_pthread}/include"
     sim_ac_pthread_ldflags="-L${with_pthread}/lib"
   fi
+  sim_ac_pthread_cppflags="-D_REENTRANT ${sim_ac_pthread_cppflags}"
   sim_ac_pthread_libs="-lpthread"
 
   sim_ac_save_cppflags=$CPPFLAGS
@@ -794,8 +795,7 @@ if test x"$with_pthread" != xno; then
     $2
   fi
 fi
-])
-
+]) # SIM_AC_CHECK_PTHREAD
 
 
 # **************************************************************************
@@ -4635,10 +4635,12 @@ AC_ARG_ENABLE(
   esac],
   [enable_symbols=yes])
 
+# FIXME: don't mangle options like -fno-gnu-linker and -fvolatile-global
+# 20020104 larsa
 if test x"$enable_symbols" = x"no"; then
-  CFLAGS="`echo $CFLAGS | sed 's/-g//'`"
-  CPPFLAGS="`echo $CPPFLAGS | sed 's/-g//'`"
-  CXXFLAGS="`echo $CXXFLAGS | sed 's/-g//'`"
+  # CPPFLAGS="`echo $CPPFLAGS | sed 's/-g[0-9]//'`"
+  CFLAGS="`echo $CFLAGS | sed 's/-g[0-9]?//'`"
+  CXXFLAGS="`echo $CXXFLAGS | sed 's/-g[0-9]?//'`"
 fi
 ])
 
@@ -4677,7 +4679,7 @@ fi
 ])
 
 # Usage:
-#   SIM_CHECK_EXCEPTION_HANDLING
+#   SIM_AC_EXCEPTION_HANDLING
 #
 # Description:
 #   Let the user decide if C++ exception handling should be compiled
@@ -4693,7 +4695,7 @@ fi
 #   * [mortene:19991114] make this work with compilers other than gcc/g++
 #
 
-AC_DEFUN([SIM_EXCEPTION_HANDLING], [
+AC_DEFUN([SIM_AC_EXCEPTION_HANDLING], [
 AC_PREREQ([2.13])
 AC_ARG_ENABLE(
   [exceptions],
@@ -4780,7 +4782,7 @@ AC_LANG_RESTORE
 ])
 
 # Usage:
-#   SIM_PROFILING_SUPPORT
+#   SIM_AC_PROFILING_SUPPORT
 #
 # Description:
 #   Let the user decide if profiling code should be compiled
@@ -4797,7 +4799,7 @@ AC_LANG_RESTORE
 #   * [mortene:19991114] make this work with compilers other than gcc/g++
 #
 
-AC_DEFUN([SIM_PROFILING_SUPPORT], [
+AC_DEFUN([SIM_AC_PROFILING_SUPPORT], [
 AC_PREREQ([2.13])
 AC_ARG_ENABLE(
   [profile],
@@ -4823,7 +4825,7 @@ fi
 
 
 # Usage:
-#   SIM_COMPILER_WARNINGS
+#   SIM_AC_COMPILER_WARNINGS
 #
 # Description:
 #   Take care of making a sensible selection of warning messages
@@ -4841,7 +4843,7 @@ fi
 #   * [larsa:20010504] rename to SIM_AC_COMPILER_WARNINGS and clean up
 #     the macro
 
-AC_DEFUN([SIM_COMPILER_WARNINGS], [
+AC_DEFUN([SIM_AC_COMPILER_WARNINGS], [
 AC_ARG_ENABLE(
   [warnings],
   AC_HELP_STRING([--enable-warnings],

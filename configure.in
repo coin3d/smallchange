@@ -279,6 +279,7 @@ AC_OUTPUT([
 	lib/SmallChange/engines/Makefile
 	lib/SmallChange/actions/Makefile
 	lib/SmallChange/misc/Makefile
+	lib/SmallChange/draggers/Makefile
 ])
 
 SIM_AC_CONFIGURATION_SETTING([Install prefix], [$prefix])

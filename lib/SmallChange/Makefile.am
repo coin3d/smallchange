@@ -1,7 +1,7 @@
 
 INCLUDES = -I$(top_srcdir)/lib
 
-SUBDIRS = nodekits nodes elements engines actions misc .
+SUBDIRS = nodekits nodes elements engines actions misc draggers .
 
 if BUILD_WITH_MSVC
 lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
@@ -13,7 +13,8 @@ libSmallChange_la_SOURCES =
 
 libSmallChange_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
-	engines/libengines.la actions/libactions.la misc/libmisc.la
+	engines/libengines.la actions/libactions.la misc/libmisc.la \
+	draggers/libdraggers.la
 
 libSmallChange_la_LDFLAGS = \
 	-no-undefined \
@@ -22,7 +23,8 @@ libSmallChange_la_LDFLAGS = \
 SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES =
 SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
-	engines/engines.lst actions/actions.lst misc/misc.lst
+	engines/engines.lst actions/actions.lst misc/misc.lst \
+	draggers/draggers.lst
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
   $(libSmallChange_lib_OBJECTS) \

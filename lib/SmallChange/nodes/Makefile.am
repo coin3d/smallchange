@@ -24,7 +24,11 @@ libnodes_la_SOURCES = \
 	SoListener.h \
 	SoSound.cpp \
 	SoSound.h \
-	SoSoundP.h
+	SoSoundP.h \
+	SoTCBCurve.cpp \
+	SoTCBCurve.h \
+	SoText2Set.cpp \
+	SoText2Set.h
 
 nodes_lst_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
@@ -42,7 +46,11 @@ nodes_lst_SOURCES = \
 	SoListener.h \
 	SoSound.cpp \
 	SoSound.h \
-	SoSoundP.h
+	SoSoundP.h \
+	SoTCBCurve.cpp \
+	SoTCBCurve.h \
+	SoText2Set.cpp \
+	SoText2Set.h
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
@@ -54,7 +62,10 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClip.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreaming.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h 
+	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h
+	
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
