@@ -29,6 +29,8 @@ public:
   int threadCallback();
   int fillBuffers();
 
+  SbTime actualStartTime;
+
 #ifdef HAVE_PTHREAD
   pthread_mutex_t syncmutex;
 #endif

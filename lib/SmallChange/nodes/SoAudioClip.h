@@ -31,6 +31,10 @@ public:
   SoSFBool   isActive; //  eventOut
 
   SbBool setBuffer(void *buffer, int length, int channels, int bitspersample, int samplerate);
+  double getBufferDuration();
+  SbBool getPlayedOnce();
+  void   setPlayedOnce(SbBool played=TRUE);
+  SbBool isBufferOK();
 
 protected:
 

@@ -10,6 +10,8 @@
 
 #endif // HAVE_OGGVORBIS
 
+#include <SmallChange/misc/tariff.h>
+
 class SoAudioClipStreamingP
 {
 public:
@@ -41,6 +43,11 @@ public:
   void closeOggFile();
 #endif // HAVE_OGGVORBIS
 
+  riff_t *riffFile;
+
+  SbBool openWaveFile(const char *filename);
+  void closeWaveFile();
+
   int channels;
   int samplerate;
   int bitspersample;
@@ -48,4 +55,9 @@ public:
   enum urlFileTypes { AUDIO_UNKNOWN = 0, AUDIO_WAVPCM, AUDIO_OGGVORBIS };
   urlFileTypes urlFileType;
 
+  SbBool fillBufferDone;
+  ALint numBuffersLeftToClear;
+
+  int currentUrlIndex;
+  SbBool loadUrl(int index);
 };

@@ -273,7 +273,9 @@ SbBool SoSoundP::startPlaying(SbBool force)
       return FALSE;
     }
 
-  audioClip->isActive.setValue(TRUE);
+    this->actualStartTime = SbTime::getTimeOfDay();
+
+    audioClip->isActive.setValue(TRUE);
 
 /*
   moved up 20010803 ThH
@@ -294,7 +296,9 @@ SbBool SoSoundP::startPlaying(SbBool force)
 
 int SoSoundP::fillBuffers()
 {
+#if HAVE_PTHREAD
   SbAutoLock autoLock(&(this->syncmutex)); // synchronize with main thread
+#endif
 
 	ALint			processed;
 
@@ -317,13 +321,12 @@ int SoSoundP::fillBuffers()
 //  printf("Processed: %d, Queued: %d\n", processed, queued);
 
 
-	ALboolean bFinishedPlaying = AL_FALSE;
 	ALuint			BufferID;
 	ALint			error;
+  int retval = 1;
 
 	if (processed > 0)
 	{
-
 		while (processed)
 		{
 
@@ -339,7 +342,21 @@ int SoSoundP::fillBuffers()
       }
 
       // fill buffer
-      audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(this->audioBuffer, audioClipStreaming->getBufferSize());
+      retval = audioClipStreaming->soaudioclipstreaming_impl->fillBuffer(this->audioBuffer, audioClipStreaming->getBufferSize());
+
+/*      if (retval == 0) {
+        stopPlaying();
+        return 0; // buffer has been played to the end
+      }
+*/
+      if (retval <= 0)
+      {
+        printf("retval<=0\n");
+        audioClipStreaming->setPlayedOnce();
+        return 0; // 0 worked ok, but will terminate thread, better to let audioRender do that
+        // should play AL_BUFFERS_QUEUED empty buffers, then return 0 so that the thread finishes
+        // the sound should finish also, so we could probably just call stopPlaying()
+      }
 
 
       // send buffer to OpenAL
@@ -424,7 +441,7 @@ int SoSoundP::fillBuffers()
   };
 
 
-  return 1;
+  return retval;
 };
 
 void
@@ -445,9 +462,10 @@ void SoSound::audioRender(SoAudioRenderAction *action)
     return;
 
   SoAudioClip *audioClip = NULL;
-  
-  
   audioClip = (SoAudioClip *)this->source.getValue();
+
+  if (!audioClip->isBufferOK())
+    return; // the source buffer is invalid, and there's not much we can do about it
 
   SbTime now = SbTime::getTimeOfDay();
   SbTime start = audioClip->startTime.getValue();
@@ -458,18 +476,54 @@ void SoSound::audioRender(SoAudioRenderAction *action)
   SbString now_str = now.format("%D %h %m %s");
 
 //  if ((now<start) && (!audioClip->isActive))
-  if ( (now<start) || (now>=stop) )
+  if ( (now<start) || ( (now>=stop) && (stop>start)) )
   {
     // we shouldn't be playing now
     THIS->stopPlaying();
     return; 
   }
 
-  // If we got this far, then  ( start <= now < stop ) and we should be playing
-// moved down  THIS->startPlaying(); // if we're not playing, playing will start
+  if (audioClip->getPlayedOnce() == TRUE) {
+    if  (audioClip->isActive.getValue())
+      THIS->stopPlaying(); // fillThread (streaming) probably set the playedOnce flag, 
+                           // and we'll stop the sound here
+    return; // we have played through the clip once, so we shouldn't play anymore
+  }
 
-  // audio source is now playing, update OpenAL parameters
- 
+//  if ( (audioClip->isActive.getValue()) && (stop <= start))
+  if ( (audioClip->isActive.getValue()) && !(THIS->isStreaming) )
+  {
+    // check to see if we're looping. 
+    // If we're not, check if the sample has been played completely
+    // if it has, there's no point in plaing any more, is there?????
+    // fixme: 20011116, think about this. Could some other node be depending on
+    // exact playing time ??
+    ALint looping;
+	  alGetSourcei(THIS->sourceId,AL_LOOPING, &looping);
+	  if ((error = alGetError()) != AL_NO_ERROR)
+    {
+      char errstr[256];
+		  SoDebugError::postWarning("SoSoundP::audioRender",
+                                "alSourcei(,AL_LOOPING,) failed. %s",
+                                GetALErrorString(errstr, error));
+      return;
+    }
+
+    if (!looping) {
+      if (now - THIS->actualStartTime >= audioClip->getBufferDuration()) {
+        // fixme: perhaps we need some slack...
+		    printf("SoSoundP::audioRender - "
+                                  "Stopping non-looping sound because the whole buffer has been played\n");
+        THIS->stopPlaying();
+        audioClip->setPlayedOnce();
+        return;
+      }
+    }
+  };
+
+  // If we got this far, then  ( start <= now < stop ) || (stop <= start <= now) and we should be playing
+  // if stop <= start, the stop time is ignored
+
   SbVec3f pos, worldpos;
   ALfloat alfloat3[3];
 
@@ -540,8 +594,9 @@ SoSoundP::sourceSensorCBWrapper(void * data, SoSensor *)
 void
 SoSoundP::sourceSensorCB(SoSensor *)
 {
-
+#if HAVE_PTHREAD
   SbAutoLock autoLock(&(this->syncmutex)); // synchronize with fill-thread
+#endif
 //  printf("SoSound::sourceSensorCB()\n");
   ALint error;
 
@@ -564,6 +619,9 @@ SoSoundP::sourceSensorCB(SoSensor *)
     // FIXME: ask mortene about this --^
 
   this->currentAudioClip = audioClip;
+
+  if (!audioClip->isBufferOK())
+    return; // the source buffer is invalid, and there's not much we can do about it
 
   if (this->isStreaming)
   { 

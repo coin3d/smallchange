@@ -47,9 +47,10 @@ SoAudioClip::SoAudioClip()
   SO_NODE_ADD_FIELD(duration_changed, (0.0f)); //  eventOut
   SO_NODE_ADD_FIELD(isActive, (FALSE)); //  eventOut
 
-  THIS->size = 0;
+//  THIS->size = 0;
+  THIS->duration = 0.0;
   THIS->bufferId = 0; // no buffer (NULL), see alIsBuffer(...)
-  THIS->readstatus = 0; // ?
+  THIS->readstatus = 0; // buffer is OK
 
   // use field sensor for url since we will load an image if
   // url changes. This is a time-consuming task which should
@@ -58,6 +59,7 @@ SoAudioClip::SoAudioClip()
   THIS->urlsensor->setPriority(0);
   THIS->urlsensor->attach(&this->url);
 
+  THIS->playedOnce = FALSE;
 };
 
 SoAudioClip::~SoAudioClip()
@@ -114,10 +116,13 @@ SbBool SoAudioClip::setBuffer(void *buffer, int length, int channels, int bitspe
 		return FALSE;
 	}
 
+  THIS->duration = (double)length/(double)samplerate;
+  THIS->readstatus = 1; // buffer is OK
+
   return TRUE;
 };
 
-SbBool SoAudioClip::loadUrl(void)
+SbBool SoAudioClip::loadUrl(void)   
 {
   // similar to SoTexture2::loadFilename()
 
@@ -139,6 +144,14 @@ SbBool SoAudioClip::loadUrl(void)
     delete subdirectories[i];
   }
 
+  if (filename.getLength() <= 0) {
+    char errstr[256];
+		SoDebugError::postWarning("SoAudioClip::loadUrl",
+                              "File not found: '%s'",
+                              filename.getString());
+    return FALSE;
+  }
+
 
   ALint	error;
 
@@ -153,7 +166,7 @@ SbBool SoAudioClip::loadUrl(void)
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioCli::loadUrl",
+		SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "alGenBuffers failed. %s",
                               GetALErrorString(errstr, error));
 		return FALSE;
@@ -206,6 +219,8 @@ SbBool SoAudioClip::loadUrl(void)
                               GetALErrorString(errstr, error));
 		return FALSE;
 	}
+
+  THIS->duration = (double)((size/channels)/(bitspersample/8))/(double)samplerate;
 
   freeWaveDataBuffer(buffer);
 
@@ -305,5 +320,40 @@ SoAudioClipP::urlSensorCB(SoSensor *)
     }
   }
 }
+
+double SoAudioClip::getBufferDuration()
+{
+  return THIS->duration * this->pitch.getValue();
+
+/*
+  ALfloat frequency;
+  ALi
+	alGetBufferi(this->sourceId,AL_LOOPING, looping);
+	if ((error = alGetError()) != AL_NO_ERROR)
+  {
+    char errstr[256];
+		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
+                              "alSourcei(,AL_LOOPING,) failed. %s",
+                              GetALErrorString(errstr, error));
+    return;
+  }
+*/
+};
+
+SbBool SoAudioClip::getPlayedOnce()
+{
+  return THIS->playedOnce;
+};
+
+void SoAudioClip::setPlayedOnce(SbBool played)
+{
+  THIS->playedOnce = played;
+};
+
+SbBool SoAudioClip::isBufferOK()
+{
+  return THIS->readstatus == 1 ? TRUE : FALSE;
+};
+
 
 #endif // HAVE_OPENAL
