@@ -27,8 +27,8 @@
   \ingroup nodekits
 
   The class is organized as a nodekit for conveniece. Most parts are public,
-  but we recommend that normal users only change the backgroundMaterial, tickMaterial
-  and extraNodes parts.
+  but we recommend that normal users only change the backgroundMaterial,
+  tickMaterial and extraNodes parts.
   
   The class should be initialized using initLegend(). This will initialize
   internal data and parts to display the legend correctly. The coordinate
@@ -40,47 +40,50 @@
 
   \li resetTransform Used to reset any transform that might be on the state
 
-  \li viewport Used to set the viewport for the legend. Contains a ViewportRegion 
-  node. This part is NULL by default. Set this part if you want to restrict the
-  area the legend is drawn into.
+  \li viewport Used to set the viewport for the legend. Contains a
+      ViewportRegion node. This part is NULL by default. Set this part if
+      you want to restrict the area the legend is drawn into.
 
-  \li depthBuffer Used to disable depth buffer tests. Contains a DepthBuffer node.
+  \li depthBuffer Used to disable depth buffer tests. Contains a DepthBuffer
+      node.
 
   \li lightModel Used to disable lighting. Contains an SoLightModel node.
 
   \li camera Contains an SoOrthographicCamera, which defines the view volume
-  for the shapes in the kit.
+      for the shapes in the kit.
 
   \li position Can be used to move the legend from the lower left corner.
-  The coordinate system of this node is one unit per pixel. This part
-  is NULL by default, but a SoTranslation node can be inserted here.
+      The coordinate system of this node is one unit per pixel. This part
+      is NULL by default, but a SoTranslation node can be inserted here.
 
-  \li texture Its only purpose is to disable texturing. Contains an SoTexture2 node.
+  \li texture Its only purpose is to disable texturing. Contains an SoTexture2
+      node.
 
-  \li shapeHints Contains an SoShapeHints node, and sets default shape hints. This
-  is needed to render the shapes in this kit correctly.
+  \li shapeHints Contains an SoShapeHints node, and sets default shape hints.
+      This is needed to render the shapes in this kit correctly.
 
-  \li backgroundMaterial Might be used to change the background color. Contains an 
-  SoMaterial node.
+  \li backgroundMaterial Might be used to change the background color. Contains
+      an SoMaterial node.
 
   \li backgroundShape Contains the shape (SoIndexedFaceSet) that renders the 
-  background frame. This is rendered as four quads surrounding the image.
-  Set this part to NULL if you don't want a background frame.
+      background frame. This is rendered as four quads surrounding the image.
+      Set this part to NULL if you don't want a background frame.
 
-  \li imageSeparator A separator that holds nodes needed to render the image. Private.
+  \li imageSeparator A separator that holds nodes needed to render the image.
+      Private.
 
-  \li imageTransform Applies a transformation to the image to account for image offset.
-  Will be set in LegendKit::initLegend().
+  \li imageTransform Applies a transformation to the image to account for image
+      offset.  Will be set in LegendKit::initLegend().
 
   \li imageMaterial Is used to reset the material to default before the image is
-  rendered. Contains a default SoMaterial node by default. Will only take
-  effect if you render the image a a textured quad.
+      rendered. Contains a default SoMaterial node by default. Will only take
+      effect if you render the image a a textured quad.
 
   \li imageSwitch Is used to switch between image rendered as a raw image 
-  (whichChild = 0), or rendered as a textured quad (whichChild = 1). This
-  is useful since some 3D hardware might render raw images very slowly.
-  Default value is 0, and you can set this value using 
-  Legendkit::useTextureNotImage().
+      (whichChild = 0), or rendered as a textured quad (whichChild = 1). This
+      is useful since some 3D hardware might render raw images very slowly.
+      Default value is 0, and you can set this value using 
+      Legendkit::useTextureNotImage().
 
   \li image Hold the raw image data for the legend as an SoImage node.
 
