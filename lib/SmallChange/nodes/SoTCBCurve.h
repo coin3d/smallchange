@@ -26,8 +26,8 @@
 
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoMFTime.h>
-#include <Inventor/fields/SoMFVec3f.h>
 #include <Inventor/fields/SoSFInt32.h>
+
 
 class SoTCBCurve : public SoShape
 {
@@ -45,8 +45,8 @@ public:
 
   int getLinesPerSegment(void);
 
-  static void TCB(const SbVec3f * vec, const SoMFTime &timestamp,
-                  const int numControlpoints, const SbTime &time, SbVec3f &res);
+  static void TCB(const SbVec3f * vec, const SoMFTime & timestamp,
+                  const int numControlpoints, const SbTime time, SbVec3f &res);
 
 protected:
   virtual ~SoTCBCurve();

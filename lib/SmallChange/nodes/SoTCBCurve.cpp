@@ -305,7 +305,7 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
 */
 void
 SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
-                const int numControlpoints, const SbTime &time, SbVec3f &res)
+                const int numControlpoints, const SbTime time, SbVec3f &res)
 {
   assert(numControlpoints > 0);
 
