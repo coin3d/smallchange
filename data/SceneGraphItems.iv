@@ -1,0 +1,35 @@
+#Inventor V2.1 ascii
+
+# This is the database file used by SoGenerateSceneGraphAction
+# when creating scene graphs.
+
+DEF BaseNode Separator {
+  Material { diffuseColor 0 1 0 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF NodeNode Separator {
+  Material { diffuseColor 0 0 1 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF GroupNode Separator {
+  Material { diffuseColor 1 1 1 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
+DEF SeparatorNode Separator {
+  Material { diffuseColor 1 1 1 }
+#  Texture2 {
+#    filename "textures/separator.png"
+#    wrapS REPEAT
+#    wrapT REPEAT
+#    model DECAL
+#  }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
