@@ -83,6 +83,7 @@
 #include <Inventor/elements/SoCullElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoGLLazyElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
@@ -129,10 +130,18 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
   Angle in radians between the text and the horisontal, in the camera
   plane. Positive direction is counter clockwise.
 */
+
 /*!
   \var SoMFEnum SoText2Set::justification
 
   Decides how the horizontal layout of each text string is done.
+*/
+
+/*!
+  \var SoSFBool SoText2Set::renderOutline
+
+  When TRUE, text will be rendered as white text with a black border.
+  Default value is FALSE.
 */
 
 class SoText2SetP {
@@ -199,6 +208,7 @@ SoText2Set::SoText2Set(void)
   SO_NODE_ADD_FIELD(rotation, (0.0f));
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
   SO_NODE_ADD_FIELD(string, (""));
+  SO_NODE_ADD_FIELD(renderOutline, (FALSE));
   
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
@@ -236,7 +246,13 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
   state->push();
   SoLazyElement::setLightModel(state, SoLazyElement::BASE_COLOR);
-  
+
+  SbBool outline = this->renderOutline.getValue();
+  if (outline) {
+    glPushAttrib(GL_DEPTH_BUFFER_BIT);
+    glDepthFunc(GL_LEQUAL);
+  }
+
   // Render using SoGlyphs
   if (THIS->buildGlyphCache(state) == 0) {
     SbBox3f box;
@@ -304,28 +320,50 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
         for (int i2 = 0; i2 < charcnt; i2++) {
           buffer = THIS->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
+
           ix = thissize[0];
           iy = thissize[1];
           position = THIS->positions[i][i2];
           fx = (float)position[0];
           fy = (float)position[1];
 
-          rasterx = xpos + fx;
-          rpx = rasterx >= 0 ? rasterx : 0;
-          offvp = rasterx < 0 ? 1 : 0;
-          offsetx = rasterx >= 0 ? 0 : rasterx;
-          
-          rastery = ypos + fy;
-          rpy = rastery >= 0 ? rastery : 0;
-          offvp = offvp || rastery < 0 ? 1 : 0;
-          offsety = rastery >= 0 ? 0 : rastery;
-         
-          glRasterPos3f(rpx, rpy, -nilpoint[2]);
-          if (offvp) glBitmap(0,0,0,0,offsetx,offsety,NULL);
-          if (buffer) glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer);
+#define RENDER_TEXT(offx, offy) \
+        do { \
+          rasterx = xpos + fx + float(offx); \
+          rpx = rasterx >= 0 ? rasterx : 0; \
+          offvp = rasterx < 0 ? 1 : 0; \
+          offsetx = rasterx >= 0 ? 0 : rasterx; \
+          rastery = ypos + fy + float(offy); \
+          rpy = rastery >= 0 ? rastery : 0; \
+          offvp = offvp || rastery < 0 ? 1 : 0; \
+          offsety = rastery >= 0 ? 0 : rastery; \
+          glRasterPos3f(rpx, rpy, -nilpoint[2]); \
+          if (offvp) glBitmap(0,0,0,0,offsetx,offsety,NULL); \
+          if (buffer) glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer); \
+        } while (0);
+
+          if (outline) {
+            // FIXME: should it be possible to specify colors for
+            // outline and base color? pederb, 2003-12-12
+            glColor3f(0.0f, 0.0f, 0.0f);
+            RENDER_TEXT(-1,-1);            
+            RENDER_TEXT(0,-1);            
+            RENDER_TEXT(1,-1);            
+            RENDER_TEXT(1,0);            
+            RENDER_TEXT(1,1);            
+            RENDER_TEXT(0,1);            
+            RENDER_TEXT(-1,1);            
+            RENDER_TEXT(-1,0);            
+            glColor3f(1.0f, 1.0f, 1.0f);
+            RENDER_TEXT(0,0);
+          }
+          else {
+            RENDER_TEXT(0,0);
+          }
         }
       }
       
+#undef RENDER_TEXT
       glPixelStorei(GL_UNPACK_ALIGNMENT,4);
       // Pop old GL state.
       glMatrixMode(GL_PROJECTION);
@@ -336,6 +374,11 @@ SoText2Set::GLRender(SoGLRenderAction * action)
   }
   
   state->pop();
+
+  if (outline) {
+    SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
+    glPopAttrib(); // pop depth func
+  }
 
   // don't auto cache SoText2Set nodes.
   SoGLCacheContextElement::shouldAutoCache(action->getState(),

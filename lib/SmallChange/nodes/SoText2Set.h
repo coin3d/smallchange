@@ -29,6 +29,7 @@
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoMFEnum.h>
 #include <Inventor/fields/SoMFVec3f.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <Inventor/SbVec3f.h>
 #include <Inventor/SbBox3f.h>
 
@@ -54,6 +55,7 @@ public:
   SoMFString  string;
   SoMFVec3f   position;
   SoMFFloat   rotation;
+  SoSFBool    renderOutline;
 
   static void initClass(void);
   virtual void GLRender(SoGLRenderAction * action);
