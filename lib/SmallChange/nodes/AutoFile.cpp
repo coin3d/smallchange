@@ -307,6 +307,19 @@ AutoFileP::idler_cb(void * data, SoSensor *)
             thisp->size = statbuf.st_size;
             if (!thisp->toucher->isScheduled()) {
               // wait before loading, in case file is being written.
+              //
+              // FIXME: this looks like a crap and shaky hack. What if
+              // the file is larger than what can be written for the
+              // delay time? What if a file write is interrupted by
+              // some other task on the system for longer than the
+              // delay time?
+              //
+              // I presume there is some manner which one can find out
+              // when a file write has been completed through system
+              // APIs. That code might be harder to write, but this is
+              // just ugly and should be fixed.
+              //
+              // 20031217 mortene.
               thisp->toucher->setInterval(SbTime((double) PUBLIC(thisp)->delay.getValue()));
               thisp->toucher->schedule();
             }
