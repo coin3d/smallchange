@@ -20458,8 +20458,93 @@ true)
     sim_ac_libscenery_ldflags="-L$sim_ac_libscenery_path/lib"
     LDFLAGS="$LDFLAGS $sim_ac_libscenery_ldflags"
   fi
-  # Now we use an all-in-one library instead of one for each submodule.
-  # sim_ac_libscenery_libs="-lscenery -lsdm -lhsvl -lxml -lcbase"
+
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#include <sim/scenery/scenery.h>
+
+int
+main ()
+{
+
+    ss_initialize();
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+
+    true
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+    # failed - try with SS_DLL defined
+    CPPFLAGS="$CPPFLAGS -DSS_DLL"
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#include <sim/scenery/scenery.h>
+
+int
+main ()
+{
+
+      ss_initialize();
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+
+      sim_ac_libscenery_cppflags="$sim_ac_libscenery_cppflags -DSS_DLL"
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+
   sim_ac_libscenery_libs="-lscenery"
   LIBS="$sim_ac_libscenery_libs $LIBS"
   cat >conftest.$ac_ext <<_ACEOF
