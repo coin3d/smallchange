@@ -137,14 +137,24 @@ UTMPosition::initClass(void)
 void
 UTMPosition::doAction(SoAction * action)
 {
-  SbVec3d utm = this->utmposition.getValue();
+  SoState * state = action->getState();
 
+  SbVec3d utm = this->utmposition.getValue();
+  SbMatrix oldm = SoModelMatrixElement::get(state);
+  // eliminate translation
+  oldm[3][0] = 0.0f;
+  oldm[3][0] = 0.0f;
+  oldm[3][0] = 0.0f;
   SbVec3f trans = UTMElement::setPosition(action->getState(),
                                           utm[0], utm[1], utm[2]);
                                           
   SoModelMatrixElement::makeIdentity(action->getState(), this);
   SoModelMatrixElement::translateBy(action->getState(), this, trans);
   SoModelMatrixElement::mult(action->getState(), this, UTMElement::getGlobalTransform(action->getState()));
+
+  if (oldm != SbMatrix::identity()) {
+    SoModelMatrixElement::mult(action->getState(), this, oldm); 
+  }
 }
 
 /*!
@@ -182,6 +192,13 @@ UTMPosition::callback(SoCallbackAction * action)
 void
 UTMPosition::getMatrix(SoGetMatrixAction * action)
 {
+  SbMatrix oldm = action->getMatrix();
+  
+  // eliminate translation
+  oldm[3][0] = 0.0f;
+  oldm[3][1] = 0.0f;
+  oldm[3][2] = 0.0f;
+
   SbVec3d utm = this->utmposition.getValue();
   SbVec3f trans = UTMElement::setPosition(action->getState(),
                                           utm[0], utm[1], utm[2]);
@@ -196,6 +213,10 @@ UTMPosition::getMatrix(SoGetMatrixAction * action)
   if (m != SbMatrix::identity()) {
     action->getMatrix().multLeft(m);
     action->getInverse().multRight(m.inverse());
+  }
+  if (oldm != SbMatrix::identity()) {
+    action->getMatrix().multLeft(oldm);
+    action->getInverse().multRight(oldm.inverse());    
   }
 }
 
