@@ -591,7 +591,9 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
   
   if (PRIVATE(this)->indexlistdirty) 
     PRIVATE(this)->updateIndexList();
-  
+
+  SoState * state = action->getState();
+  state->push();
 
   SoCoordinate3 * coord3 = NULL;
   SoCoordinate4 * coord4 = NULL;
@@ -625,9 +627,11 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
   node = this->vertexColor.getValue();
   if (node && node->isOfType(SoBaseColor::getClassTypeId())) {
     basecolor = (SoBaseColor*) node;
+    basecolor->doAction(action);
   }
   else if (node && node->isOfType(SoPackedColor::getClassTypeId())) {
     packedcolor = (SoPackedColor*) node;
+    packedcolor->doAction(action);
   }
 
   const SbVec3f * normals = normal ? normal->vector.getValues(0) : NULL;
@@ -644,6 +648,8 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
   const SbVec3f *currnormal = &dummynormal;
   if (normals) currnormal = normals;
   vertex.setNormal(*currnormal);
+  pointDetail.setMaterialIndex(0);
+  vertex.setMaterialIndex(0);
 
   const int32_t * ptr = PRIVATE(this)->indexlist.getArrayPtr();
   const int32_t * endptr =  ptr + PRIVATE(this)->indexlist.getLength();
@@ -693,8 +699,10 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
     this->beginShape(action, mode, &faceDetail);
     while (len--) {
       const int idx = *ptr++;
-      pointDetail.setMaterialIndex(idx);
-      vertex.setMaterialIndex(idx);
+      if (packedcolor || basecolor) {
+        pointDetail.setMaterialIndex(idx);
+        vertex.setMaterialIndex(idx);
+      }
       if (normals) vertex.setNormal(normals[idx]);
       pointDetail.setNormalIndex(idx);
       pointDetail.setTextureCoordIndex(idx);
@@ -717,7 +725,7 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
     }
     this->endShape(); 
   }
-  
+  state->pop();
 }
 
 void 
