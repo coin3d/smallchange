@@ -328,13 +328,13 @@ SIM_AC_UNIQIFY_OPTION_LIST(CPPFLAGS, $CPPFLAGS)
 SIM_AC_UNIQIFY_OPTION_LIST(LDFLAGS, $LDFLAGS)
 SIM_AC_UNIQIFY_OPTION_LIST(LIBS, $LIBS)
 
+SIM_AC_MSVC_DSP_SETUP([SMALLCHANGE], [SmallChange], [smallchange], [-I$smallchange_build_dir/lib -I$smallchange_src_dir/lib])
+
 # **************************************************************************
 
 AC_OUTPUT([
 	Makefile
-
 	bin/Makefile
-
 	lib/Makefile
 	lib/SmallChange/Makefile
 	lib/SmallChange/actions/Makefile
@@ -345,11 +345,16 @@ AC_OUTPUT([
 	lib/SmallChange/engines/Makefile
 	lib/SmallChange/draggers/Makefile
 	lib/SmallChange/eventhandlers/Makefile
-
 	lib/SmallChange/basic.h
 ])
 
-SIM_AC_CONFIGURATION_SETTING([Install prefix], [$prefix])
+case "$sim_ac_framework:$sim_ac_make_dsp" in
+true:* | *:true )
+  ;;
+* )
+  SIM_AC_CONFIGURATION_SETTING([Installation prefix], [$prefix])
+  ;;
+esac
 
 SIM_AC_CONFIGURATION_SUMMARY
 
