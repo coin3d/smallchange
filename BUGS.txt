@@ -99,3 +99,26 @@
     20040708 mortene.
 
 =====================================================================
+
+007 SoText2Set does not render correctly.
+
+    When using the Microsoft TrueType font for Times New Roman with
+    the FreeType library, SoText2Set renders only garbage, where
+    SoText2 from Coin renders correctly:
+
+----8<-------------- [snip] -------8<-------------- [snip] -------------
+#Inventor V2.1 ascii
+
+Font { name "Times New Roman" }
+SoText2Set { string "hepp" }
+----8<-------------- [snip] -------8<-------------- [snip] -------------
+
+    This is most likely a general bug with SoText2Set, but it was only
+    tested with MS's Times New Roman.
+
+    Bug item #004 is probably related to, or possibly the cause of,
+    this bug.
+
+    20050317 mortene.
+
+=====================================================================
