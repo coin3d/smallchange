@@ -131,6 +131,81 @@ AC_PROG_LIBTOOL
 
 fi
 
+AC_MSG_CHECKING([if this is a source release])
+if test x"$SMALLCHANGE_BETA_VERSION" = x""; then
+  AC_MSG_RESULT([actual release])
+  sim_ac_source_release=true
+else
+  AC_MSG_RESULT([inbetween releases])
+  sim_ac_source_release=false
+fi
+
+AC_MSG_CHECKING([if you are a Coin developer])
+case "`hostname -d 2>/dev/null || domainname 2>/dev/null || hostname`" in
+*.sim.no | sim.no )
+  AC_MSG_RESULT([probably])
+  sim_ac_coin_developer=true
+  ;;
+* )
+  AC_MSG_RESULT([probably not])
+  sim_ac_coin_developer=false
+  ;;
+esac
+
+SIM_AC_COMPILE_DEBUG([
+  if test x"$GCC" = x"yes"; then
+    # no auto string.h-functions
+    SIM_AC_CC_COMPILER_OPTION([-fno-builtin], [CFLAGS="$CFLAGS -fno-builtin"])
+    SIM_AC_CXX_COMPILER_OPTION([-fno-builtin], [CXXFLAGS="$CXXFLAGS -fno-builtin"])
+
+    # disallow non-standard scoping of for()-variables
+    SIM_AC_CXX_COMPILER_OPTION([-fno-for-scoping], [CXXFLAGS="$CXXFLAGS -fno-for-scope"])
+
+    SIM_AC_CC_COMPILER_OPTION([-finline-functions], [CFLAGS="$CFLAGS -finline-functions"])
+    SIM_AC_CXX_COMPILER_OPTION([-finline-functions], [CXXFLAGS="$CXXFLAGS -finline-functions"])
+
+    if $sim_ac_coin_developer; then
+      if $sim_ac_source_release; then :; else
+      # break build on warnings, except for in official source code releases
+        SIM_AC_CC_COMPILER_OPTION([-Werror], [CFLAGS="$CFLAGS -Werror"])
+        SIM_AC_CXX_COMPILER_OPTION([-Werror], [CXXFLAGS="$CXXFLAGS -Werror"])
+      fi
+    fi
+
+    # warn on missing return-value
+    SIM_AC_CC_COMPILER_OPTION([-Wreturn-type], [CFLAGS="$CFLAGS -Wreturn-type"])
+    SIM_AC_CXX_COMPILER_OPTION([-Wreturn-type], [CXXFLAGS="$CXXFLAGS -Wreturn-type"])
+
+    SIM_AC_CC_COMPILER_OPTION([-Wchar-subscripts], [CFLAGS="$CFLAGS -Wchar-subscripts"])
+    SIM_AC_CXX_COMPILER_OPTION([-Wchar-subscripts], [CXXFLAGS="$CXXFLAGS -Wchar-subscripts"])
+
+    SIM_AC_CC_COMPILER_OPTION([-Wparentheses], [CFLAGS="$CFLAGS -Wparentheses"])
+    SIM_AC_CXX_COMPILER_OPTION([-Wparentheses], [CXXFLAGS="$CXXFLAGS -Wparentheses"])
+
+  else
+    case $CXX in
+    *wrapmsvc* )
+      if $sim_ac_source_release; then :; else
+        # break build on warnings, except for in official source code releases
+        SIM_AC_CC_COMPILER_OPTION([/WX], [CFLAGS="$CFLAGS /WX"])
+        SIM_AC_CXX_COMPILER_OPTION([/WX], [CXXFLAGS="$CXXFLAGS /WX"])
+      fi
+
+      # warning level 3
+      SIM_AC_CC_COMPILER_OPTION([/W3], [CFLAGS="$CFLAGS /W3"])
+      SIM_AC_CXX_COMPILER_OPTION([/W3], [CXXFLAGS="$CXXFLAGS /W3"])
+
+      # disable bool type
+      SIM_AC_CC_COMPILER_OPTION([/noBool], [CFLAGS="$CFLAGS /noBool"])
+      SIM_AC_CXX_COMPILER_OPTION([/noBool], [CXXFLAGS="$CXXFLAGS /noBool"])
+      ;;
+    esac
+  fi
+  CPPFLAGS="$CPPFLAGS -DCOIN_DEBUG=1"
+], [
+  CPPFLAGS="$CPPFLAGS -DCOIN_DEBUG=0"
+])
+
 SIM_AC_DEBUGSYMBOLS
 SIM_AC_RTTI_SUPPORT
 SIM_AC_EXCEPTION_HANDLING
