@@ -876,7 +876,7 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   int32_t nv1, nv2, nv3;
 
   if( iv[curidx+3] < 0) {  /* Triangle */
-    printf("renderSegidx: triangles. \n");
+    //    printf("renderSegidx: triangles. \n");
     glBegin(GL_TRIANGLES);
     while( curidx < stopindex ) {
       v1 = iv[curidx++];
