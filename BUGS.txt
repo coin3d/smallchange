@@ -35,7 +35,7 @@
 
 002 SoText2Set crates too small bounding boxes for rotated strings
 
-    The bounding box will not come out right when a string has an
+    The bounding box will not come out right when a string has a
     justification != RIGHT and an extreme rotation (about 90+
     degrees). Some parts of the string will then be outside the
     bounding box, leading to incorrect culling.
