@@ -24,6 +24,7 @@
 #include "ViewportRegion.h"
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/threads/SbMutex.h>
 
 #ifdef HAVE_CONFIG_H
@@ -276,6 +277,9 @@ void
 ViewportRegion::GLRender(SoGLRenderAction * action)
 {
   ViewportRegion::doAction((SoAction*)action);
+  // don't auto cache SoText2 nodes.
+  SoGLCacheContextElement::shouldAutoCache(action->getState(),
+                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
 }
 
 /*!

@@ -13,6 +13,11 @@ libnodes_la_SOURCES = \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp Switchboard.h \
 	SwitchboardOperator.cpp SwitchboardOperator.h \
+	CoinEnvironment.cpp CoinEnvironment.h \
+	SkyDome.cpp SkyDome.h \
+	ShapeScale.cpp ShapeScale.h \
+	PickSwitch.cpp PickSwitch.h \
+	PickCallback.cpp PickCallback.h \
 	SoTCBCurve.cpp \
 	SoTCBCurve.h \
 	SoText2Set.cpp \
@@ -28,6 +33,11 @@ nodes_lst_SOURCES = \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp Switchboard.h \
 	SwitchboardOperator.cpp SwitchboardOperator.h \
+	CoinEnvironment.cpp CoinEnvironment.h \
+	SkyDome.cpp SkyDome.h \
+	ShapeScale.cpp ShapeScale.h \
+	PickSwitch.cpp PickSwitch.h \
+	PickCallback.cpp PickCallback.h \
 	SoTCBCurve.cpp \
 	SoTCBCurve.h \
 	SoText2Set.cpp \
@@ -44,6 +54,11 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Switchboard.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SwitchboardOperator.h \
+	$(top_srcdir)/lib/SmallChange/nodes/PickSwitch.h \
+	$(top_srcdir)/lib/SmallChange/nodes/PickCallback.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SkyDome.h \
+	$(top_srcdir)/lib/SmallChange/nodes/CoinEnvironment.h \
+	$(top_srcdir)/lib/SmallChange/nodes/ShapeScale.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
