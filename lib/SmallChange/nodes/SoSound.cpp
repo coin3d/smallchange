@@ -20,10 +20,7 @@
 #include <SmallChange/nodes/SoAudioClipStreaming.h>
 #include <SmallChange/nodes/SoAudioClipStreamingP.h>
 
-//#include "SbAsyncBuffer.h"
-
 #include <Inventor/sensors/SoTimerSensor.h>
-
 
 #include <math.h>
 

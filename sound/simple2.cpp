@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <conio.h>
 
-#include "tariff.h"
 /*
 #include <AL/al.h>
 #include <AL/alc.h>
