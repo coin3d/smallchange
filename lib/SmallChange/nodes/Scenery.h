@@ -11,6 +11,8 @@
 #include <Inventor/fields/SoSFFloat.h>
 // #include <sim/hsvl/hsvl.h>
 
+#include <SmallChange/basic.h>
+
 class SoFieldSensor;
 class SoSensor;
 class SoPrimitiveVertex;
@@ -20,7 +22,7 @@ class SoGLImage;
 typedef struct ss_system ss_system;
 typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
 
-class Scenery : public SoShape {
+class SMALLCHANGE_DLL_API Scenery : public SoShape {
   typedef SoShape inherited;
 
   SO_NODE_HEADER(Scenery);
