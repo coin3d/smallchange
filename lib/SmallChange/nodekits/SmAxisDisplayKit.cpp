@@ -167,7 +167,7 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
 
   ViewportRegion * vpr = (ViewportRegion *)this->getAnyPart("viewportRegion", TRUE);
   vpr->origin.setValue(1.0f, 0.0f);
-  vpr->size.setValue(0.3f, 0.3f);
+  vpr->size.setValue(0.15f, 0.15f);
   vpr->clearDepthBuffer = TRUE;
 
   SoDrawStyle *drawstyle = (SoDrawStyle *)this->getAnyPart("drawstyle", TRUE);
