@@ -36,7 +36,7 @@
 SO_NODE_SOURCE(SoSound);
 
 #ifdef HAVE_PTHREAD
-pthread_mutex_t SoSoundP::syncmutex = NULL;
+pthread_mutex_t SoSoundP::syncmutex;
 #endif // HAVE_PTHREAD
 
 void SoSound::initClass()
