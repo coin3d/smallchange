@@ -249,12 +249,13 @@ CubicSplineEngine::activate(const SbBool onoff)
     
     n = tmppts.getLength();
     
+#if 0 // disabled, 2003-09-14, pederb. not such a good idea
     for (i = 0; i < n-1; i++) {
       SbVec3f p0 = tmppts[i];
       SbVec3f p1 = tmppts[i+1];
       float len = (p1-p0).length();
       int div = (int) (len / minlen);
-      if (div >= 3) {
+      if (div >= 3) { 
         float add = 1.0f / float(div);
         len = 0.0f;
         if (i == n-2 && !this->loop.getValue()) div++;
@@ -268,7 +269,13 @@ CubicSplineEngine::activate(const SbBool onoff)
         this->currpt.append(p0);
       }
     }
-    
+    this->currpt.append(tmppts[n-1]);
+#else // disabled code
+    for (i = 0; i < n; i++) {
+      this->currpt.append(tmppts[i]);
+    }
+#endif // working code
+
     /*
     myfprintf(stderr,"currpt: %d, currot: %d\n", 
             this->currpt.getLength(),
