@@ -31,6 +31,8 @@
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/elements/SoTextureQualityElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/lists/SbStringList.h>
 
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/Scenery.h>
@@ -654,6 +656,9 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
     sc_ssglue_view_deallocate(thisp->system, thisp->viewid);
     sc_ssglue_system_close(thisp->system);
   }
+
+  const SbStringList & pathlist = SoInput::getDirectories();
+
   thisp->viewid = -1;
   thisp->system = NULL;
   thisp->colormaptexid = -1;
@@ -661,13 +666,24 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
   if ( sc_scenery_available() ) {
   SbString s = thisp->filename.getValue();
   if (s.getLength()) {
-#if SS_IMPORT_XYZ
+#if 0 && SS_IMPORT_XYZ
     if ( s.find(".xyz") == (s.getLength() - 4) ) {
       thisp->system = readxyz(s.getString());
     }
 #endif
-    if ( !thisp->system )
-      thisp->system = sc_ssglue_system_open(s.getString(), 1);
+    if ( !thisp->system ) {
+      int i;
+      for ( i = 0; (thisp->system == NULL) && (i <= pathlist.getLength()); i++ ) {
+        if ( i == pathlist.getLength() ) {
+          thisp->system = sc_ssglue_system_open(s.getString(), 1);
+        } else {
+          SbString path = *(pathlist[i]);
+          path += "/";
+          path += s;
+          thisp->system = sc_ssglue_system_open(path.getString(), 1);
+        }
+      }
+    }
     if (!thisp->system) {
       fprintf(stderr,"Unable to open Scenery system\n");
     }
@@ -683,7 +699,6 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
       if ( (sc_ssglue_system_get_num_datasets(thisp->system) > 0) &&
            (sc_ssglue_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
         thisp->colormaptexid = sc_ssglue_system_add_runtime_texture2d(thisp->system, 0, colortexgen_cb, thisp);
-        fprintf(stderr, "colormaptexture: %d\n", thisp->colormaptexid);
       }
       sc_ssglue_system_get_object_box(thisp->system, thisp->bboxmin, thisp->bboxmax); 
       thisp->blocksize = sc_ssglue_system_get_blocksize(thisp->system);
