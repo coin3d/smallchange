@@ -245,6 +245,7 @@ void
 SmTooltipKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SoCacheElement::invalidate(action->getState());
+  SoNode::getBoundingBox(action);
 }
 
 void 
