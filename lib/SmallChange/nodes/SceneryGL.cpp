@@ -61,10 +61,10 @@
 
 /* ********************************************************************** */
 
-#define DRAW_AS_TRIANGLES 0
+#define DRAW_AS_TRIANGLES 1
 
-#define GL_SHAPE_FLUSH() /* glFlush */
-#define GL_BLOCK_FLUSH() glFlush
+#define GL_SHAPE_FLUSH() /* glFlush() */
+#define GL_BLOCK_FLUSH() /* glFlush() */
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
@@ -599,8 +599,8 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   int i;
   for ( i = 0; i < 8; i++ ) {
     point[i].setValue((float) ((i & 1) ? bmin[0] : bmax[0]),
-		      (float) ((i & 2) ? bmin[1] : bmax[1]),
-		      (float) ((i & 4) ? bmin[2] : bmax[2]));
+                      (float) ((i & 2) ? bmin[1] : bmax[1]),
+                      (float) ((i & 4) ? bmin[2] : bmax[2]));
   }
   int j, bits = 0;
   for ( i = 0; i < state->numclipplanes; i++ ) { // foreach plane
@@ -851,8 +851,8 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
       texcoordarray->append(texture1[v][0]);
       texcoordarray->append(texture1[v][1]);
       if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
-	texcoord2array->append(texture2[v][0]);
-	texcoord2array->append(texture2[v][1]);
+        texcoord2array->append(texture2[v][0]);
+        texcoord2array->append(texture2[v][1]);
       }
       static const float factor = 1.0f/127.0f;
       normalarray->append(normal[v][0] * factor);
@@ -989,11 +989,11 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   assert(info);
 
   if ( vertexarray->getLength() == 0 ) {
-    printf("yay - nothing rendered for this block - optimize!\n");
+    // printf("yay - nothing rendered for this block - optimize!\n");
     return;
   } else {
-    printf("pushing %d triangles as one vertex array\n",
-	   vertexarray->getLength() / 9);
+    // printf("pushing %d triangles as one vertex array\n",
+    //        vertexarray->getLength() / 9);
   }
 
   const float * vertexarrayptr = vertexarray->getArrayPtr();
@@ -1026,12 +1026,13 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   GL.glNormalPointer(GL_FLOAT, 0, normalarrayptr);
   GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoordarrayptr);
   GL.glDrawElements(GL_TRIANGLES,
-		    indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
+                    indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
   GL.glDisableClientState(GL_VERTEX_ARRAY);
   GL.glDisableClientState(GL_NORMAL_ARRAY);
   GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
   // truncate arrays here?
+
   GL_BLOCK_FLUSH();
 }
 
