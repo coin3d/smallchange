@@ -55,7 +55,12 @@ Scenery::Scenery(void)
   SO_NODE_ADD_FIELD(loadRottger, (16.0f));
   SO_NODE_ADD_FIELD(visualDebug, (FALSE));
 
+  SO_NODE_ADD_FIELD(colorTexture, (FALSE));
+  SO_NODE_ADD_FIELD(colorMap, (0.0f));
+
   this->renderSequence.setNum(0);
+  this->colorMap.setNum(0);
+  this->colormaptexid = -1;
 
   this->filenamesensor = new SoFieldSensor(filenamesensor_cb, this);
   this->filenamesensor->attach(&this->filename);
@@ -67,6 +72,11 @@ Scenery::Scenery(void)
   this->loadsensor = new SoFieldSensor(loadsensor_cb, this);
   this->loadsensor->attach(&this->loadRottger);
 
+  this->colormapsensor = new SoFieldSensor(colormapsensor_cb, this);
+  this->colormapsensor->attach(&this->colorMap);
+  // this->colortexturesensor = new SoFieldSensor(colormapsensor_cb, this);
+  // this->colortexturesensor->attach(&this->colorTexture);
+  
   // FIXME: view-specific. Move to struct.
   this->pvertex = new SoPrimitiveVertex;
   this->facedetail = new SoFaceDetail;
@@ -81,6 +91,7 @@ Scenery::~Scenery()
   delete this->filenamesensor;
   delete this->blocksensor;
   delete this->loadsensor;
+  delete this->colormapsensor;
 
   if (sc_scenery_available() && this->system) {
     sc_ssglue_view_deallocate(this->system, this->viewid);
@@ -290,13 +301,18 @@ Scenery::GLRender(SoGLRenderAction * action)
   sc_ssglue_view_set_hotspots(this->system, this->viewid, 1, hotspot); 
   this->debuglist.truncate(0);
   this->numnewtextures = 0;
-  int num = this->renderSequence.getNum();
-  if ( num == 0 ) {
+
+  const int sequencelen = this->renderSequence.getNum();
+  if ( this->colorTexture.getValue() && this->colormaptexid != -1 ) {
+    // FIXME: add runtime colortexture
+    int localsequence[2] = { this->colormaptexid, 0 };
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 2, localsequence);
+  } else if ( sequencelen == 0 ) {
     sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 0, NULL);
   } else {
     this->renderSequence.enableNotify(FALSE);
     int * sequence = this->renderSequence.startEditing();
-    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, num, sequence);
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, sequencelen, sequence);
     this->renderSequence.finishEditing();
     this->renderSequence.enableNotify(TRUE);
   }
@@ -575,20 +591,58 @@ readxyz(const char * filename)
   return system;
 }
 
-static
 uint32_t
-calctex_cb(void * closure, double * pos, float elevation, double * spacing)
+Scenery::colortexgen_cb(void * closure, double * pos, float elevation, double * spacing)
 {
-  elevation = fmod(elevation, 200.0f);
-  if ( elevation < 0.0f ) elevation += 200.0f;
-  assert(elevation >= 0.0f);
-  if ( elevation < 66.6 ) {
-    return 0xff0000ff;
-  } else if ( elevation < 133.3f ) {
-    return 0xff00ff00;
-  } else {
-    return 0xffff0000;
+  Scenery * thisp = (Scenery *) closure;
+  float fac = (elevation - thisp->bboxmin[2]) / (thisp->bboxmax[2] - thisp->bboxmin[2]);
+  int steps = ((thisp->colorMap.getNum() / 4) - 1); // four components
+  uint32_t abgr = 0xffffffff;
+  if ( steps > 0 ) {
+    int startcolidx = (int) floor(float(steps) * fac);
+    float rest = (float(steps) * fac) - float(startcolidx);
+    float r = thisp->colorMap[startcolidx * 4 + 0];
+    float g = thisp->colorMap[startcolidx * 4 + 1];
+    float b = thisp->colorMap[startcolidx * 4 + 2];
+    float a = thisp->colorMap[startcolidx * 4 + 3];
+    if ( rest > 0.0 ) {
+      assert(rest < 1.0);
+      float end_r = thisp->colorMap[startcolidx * 4 + 4];
+      float end_g = thisp->colorMap[startcolidx * 4 + 5];
+      float end_b = thisp->colorMap[startcolidx * 4 + 6];
+      float end_a = thisp->colorMap[startcolidx * 4 + 7];
+      r = r * (1.0 - rest) + end_r * rest;
+      g = g * (1.0 - rest) + end_g * rest;
+      b = b * (1.0 - rest) + end_b * rest;
+      a = a * (1.0 - rest) + end_a * rest;
+    }
+    int nr = (int) (SbClamp(r, 0.0f, 1.0f) * 255.0);
+    int ng = (int) (SbClamp(g, 0.0f, 1.0f) * 255.0);
+    int nb = (int) (SbClamp(b, 0.0f, 1.0f) * 255.0);
+    int na = (int) (SbClamp(a, 0.0f, 1.0f) * 255.0);
+    abgr = (na << 24) | (nb << 16) | (ng << 8) | nr;
   }
+  return abgr;
+}
+
+void
+Scenery::colormaptexchange(void)
+{
+  // FIXME: invalidate texture
+  if ( this->colorTexture.getValue() ) {
+    if ( this->colormaptexid != -1 ) {
+      fprintf(stderr, "invalidating texture\n");
+      this->refreshTextures(this->colormaptexid);
+      fprintf(stderr, "done\n");
+    }
+  }
+}
+
+void 
+Scenery::colormapsensor_cb(void * data, SoSensor * sensor)
+{
+  Scenery * thisp = (Scenery *) data;
+  thisp->colormaptexchange();
 }
 
 void 
@@ -602,10 +656,11 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
   }
   thisp->viewid = -1;
   thisp->system = NULL;
+  thisp->colormaptexid = -1;
 
+  if ( sc_scenery_available() ) {
   SbString s = thisp->filename.getValue();
   if (s.getLength()) {
-  if ( sc_scenery_available() ) {
 #if SS_IMPORT_XYZ
     if ( s.find(".xyz") == (s.getLength() - 4) ) {
       thisp->system = readxyz(s.getString());
@@ -617,7 +672,7 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
       fprintf(stderr,"Unable to open Scenery system\n");
     }
     else {
-#if SS_RTTEXTURE2D_TEST
+#if 0 && SS_RTTEXTURE2D_TEST
       if ( (sc_ssglue_system_get_num_datasets(thisp->system) == 1) &&
            (sc_ssglue_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
         // only elevation data - fitting dataset to add runtime texture dataset to
@@ -625,6 +680,11 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
         sc_ssglue_system_add_runtime_texture2d(thisp->system, 0, calctex_cb, thisp->system);
       }
 #endif
+      if ( (sc_ssglue_system_get_num_datasets(thisp->system) > 0) &&
+           (sc_ssglue_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
+        thisp->colormaptexid = sc_ssglue_system_add_runtime_texture2d(thisp->system, 0, colortexgen_cb, thisp);
+        fprintf(stderr, "colormaptexture: %d\n", thisp->colormaptexid);
+      }
       sc_ssglue_system_get_object_box(thisp->system, thisp->bboxmin, thisp->bboxmax); 
       thisp->blocksize = sc_ssglue_system_get_blocksize(thisp->system);
       thisp->renderstate.blocksize = (float) (thisp->blocksize-1);
@@ -633,7 +693,7 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
       sc_ssglue_view_enable(thisp->system, thisp->viewid);
       //      fprintf(stderr,"system: %p, viewid: %d\n", thisp->system, thisp->viewid);
     }
-    }
+  }
   }
 }
 

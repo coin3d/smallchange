@@ -7,6 +7,7 @@
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoMFInt32.h>
+#include <Inventor/fields/SoMFFloat.h>
 #include <Inventor/C/base/hash.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/fields/SoSFFloat.h>
@@ -37,6 +38,9 @@ public:
   SoSFFloat blockRottger;
   SoSFFloat loadRottger;
   SoSFBool visualDebug;
+
+  SoSFBool colorTexture;
+  SoMFFloat colorMap; // r, g, b, a
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void callback(SoCallbackAction * action);
@@ -75,11 +79,16 @@ private:
   SoFieldSensor * filenamesensor;
   SoFieldSensor * blocksensor;
   SoFieldSensor * loadsensor;
+  SoFieldSensor * colormapsensor;
+  SoFieldSensor * colortexturesensor;
 
   static int render_pre_cb(void * closure, ss_render_pre_cb_info * info);
   static void filenamesensor_cb(void * data, SoSensor * sensor);
   static void blocksensor_cb(void * data, SoSensor * sensor);
   static void loadsensor_cb(void * data, SoSensor * sensor);
+  static void colormapsensor_cb(void * data, SoSensor * sensor);
+  static uint32_t colortexgen_cb(void * closure, double * pos, float elevation, double * spacing);
+  void colormaptexchange(void);
   
   static void undefrender_cb(void * closure, const int x, const int y, const int len, 
                              const unsigned int bitmask_org); 
@@ -112,6 +121,7 @@ private:
   SbBool dotex;
   SbBool texisenabled;
   unsigned int currtexid;
+  int colormaptexid;
 
   SoGLImage * findReuseTexture(const unsigned int texid);
   SoGLImage * createTexture(const unsigned int texid);
