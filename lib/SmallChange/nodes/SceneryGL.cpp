@@ -535,7 +535,7 @@ sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
         SbVec2s size(renderstate->texw, renderstate->texh);
         image->setData(renderstate->texdata,
                        size, renderstate->texnc, 
-                       clampmode, clampmode, 0.9, 0, renderstate->state);
+                       clampmode, clampmode, 0.9, 0, NULL);
         renderstate->newtexcount++;
       }
       image->getGLDisplayList(renderstate->state)->call(renderstate->state);
