@@ -30,8 +30,12 @@ struct RenderState {
   int dotex;
 
   // culling
-  float vvplanes[6][4];
+  float * clipplanes;
+  int numclipplanes;
   float raypos[3], raydir[3];
+
+  int intersected;
+  float intersection[3];
 
   // elevation texture
   float etexscale;
@@ -48,10 +52,10 @@ struct RenderState {
   void * texhash;      // SbHash<TexInfo *, unsigned int>
   void * reusetexlist; // SbList<TexInfo *>
   void * tmplist;      // SbList<unsigned int>
-
-  // ugh - remove
-  SoState * state;
-  SoAction * action;
+  
+  // ugh, remove
+  SoState * state;     // for texture display lists
+  SoAction * action;   // for culling
 
   // debugging
   void * debuglist;    // SbList<float>
@@ -88,10 +92,29 @@ void sc_delete_all_textures(RenderState * state);
 
 int sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info);
 
-void sc_render_cb(void * closure, const int x, const int y,
-                  const int len, const unsigned int bitmask);
+void sc_render_cb(void * closure, const int x, const int y, const int len,
+                  const unsigned int bitmask);
 void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
                        const unsigned int bitmask_org);
+
+/* ********************************************************************** */
+/* raypick callbacks */
+
+int sc_raypick_pre_cb(void * closure, ss_render_pre_cb_info * info);
+
+void sc_raypick_cb(void * closure, const int x, const int y, const int len,
+                   const unsigned int bitmask);
+void sc_undefraypick_cb(void * closure, const int x, const int y, const int len,
+                        const unsigned int bitmask_org);
+
+/* ********************************************************************** */
+/* culling callbacks */
+
+int sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax);
+void sc_plane_culling_post_cb(void * closure);
+
+int sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax);
+void sc_ray_culling_post_cb(void * closure);
 
 /* ********************************************************************** */
 /* misc utilitites */
