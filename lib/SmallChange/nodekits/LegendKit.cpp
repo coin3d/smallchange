@@ -303,7 +303,7 @@ LegendKit::LegendKit(void)
   SO_KIT_CONSTRUCTOR(LegendKit);
 
   SO_KIT_ADD_FIELD(on, (TRUE));
-  SO_KIT_ADD_FIELD(imageWidth, (32.0f));  
+  SO_KIT_ADD_FIELD(imageWidth, (32.0f));
   SO_KIT_ADD_FIELD(space, (6.0f));
   SO_KIT_ADD_FIELD(smallTickSize, (3.0f));
   SO_KIT_ADD_FIELD(bigTickSize, (6.0f));
@@ -845,7 +845,7 @@ LegendKit::renderText(SoGLRenderAction * action)
   // first, render tick values
   int offsety = (int) (THIS->imageoffset[1]);
   int offsetx = (int) (THIS->imageoffset[0] + THIS->imagesize[0] + 
-                       this->bigTickSize.getValue() + this->tickValueOffset.getValue()); 
+                       this->bigTickSize.getValue() + this->tickValueOffset.getValue());
   double sizey = (double) THIS->imagesize[1];
 
   double prevnval = 0.0;
