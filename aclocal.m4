@@ -78,14 +78,14 @@ AC_ARG_WITH([msvcrt],
     sim_ac_msvcrt=singlethread-static-debug
     sim_ac_msvcrt_CFLAGS="/MLd"
     sim_ac_msvcrt_CXXFLAGS="/MLd"
-    sim_ac_msvcrt_LIBLDFLAGS="/NODEFAULTLIB:libc"
+    sim_ac_msvcrt_LIBLDFLAGS="/LINK /NODEFAULTLIB:libc"
     sim_ac_msvcrt_LIBLIBS="-llibcd"
     ;;
   multithread-static | mt | /mt | libcmt | libcmt\.lib )
     sim_ac_msvcrt=multithread-static
     sim_ac_msvcrt_CFLAGS="/MT"
     sim_ac_msvcrt_CXXFLAGS="/MT"
-    sim_ac_msvcrt_LIBLDFLAGS="/NODEFAULTLIB:libc"
+    sim_ac_msvcrt_LIBLDFLAGS="/LINK /NODEFAULTLIB:libc"
     sim_ac_msvcrt_LIBLIBS="-llibcmt"
     ;;
   multithread-static-debug | mtd | /mtd | libcmtd | libcmtd\.lib )
@@ -99,14 +99,14 @@ AC_ARG_WITH([msvcrt],
     sim_ac_msvcrt=multithread-dynamic
     sim_ac_msvcrt_CFLAGS=""
     sim_ac_msvcrt_CXXFLAGS=""
-    sim_ac_msvcrt_LIBLDFLAGS="/NODEFAULTLIB:libc"
+    sim_ac_msvcrt_LIBLDFLAGS="/LINK /NODEFAULTLIB:libc"
     sim_ac_msvcrt_LIBLIBS="-lmsvcrt"
     ;;
   multithread-dynamic-debug | mdd | /mdd | msvcrtd | msvcrtd\.lib )
     sim_ac_msvcrt=multithread-dynamic-debug
     sim_ac_msvcrt_CFLAGS="/MDd"
     sim_ac_msvcrt_CXXFLAGS="/MDd"
-    sim_ac_msvcrt_LIBLDFLAGS="/NODEFAULTLIB:libc"
+    sim_ac_msvcrt_LIBLDFLAGS="/LINK /NODEFAULTLIB:libc"
     sim_ac_msvcrt_LIBLIBS="-lmsvcrtd"
     ;;
   *)
@@ -777,14 +777,14 @@ if test x"$with_pthread" != xno; then
   LIBS="$sim_ac_pthread_libs $LIBS"
 
   AC_CACHE_CHECK(
-    [whether the pthread development system is available],
+    [for POSIX threads],
     sim_cv_lib_pthread_avail,
     [AC_TRY_LINK([#include <pthread.h>],
                  [(void)pthread_create(0L, 0L, 0L, 0L);],
-                 [sim_cv_lib_pthread_avail=yes],
-                 [sim_cv_lib_pthread_avail=no])])
+                 [sim_cv_lib_pthread_avail=true],
+                 [sim_cv_lib_pthread_avail=false])])
 
-  if test x"$sim_cv_lib_pthread_avail" = xyes; then
+  if $sim_cv_lib_pthread_avail; then
     sim_ac_pthread_avail=yes
     $1
   else
@@ -5322,9 +5322,12 @@ eval "$1=\"`echo $2 | sed -e 's%\\/%\\\\\\\\\\\\\\\\%g'`\""
 # > $sim_ac_coin_desired     true | false (defaults to true)
 # < $sim_ac_coin_avail       true | false
 # < $sim_ac_coin_cppflags    (extra flags the preprocessor needs)
+# < $sim_ac_coin_cflags      (extra flags the C compiler needs)
+# < $sim_ac_coin_cxxflags    (extra flags the C++ compiler needs)
 # < $sim_ac_coin_ldflags     (extra flags the linker needs)
 # < $sim_ac_coin_libs        (link library flags the linker needs)
 # < $sim_ac_coin_datadir     (location of Coin data files)
+# < $sim_ac_coin_includedir  (location of Coin headers)
 # < $sim_ac_coin_version     (the libCoin version)
 # < $sim_ac_coin_msvcrt      (the MSVC++ C library Coin was built with)
 # < $sim_ac_coin_configcmd   (the path to coin-config or "false")
@@ -5342,9 +5345,12 @@ AC_PREREQ([2.14a])
 # official variables
 sim_ac_coin_avail=false
 sim_ac_coin_cppflags=
+sim_ac_coin_cflags=
+sim_ac_coin_cxxflags=
 sim_ac_coin_ldflags=
 sim_ac_coin_libs=
 sim_ac_coin_datadir=
+sim_ac_coin_includedir=
 sim_ac_coin_version=
 
 # internal variables
@@ -5374,14 +5380,18 @@ if $sim_ac_coin_desired; then
     test -n "$CONFIG" &&
       $sim_ac_coin_configcmd --alternate=$CONFIG >/dev/null 2>/dev/null &&
       sim_ac_coin_configcmd="$sim_ac_coin_configcmd --alternate=$CONFIG"
+    sim_ac_coin_version=`$sim_ac_coin_configcmd --version`
     sim_ac_coin_cppflags=`$sim_ac_coin_configcmd --cppflags`
-    sim_ac_coin_cflags=`$sim_ac_coin_configcmd --cflags`
+    sim_ac_coin_cflags=`$sim_ac_coin_configcmd --cflags 2>/dev/null`
     sim_ac_coin_cxxflags=`$sim_ac_coin_configcmd --cxxflags`
     sim_ac_coin_ldflags=`$sim_ac_coin_configcmd --ldflags`
     sim_ac_coin_libs=`$sim_ac_coin_configcmd --libs`
-    sim_ac_coin_msvcrt=`$sim_ac_coin_configcmd --msvcrt`
     sim_ac_coin_datadir=`$sim_ac_coin_configcmd --datadir`
-    sim_ac_coin_version=`$sim_ac_coin_configcmd --version`
+    # Hide stderr on the following, as ``--includedir'', ``--msvcrt''
+    # and ``--cflags'' options were added late to coin-config.
+    sim_ac_coin_includedir=`$sim_ac_coin_configcmd --includedir 2>/dev/null`
+    sim_ac_coin_msvcrt=`$sim_ac_coin_configcmd --msvcrt 2>/dev/null`
+    sim_ac_coin_cflags=`$sim_ac_coin_configcmd --cflags 2>/dev/null`
     AC_CACHE_CHECK(
       [whether libCoin is available],
       sim_cv_coin_avail,
