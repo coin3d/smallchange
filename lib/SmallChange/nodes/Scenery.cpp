@@ -44,7 +44,6 @@
 #include <Inventor/SbBox3f.h>
 #include <Inventor/misc/SoState.h>
 #include <Inventor/elements/SoCullElement.h>
-#include <Inventor/system/gl.h>
 #include <Inventor/misc/SoState.h>
 #include <Inventor/misc/SoGLImage.h>
 #include <Inventor/elements/SoCullElement.h>
@@ -65,7 +64,7 @@
 
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/SmScenery.h>
-/* #include <SmallChange/nodes/SceneryGL.h> */
+#include <SmallChange/nodes/SceneryGL.h>
 
 #define MAX_UNUSED_COUNT 200
 
@@ -75,21 +74,6 @@
 #define SS_IMPORT_XYZ 1
 
 /* ********************************************************************** */
-
-typedef struct {
-  float blocksize;
-  double vspacing[2];
-  double voffset[2];
-  float tscale[2];
-  float toffset[2];
-  unsigned int texid;
-  float * elevdata;
-  signed char * normaldata;
-  
-  // temporary
-  unsigned char * texdata;
-  int texw, texh, texnc;
-} RenderState;
 
 class TexInfo {
 public:
@@ -174,10 +158,6 @@ public:
   // rendering
   void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
   static int render_pre_cb(void * closure, ss_render_pre_cb_info * info);
-  static void undefrender_cb(void * closure, const int x, const int y, const int len,
-                             const unsigned int bitmask_org);
-  static void render_cb(void * closure, const int x, const int y,
-                        const int len, const unsigned int bitmask);
 
   static int gen_pre_cb(void * closure, ss_render_pre_cb_info * info);
   static void gen_cb(void * closure, const int x, const int y,
@@ -259,8 +239,11 @@ SmScenery::SmScenery(void)
 
   // these fields should start out empty by default
   this->renderSequence.setNum(0);
+  this->renderSequence.setDefault(TRUE);
   this->colorMap.setNum(0);
+  this->colorMap.setDefault(TRUE);
   this->colorElevation.setNum(0);
+  this->colorElevation.setDefault(TRUE);
 
   PRIVATE(this)->commonConstructor();
 
@@ -295,8 +278,11 @@ SmScenery::SmScenery(ss_system * system)
 
   // these fields should start out empty by default
   this->renderSequence.setNum(0);
+  this->renderSequence.setDefault(TRUE);
   this->colorMap.setNum(0);
+  this->colorMap.setDefault(TRUE);
   this->colorElevation.setNum(0);
+  this->colorElevation.setDefault(TRUE);
 
   PRIVATE(this)->commonConstructor();
 
@@ -330,9 +316,9 @@ SmScenery::~SmScenery(void)
 void 
 SmScenery::GLRender(SoGLRenderAction * action)
 {
-  if ( sc_scenery_available() ) {
-  if (PRIVATE(this)->system == NULL) return;
-  if (!this->shouldGLRender(action)) return;
+  if ( !sc_scenery_available() ) { return; }
+  if ( PRIVATE(this)->system == NULL ) { return; }
+  if ( !this->shouldGLRender(action) ) { return; }
 
   //  sc_ssglue_view_set_evaluate_rottger_parameters(PRIVATE(this)->system, this->viewid, 16.0f, 400.0f);
 
@@ -377,7 +363,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
-  SbBool texwasenabled = glIsEnabled(GL_TEXTURE_2D);
+  SbBool texwasenabled = sc_is_texturing_enabled();
+
   PRIVATE(this)->texisenabled = texwasenabled;
   PRIVATE(this)->currtexid = 0;
 
@@ -386,9 +373,10 @@ SmScenery::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->currstate = state;
 
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                     SceneryP::render_cb, this);
+                                     sc_render_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SceneryP::undefrender_cb, this); 
+                                           sc_undefrender_cb, &PRIVATE(this)->renderstate); 
+
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                          SceneryP::render_pre_cb, this);
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -408,10 +396,11 @@ SmScenery::GLRender(SoGLRenderAction * action)
 //   fprintf(stderr,"num boxes: %d, new texs: %d\n",
 //           this->debuglist.getLength()/4, this->numnewtextures);
   
-  SbBool texisenabled = glIsEnabled(GL_TEXTURE_2D);
-  if (texisenabled != texwasenabled) {
-    if (texwasenabled) glEnable(GL_TEXTURE_2D);
-    else glDisable(GL_TEXTURE_2D);
+  // texturing state could be changed during scenery rendering
+  SbBool texisenabled = sc_is_texturing_enabled();
+  if ( texisenabled != texwasenabled ) {
+    if ( texwasenabled ) sc_enable_texturing();
+    else sc_disable_texturing();
   } 
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
 
@@ -429,79 +418,18 @@ SmScenery::GLRender(SoGLRenderAction * action)
     campos[1] -= 0.5f;
     
     state->push();
-    
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(-0.5f, 0.5f, -0.5f, 0.5f, -1.0f, 1.0f);
-    glDepthMask(GL_FALSE);
-    glColor3f(1.0f, 0.0f, 0.0f);
-    
-    int num = PRIVATE(this)->debuglist.getLength() / 4;
-    int i;
-    
-    float mind = 1.0f;
-    
-    for (i = 0; i < num; i++) {
-      float x0, x1;
-      x0 = PRIVATE(this)->debuglist[i*4];
-      x1 = PRIVATE(this)->debuglist[i*4+2];
-      
-    float d = x1-x0;
-    if (d < mind) mind = d;
-    }
-    
-    float numpix = vpsize[0] * mind;
-    
-    float scale = 0.5f;
-    if (numpix < 4.0f) {
-      scale = 4.0f / numpix;
-    }
-    
-    for (i = 0; i < num; i++) {
-      
-      float x0, x1, y0, y1;
-      x0 = PRIVATE(this)->debuglist[i*4] - 0.5f;
-      y0 = PRIVATE(this)->debuglist[i*4+1] - 0.5f;
-      x1 = PRIVATE(this)->debuglist[i*4+2] - 0.5f;
-      y1 = PRIVATE(this)->debuglist[i*4+3] - 0.5f;
-      
-      x0 -= campos[0];
-      x1 -= campos[0];
-      y0 -= campos[1];
-      y1 -= campos[1];
-      
-      x0 *= scale;
-      x1 *= scale;
-      y0 *= scale;
-      y1 *= scale;
-      
-      glBegin(GL_LINE_LOOP);
-      glVertex3f(x0, y0, 0.0f);
-      glVertex3f(x1, y0, 0.0f);
-      glVertex3f(x1, y1, 0.0f);
-      glVertex3f(x0, y1, 0.0f);
-      glEnd();
-    }
-    
-    glDepthMask(GL_TRUE);
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
+
+    sc_display_debug_info(&campos[0], &vpsize[0], &PRIVATE(this)->debuglist);
+
     state->pop();
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
-  }
   }
 }
 
 void 
 SmScenery::rayPick(SoRayPickAction * action)
 {
-  if ( sc_scenery_available() ) {
+  if ( !sc_scenery_available() ) { return; }
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                    raypick_pre_cb, action);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -513,7 +441,6 @@ SmScenery::rayPick(SoRayPickAction * action)
                                    NULL, NULL);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                     NULL, NULL);
-  }
 }
 
 void 
@@ -1027,88 +954,6 @@ SceneryP::hash_check_unused(unsigned long key, void * val, void * closure)
 
 ////////////// render ///////////////////////////////////////////////////////////
 
-inline void 
-GL_VERTEX_OLD(RenderState * state, const int x, const int y, const float elev)
-{
-  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
-             (float) (y*state->vspacing[1] + state->voffset[1]),
-             elev);
-}
-
-inline void 
-GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
-{
-  glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-               state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
-             (float)(y*state->vspacing[1] + state->voffset[1]),
-             elev);
-}
-
-static inline const char *
-sm_getenv(const char * s)
-{
-#ifdef __COIN__
-  return coin_getenv(s);
-#else // other Inventor
-  return getenv(s);
-#endif
-}
-
-// We provide the environment variable below to work around a bug in
-// the 3Dlabs OpenGL driver version 4.10.01.2105-2.16.0866: it doesn't
-// properly handle normals given in byte values (i.e. through
-// glNormal*b*()).
-//
-// This driver is fairly old, and 3Dlabs is more or less defunct now,
-// so we default to the faster (but bug-triggering) GL call.
-static inline SbBool
-ok_to_use_bytevalue_normals(void)
-{
-  static int okflag = -1;
-  if (okflag == -1) {
-    const char * env = sm_getenv("SM_SCENERY_NO_BYTENORMALS");
-    okflag = env && (atoi(env) > 0);
-  }
-  return !okflag;
-}
-
-inline void 
-GL_VERTEX_N(RenderState * state, const int x, const int y, const float elev, const signed char * n)
-{
-  if (ok_to_use_bytevalue_normals()) {
-    glNormal3bv((const GLbyte *)n);
-  }
-  else {
-    static const float factor = 1.0f/127.0f;
-    glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
-  }
-
-  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
-             (float) (y*state->vspacing[1] + state->voffset[1]),
-             elev);
-}
-
-inline void 
-GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
-{
-  if (ok_to_use_bytevalue_normals()) {
-    glNormal3bv((const GLbyte *)n);
-  }
-  else {
-    static const float factor = 1.0f/127.0f;
-    glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
-  }
-
-  glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
-               state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
-  glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
-             (float) (y*state->vspacing[1] + state->voffset[1]),
-             elev);
-}
-
-
-
 int 
 SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
@@ -1176,184 +1021,20 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
     else {
       //      fprintf(stderr,"reused tex\n");
     }
-    if (!PRIVATE(thisp)->texisenabled) {
-      glEnable(GL_TEXTURE_2D);
+    if ( !PRIVATE(thisp)->texisenabled ) {
+      sc_enable_texturing();
       PRIVATE(thisp)->texisenabled = TRUE;
     }
   }
   else {
     if (PRIVATE(thisp)->texisenabled) {
-      glDisable(GL_TEXTURE_2D);
+      sc_disable_texturing();
       PRIVATE(thisp)->texisenabled = FALSE;
     }
   }
   return 1;
   } else {
     return 0;
-  }
-}
-
-#define ELEVATION(x,y) elev[(y)*W+(x)]    
-
-void 
-SceneryP::undefrender_cb(void * closure, const int x, const int y, const int len, 
-                           const unsigned int bitmask_org)
-{
-  SmScenery * thisp = (SmScenery*) closure; 
-
-  RenderState * renderstate = &PRIVATE(thisp)->renderstate;
-  const signed char * normals = renderstate->normaldata;
-  const float * elev = renderstate->elevdata;
-  const int W = PRIVATE(thisp)->blocksize;
-
-  const signed char * ptr = sc_ssglue_render_get_undef_array(bitmask_org);
-
-  int numv = *ptr++;
-  int tx, ty;
-
-  if (normals && renderstate->texid == 0) {
-    int idx;
-#define SEND_VERTEX(state, x, y) \
-    idx = (y)*W + x; \
-    GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
-
-    while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
-      while (numv) { 
-        tx = x + *ptr++ * len;
-        ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
-        numv--;
-      }
-      numv = *ptr++;
-      glEnd();
-
-    }
-#undef SEND_VERTEX
-  }
-  else if (normals) {
-    int idx;
-#define SEND_VERTEX(state, x, y) \
-    idx = (y)*W + x; \
-    GL_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
-
-    while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
-      while (numv) { 
-        tx = x + *ptr++ * len;
-        ty = y + *ptr++ * len;
-        SEND_VERTEX(renderstate, tx, ty);
-        numv--;
-      }
-      numv = *ptr++;
-      glEnd();
-    }
-#undef SEND_VERTEX
-  }  
-  else {    
-    while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
-      while (numv) { 
-        tx = x + *ptr++ * len;
-        ty = y + *ptr++ * len;
-        GL_VERTEX(renderstate, tx, ty, ELEVATION(tx, ty));
-        numv--;
-      }
-      numv = *ptr++;
-      glEnd();
-    }
-  }
-}
-
-void 
-SceneryP::render_cb(void * closure, const int x, const int y,
-                    const int len, const unsigned int bitmask)
-{
-  SmScenery * thisp = (SmScenery*) closure;
-  
-  RenderState * renderstate = &PRIVATE(thisp)->renderstate;
-
-  const signed char * normals = renderstate->normaldata;  
-  const float * elev = renderstate->elevdata;
-  const int W = PRIVATE(thisp)->blocksize;
-
-  int idx;
-  if (normals && renderstate->texid == 0) {
-#define SEND_VERTEX(state, x, y) \
-  idx = (y)*W + x; \
-  GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
-
-    glBegin(GL_TRIANGLE_FAN);
-    SEND_VERTEX(renderstate, x, y);
-    SEND_VERTEX(renderstate, x-len, y-len);
-    if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      SEND_VERTEX(renderstate, x, y-len);
-    }
-    SEND_VERTEX(renderstate, x+len, y-len);
-    if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      SEND_VERTEX(renderstate, x+len, y);
-    }
-    SEND_VERTEX(renderstate, x+len, y+len);
-    if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      SEND_VERTEX(renderstate, x, y+len);
-    }
-    SEND_VERTEX(renderstate, x-len, y+len);
-    if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      SEND_VERTEX(renderstate, x-len, y);
-    }
-    SEND_VERTEX(renderstate, x-len, y-len);
-    glEnd();
-#undef SEND_VERTEX
-  }
-  else if (normals) {
-#define SEND_VERTEX(state, x, y) \
-  idx = (y)*W + x; \
-  GL_VERTEX_TN(state, x, y, elev[idx], normals+3*idx);
-
-    glBegin(GL_TRIANGLE_FAN);
-    SEND_VERTEX(renderstate, x, y);
-    SEND_VERTEX(renderstate, x-len, y-len);
-    if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      SEND_VERTEX(renderstate, x, y-len);
-    }
-    SEND_VERTEX(renderstate, x+len, y-len);
-    if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      SEND_VERTEX(renderstate, x+len, y);
-    }
-    SEND_VERTEX(renderstate, x+len, y+len);
-    if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      SEND_VERTEX(renderstate, x, y+len);
-    }
-    SEND_VERTEX(renderstate, x-len, y+len);
-    if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      SEND_VERTEX(renderstate, x-len, y);
-    }
-    SEND_VERTEX(renderstate, x-len, y-len);
-    glEnd();
-#undef SEND_VERTEX
-  }
-  else {
-    glBegin(GL_TRIANGLE_FAN);
-    GL_VERTEX(renderstate, x, y, ELEVATION(x, y));
-    GL_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
-    if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-      GL_VERTEX(renderstate, x, y-len, ELEVATION(x, y-len));
-    }
-    GL_VERTEX(renderstate, x+len, y-len, ELEVATION(x+len, y-len));
-    if (!(bitmask & SS_RENDER_BIT_EAST)) {
-      GL_VERTEX(renderstate, x+len, y, ELEVATION(x+len, y));
-    }
-    GL_VERTEX(renderstate, x+len, y+len, ELEVATION(x+len, y+len));
-    if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-      GL_VERTEX(renderstate, x, y+len, ELEVATION(x, y+len));
-    }
-    GL_VERTEX(renderstate, x-len, y+len, ELEVATION(x-len, y+len));
-    if (!(bitmask & SS_RENDER_BIT_WEST)) {
-      GL_VERTEX(renderstate, x-len, y, ELEVATION(x-len, y));
-    }
-    GL_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
-    glEnd();
-#undef ELEVATION
   }
 }
 
