@@ -349,7 +349,7 @@ SmTooltipKit::setPickedPosition(const SbVec2f & np, const SbViewportRegion & vp)
   
   SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
   t->translation = npt;
-  tooltip_changed_cb(this, NULL); // make sure string is copied into string node
+  this->updateBackground();
   
   SbVec2s of = this->offset.getValue();
   SbVec3f fof(0.0f, 0.0f, 0.0f);
@@ -470,14 +470,15 @@ void
 SmTooltipKit::tooltip_changed_cb(void * closure, SoSensor * s)
 {
   SmTooltipKit * thisp = (SmTooltipKit*) closure;
-  SoText2 * text = (SoText2*) thisp->getAnyPart("textShape", TRUE);
-  text->string = thisp->description;
   thisp->updateBackground();
 }
 
 void 
 SmTooltipKit::updateBackground(void)
 {
+  SoText2 * text = (SoText2*) this->getAnyPart("textShape", TRUE);
+  text->string = this->description;
+
   SoPath * p = new SoPath(this->topSeparator.getValue());
   p->ref();
   p->append(this->textShape.getValue());
