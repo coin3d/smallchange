@@ -934,7 +934,12 @@ SoLODExtrusionP::makeCircleCrossSection(const float radius, const int segments)
     templist.append( SbVec2f( radius*sin(float(i)*angle), radius*cos(float(i)*angle)) );
   }
   templist.append( SbVec2f( 0.0, radius ) );
+
+  // disable notify so that we don't send notification messages while
+  // rendering (not good for multipipe rendering).
+  SbBool old = this->master->crossSection.enableNotify(FALSE);
   this->master->crossSection.setValues( 0, templist.getLength(), templist.getArrayPtr() );
+  this->master->crossSection.enableNotify(FALSE);
 }
 
 #endif // DOXYGEN_SKIP_THIS
