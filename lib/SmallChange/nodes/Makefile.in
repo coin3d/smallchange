@@ -176,7 +176,9 @@ libnodes_la_SOURCES = \
 	SoPointCloud.cpp \
 	SoPointCloud.h \
 	SoLODExtrusion.cpp \
-	SoLODExtrusion.h
+	SoLODExtrusion.h \
+	FrustumCamera.cpp \
+	FrustumCamera.h
 
 
 nodes_lst_SOURCES = \
@@ -198,7 +200,9 @@ nodes_lst_SOURCES = \
 	SoPointCloud.cpp \
 	SoPointCloud.h \
 	SoLODExtrusion.cpp \
-	SoLODExtrusion.h
+	SoLODExtrusion.h \
+	FrustumCamera.cpp \
+	FrustumCamera.h
 
 
 libnodesincdir = $(includedir)/SmallChange/nodes
@@ -217,7 +221,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h
+	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h \
+	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -235,7 +240,7 @@ am_nodes_lst_OBJECTS = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	ShapeScale.$(OBJEXT) PickSwitch.$(OBJEXT) \
 	PickCallback.$(OBJEXT) SoTCBCurve.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
-	SoLODExtrusion.$(OBJEXT)
+	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
@@ -245,7 +250,7 @@ am_libnodes_la_OBJECTS = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	Coinboard.lo Switchboard.lo SwitchboardOperator.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
-	SoLODExtrusion.lo
+	SoLODExtrusion.lo FrustumCamera.lo
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -257,6 +262,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/FrustumCamera.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/FrustumCamera.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
@@ -337,6 +344,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrustumCamera.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrustumCamera.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@

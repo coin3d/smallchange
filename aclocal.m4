@@ -1673,6 +1673,12 @@ AC_CACHE_VAL([lt_cv_sys_max_cmd_len], [dnl
     lt_cv_sys_max_cmd_len=8192;
     ;;
 
+  mks*)
+    # this test is apparently horribly slow on MKS systems (and results
+    # in 1024, while 8192 should work fine).  We therefore just set it
+    # directly, as for cygwin/mingw...
+    lt_cv_sys_max_cmd_len=8192;
+    ;;
  *)
     # If test is not a shell built-in, we'll probably end up computing a
     # maximum length that is only half of the actual maximum length, but
@@ -3655,7 +3661,7 @@ test -z "${LDCXX+set}" || LD=$LDCXX
 CC=${CXX-"c++"}
 compiler=$CC
 _LT_AC_TAGVAR(compiler, $1)=$CC
-cc_basename=`$echo X"$compiler" | $Xsed -e 's%^.*/%%'`
+cc_basename=`$echo X"$compiler" | $Xsed -e 's%^.*/%%' -e 's%[ \t]*$%%'`
 
 # We don't want -fno-exception wen compiling C++ code, so set the
 # no_builtin_flag separately
@@ -4020,7 +4026,9 @@ case $host_os in
 	  _LT_AC_TAGVAR(archive_cmds, $1)='$LD -b +h $soname -o $lib $linker_flags $libobjs $deplibs'
 	  ;;
 	*)
-	  _LT_AC_TAGVAR(archive_cmds, $1)='$CC -b ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
+	# larsa 2003-08-07 - added "${wl}-a,shared"
+	# _LT_AC_TAGVAR(archive_cmds, $1)='$CC -b ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
+	  _LT_AC_TAGVAR(archive_cmds, $1)='$CC -b ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib ${wl}-a,shared $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
 	  ;;
 	esac
 	# Commands to make compiler produce verbose output that lists
@@ -7872,12 +7880,17 @@ AC_HELP_STRING([--with-coin=DIR], [give prefix location of Coin]),
     esac],
   [])
 
+case $build in
+*-mks ) sim_ac_pathsep=";" ;;
+* )     sim_ac_pathsep="${PATH_SEPARATOR}" ;;
+esac
+
 if $sim_ac_coin_desired; then
   sim_ac_path=$PATH
   test -z "$sim_ac_coin_extrapath" || ## search in --with-coin path
-    sim_ac_path="$sim_ac_coin_extrapath/bin${PATH_SEPARATOR}$sim_ac_path"
+    sim_ac_path="$sim_ac_coin_extrapath/bin${sim_ac_pathsep}$sim_ac_path"
   test x"$prefix" = xNONE ||          ## search in --prefix path
-    sim_ac_path="$sim_ac_path${PATH_SEPARATOR}$prefix/bin"
+    sim_ac_path="$sim_ac_path${sim_ac_pathsep}$prefix/bin"
 
   AC_PATH_PROG(sim_ac_coin_configcmd, coin-config, false, $sim_ac_path)
 
@@ -7922,7 +7935,7 @@ if $sim_ac_coin_desired; then
     ])
     sim_ac_coin_avail=$sim_cv_coin_avail
   else
-    locations=`IFS="${PATH_SEPATATOR}"; for p in $sim_ac_path; do echo " -> $p/coin-config"; done`
+    locations=`IFS="${sim_ac_pathsep}"; for p in $sim_ac_path; do echo " -> $p/coin-config"; done`
     AC_MSG_WARN([cannot find 'coin-config' at any of these locations:
 $locations])
   fi

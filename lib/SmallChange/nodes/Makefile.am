@@ -26,7 +26,9 @@ libnodes_la_SOURCES = \
 	SoPointCloud.cpp \
 	SoPointCloud.h \
 	SoLODExtrusion.cpp \
-	SoLODExtrusion.h
+	SoLODExtrusion.h \
+	FrustumCamera.cpp \
+	FrustumCamera.h
 
 nodes_lst_SOURCES = \
 	AutoFile.cpp AutoFile.h \
@@ -47,7 +49,9 @@ nodes_lst_SOURCES = \
 	SoPointCloud.cpp \
 	SoPointCloud.h \
 	SoLODExtrusion.cpp \
-	SoLODExtrusion.h
+	SoLODExtrusion.h \
+	FrustumCamera.cpp \
+	FrustumCamera.h
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
@@ -65,7 +69,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h
+	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h \
+	$(top_srcdir)/lib/SmallChange/nodes/FrustumCamera.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
