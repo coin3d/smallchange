@@ -20862,6 +20862,16 @@ if $BUILD_WITH_MSVC; then
   SMALLCHANGE_COMPILER="wrapmsvc"
 fi
 
+# Must call gcc as g++ when compiling C++ on Mac OS X to ensure
+# linking against libstdc++ if necessary.
+case "$host_os" in
+  darwin*)
+    if test x"$CC" = xgcc; then
+      CC=g++
+    fi
+    ;;
+esac
+
 
 
 

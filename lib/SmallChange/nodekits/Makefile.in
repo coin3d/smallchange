@@ -174,7 +174,8 @@ SOURCES = \
 	SmCameraControlKit.cpp SmCameraControlKit.h \
 	GeoMarkerKit.cpp SmGeoMarkerKit.h \
 	NormalsKit.cpp SmNormalsKit.h \
-	SmAxisDisplayKit.cpp SmAxisDisplayKit.h
+	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
+	SmAxisKit.cpp SmAxisKit.h
 
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -190,7 +191,8 @@ libnodekitsinc_HEADERS = \
 	$(srcdir)/SmCameraControlKit.h \
 	$(srcdir)/SmGeoMarkerKit.h \
 	$(srcdir)/SmNormalsKit.h \
-	$(srcdir)/SmAxisDisplayKit.h
+	$(srcdir)/SmAxisDisplayKit.h \
+	$(srcdir)/SmAxisKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -204,7 +206,8 @@ nodekits_lst_LIBADD =
 am__objects_1 = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT) \
 	SmTooltipKit.$(OBJEXT) SmWellLogKit.$(OBJEXT) \
 	SmCameraControlKit.$(OBJEXT) GeoMarkerKit.$(OBJEXT) \
-	NormalsKit.$(OBJEXT) SmAxisDisplayKit.$(OBJEXT)
+	NormalsKit.$(OBJEXT) SmAxisDisplayKit.$(OBJEXT) \
+	SmAxisKit.$(OBJEXT)
 am_nodekits_lst_OBJECTS = $(am__objects_1)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -212,7 +215,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libnodekits_la_LDFLAGS =
 libnodekits_la_LIBADD =
 am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo SmWellLogKit.lo \
-	SmCameraControlKit.lo GeoMarkerKit.lo NormalsKit.lo SmAxisDisplayKit.lo
+	SmCameraControlKit.lo GeoMarkerKit.lo NormalsKit.lo \
+	SmAxisDisplayKit.lo SmAxisKit.lo
 am_libnodekits_la_OBJECTS = $(am__objects_2)
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
@@ -226,6 +230,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/NormalsKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmAxisDisplayKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmAxisDisplayKit.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmAxisKit.Plo ./$(DEPDIR)/SmAxisKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmCameraControlKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmCameraControlKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltipKit.Plo \
@@ -260,7 +265,8 @@ SOURCES = \
 	SmCameraControlKit.cpp SmCameraControlKit.h \
 	GeoMarkerKit.cpp SmGeoMarkerKit.h \
 	NormalsKit.cpp SmNormalsKit.h \
-	SmAxisDisplayKit.cpp SmAxisDisplayKit.h
+	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
+	SmAxisKit.cpp SmAxisKit.h
 
 
 all: all-am
@@ -301,6 +307,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NormalsKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmAxisDisplayKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmAxisDisplayKit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmAxisKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmAxisKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCameraControlKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCameraControlKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltipKit.Plo@am__quote@
