@@ -808,12 +808,18 @@ SmPopupMenuKit::updateActiveItem(void)
   
   float size = (PRIVATE(this)->fontsize * this->spacing.getValue()) / PRIVATE(this)->vp.getViewportSizePixels()[1];
 
+  float offset;
   int item = PRIVATE(this)->activeitem;
-  if (this->menuTitle.getValue().getLength() != 0) ++item; // Take the title into account?
+  if (this->menuTitle.getValue().getLength() != 0) { // Take the title into account?
+    offset = size * (item + 1.1f);
+    ++item;
+  }
+  else {
+    offset = (item  * size);
+  }
 
-  float offset = (item  * size) 
-    + ((PRIVATE(this)->padding[1] - 2.0f/2) / PRIVATE(this)->vp.getViewportSizePixels()[1]);
-  
+  offset += + ((PRIVATE(this)->padding[1] - 2.0f/2) / PRIVATE(this)->vp.getViewportSizePixels()[1]);
+
   vecdata[0][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
   vecdata[1][1] = PRIVATE(this)->backgroundmenuhigh - (offset+size);
   vecdata[2][1] = PRIVATE(this)->backgroundmenuhigh - offset;
