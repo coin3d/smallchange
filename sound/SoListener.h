@@ -6,8 +6,6 @@
 #include <Inventor/fields/SoSfRotation.h>
 #include <Inventor/fields/SoSfFloat.h>
 
-#include "SoAudioRenderAction.h"
-
 class SoListener : public SoNode
 {
   SO_NODE_HEADER(SoListener);
@@ -26,7 +24,7 @@ public:
 
 protected:
 
-  virtual void audioRender(SoAudioRenderAction *action);
+  virtual void audioRender(class SoAudioRenderAction *action);
 //  virtual void GLRender(SoGLRenderAction *action);
 
 private:

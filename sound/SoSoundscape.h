@@ -1,6 +1,9 @@
 #ifndef COIN_SOSOUNDSCAPE_H
 #define COIN_SOSOUNDSCAPE_H
 
+// 20010806: Unused. 
+
+// Will use eax when available.
 
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/fields/SoSfVec3f.h>

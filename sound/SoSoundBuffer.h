@@ -1,6 +1,8 @@
 #ifndef COIN_SOSOUNDBUFFER_H
 #define COIN_SOSOUNDBUFFER_H
 
+// 20010806 ThH: Unused so far, use SoSound instead
+
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/fields/SoMFString.h>
 

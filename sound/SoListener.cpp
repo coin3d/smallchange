@@ -1,5 +1,7 @@
 #include "SoListener.h"
 
+#include "SoAudioRenderAction.h"
+
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/errors/SoDebugError.h>

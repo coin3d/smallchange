@@ -152,6 +152,10 @@ SOURCE=.\SoSound.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\ALTools.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SbAudioWorkerThread.h
 # End Source File
 # Begin Source File
@@ -176,6 +180,10 @@ SOURCE=.\SoAudioDevice.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SoAudioDeviceP.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SoAudioRenderAction.h
 # End Source File
 # Begin Source File
@@ -185,10 +193,6 @@ SOURCE=.\SoListener.h
 # Begin Source File
 
 SOURCE=.\SoSound.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SoSoundBuffer.h
 # End Source File
 # Begin Source File
 

@@ -2,36 +2,46 @@
 
 #include <Inventor/errors/SoDebugError.h>
 
+#include "SoAudioDeviceP.h"
+
+#undef THIS
+#define THIS this->soaudiodevice_impl
+
+#undef ITHIS
+#define ITHIS this->ifacep
 
 SoAudioDevice::SoAudioDevice()
 {
+  THIS = new SoAudioDeviceP(this);
 
-  this->context = NULL;
-	this->device = NULL;
-  this->glRenderAction = NULL;
-  this->audioRenderAction = NULL;
-  this->enabled = FALSE;
-  this->root = NULL;
+  THIS->context = NULL;
+	THIS->device = NULL;
+  THIS->glRenderAction = NULL;
+  THIS->audioRenderAction = NULL;
+  THIS->enabled = FALSE;
+  THIS->root = NULL;
 
-  this->audioRenderAction = new SoAudioRenderAction();
+  THIS->audioRenderAction = new SoAudioRenderAction();
 
 };
 
 SoAudioDevice::~SoAudioDevice()
 {
-  disable();
+  this->disable();
 
-  if (this->audioRenderAction != NULL)
-    delete this->audioRenderAction;
+  if (THIS->audioRenderAction != NULL)
+    delete THIS->audioRenderAction;
 
 	//Get active context
 //	this->context=alcGetCurrentContext();
 	//Get device for active context
 //	this->device=alcGetContextsDevice(Context);
 	//Release context(s)
-	alcDestroyContext(this->context);
+	alcDestroyContext(THIS->context);
 	//Close device
-	alcCloseDevice(this->device);
+	alcCloseDevice(THIS->device);
+
+  delete THIS;
 };
 
 SbBool SoAudioDevice::init(const SbString &devicetype, const SbString &devicename)
@@ -44,9 +54,9 @@ SbBool SoAudioDevice::init(const SbString &devicetype, const SbString &devicenam
   }
 
 	//Open device
-	this->device = alcOpenDevice((ALubyte*)devicename.getString());
+	THIS->device = alcOpenDevice((ALubyte*)devicename.getString());
 
-	if (this->device == NULL)
+	if (THIS->device == NULL)
 	{
 		SoDebugError::postWarning("SoAudioDevice::init",
                               "Failed to initialize OpenAL");
@@ -54,9 +64,9 @@ SbBool SoAudioDevice::init(const SbString &devicetype, const SbString &devicenam
   }
 
 	//Create context(s)
-	this->context=alcCreateContext(this->device,NULL);
+	THIS->context=alcCreateContext(THIS->device,NULL);
 	//Set active context
-	alcMakeContextCurrent(this->context);
+	alcMakeContextCurrent(THIS->context);
 
 	// Clear Error Code
 	alGetError();
@@ -66,58 +76,37 @@ SbBool SoAudioDevice::init(const SbString &devicetype, const SbString &devicenam
   
 void SoAudioDevice::setSceneGraph(SoNode *root)
 {
-  this->root = root;
+  THIS->root = root;
 };
 
 void SoAudioDevice::setGLRenderAction(SoGLRenderAction *ra)
 {
-  this->glRenderAction = ra;
+  THIS->glRenderAction = ra;
 };
 
 void SoAudioDevice::enable()
 {
-  if (enabled)
+  if (THIS->enabled)
     return; // allreaty enabled
 
-  enabled = TRUE;
+  THIS->enabled = TRUE;
 
-  glRenderAction->addPreRenderCallback(prerendercb, this);
+  THIS->glRenderAction->addPreRenderCallback(THIS->prerendercb, THIS);
 };
 
 void SoAudioDevice::disable()
 {
-  if (!enabled)
+  if (!THIS->enabled)
     return; // allready disabled
   
-  enabled = FALSE;
+  THIS->enabled = FALSE;
 
-  glRenderAction->removePreRenderCallback(prerendercb, this);
+  THIS->glRenderAction->removePreRenderCallback(THIS->prerendercb, THIS);
 
 };
 
-void SoAudioDevice::prerendercb(void * userdata, SoGLRenderAction * action)
+void SoAudioDeviceP::prerendercb(void * userdata, SoGLRenderAction * action)
 {
-  SoAudioDevice *thisp = (SoAudioDevice *) userdata;
+  SoAudioDeviceP *thisp = (SoAudioDeviceP *) userdata;
   thisp->audioRenderAction->apply(thisp->root);
 };
-
-/*
-  struct AudioRenderCallbackStruct
-  {
-    SoNode * root;
-    SoAudioRenderAction *ara;
-    AudioRenderCallbackStruct(SoNode * root=NULL, SoAudioRenderAction *ara=NULL)
-    {
-      init(root, ara);
-    }
-    void init(SoNode * root=NULL, SoAudioRenderAction *ara=NULL)
-    {
-      this->root = root; this->ara = ara;
-    }
-  };
-
-  AudioRenderCallbackStruct callbackData;
-*/
-
-
-
