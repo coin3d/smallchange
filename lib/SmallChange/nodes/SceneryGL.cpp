@@ -30,8 +30,9 @@
 
 #include <GL/gl.h>
 
-#include <Inventor/C/base/hash.h>
-#include <Inventor/lists/SbList.h>
+#include "../misc/SbList.h"
+#include "../misc/SbHash.h"
+
 #include <Inventor/misc/SoGLImage.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
 
@@ -40,6 +41,7 @@
 
 /* ********************************************************************** */
 
+// the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
 
 /* ********************************************************************** */
@@ -107,11 +109,6 @@ sc_set_use_byte_normals(int enable)
 /* ********************************************************************** */
 /* texture management */
 
-static void sc_texture_hash_check_unused(unsigned long key, void * val, void * closure);
-static void sc_texture_hash_clear(unsigned long key, void * val, void * closure);
-static void sc_texture_hash_inc_unused(unsigned long key, void * val, void * closure);
-static void sc_texture_hash_add_all(unsigned long key, void * val, void * closure);
-
 class TexInfo {
 public:
   TexInfo() {
@@ -122,6 +119,11 @@ public:
   int unusedcount;
 };
 
+static void sc_texture_hash_check_unused(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_clear(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_inc_unused(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_add_all(unsigned int key, TexInfo * val, void * closure);
+
 void
 sc_renderstate_construct(RenderState * state)
 {
@@ -129,7 +131,7 @@ sc_renderstate_construct(RenderState * state)
   state->reusetexlist = (void *) new SbList<TexInfo *>;
   state->tmplist = (void *) new SbList<unsigned int>;
   state->debuglist = (void *) new SbList<float>;
-  state->texhash = cc_hash_construct(1024, 0.7f);
+  state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
 }
 
 
@@ -153,16 +155,18 @@ sc_renderstate_destruct(RenderState * state)
     delete list;
     state->tmplist = NULL;
   }
-  cc_hash_apply(state->texhash, sc_texture_hash_clear, NULL);
-  cc_hash_destruct(state->texhash);
+  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
+  texhash->apply(sc_texture_hash_clear, NULL);
+  delete texhash;
+  state->texhash = NULL;
 }
 
 SoGLImage *
 sc_find_reuse_texture(RenderState * state)
 {
-  void * tmp = NULL;
-  if (cc_hash_get(state->texhash, state->texid, &tmp)) {
-    TexInfo * tex = (TexInfo *) tmp;
+  TexInfo * tex = NULL;
+  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
+  if (texhash->get(state->texid, tex)) {
     assert(tex->image);
     tex->unusedcount = 0;
     return tex->image;
@@ -189,7 +193,8 @@ sc_create_texture(RenderState * state)
   tex->texid = state->currtexid;
   tex->unusedcount = 0;
 
-  (void) cc_hash_put(state->texhash, state->texid, tex);
+  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
+  texhash->put(state->texid, tex);
   return tex->image;
 }
 
@@ -202,19 +207,16 @@ sc_delete_unused_textures(RenderState * state)
   assert(state->reusetexlist);
   SbList<unsigned int> * tmplist = (SbList<unsigned int> *) state->tmplist;
   tmplist->truncate(0);
-  cc_hash_apply(state->texhash, sc_texture_hash_check_unused, tmplist);
+
+  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
+  texhash->apply(sc_texture_hash_check_unused, tmplist);
   
   int i;
   for (i = 0; i < tmplist->getLength(); i++) {
-    void * tmp;
-    if (cc_hash_get(state->texhash, (*tmplist)[i], &tmp)) {
-      TexInfo * tex = (TexInfo *) tmp;
-      ((SbList<TexInfo *> *) state->reusetexlist)->push(tex);
-      (void) cc_hash_remove(state->texhash, (*tmplist)[i]);
-    }
-    else {
-      assert(0 && "huh");
-    }
+    TexInfo * tex = NULL;
+    texhash->get((*tmplist)[i], tex);
+    ((SbList<TexInfo *> *) state->reusetexlist)->push(tex);
+    texhash->remove((*tmplist)[i]);
   }
 
 //   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
@@ -233,61 +235,58 @@ sc_delete_all_textures(RenderState * state)
   SbList<unsigned int> * tmplist = (SbList<unsigned int> *) state->tmplist;
   SbList<TexInfo *> * reusetexlist = (SbList<TexInfo *> *) state->reusetexlist;
   tmplist->truncate(0);
-  cc_hash_apply(state->texhash, sc_texture_hash_add_all, tmplist);
+  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
+  texhash->apply(sc_texture_hash_add_all, tmplist);
 
   int i;
   for ( i = 0; i < tmplist->getLength(); i++ ) {
-    void * tmp;
-    if ( cc_hash_get(state->texhash, (*tmplist)[i], &tmp)) {
-      TexInfo * tex = (TexInfo *) tmp;
-      reusetexlist->push(tex);
-      (void) cc_hash_remove(state->texhash, (*tmplist)[i]);
-    }
-
-    else {
-      assert(0 && "huh");
-    }
+    TexInfo * tex = NULL;
+    texhash->get((*tmplist)[i], tex);
+    assert(tex);
+    reusetexlist->push(tex);
+    texhash->remove((*tmplist)[i]);
   }
 }
 
 void
 sc_mark_unused_textures(RenderState * state)
 {
-  cc_hash_apply(state->texhash, sc_texture_hash_inc_unused, NULL);
+  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
+  texhash->apply(sc_texture_hash_inc_unused, NULL);
 }
 
 void
-sc_texture_hash_check_unused(unsigned long key, void * val, void * closure)
+sc_texture_hash_check_unused(unsigned int key, TexInfo * tex, void * closure)
 {
-  TexInfo * tex = (TexInfo*) val;
+  assert(tex);
   if ( tex->unusedcount > MAX_UNUSED_COUNT ) {
-    SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
+    SbList<unsigned int> * keylist = (SbList<unsigned int> *) closure;
     keylist->append(key);
   }
 }
 
 void
-sc_texture_hash_clear(unsigned long key, void * val, void * closure)
+sc_texture_hash_clear(unsigned int key, TexInfo * tex, void * closure)
 {
-  TexInfo * tex = (TexInfo *) val;
   // safe to do this here since we'll never use this list again
+  assert(tex);
   assert(tex->image);
   tex->image->unref(NULL);
   delete tex;
 }
 
 void
-sc_texture_hash_add_all(unsigned long key, void * val, void * closure)
+sc_texture_hash_add_all(unsigned int key, TexInfo * tex, void * closure)
 {
-  TexInfo * tex = (TexInfo *) val;
+  assert(tex);
   SbList <unsigned int> * keylist = (SbList <unsigned int> *) closure;
   keylist->append(key);
 }
 
 void
-sc_texture_hash_inc_unused(unsigned long key, void * val, void * closure)
+sc_texture_hash_inc_unused(unsigned int key, TexInfo * tex, void * closure)
 {
-  TexInfo * tex = (TexInfo *) val;
+  assert(tex);
   tex->unusedcount++;
 }
 
@@ -358,9 +357,16 @@ sc_generate_elevation_line_texture(float distance,
 /* ********************************************************************** */
 
 void
-sc_display_debug_info(float * campos, short * vpsize, void * debuglist)
+sc_init_debug_info(RenderState * state)
 {
-  SbList<float> * list = (SbList<float> *) debuglist;
+  SbList<float> * list = (SbList<float> *) state->debuglist;
+  list->truncate(0);
+}
+
+void
+sc_display_debug_info(RenderState * state, float * campos, short * vpsize)
+{
+  SbList<float> * list = (SbList<float> *) state->debuglist;
 
   int depthtest = glIsEnabled(GL_DEPTH_TEST);
   if ( depthtest ) glDisable(GL_DEPTH_TEST);

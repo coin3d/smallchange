@@ -12,7 +12,6 @@ extern "C" {
 
 typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
 typedef struct RenderState RenderState;
-typedef struct cc_hash cc_hash;
 
 struct RenderState {
   // local block info
@@ -40,7 +39,7 @@ struct RenderState {
   int texw, texh, texnc;
   int texisenabled;
 
-  cc_hash * texhash;
+  void * texhash; // SbHash<TexInfo *, unsigned int>
   void * reusetexlist; // SbList<TexInfo *>
   void * tmplist; // SbList<unsigned int>
 
@@ -87,7 +86,8 @@ void sc_undefrender_cb(void * closure, const int x, const int y, const int len,
 
 void sc_generate_elevation_line_texture(float distance, float offset, float thickness, int emphasis, unsigned char * buffer, int components, int texturesize, float * texcoordscale, float * texcoordoffset);
 
-void sc_display_debug_info(float * campos, short * vpsize, void * debuglist);
+void sc_init_debug_info(RenderState * state);
+void sc_display_debug_info(RenderState * state, float * campos, short * vpsize);
 
 /* ********************************************************************** */
 
