@@ -8,5 +8,5 @@ libnodekits_la_SOURCES = \
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 
 libnodekitsinc_HEADERS = \
-	$(top_srcdir)/src/nodekits/LegendKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h
 

@@ -8,5 +8,5 @@ libelements_la_SOURCES = \
 libelementsincdir = $(includedir)/SmallChange/elements
 
 libelementsinc_HEADERS = \
-	$(top_srcdir)/src/elements/GLDepthBufferElement.h
+	$(top_srcdir)/lib/SmallChange/elements/GLDepthBufferElement.h
 

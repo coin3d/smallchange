@@ -110,7 +110,7 @@ libnodekits_la_SOURCES = \
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 
 libnodekitsinc_HEADERS = \
-	$(top_srcdir)/src/nodekits/LegendKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h
 
 EXEEXT =
 OBJEXT = o
@@ -270,7 +270,7 @@ top_distdir = ../../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/$(top_srcdir)/src/nodekits
+	$(mkinstalldirs) $(distdir)/$(top_srcdir)/lib/SmallChange/nodekits
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

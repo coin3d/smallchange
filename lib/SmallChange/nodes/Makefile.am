@@ -9,6 +9,6 @@ libnodes_la_SOURCES = \
 libnodesincdir = $(includedir)/SmallChange/nodes
 
 libnodesinc_HEADERS = \
-	$(top_srcdir)/src/nodes/ViewportRegion.h \
-	$(top_srcdir)/src/nodes/DepthBuffer.h
+	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
+	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h
 

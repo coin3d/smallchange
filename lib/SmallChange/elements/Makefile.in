@@ -110,7 +110,7 @@ libelements_la_SOURCES = \
 libelementsincdir = $(includedir)/SmallChange/elements
 
 libelementsinc_HEADERS = \
-	$(top_srcdir)/src/elements/GLDepthBufferElement.h
+	$(top_srcdir)/lib/SmallChange/elements/GLDepthBufferElement.h
 
 EXEEXT =
 OBJEXT = o
@@ -270,7 +270,7 @@ top_distdir = ../../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/$(top_srcdir)/src/elements
+	$(mkinstalldirs) $(distdir)/$(top_srcdir)/lib/SmallChange/elements
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
