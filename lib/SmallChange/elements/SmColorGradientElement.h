@@ -57,12 +57,18 @@ public:
   static void get(SoState * state,
                   Mapping & mapping,
                   int & numparams,
-                  float *& params,
-                  SbColor *& colors);
+                  const float *& params,
+                  const SbColor *& colors);
 
 protected:
   virtual ~SmColorGradientElement();
 
+private:
+  Mapping mapping;
+  int numparams;
+  const float * params;
+  const SbColor * colors;
+  
 };
 
 #endif // !SMALLCHANGE_COLORGRADIENTELEMENT_H

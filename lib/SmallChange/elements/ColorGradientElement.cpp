@@ -49,6 +49,10 @@ void
 SmColorGradientElement::init(SoState *state)
 {
   inherited::init(state);
+  this->numparams = 0;
+  this->params = NULL;
+  this->colors = NULL;
+  this->mapping = RELATIVE;
   
 }
 
@@ -80,18 +84,25 @@ SmColorGradientElement::set(SoState * state,
   SmColorGradientElement * elem = (SmColorGradientElement*)
     SoReplacedElement::getElement(state, classStackIndex, node);
 
-  //  elem->mapping = mapping;
+  elem->mapping = mapping;
+  elem->numparams = numparams;
+  elem->params = params;
+  elem->colors = colors;
 }
   
 void 
 SmColorGradientElement::get(SoState * const state,
-                          Mapping & mapping,
-                          int & numparams,
-                          float *& params,
-                          SbColor *& colors)
+                            Mapping & mapping,
+                            int & numparams,
+                            const float *& params,
+                            const SbColor *& colors)
 {
   const SmColorGradientElement * elem = (const SmColorGradientElement*)
     SoElement::getConstElement(state, classStackIndex);
- 
+
+  mapping = elem->mapping;
+  numparams = elem->numparams;
+  params = elem->params;
+  colors = elem->colors;
 }
 
