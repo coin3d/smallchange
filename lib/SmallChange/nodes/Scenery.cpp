@@ -74,8 +74,8 @@ Scenery::Scenery(void)
 
   this->colormapsensor = new SoFieldSensor(colormapsensor_cb, this);
   this->colormapsensor->attach(&this->colorMap);
-  // this->colortexturesensor = new SoFieldSensor(colormapsensor_cb, this);
-  // this->colortexturesensor->attach(&this->colorTexture);
+  this->colortexturesensor = new SoFieldSensor(colormapsensor_cb, this);
+  this->colortexturesensor->attach(&this->colorTexture);
   
   // FIXME: view-specific. Move to struct.
   this->pvertex = new SoPrimitiveVertex;
