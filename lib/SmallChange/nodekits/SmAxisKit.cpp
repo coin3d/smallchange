@@ -48,6 +48,7 @@ public:
 
   SoFieldSensor * axisRangeSensor;
   SoFieldSensor * markerIntervalSensor;
+  SoFieldSensor * markerHeightSensor;
   SoFieldSensor * textIntervalSensor;
   SoFieldSensor * digitsSensor;
 
@@ -104,6 +105,10 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->markerIntervalSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->markerIntervalSensor->setPriority(0);
   PRIVATE(this)->markerIntervalSensor->attach(&this->markerInterval);
+
+  PRIVATE(this)->markerHeightSensor = new SoFieldSensor(fieldsChangedCallback, PRIVATE(this));
+  PRIVATE(this)->markerHeightSensor->setPriority(0);
+  PRIVATE(this)->markerHeightSensor->attach(&this->markerHeight);
 
   PRIVATE(this)->textIntervalSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->textIntervalSensor->setPriority(0);
