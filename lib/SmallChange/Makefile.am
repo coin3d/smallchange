@@ -1,7 +1,7 @@
 
 INCLUDES = -I$(top_srcdir)/lib
 
-SUBDIRS = nodekits nodes elements engines actions misc draggers .
+SUBDIRS = nodekits nodes elements engines actions misc draggers eventhandlers .
 
 if BUILD_WITH_MSVC
 lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
@@ -14,7 +14,7 @@ libSmallChange_la_SOURCES =
 libSmallChange_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
 	engines/libengines.la actions/libactions.la misc/libmisc.la \
-	draggers/libdraggers.la
+	draggers/libdraggers.la eventhandlers/libeventhandlers.la
 
 libSmallChange_la_LDFLAGS = \
 	-no-undefined \
@@ -24,7 +24,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES =
 SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
-	draggers/draggers.lst
+	draggers/draggers.lst eventhandlers/eventhandlers.lst
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
   $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
@@ -88,6 +88,7 @@ uninstall-local:
 	  "$$incbasedir/elements" \
 	  "$$incbasedir/nodekits" \
 	  "$$incbasedir/nodes" \
+	  "$$incbasedir/eventhandlers" \
 	  "$$incbasedir"; do \
 	  if test -d "$$dir"; then \
 	    echo " rmdir" "$$dir"; \

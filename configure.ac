@@ -310,6 +310,7 @@ AC_OUTPUT([
 	lib/SmallChange/elements/Makefile
 	lib/SmallChange/engines/Makefile
 	lib/SmallChange/draggers/Makefile
+	lib/SmallChange/eventhandlers/Makefile
 
 	lib/SmallChange/basic.h
 ])

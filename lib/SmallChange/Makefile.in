@@ -164,7 +164,7 @@ target_vendor = @target_vendor@
 
 INCLUDES = -I$(top_srcdir)/lib
 
-SUBDIRS = nodekits nodes elements engines actions misc draggers .
+SUBDIRS = nodekits nodes elements engines actions misc draggers eventhandlers .
 
 @BUILD_WITH_MSVC_TRUE@lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
 @BUILD_WITH_MSVC_FALSE@lib_LTLIBRARIES = libSmallChange.la
@@ -174,7 +174,7 @@ libSmallChange_la_SOURCES =
 libSmallChange_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
 	engines/libengines.la actions/libactions.la misc/libmisc.la \
-	draggers/libdraggers.la
+	draggers/libdraggers.la eventhandlers/libeventhandlers.la
 
 
 libSmallChange_la_LDFLAGS = \
@@ -186,7 +186,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES =
 SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
-	draggers/draggers.lst
+	draggers/draggers.lst eventhandlers/eventhandlers.lst
 
 
 
@@ -204,7 +204,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_AR = $(AR) cru
 SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
-	draggers/draggers.lst
+	draggers/draggers.lst eventhandlers/eventhandlers.lst
 am_SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS =
 SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS = \
 	$(am_SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS)
@@ -212,7 +212,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libSmallChange_la_DEPENDENCIES = nodekits/libnodekits.la \
 	nodes/libnodes.la elements/libelements.la engines/libengines.la \
-	actions/libactions.la misc/libmisc.la draggers/libdraggers.la
+	actions/libactions.la misc/libmisc.la draggers/libdraggers.la \
+	eventhandlers/libeventhandlers.la
 am_libSmallChange_la_OBJECTS =
 libSmallChange_la_OBJECTS = $(am_libSmallChange_la_OBJECTS)
 
@@ -672,6 +673,7 @@ uninstall-local:
 	  "$$incbasedir/elements" \
 	  "$$incbasedir/nodekits" \
 	  "$$incbasedir/nodes" \
+	  "$$incbasedir/eventhandlers" \
 	  "$$incbasedir"; do \
 	  if test -d "$$dir"; then \
 	    echo " rmdir" "$$dir"; \
