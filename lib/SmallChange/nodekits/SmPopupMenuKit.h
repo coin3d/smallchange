@@ -97,7 +97,8 @@ protected:
   virtual SbBool affectsState(void) const;
   
 public:
-  
+
+  void setTransparencies(float active, float inactive);
   void setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & vp);
   void setNormalizedPosition(const SbVec2f & npt);
 

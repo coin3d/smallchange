@@ -145,6 +145,9 @@ public:
   float backgroundmenuhigh;
   float backgroundleft;
   float backgroundright;
+
+  float activetransp;
+  float inactivetransp;
   
   int activeitem;
   int submenumarkeridx;
@@ -295,6 +298,9 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   PRIVATE(this)->padding = SbVec3f(7, 7, 1);
   PRIVATE(this)->triggerscriptsensor = new SoOneShotSensor(trigger_cb, this);
 
+  PRIVATE(this)->activetransp = 0.0f;
+  PRIVATE(this)->inactivetransp = 0.1f;
+  
   // Create a new better-looking submenu marker
   PRIVATE(this)->submenumarkeridx = SmPopupMenuKitP::addSubmenuMarker();
 
@@ -746,11 +752,11 @@ SmPopupMenuKit::isactive_cb(void * closure, SoSensor * s)
   SoMaterial * mat = (SoMaterial*) thisp->getAnyPart("backgroundMaterial", TRUE);
   
   if (thisp->isActive.getValue()) {
-    mat->transparency = 0.0f;
+    mat->transparency = PRIVATE(thisp)->activetransp;
     mat->diffuseColor = SbColor(0.6f, 0.6f, 0.6f);
   }
   else {
-    mat->transparency = 0.3f;
+    mat->transparency = PRIVATE(thisp)->inactivetransp;
     mat->diffuseColor = SbColor(0.5f, 0.5f, 0.5f);
   }
 }
@@ -769,6 +775,13 @@ SmPopupMenuKit::opensub_cb(void * closure, SoSensor * s)
 
   delete s;
   delete data;
+}
+
+void 
+SmPopupMenuKit::setTransparencies(float active, float inactive)
+{
+  PRIVATE(this)->activetransp = active;
+  PRIVATE(this)->inactivetransp = inactive;
 }
 
 void 
@@ -1140,6 +1153,7 @@ SmPopupMenuKitP::addSubmenuMarker()
                          bitmapbytes, FALSE, TRUE);  
   return MYAPP_ARROW_IDX;
 }
+
 
 
 #undef PRIVATE
