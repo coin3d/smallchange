@@ -140,11 +140,11 @@ SoLevelOfDetail *
 SmAxisKitP::generateLOD(void) const
 {
   SoLevelOfDetail * LODnode = new SoLevelOfDetail; 
-  LODnode->screenArea.set1Value(0, 15000);
-  LODnode->screenArea.set1Value(1, 10000);
-  LODnode->screenArea.set1Value(2, 8000);
-  LODnode->screenArea.set1Value(3, 4000);  
-  LODnode->screenArea.set1Value(4, 100);  
+  LODnode->screenArea.set1Value(0, 24000);
+  LODnode->screenArea.set1Value(1, 12000);
+  LODnode->screenArea.set1Value(2, 6000);
+  LODnode->screenArea.set1Value(3, 2000);  
+  LODnode->screenArea.set1Value(4, 800);  
   
   for (int i=0;i<5;++i) 
     LODnode->addChild(this->generateAxis(i));
@@ -261,6 +261,9 @@ SmAxisKitP::generateAxis(int LODlevel) const
         skip = TRUE;      
       break;
     case 2:
+      if ((lodskipper & 1) || (lodskipper & 2))
+        skip = TRUE;      
+      break;
     case 3:
     default:
       skip = TRUE;
@@ -293,7 +296,6 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoTranslation * ttrans1 = new SoTranslation;
   SoTranslation * ttrans2 = new SoTranslation;
 
-
   ttrans1->translation.setValue(PUBLIC(this)->textInterval.getValue(), 0.0f, 0.0f);
   ttrans2->translation.setValue(0.0f, 1.0f, 0.0f);  
 
@@ -320,7 +322,7 @@ SmAxisKitP::generateAxis(int LODlevel) const
         skip = TRUE;      
       break;
     case 3:
-      if ((lodskipper & 1) || (lodskipper & 2) || (lodskipper & 3))
+      if ((lodskipper & 1) || (lodskipper & 2) || (lodskipper & 4))
         skip = TRUE;      
       break;
     case 4:
