@@ -91,10 +91,10 @@ protected:
 
   SmCameraControlKit * kit;
   void setViewing(const SbBool onoff) {
-    this->kit->setViewing(onoff);
+    this->kit->viewing = onoff;
   }
   SbBool isViewing(void) const {
-    return this->kit->isViewing();
+    return this->kit->viewing.getValue();
   }
   SoCamera * getCamera(void) {
     return (SoCamera*) this->kit->getPart("camera", TRUE);
@@ -235,6 +235,7 @@ SmCameraControlKit::SmCameraControlKit(void)
   SO_KIT_ADD_FIELD(autoClipping, (TRUE));
   SO_KIT_ADD_FIELD(autoClippingStrategy,(VARIABLE_NEAR_PLANE));
   SO_KIT_ADD_FIELD(autoClippingValue, (0.6f));
+  SO_KIT_ADD_FIELD(viewing, (TRUE));
 
   SO_KIT_DEFINE_ENUM_VALUE(Type, EXAMINER);
   SO_KIT_DEFINE_ENUM_VALUE(Type, HELICOPTER);
@@ -303,7 +304,7 @@ SmCameraControlKit::handleEvent(SoHandleEventAction * action)
 {
   SoState * state = action->getState();
 
-  if (PRIVATE(this)->eventhandler && this->isViewing()) {
+  if (PRIVATE(this)->eventhandler && this->viewing.getValue()) {
     if (!PRIVATE(this)->eventhandler->handleEvent(action)) {
       inherited::handleEvent(action);
     }
@@ -325,18 +326,6 @@ SmCameraControlKit::notify(SoNotList * list)
     PRIVATE(this)->autoclippingsensor->schedule();
   }
   inherited::notify(list);
-}
-
-void 
-SmCameraControlKit::setViewing(const SbBool onoff)
-{
-  PRIVATE(this)->viewing = onoff;
-}
-
-SbBool 
-SmCameraControlKit::isViewing(void) const
-{
-  return PRIVATE(this)->viewing;
 }
 
 // Position the near and far clipping planes just in front of and

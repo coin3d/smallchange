@@ -66,9 +66,6 @@ public:
     CONSTANT_NEAR_PLANE
   };
 
-  void setViewing(const SbBool onoff);
-  SbBool isViewing(void) const;
-
 protected:
 
   virtual void notify(SoNotList * list);
@@ -80,6 +77,7 @@ public:
   SoSFBool autoClipping;
   SoSFEnum autoClippingStrategy;
   SoSFFloat autoClippingValue;
+  SoSFBool viewing;
 
 private:
   void setClippingPlanes(void);
