@@ -11,8 +11,8 @@ SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
-	Switchboard.cpp Switchboard.h \
-	SwitchboardOperator.cpp SwitchboardOperator.h \
+	Switchboard.cpp SmSwitchboard.h \
+	SwitchboardOperator.cpp SmSwitchboardOperator.h \
 	CoinEnvironment.cpp CoinEnvironment.h \
 	SkyDome.cpp SkyDome.h \
 	ShapeScale.cpp ShapeScale.h \
@@ -42,8 +42,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
-	$(top_srcdir)/lib/SmallChange/nodes/Switchboard.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SwitchboardOperator.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmSwitchboard.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmSwitchboardOperator.h \
 	$(top_srcdir)/lib/SmallChange/nodes/PickSwitch.h \
 	$(top_srcdir)/lib/SmallChange/nodes/PickCallback.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SkyDome.h \

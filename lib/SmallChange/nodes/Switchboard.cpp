@@ -22,8 +22,8 @@
 \**************************************************************************/
 
 /*!
-  \class Switchboard Switchboard.h SmallChange/nodes/Switchboard.h
-  \brief The Switchboard class is a group node that can toggle children 
+  \class SmSwitchboard SmSwitchboard.h SmallChange/nodes/SmSwitchboard.h
+  \brief The SmSwitchboard class is a group node that can toggle children 
   on and off arbitrarily.
 
   FIXME: write doc
@@ -34,7 +34,7 @@
 // FIXME: implement proper searching / SearchAction handling  2002-02-07 larsa
 // FIXME: implement proper writing / WriteAction handling  2002-02-07 larsa
 
-#include <SmallChange/nodes/Switchboard.h>
+#include <SmallChange/nodes/SmSwitchboard.h>
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/misc/SoChildList.h>
 
@@ -52,7 +52,7 @@
 #include <Inventor/errors/SoDebugError.h>
 
 /*!
-  \var SoMFBool Switchboard::enable
+  \var SoMFBool SmSwitchboard::enable
 
   Selects which child to traverse during rendering (and some other)
   actions.
@@ -69,19 +69,19 @@
 
 // doc in super
 void
-Switchboard::initClass(void)
+SmSwitchboard::initClass(void)
 {
-  SO_NODE_INIT_CLASS(Switchboard, SoGroup, SoGroup);
+  SO_NODE_INIT_CLASS(SmSwitchboard, SoGroup, SoGroup);
 }
 
-SO_NODE_SOURCE(Switchboard);
+SO_NODE_SOURCE(SmSwitchboard);
 
 /*!
   Default constructor.
 */
-Switchboard::Switchboard(void)
+SmSwitchboard::SmSwitchboard(void)
 {
-  SO_NODE_CONSTRUCTOR(Switchboard);
+  SO_NODE_CONSTRUCTOR(SmSwitchboard);
 
   SO_NODE_ADD_FIELD(enable, (FALSE));
 }
@@ -94,10 +94,10 @@ Switchboard::Switchboard(void)
   exact, as it is only used as a hint for better memory resource
   allocation.
 */
-Switchboard::Switchboard(int numchildren)
+SmSwitchboard::SmSwitchboard(int numchildren)
   : inherited(numchildren)
 {
-  SO_NODE_CONSTRUCTOR(Switchboard);
+  SO_NODE_CONSTRUCTOR(SmSwitchboard);
 
   SO_NODE_ADD_FIELD(enable, (FALSE));
 }
@@ -105,13 +105,13 @@ Switchboard::Switchboard(int numchildren)
 /*!
   Destructor.
 */
-Switchboard::~Switchboard(void) // virtual, protected
+SmSwitchboard::~SmSwitchboard(void) // virtual, protected
 {
 }
 
 // Documented in superclass.
 void
-Switchboard::doAction(SoAction * action)
+SmSwitchboard::doAction(SoAction * action)
 {
   // FIXME: take PathCode and stuff into consideration...
   if (action->isOfType(SoGetBoundingBoxAction::getClassTypeId())) {
@@ -147,24 +147,24 @@ Switchboard::doAction(SoAction * action)
 }
 
 void
-Switchboard::GLRender(SoGLRenderAction * action)
+SmSwitchboard::GLRender(SoGLRenderAction * action)
 {
-  Switchboard::doAction((SoAction *) action);
+  SmSwitchboard::doAction((SoAction *) action);
 }
 
 void
-Switchboard::getBoundingBox(SoGetBoundingBoxAction * action)
+SmSwitchboard::getBoundingBox(SoGetBoundingBoxAction * action)
 {
-  Switchboard::doAction((SoAction *) action);
+  SmSwitchboard::doAction((SoAction *) action);
 }
 
 void
-Switchboard::getMatrix(SoGetMatrixAction * action)
+SmSwitchboard::getMatrix(SoGetMatrixAction * action)
 {
   switch (action->getCurPathCode()) {
   case SoAction::OFF_PATH:
   case SoAction::IN_PATH:
-    Switchboard::doAction((SoAction *) action);
+    SmSwitchboard::doAction((SoAction *) action);
     break;
   default:
     break;
@@ -172,30 +172,30 @@ Switchboard::getMatrix(SoGetMatrixAction * action)
 }
 
 void
-Switchboard::callback(SoCallbackAction *action)
+SmSwitchboard::callback(SoCallbackAction *action)
 {
-  Switchboard::doAction(action);
+  SmSwitchboard::doAction(action);
 }
 
 // Documented in superclass.
 void
-Switchboard::pick(SoPickAction *action)
+SmSwitchboard::pick(SoPickAction *action)
 {
-  Switchboard::doAction((SoAction*)action);
+  SmSwitchboard::doAction((SoAction*)action);
 }
 
 // Documented in superclass.
 void
-Switchboard::handleEvent(SoHandleEventAction *action)
+SmSwitchboard::handleEvent(SoHandleEventAction *action)
 {
-  Switchboard::doAction(action);
+  SmSwitchboard::doAction(action);
 }
 
 void
-Switchboard::search(SoSearchAction * action)
+SmSwitchboard::search(SoSearchAction * action)
 {
   SoNode::search(action);
   if (action->isFound()) return;
-  Switchboard::doAction(action);
+  SmSwitchboard::doAction(action);
 }
 

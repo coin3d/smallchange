@@ -24,7 +24,7 @@
  *
 \**************************************************************************/
 
-#include <SmallChange/nodes/Switchboard.h>
+#include <SmallChange/nodes/SmSwitchboard.h>
 #include <Inventor/fields/SoMFEnum.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/events/SoKeyboardEvent.h>
@@ -32,14 +32,14 @@
 #include <SmallChange/basic.h>
 
 
-class SMALLCHANGE_DLL_API SwitchboardOperator : public Switchboard {
-  typedef Switchboard inherited;
-  SO_NODE_HEADER(SwitchboardOperator);
+class SMALLCHANGE_DLL_API SmSwitchboardOperator : public SmSwitchboard {
+  typedef SmSwitchboard inherited;
+  SO_NODE_HEADER(SmSwitchboardOperator);
 
 public:
   static void initClass(void);
-  SwitchboardOperator(void);
-  SwitchboardOperator(int numchildren);
+  SmSwitchboardOperator(void);
+  SmSwitchboardOperator(int numchildren);
 
   enum Behavior {
     NONE, TOGGLE, HOLD, INVERSE_HOLD, TIME_HOLD
@@ -115,7 +115,7 @@ public:
   virtual void handleEvent(SoHandleEventAction * action);
 
 protected:
-  virtual ~SwitchboardOperator(void);
+  virtual ~SmSwitchboardOperator(void);
 
 private:
   void constructor(void);

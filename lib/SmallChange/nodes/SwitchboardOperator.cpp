@@ -22,8 +22,8 @@
 \**************************************************************************/
 
 /*!
-  \class Switchboard Switchboard.h SmallChange/nodes/Switchboard.h
-  \brief The Switchboard class is a group node that can toggle children
+  \class SmSwitchboardOperator SmSwitchboardOperator.h SmallChange/nodes/SmSwitchboardOperator.h
+  \brief The SwitchboardOperator class is a group node that can toggle children
   on and off arbitrarily based on keyboard events.
 */
 
@@ -33,7 +33,7 @@
 //   write should just traverse each child once in ChildList order and
 //   write fields until there's only defaults left in the arrays
 
-#include <SmallChange/nodes/SwitchboardOperator.h>
+#include <SmallChange/nodes/SmSwitchboardOperator.h>
 #include <Inventor/nodes/SoSubNode.h>
 
 #include <Inventor/actions/SoHandleEventAction.h>
@@ -41,29 +41,29 @@
 
 #include <Inventor/errors/SoDebugError.h>
 
-SO_NODE_SOURCE(SwitchboardOperator);
+SO_NODE_SOURCE(SmSwitchboardOperator);
 
 void
-SwitchboardOperator::initClass(void)
+SmSwitchboardOperator::initClass(void)
 {
-  SO_NODE_INIT_CLASS(SwitchboardOperator, Switchboard, Switchboard);
+  SO_NODE_INIT_CLASS(SmSwitchboardOperator, SmSwitchboard, SmSwitchboard);
 }
 
-SwitchboardOperator::SwitchboardOperator(void)
+SmSwitchboardOperator::SmSwitchboardOperator(void)
 {
   this->constructor();
 }
 
-SwitchboardOperator::SwitchboardOperator(int numchildren)
+SmSwitchboardOperator::SmSwitchboardOperator(int numchildren)
 : inherited(numchildren)
 {
   this->constructor();
 }
 
 void
-SwitchboardOperator::constructor(void) // private
+SmSwitchboardOperator::constructor(void) // private
 {
-  SO_NODE_CONSTRUCTOR(SwitchboardOperator);
+  SO_NODE_CONSTRUCTOR(SmSwitchboardOperator);
 
   SO_NODE_ADD_FIELD(key, (UNDEFINED));
   SO_NODE_ADD_FIELD(behavior, (TOGGLE));
@@ -144,12 +144,12 @@ SwitchboardOperator::constructor(void) // private
   SO_NODE_SET_SF_ENUM_TYPE(behavior, Behavior);
 }
 
-SwitchboardOperator::~SwitchboardOperator(void) // virtual, protected
+SmSwitchboardOperator::~SmSwitchboardOperator(void) // virtual, protected
 {
 }
 
 void
-SwitchboardOperator::handleEvent(SoHandleEventAction * action)
+SmSwitchboardOperator::handleEvent(SoHandleEventAction * action)
 {
   const SoEvent * ev = action->getEvent();
   if ( ev->isOfType(SoKeyboardEvent::getClassTypeId()) ) {
@@ -173,7 +173,7 @@ SwitchboardOperator::handleEvent(SoHandleEventAction * action)
           this->enable.set1Value(idx, event->getState() == SoKeyboardEvent::DOWN ? FALSE : TRUE);
           break;
         case TIME_HOLD:
-          SoDebugError::postInfo("SwitchboardOperator::handleEvent", "not implemented yet");
+          SoDebugError::postInfo("SmSwitchboardOperator::handleEvent", "not implemented yet");
           break;
         default:
           break;

@@ -31,14 +31,14 @@
 #include <SmallChange/basic.h>
 
 
-class SMALLCHANGE_DLL_API Switchboard : public SoGroup {
+class SMALLCHANGE_DLL_API SmSwitchboard : public SoGroup {
   typedef SoGroup inherited;
-  SO_NODE_HEADER(Switchboard);
+  SO_NODE_HEADER(SmSwitchboard);
 
 public:
   static void initClass(void);
-  Switchboard(void);
-  Switchboard(int numchildren);
+  SmSwitchboard(void);
+  SmSwitchboard(int numchildren);
 
   SoMFBool enable;
 
@@ -52,7 +52,7 @@ public:
   virtual void search(SoSearchAction * action);
 
 protected:
-  virtual ~Switchboard(void);
+  virtual ~SmSwitchboard(void);
 
 };
 
