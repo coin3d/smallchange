@@ -162,7 +162,10 @@ SmCameraControlKit::handleEvent(SoHandleEventAction * action)
   inherited::handleEvent(action);
   if (!action->isHandled()) {
     SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
-    if (eh) eh->handleEvent(action);
+    if (eh) {
+      if (eh) eh->setViewportRegion(SoViewportRegionElement::get(action->getState()));
+      eh->handleEvent(action);
+    }
   }
 }
 
@@ -201,6 +204,14 @@ SmCameraControlKit::viewAll(const SbViewportRegion & vp,
   }
   SoBaseKit::setSearchingChildren(oldsearch);
   cam->viewAll(root, vp, slack);
+  if (cam->isOfType(UTMCamera::getClassTypeId())) {
+    // move from position to utmposition and set position to (0,0,0)
+    UTMCamera * utm = (UTMCamera*) cam;
+    SbVec3d utmpos = utm->utmposition.getValue();
+    utmpos += SbVec3d(utm->position.getValue());
+    utm->position = SbVec3f(0.0f, 0.0f, 0.0f);
+    utm->utmposition = utmpos;
+  }
 }
 
 SbBool 
