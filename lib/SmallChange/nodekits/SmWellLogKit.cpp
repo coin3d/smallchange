@@ -659,16 +659,16 @@ SmWellLogKit::notify(SoNotList * l)
 void 
 SmWellLogKit::setDefaultOnNonWritingFields(void)
 {
-//   SoFieldList fl;
-//   (void) this->getFields(fl);
-//   for (int i = 0; i < fl.getLength(); i++) {
-//     SoField * f = fl[i];
-//     if (f->isOfType(SoSFNode::getClassTypeId()) &&
-//         f != &this->transform) {
-//       f->setDefault(TRUE);
-//     }
-//   }  
-//   inherited::setDefaultOnNonWritingFields();
+  SoFieldList fl;
+  (void) this->getFields(fl);
+  for (int i = 0; i < fl.getLength(); i++) {
+    SoField * f = fl[i];
+    if (f->isOfType(SoSFNode::getClassTypeId()) &&
+        f != &this->transform) {
+      f->setDefault(TRUE);
+    }
+  }  
+  inherited::setDefaultOnNonWritingFields();
 }
 
 #undef PRIVATE
