@@ -21,7 +21,6 @@
  *
 \**************************************************************************/
 
-
 #include <Inventor/nodekits/SoShapeKit.h>
 #include <Inventor/nodes/SoCone.h>
 #include <Inventor/nodes/SoCube.h>
@@ -31,7 +30,7 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoComplexity.h>
 #include <Inventor/nodes/SoText2.h>
-#include <Inventor/nodes/SoLOD.h>
+#include <Inventor/nodes/SoLevelOfDetail.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 
 #include "SmAxisKit.h"
@@ -55,13 +54,19 @@ public:
   SoFieldSensor * axisNameSensor;
   SoFieldSensor * arrowColorSensor;
 
+  SoSeparator * masterAxis;
+  SoText2 * axisName;
+
   SoSeparator * axisRoot;
   SoSeparator * generateAxis(int LODlevel);
   void generateLOD();
+  void setupMasterNodes();
+
 
 };
 
 static void fieldsChangedCallback(void * classObject, SoSensor * sensor);
+static void axisNameChangedCallback(void * classObject, SoSensor * sensor);
 
 #define PRIVATE(p) (p->pimpl)
 #define PUBLIC(p) (p->master)
@@ -94,9 +99,14 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->axisRoot = new SoSeparator;
   PRIVATE(this)->axisRoot->ref();
 
+  PRIVATE(this)->setupMasterNodes();
   PRIVATE(this)->generateLOD();
 
   setPart("topSeparator", PRIVATE(this)->axisRoot);
+
+  PRIVATE(this)->axisNameSensor = new SoFieldSensor(axisNameChangedCallback,PRIVATE(this));
+  PRIVATE(this)->axisNameSensor->setPriority(0);
+  PRIVATE(this)->axisNameSensor->attach(&this->axisName);
 
   PRIVATE(this)->axisRangeSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->axisRangeSensor->setPriority(0);
@@ -118,10 +128,6 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->digitsSensor->setPriority(0);
   PRIVATE(this)->digitsSensor->attach(&this->digits);
 
-  PRIVATE(this)->axisNameSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
-  PRIVATE(this)->axisNameSensor->setPriority(0);
-  PRIVATE(this)->axisNameSensor->attach(&this->axisName);
-
   PRIVATE(this)->arrowColorSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->arrowColorSensor->setPriority(0);
   PRIVATE(this)->arrowColorSensor->attach(&this->arrowColor);
@@ -129,8 +135,15 @@ SmAxisKit::SmAxisKit()
 
 SmAxisKit::~SmAxisKit()
 {
-  // FIXME: looks like there are leaks here? From a quick look, the
-  // sensors should at least be deallocated, methinks. 20031020 mortene.
+  delete PRIVATE(this)->axisRangeSensor;
+  delete PRIVATE(this)->markerIntervalSensor;
+  delete PRIVATE(this)->markerWidthSensor;
+  delete PRIVATE(this)->textIntervalSensor;
+  delete PRIVATE(this)->digitsSensor;
+  delete PRIVATE(this)->axisNameSensor;
+  delete PRIVATE(this)->arrowColorSensor;
+  PRIVATE(this)->axisRoot->removeAllChildren();
+  PRIVATE(this)->axisRoot->unref();
 }
 
 void
@@ -149,17 +162,12 @@ void
 SmAxisKitP::generateLOD()
 {
 
-  SoLOD * LODnode = new SoLOD;
+  SoLevelOfDetail * LODnode = new SoLevelOfDetail;
  
-  // FIXME: The user should be able to control these values during
-  // runtime. (20031020 handegar)
-  //
-  // UPDATE: use an SoLevelOfDetail node instead, as that can be set
-  // once and for all with ~ universally valid values. 20031020 mortene.
-  LODnode->range.set1Value(0, 50);
-  LODnode->range.set1Value(1, 80);
-  LODnode->range.set1Value(2, 110);
-  LODnode->range.set1Value(3, 150);  
+  LODnode->screenArea.set1Value(0, 2000);
+  LODnode->screenArea.set1Value(1, 1200);
+  LODnode->screenArea.set1Value(2, 300);
+  LODnode->screenArea.set1Value(3, 50);  
   
   for (int i=0;i<4;++i) 
     LODnode->addChild(this->generateAxis(i));
@@ -168,14 +176,16 @@ SmAxisKitP::generateLOD()
 
 }
 
-SoSeparator * 
-SmAxisKitP::generateAxis(int LODlevel)
+void
+SmAxisKitP::setupMasterNodes()
 {
 
-  SoSeparator * root = new SoSeparator;
+  // Setting up the nodes which are used for every LOD 
+  
   float range = (this->master->axisRange[0][1] - this->master->axisRange[0][0]);
 
   // Axis
+  masterAxis = new SoSeparator;
   SoSeparator * sep1 = new SoSeparator;
   SoCylinder * axisCylinder = new SoCylinder;
   SoTranslation * trans1 = new SoTranslation;
@@ -204,8 +214,34 @@ SmAxisKitP::generateAxis(int LODlevel)
   sep1->addChild(trans2);
   sep1->addChild(arrowColor);
   sep1->addChild(arrow);
+    
+  SoSeparator * axisnamesep = new SoSeparator;
+  SoTranslation * trans3 = new SoTranslation;
+  trans3->translation.setValue(0.0f, 2.0f, 0.0f);
 
-  root->addChild(sep1);
+  axisName = new SoText2;  
+  axisName->string.setValue(this->master->axisName[0]);
+    
+  axisnamesep->addChild(axisColor);
+  axisnamesep->addChild(trans1);
+  axisnamesep->addChild(trans1);
+  axisnamesep->addChild(trans2);
+  axisnamesep->addChild(trans3);
+  axisnamesep->addChild(axisName);
+
+  masterAxis->addChild(sep1);
+  masterAxis->addChild(axisnamesep);
+
+}
+
+SoSeparator * 
+SmAxisKitP::generateAxis(int LODlevel)
+{
+
+  SoSeparator * root = new SoSeparator;
+  float range = (this->master->axisRange[0][1] - this->master->axisRange[0][0]);
+ 
+  root->addChild(this->masterAxis);
 
   // Markers
   SoSeparator * sep3 = new SoSeparator;
@@ -274,21 +310,13 @@ SmAxisKitP::generateAxis(int LODlevel)
   root->addChild(sep3);
 
   // Text
-  SoSeparator * axisnamesep = new SoSeparator;
   SoSeparator * textsep = new SoSeparator;
-  SoText2 * axisText = new SoText2;  
   SoTranslation * ttrans1 = new SoTranslation;
   SoTranslation * ttrans2 = new SoTranslation;
-  SoTranslation * ttrans3 = new SoTranslation;
 
   ttrans1->translation.setValue(0.0f, this->master->textInterval[0], 0.0f);
-  ttrans2->translation.setValue(0.0f, 0.0f, 1.4f);
-  ttrans3->translation.setValue(0.0f, 2.0f, 0.0f);
-  
-  axisText->string.setValue(this->master->axisName[0]);
-
+  ttrans2->translation.setValue(0.0f, 0.0f, 1.4f);  
   textsep->addChild(ttrans2);
-
 
   SbString tmpstr;
   const char * tmptext = (tmpstr.sprintf("%%.%df", this->master->digits[0])).getString();  
@@ -329,14 +357,6 @@ SmAxisKitP::generateAxis(int LODlevel)
 
   }
 
-  axisnamesep->addChild(axisColor);
-  axisnamesep->addChild(trans1);
-  axisnamesep->addChild(trans1);
-  axisnamesep->addChild(trans2);
-  axisnamesep->addChild(ttrans3);
-  axisnamesep->addChild(axisText);
-
-  root->addChild(axisnamesep);
   root->addChild(textsep);
    
   return root;
@@ -348,4 +368,10 @@ static void fieldsChangedCallback(void * classObject, SoSensor * sensor)
   SmAxisKitP * thisp = (SmAxisKitP *) classObject;  // Fetch caller object
   thisp->axisRoot->removeAllChildren();
   thisp->generateLOD();
+}
+
+static void axisNameChangedCallback(void * classObject, SoSensor * sensor)
+{
+  SmAxisKitP * thisp = (SmAxisKitP *) classObject;  // Fetch caller object
+  thisp->axisName->string.setValue(thisp->master->axisName[0]);
 }
