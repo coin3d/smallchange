@@ -229,19 +229,25 @@ struct sc_GL GL =
 };
 
 #define GL_FUNCTION_SETTER(func) \
-void                             \
+static void                      \
 sc_set_##func(void * fptr)       \
 {                                \
   GL.func = (func##_f) fptr;     \
 }
 
 GL_FUNCTION_SETTER(glPolygonOffset)
+
+/* texture objects */
 GL_FUNCTION_SETTER(glGenTextures)
 GL_FUNCTION_SETTER(glBindTexture)
 GL_FUNCTION_SETTER(glTexImage2D)
 GL_FUNCTION_SETTER(glDeleteTextures)
+
+/* multi-texturing */
 GL_FUNCTION_SETTER(glMultiTexCoord2f)
 GL_FUNCTION_SETTER(glClientActiveTexture)
+
+/* vertex arrays */
 GL_FUNCTION_SETTER(glEnableClientState)
 GL_FUNCTION_SETTER(glDisableClientState)
 GL_FUNCTION_SETTER(glVertexPointer)
@@ -355,7 +361,7 @@ sc_suggest_bytenormals(void)
 void
 sc_probe_gl(sc_msghandler_fp msghandler)
 {
-  // should assert on having a current GL context here...
+  // FIXME: should assert on having a current GL context here...
 
   // Note that this function can be called multiple times, each time
   // for new contexts, so old state information must be scrapped.
@@ -669,7 +675,7 @@ sc_probe_gl(sc_msghandler_fp msghandler)
 #undef GL_PROC_ADDRESS2
 #undef GL_PROC_SEARCH
 
-void
+static void
 sc_set_max_defensive_settings(void)
 {
   GL.HAVE_VERTEXARRAYS = FALSE;
@@ -695,7 +701,7 @@ struct texture_info {
   float quality;
 };
 
-void *
+static void *
 sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
 {
   texture_info * info = new texture_info;
@@ -717,7 +723,7 @@ sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, i
   return info;
 }
 
-void
+static void
 sc_default_texture_activate(RenderState * state, void * handle)
 {
   texture_info * info = (texture_info *) handle;
@@ -753,7 +759,7 @@ sc_default_texture_activate(RenderState * state, void * handle)
   // glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-void
+static void
 sc_default_texture_release(void * handle)
 {
   texture_info * info = (texture_info *) handle;
@@ -762,6 +768,10 @@ sc_default_texture_release(void * handle)
   GL.glDeleteTextures(1, &info->id);
   delete info;
 }
+
+typedef void * sc_texture_construct_f(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey);
+typedef void sc_texture_activate_f(RenderState * state, void * handle);
+typedef void sc_texture_release_f(void * handle);
 
 static sc_texture_construct_f * texture_construct = sc_default_texture_construct;
 static sc_texture_activate_f * texture_activate = sc_default_texture_activate;
@@ -1249,7 +1259,7 @@ sc_plane_culling_post_cb(void * closure)
   PRIVATE(state)->cullstate.pop();
 }
 
-int
+static int
 sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
 {
   assert(closure);
@@ -1288,7 +1298,7 @@ sc_ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
   return FALSE; // culled
 }
 
-void
+static void
 sc_ray_culling_post_cb(void * closure)
 {
   // nothing to do here
@@ -2370,8 +2380,8 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
         ss_render_get_elevation_measures(PRIVATE(state)->blockinfo,
                                          voffset, vspacing,
                                          dimension,
-	 &elevation, &texture,
-	 &datasets);
+                                         &elevation, &texture,
+                                         &datasets);
         int x = (int) ((intersectionpoint[0] - voffset[0]) / vspacing[0]);
         int y = (int) ((intersectionpoint[1] - voffset[1]) / vspacing[1]);
         // printf("x, y   : %g, %g\n", intersectionpoint[0], intersectionpoint[1]);
@@ -2383,10 +2393,7 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
   }
 }
 
-/*!
-*/
-
-void
+static void
 sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info)
 {
   assert(closure);
@@ -2401,7 +2408,7 @@ sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info)
   PRIVATE(state)->blockinfo = info;
 }
 
-void
+static void
 sc_raypick_post_cb(void * closure, ss_render_block_cb_info * info)
 {
   assert(closure);
@@ -2419,10 +2426,8 @@ sc_raypick_post_cb(void * closure, ss_render_block_cb_info * info)
     intersect(state, first, second, third); \
   }
 
-/*!
-*/
 
-void 
+static void 
 sc_raypick_cb(void * closure, const int x, const int y,
                const int len, const unsigned int bitmask)
 {
@@ -2473,10 +2478,8 @@ sc_raypick_cb(void * closure, const int x, const int y,
     intersect((state), first, second, third); \
   }
 
-/*!
-*/
 
-void 
+static void 
 sc_undefraypick_cb(void * closure, const int x, const int y,
                     const int len, const unsigned int bitmask_org)
 {
