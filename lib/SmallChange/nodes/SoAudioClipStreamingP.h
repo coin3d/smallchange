@@ -27,4 +27,7 @@ public:
   ALuint *streamingBuffers;
   int bufferSize;
   int numBuffers;
+
+  SbBool (*usercallback)(void *buffer, int length, void * userdataptr);
+  void *userdata;
 };

@@ -37,6 +37,8 @@ SoAudioClipStreaming::SoAudioClipStreaming()
   THIS->streamingBuffers = NULL;
   THIS->numBuffers = 0;
   this->setBufferInfo(0, 0);
+  THIS->usercallback = NULL;
+  THIS->userdata = NULL;
 };
 
 SoAudioClipStreaming::~SoAudioClipStreaming()
@@ -72,6 +74,13 @@ void SoAudioClipStreaming::setBufferInfo(int bufferSize, int numBuffers)
   THIS->bufferSize = bufferSize;
   THIS->numBuffers = numBuffers;
 };
+
+void SoAudioClipStreaming::setUserCallback(SbBool (*usercallback)(void *buffer, int length, void * userdataptr),
+  void *userdata)
+{
+  THIS->usercallback = usercallback;
+  THIS->userdata = userdata;
+}
 
 
 SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
@@ -118,6 +127,10 @@ SbBool SoAudioClipStreamingP::stopPlaying(SbBool force)
 
 SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
 {
+  if (this->usercallback != NULL)
+    return this->usercallback(buffer, size, this->userdata);
+/*
+
   short int *ibuffer = (short int *)buffer;
   static double freq = 600.0;
   static double ffreq = 600.0;
@@ -153,16 +166,12 @@ SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
 
 //      ibuffer[i]= value;
 
-/*
-    if ((counter+i)%4100<2050)
-      ibuffer[i] = 0.0;
-    else
-      ibuffer[i] = 32000.0*sin( ((float)i)/44100.0*2*3.14159265358979323846264383*freq);
-*/
   }
   counter+=size;
 
   return TRUE;
+*/
+
 /*
   short int *ibuffer = (short int *)buffer;
   static double freq = 880.0;

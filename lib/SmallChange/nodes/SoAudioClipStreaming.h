@@ -17,6 +17,8 @@ public:
   void setBufferInfo(int bufferSize, int numBuffers);
   int getBufferSize();
   int getNumBuffers();
+  void setUserCallback(int (*user_callback)(void *buffer, int length, void * userdataptr),
+    void *userdata=NULL);
 
 protected:
 	virtual ~SoAudioClipStreaming();
