@@ -39,6 +39,7 @@
 #include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/nodes/SoPolygonOffset.h>
 #include <Inventor/nodes/SoInfo.h>
+#include <Inventor/nodes/SoTransform.h>
 #include <Inventor/nodes/SoCamera.h>
 #include <Inventor/nodes/SoCallback.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
@@ -121,13 +122,13 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(name,(""));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
 
-  SO_KIT_ADD_FIELD(fieldNames, (""));
-  SO_KIT_ADD_FIELD(fieldDataValues, (0.0f));
+  SO_KIT_ADD_FIELD(curveNames, (""));
+  SO_KIT_ADD_FIELD(curveData, (0.0f));
   SO_KIT_ADD_FIELD(leftSize, (50.0f));
   SO_KIT_ADD_FIELD(rightSize, (50.0f));
   
-  SO_KIT_ADD_FIELD(leftFieldIndex, (-1));
-  SO_KIT_ADD_FIELD(rightFieldIndex, (-1));
+  SO_KIT_ADD_FIELD(leftCurveIndex, (-1));
+  SO_KIT_ADD_FIELD(rightCurveIndex, (-1));
 
   SO_KIT_ADD_FIELD(leftUseLog, (FALSE));
   SO_KIT_ADD_FIELD(rightUseLog, (FALSE));
@@ -137,13 +138,14 @@ SmWellLogKit::SmWellLogKit(void)
   
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
-  this->fieldNames.setNum(0);
-  this->fieldNames.setDefault(TRUE);
-  this->fieldDataValues.setNum(0);
-  this->fieldDataValues.setDefault(TRUE);
+  this->curveNames.setNum(0);
+  this->curveNames.setDefault(TRUE);
+  this->curveData.setNum(0);
+  this->curveData.setDefault(TRUE);
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(utm, UTMPosition, FALSE, topSeparator, topLod, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(utm, UTMPosition, FALSE, topSeparator, transform, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(transform, SoTransform, FALSE, topSeparator, topLod, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLod, SoLOD, FALSE, topSeparator, "", TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLodGroup, SoSeparator, FALSE, topLod, topInfo, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, shapeHints, FALSE);
@@ -205,17 +207,17 @@ SmWellLogKit::initClass(void)
 }
 
 int 
-SmWellLogKit::getNumFields(void) const
+SmWellLogKit::getNumCurves(void) const
 {
-  return this->fieldNames.getNum();
+  return this->curveNames.getNum();
 }
 
 int 
-SmWellLogKit::getNumFieldValues(void) const
+SmWellLogKit::getNumCurveValues(void) const
 {
-  int num = this->getNumFields();
+  int num = this->getNumCurves();
   if (num) {
-    return this->fieldDataValues.getNum() / num;
+    return this->curveData.getNum() / num;
   }
   return 0;
 }
@@ -224,40 +226,40 @@ float
 SmWellLogKit::getDepth(const int idx) const
 {
   // FIXME: assumes depth is always first. Add depthIndex field?
-  int num = this->getNumFields();
+  int num = this->getNumCurves();
   if (num) {
     int fidx = idx*num;
-    assert(fidx < this->fieldDataValues.getNum());
-    if (fidx < this->fieldDataValues.getNum()) {
-      return this->fieldDataValues[fidx];
+    assert(fidx < this->curveData.getNum());
+    if (fidx < this->curveData.getNum()) {
+      return this->curveData[fidx];
     }
   }
   return 0.0f;
 }
 
 float 
-SmWellLogKit::getLeftData(const int idx) const
+SmWellLogKit::getLeftCurveData(const int idx) const
 {
-  int num = this->getNumFields();
-  if (num && this->leftFieldIndex.getValue() >= 0) {
-    int fidx = idx*num + this->leftFieldIndex.getValue();
-    assert(fidx < this->fieldDataValues.getNum());
-    if (fidx < this->fieldDataValues.getNum()) {
-      return this->fieldDataValues[fidx];
+  int num = this->getNumCurves();
+  if (num && this->leftCurveIndex.getValue() >= 0) {
+    int fidx = idx*num + this->leftCurveIndex.getValue();
+    assert(fidx < this->curveData.getNum());
+    if (fidx < this->curveData.getNum()) {
+      return this->curveData[fidx];
     }
   }
   return this->undefVal.getValue();
 }
 
 float 
-SmWellLogKit::getRightData(const int idx) const
+SmWellLogKit::getRightCurveData(const int idx) const
 {
-  int num = this->getNumFields();
-  if (num && this->rightFieldIndex.getValue() >= 0) {
-    int fidx = idx*num + this->rightFieldIndex.getValue();
-    assert(fidx < this->fieldDataValues.getNum());
-    if (fidx < this->fieldDataValues.getNum()) {
-      return this->fieldDataValues[fidx];
+  int num = this->getNumCurves();
+  if (num && this->rightCurveIndex.getValue() >= 0) {
+    int fidx = idx*num + this->rightCurveIndex.getValue();
+    assert(fidx < this->curveData.getNum());
+    if (fidx < this->curveData.getNum()) {
+      return this->curveData[fidx];
     }
   }
   return this->undefVal.getValue();
@@ -861,8 +863,8 @@ SmWellLogKitP::updateList(void)
     pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.tvdepth = - t[2];
     // FIXME: remove fabs
-    pos.left = PUBLIC(this)->getLeftData(i);
-    pos.right = PUBLIC(this)->getRightData(i);
+    pos.left = PUBLIC(this)->getLeftCurveData(i);
+    pos.right = PUBLIC(this)->getRightCurveData(i);
     
     if (!this->poslist.getLength() || SbAbs(pos.mdepth-prevdepth) >= EPS) {
       this->poslist.append(pos);

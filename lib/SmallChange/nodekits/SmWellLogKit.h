@@ -47,6 +47,7 @@ class SMALLCHANGE_DLL_API SmWellLogKit : public SoBaseKit {
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(utm);
+  SO_KIT_CATALOG_ENTRY_HEADER(transform);
   SO_KIT_CATALOG_ENTRY_HEADER(topLod);
   SO_KIT_CATALOG_ENTRY_HEADER(topLodGroup);
   SO_KIT_CATALOG_ENTRY_HEADER(lightModel);
@@ -73,13 +74,13 @@ public:
   SoSFString name;
   SoMFVec3d wellCoord;
   
-  SoMFString fieldNames;
-  SoMFFloat fieldDataValues;
+  SoMFString curveNames;
+  SoMFFloat curveData;
   SoSFFloat leftSize;
   SoSFFloat rightSize;
 
-  SoSFInt32 leftFieldIndex;
-  SoSFInt32 rightFieldIndex;
+  SoSFInt32 leftCurveIndex;
+  SoSFInt32 rightCurveIndex;
 
   SoSFBool leftUseLog;
   SoSFBool rightUseLog;
@@ -109,11 +110,11 @@ public:
   
 private:
   
-  int getNumFields(void) const;
-  int getNumFieldValues(void) const;
+  int getNumCurves(void) const;
+  int getNumCurveValues(void) const;
   float getDepth(const int idx) const;
-  float getLeftData(const int idx) const;
-  float getRightData(const int idx) const;
+  float getLeftCurveData(const int idx) const;
+  float getRightCurveData(const int idx) const;
 
   friend class SmWellLogKitP;
   SmWellLogKitP * pimpl;
