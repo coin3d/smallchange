@@ -171,20 +171,20 @@ INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 libengines_la_SOURCES = \
 	Rot2Heading.cpp Rot2Heading.h \
 	CubicSplineEngine.cpp CubicSplineEngine.h \
-	InverseRotation.cpp InverseRotation.h
+	SmInverseRotation.cpp SmInverseRotation.h
 
 
 engines_lst_SOURCES = \
 	Rot2Heading.cpp Rot2Heading.h \
 	CubicSplineEngine.cpp CubicSplineEngine.h \
-	InverseRotation.cpp InverseRotation.h
+	SmInverseRotation.cpp SmInverseRotation.h
 
 
 libenginesincdir = $(includedir)/SmallChange/engines
 libenginesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/engines/Rot2Heading.h \
 	$(top_srcdir)/lib/SmallChange/engines/CubicSplineEngine.h \
-	$(top_srcdir)/lib/SmallChange/engines/InverseRotation.h
+	$(top_srcdir)/lib/SmallChange/engines/SmInverseRotation.h
 
 subdir = lib/SmallChange/engines
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -196,14 +196,14 @@ LIBRARIES = $(noinst_LIBRARIES)
 engines_lst_AR = $(AR) cru
 engines_lst_LIBADD =
 am_engines_lst_OBJECTS = Rot2Heading.$(OBJEXT) \
-	CubicSplineEngine.$(OBJEXT) InverseRotation.$(OBJEXT)
+	CubicSplineEngine.$(OBJEXT) SmInverseRotation.$(OBJEXT)
 engines_lst_OBJECTS = $(am_engines_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libengines_la_LDFLAGS =
 libengines_la_LIBADD =
 am_libengines_la_OBJECTS = Rot2Heading.lo CubicSplineEngine.lo \
-	InverseRotation.lo
+	SmInverseRotation.lo
 libengines_la_OBJECTS = $(am_libengines_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -211,10 +211,10 @@ depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/CubicSplineEngine.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CubicSplineEngine.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/InverseRotation.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/InverseRotation.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Rot2Heading.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Rot2Heading.Po
+@AMDEP_TRUE@	./$(DEPDIR)/Rot2Heading.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmInverseRotation.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmInverseRotation.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -268,10 +268,10 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CubicSplineEngine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CubicSplineEngine.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InverseRotation.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InverseRotation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Rot2Heading.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Rot2Heading.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmInverseRotation.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmInverseRotation.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
