@@ -254,6 +254,7 @@ SmColorGradient::loadFilename(void)
 
   this->color.setDefault(TRUE);
   this->parameter.setDefault(TRUE);
+  this->filename.setDefault(FALSE);
 
   return TRUE;
 }
