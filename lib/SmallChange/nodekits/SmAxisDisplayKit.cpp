@@ -88,6 +88,7 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoComplexityTypeElement.h>
 #include <Inventor/elements/SoComplexityElement.h>
+#include <Inventor/elements/SoLightModelElement.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoDrawStyle.h>
@@ -100,6 +101,9 @@
 #include <Inventor/nodes/SoCallback.h>
 #include <Inventor/nodes/SoLightModel.h>
 #include <Inventor/nodes/SoText2.h>
+#include <Inventor/nodes/SoSwitch.h>
+#include <Inventor/nodes/SoInfo.h>
+#include <Inventor/nodes/SoDirectionalLight.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
@@ -138,6 +142,7 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SO_KIT_ADD_FIELD(colors, (1.0f, 1.0f, 1.0f));
   SO_KIT_ADD_FIELD(enableArrows, (TRUE));
   SO_KIT_ADD_FIELD(annotations, (""));
+  SO_KIT_ADD_FIELD(headlight, (TRUE));
 
   this->axes.setNum(0);
   this->axes.setDefault(TRUE);
@@ -148,8 +153,10 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(cameraCallback, SoCallback, FALSE, topSeparator, camera, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(camera, SoPerspectiveCamera, FALSE, topSeparator, viewportRegion, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(viewportRegion, ViewportRegion, FALSE, topSeparator, drawstyle, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, lightmodel, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(lightmodel, SoLightModel, FALSE, topSeparator, axessep, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, headlightSwitch, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(headlightSwitch, SoSwitch, FALSE, topSeparator, axessep, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(headlightDummy, SoInfo, FALSE, headlightSwitch, headlightNode, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SoDirectionalLight, FALSE, headlightSwitch, "", TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(axessep, SoSeparator, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
@@ -166,8 +173,11 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SoDrawStyle *drawstyle = (SoDrawStyle *)this->getAnyPart("drawstyle", TRUE);
   drawstyle->lineWidth = 2;
 
-  SoLightModel *lightmodel = (SoLightModel *)this->getAnyPart("lightmodel", TRUE);
-  lightmodel->model = SoLightModel::BASE_COLOR;
+  SoSwitch * sw = (SoSwitch*) this->getAnyPart("headlightSwitch", TRUE);
+  sw->whichChild.connectFrom(&this->headlight);
+
+  SoDirectionalLight * l = (SoDirectionalLight*) this->getAnyPart("headlightNode", TRUE);
+  l->direction.enableNotify(FALSE);
 }
 
 /*!
@@ -208,6 +218,9 @@ SmAxisDisplayKit::GLRender(SoGLRenderAction *action)
     SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
     SoComplexityElement::set(state, this, SoComplexityElement::getDefault());
     SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
+    SoLightModelElement::set(state, this, this->headlight.getValue() ? 
+                             SoLightModelElement::PHONG :
+                             SoLightModelElement::BASE_COLOR);
     inherited::GLRender(action);
     state->pop();
   }
@@ -432,6 +445,15 @@ SmAxisDisplayKitP::callback_cb(void * userdata, SoAction * action)
     SbVec3f dir;
     rot.multVec(SbVec3f(0.0f, 0.0f, 1.0f), dir);
     camera->position.setValue(7.0f*dir); // Just a good guess
+
+
+    if (PUBLIC(thisp)->headlight.getValue()) {
+      SoDirectionalLight * l = (SoDirectionalLight*) PUBLIC(thisp)->getAnyPart("headlightNode", TRUE);
+      SbVec3f dir(0.0f, 0.0f, -1.0f);
+      l->direction.enableNotify(FALSE);
+      camera->orientation.getValue().multVec(dir, dir);
+      l->direction = dir;
+    }
   }
 }
 

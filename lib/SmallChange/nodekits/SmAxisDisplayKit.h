@@ -28,6 +28,7 @@
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFRotation.h>
 #include <Inventor/fields/SoMFBool.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoMFVec3f.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoMFColor.h>
@@ -44,7 +45,9 @@ class SMALLCHANGE_DLL_API SmAxisDisplayKit : public SoBaseKit
   SO_KIT_CATALOG_ENTRY_HEADER(camera);
   SO_KIT_CATALOG_ENTRY_HEADER(viewportRegion);
   SO_KIT_CATALOG_ENTRY_HEADER(drawstyle);
-  SO_KIT_CATALOG_ENTRY_HEADER(lightmodel);
+  SO_KIT_CATALOG_ENTRY_HEADER(headlightSwitch);
+  SO_KIT_CATALOG_ENTRY_HEADER(headlightDummy);
+  SO_KIT_CATALOG_ENTRY_HEADER(headlightNode);
   SO_KIT_CATALOG_ENTRY_HEADER(axessep);
 
 public:
@@ -53,6 +56,7 @@ public:
   SoMFColor colors;
   SoMFBool enableArrows;
   SoMFString annotations;
+  SoSFBool headlight;
 
   SmAxisDisplayKit(void);
 
