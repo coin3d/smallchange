@@ -59,6 +59,15 @@ public:
   SoCamera * camera;
   SoColorPacker colorpacker;
   SbColor overlaycolor;
+  
+  void clearBuffers(SbBool color, SbBool depth) {
+    const SbColor bgcol = this->master->getBackgroundColor();
+    GLbitfield mask = 0;
+    if (color) mask |= GL_COLOR_BUFFER_BIT;
+    if (depth) mask |= GL_DEPTH_BUFFER_BIT;
+    glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0f);
+    glClear(mask);
+  }
 
   SoCamera * getCamera(void) {
     if (this->camera) return this->camera;
@@ -133,9 +142,7 @@ SmSceneManager::render(SoGLRenderAction * action,
     SoCamera * camera = PRIVATE(this)->getCamera();
     if (!camera) return;
 
-    const SbColor bgcol = this->getBackgroundColor();
-    glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0f);
-    glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+    PRIVATE(this)->clearBuffers(TRUE, TRUE);
     camera->setStereoAdjustment(PRIVATE(this)->stereooffset);
     camera->setStereoMode(SoCamera::LEFT_VIEW);
     
@@ -157,7 +164,7 @@ SmSceneManager::render(SoGLRenderAction * action,
 
     camera->setStereoMode(SoCamera::RIGHT_VIEW);
     switch (PRIVATE(this)->stereomode) {      
-    case RED_CYAN:
+    case RED_CYAN:      
       glClear(GL_DEPTH_BUFFER_BIT);
       glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
       break;
@@ -320,7 +327,7 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
   SoState * state = action->getState();
   SoNode * node = PRIVATE(this)->dummynode;
   SbBool didpush = FALSE;
-
+  
   switch (PRIVATE(this)->rendermode) {
   case AS_IS:
     inherited::render(action, initmatrices, clearwindow, clearzbuffer);
@@ -343,8 +350,36 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
     SoOverrideElement::setLightModelOverride(state, node, TRUE);
     inherited::render(action, initmatrices, clearwindow, clearzbuffer);
     break;
-  case WIREFRAME_OVERLAY:
+  case HIDDEN_LINE:
     {
+      state->push();
+      didpush = TRUE;
+
+      // must clear before setting draw mask
+      PRIVATE(this)->clearBuffers(TRUE, TRUE);
+
+      // only draw into depth buffer
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      SoMaterialBindingElement::set(state, node, SoMaterialBindingElement::OVERALL);
+      SoLightModelElement::set(state, node, SoLightModelElement::BASE_COLOR);
+      SoPolygonOffsetElement::set(state, node, 1.0f, 1.0f,
+                                  SoPolygonOffsetElement::FILLED, TRUE);
+      SoOverrideElement::setPolygonOffsetOverride(state, node, TRUE);
+      SoOverrideElement::setLightModelOverride(state, node, TRUE);
+      SoOverrideElement::setMaterialBindingOverride(state, node, TRUE);
+      inherited::render(action, initmatrices, FALSE, FALSE);
+
+      // reenable draw masks
+      glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+      SoPolygonOffsetElement::set(state, node, 0.0f, 0.0f,
+                                  SoPolygonOffsetElement::FILLED, FALSE);
+      SoDrawStyleElement::set(state, node, SoDrawStyleElement::LINES);
+      SoOverrideElement::setDrawStyleOverride(state, node, TRUE);
+      SoOverrideElement::setMaterialBindingOverride(state, node, FALSE);
+      inherited::render(action, initmatrices, FALSE, FALSE);    
+    }
+    break;
+  case WIREFRAME_OVERLAY:
       state->push();
       didpush = TRUE;
       SoPolygonOffsetElement::set(state, node, 1.0f, 1.0f,
@@ -364,8 +399,8 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
       SoOverrideElement::setMaterialBindingOverride(state, node, TRUE);
       SoOverrideElement::setDrawStyleOverride(state, node, TRUE);
       inherited::render(action, initmatrices, FALSE, FALSE);    
-    }
     break;
+
   case BOUNDING_BOX:
     state->push();
     didpush = TRUE;

@@ -25,11 +25,12 @@
 \**************************************************************************/
 
 #include <Inventor/SoSceneManager.h>
+#include <SmallChange/basic.h>
 
 class SmSceneManagerP;
 class SoCamera;
 
-class SmSceneManager : public SoSceneManager {
+class SMALLCHANGE_DLL_API SmSceneManager : public SoSceneManager {
   typedef SoSceneManager inherited;
 public:
   SmSceneManager();
@@ -47,6 +48,7 @@ public:
     WIREFRAME,
     POINTS,
     WIREFRAME_OVERLAY,
+    HIDDEN_LINE,
     BOUNDING_BOX
   };
   
