@@ -103,6 +103,7 @@
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoInfo.h>
+#include <Inventor/nodes/SoCylinder.h>
 #include <Inventor/nodes/SoDirectionalLight.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -352,6 +353,7 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
 
     // Vector
     if (!linesep) { // Reuse linesep for all axes
+#if 0 // boring lines :)
       linesep = new SoSeparator;
       SoCoordinate3 *coord = new SoCoordinate3;
       SoLineSet *ls = new SoLineSet;
@@ -362,6 +364,16 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
 
       linesep->addChild(coord);
       linesep->addChild(ls);
+#else // better looking cylinders
+      linesep = new SoSeparator;
+      SoCylinder * cyl = new SoCylinder;
+      cyl->radius = 0.02f;
+      cyl->height = 1.0f;
+      SoTranslation * t = new SoTranslation;
+      t->translation = SbVec3f(0.0f, 0.5f, 0.0f);      
+      linesep->addChild(t);
+      linesep->addChild(cyl);
+#endif // cylinders
     }
     axissep->addChild(axiscol);
     axissep->addChild(axistrans);
