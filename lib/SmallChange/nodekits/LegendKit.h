@@ -94,7 +94,10 @@ public:
   SoSFBool delayedRender;
   SoSFFloat topSpace;
   SoSFBool discreteUseLower;
+  SoSFBool threadSafe;
 
+  void preRender(SoAction * action);
+  
   void setImageTransparency(const float transparency = 0.0f);
   void useTextureNotImage(const SbBool onoff);
   void setColorCB(uint32_t (*colorCB)(double, void*), void * userdata = NULL);

@@ -310,6 +310,7 @@ LegendKit::LegendKit(void)
   SO_KIT_ADD_FIELD(delayedRender, (TRUE));
   SO_KIT_ADD_FIELD(topSpace, (0.0f));
   SO_KIT_ADD_FIELD(discreteUseLower, (FALSE));
+  SO_KIT_ADD_FIELD(threadSafe, (FALSE));
   
   // Note: we must use "" instead of , , to humour MS VisualC++ 6.
 
@@ -488,6 +489,15 @@ LegendKit::setImageTransparency(const float transparency)
 }
 
 
+void
+LegendKit::preRender(SoAction * action)
+{
+  SoState * state = action->getState();
+  if (THIS->size == SbVec2f(0.0f, 0.0f)) return; // not initialized
+  if (THIS->needimageinit) this->initImage();
+  if (THIS->needalphainit) this->fillImageAlpha();  
+}
+
 /*!
   Overloaded to (re)initialize image and other data before rendering.
 */
@@ -501,10 +511,7 @@ LegendKit::GLRender(SoGLRenderAction * action)
     return;
   }
   SoState * state = action->getState();
-  this->recalcSize(state);
-  if (THIS->size == SbVec2f(0.0f, 0.0f)) return; // not initialized
-  if (THIS->needimageinit) this->initImage();
-  if (THIS->needalphainit) this->fillImageAlpha();
+  if (!this->threadSafe.getValue()) this->preRender(action);
   inherited::GLRender(action);
 }
 

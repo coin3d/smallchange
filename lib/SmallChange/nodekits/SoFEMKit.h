@@ -51,6 +51,7 @@ public:
   SoFEMKit(void);
   
   SoSFBool ccw;
+  SoSFBool threadSafe;
 
   static void initClass(void);
 
@@ -59,6 +60,8 @@ protected:
 
 public:
   
+  void preRender(SoAction * action);
+
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void GLRender(SoGLRenderAction * action);
 

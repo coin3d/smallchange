@@ -48,6 +48,7 @@
 #include <Inventor/SbPlane.h>
 #include <Inventor/SbBSPTree.h>
 #include <Inventor/sensors/SoFieldSensor.h>
+#include <Inventor/actions/SoGLRenderAction.h>
 
 #include <string.h>
 
@@ -113,6 +114,7 @@ SoFEMKit::SoFEMKit(void)
   SO_KIT_CONSTRUCTOR(SoFEMKit);
 
   SO_KIT_ADD_FIELD(ccw, (TRUE));
+  SO_KIT_ADD_FIELD(threadSafe, (FALSE));
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shapehints, SoShapeHints, FALSE, topSeparator, mbind, TRUE);
@@ -459,11 +461,17 @@ SoFEMKit::getBoundingBox(SoGetBoundingBoxAction * action)
   inherited::getBoundingBox(action);
 }
 
+void
+SoFEMKit::preRender(SoAction * action)
+{
+  this->updateScene();
+}
+
 // doc in parent
 void 
 SoFEMKit::GLRender(SoGLRenderAction * action)
 {
-  this->updateScene();
+  if (!this->threadSafe.getValue()) this->preRender(action);
   inherited::GLRender(action);
 }
 
