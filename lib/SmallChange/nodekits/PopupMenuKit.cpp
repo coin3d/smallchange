@@ -874,11 +874,7 @@ SmPopupMenuKitP::buildTextScenegraph()
         itemsep->addChild(tagtrans);
         itemsep->addChild(tagmarker);        
       }
-    }
-
-   
-
-  
+    }     
     sep->addChild(itemsep);
     sep->addChild(texttrans);
   }
@@ -935,17 +931,11 @@ SmPopupMenuKitP::buildTextScenegraph()
     }
 
     lineseparatorlist.truncate(0);
-    submenuitemlist.truncate(0);
-    
+    submenuitemlist.truncate(0);    
   }
     
-
-
   // Add a menu title
   if (PUBLIC(this)->menuTitle.getValue().getLength() != 0) {
- 
-    // FIXME: Add a background color to the title (20050207 handegar)
-   
     SoSeparator * textsep = new SoSeparator;
     SoFont * menufont = (SoFont *) PUBLIC(this)->getAnyPart("textFont", TRUE);
     SoFont * titlefont = new SoFont;
@@ -953,17 +943,22 @@ SmPopupMenuKitP::buildTextScenegraph()
     titlefont->name.setValue("Verdana:Bold:Italic");
     SoTranslation * trans = new SoTranslation;
     trans->translation.setValue(0, spacing, 0); 
-    SoBaseColor * titlecolor = new SoBaseColor;
-    titlecolor->rgb.setValue(0.2f, 0.2f, 0.2f);
+    SoBaseColor * graycolor = new SoBaseColor;
+    titlecolor1->rgb.setValue(0.2f, 0.2f, 0.2f);
+    SoBaseColor * whitecolor = new SoBaseColor;
+    titlecolor2->rgb.setValue(1.0f, 1.0f, 1.0f);
     SoText2 * title = new SoText2;
     title->string = PUBLIC(this)->menuTitle.getValue();
     textsep->addChild(trans);
     textsep->addChild(titlefont);
-    textsep->addChild(titlecolor);
+    textsep->addChild(graycolor);
     textsep->addChild(title);
-
+    SoTranslation * pixelshift = new SoTranslation;
+    pixelshift->translation.setValue(-1.0f/pixelsize[0], 1.0f/pixelsize[1], 0);
+    textsep->addChild(pixelshift);
+    textsep->addChild(whitecolor);
+    textsep->addChild(title);
     titlesep->addChild(textsep);
-
   }
   
 
