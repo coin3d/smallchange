@@ -20,7 +20,7 @@ libelementsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/elements/GLDepthBufferElement.h
 
 elements.lst: $(elements_lst_OBJECTS)
-	@echo "Linking $@..." \
+	@echo "Linking $@..."; \
 	rm -f $@; \
 	for i in $(elements_lst_OBJECTS); do echo $$i >>$@; done
 

@@ -37,4 +37,3 @@ nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
 	rm -f $@; \
 	for i in $(nodekits_lst_OBJECTS); do echo $$i >>$@; done
-
