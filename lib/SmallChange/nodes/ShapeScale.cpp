@@ -57,6 +57,7 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoCullElement.h>
+#include <Inventor/SbRotation.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -98,7 +99,7 @@ static void
 update_scale(SoScale * scale, const SbVec3f & v)
 {
   // only write to field when scaling has changed.
-  if (scale->scaleFactor.getValue() != v) {
+  if (!scale->scaleFactor.getValue().equals(v, 0.000001f)) {
     scale->scaleFactor = v;
   }
 }
@@ -122,9 +123,23 @@ ShapeScale::preRender(SoAction * action)
       const SbViewVolume & vv = SoViewVolumeElement::get(state);
       SbVec3f center(0.0f, 0.0f, 0.0f);
       const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[1]);
-      SoModelMatrixElement::get(state).multVecMatrix(center, center);
+      const SbMatrix & mm = SoModelMatrixElement::get(state);
+      mm.multVecMatrix(center, center);
       const float scalefactor = vv.getWorldToScreenScale(center, nsize);
+
+#if 1 // new version that considers the current model-matrix scale
+      SbVec3f t;
+      SbRotation r;
+      SbVec3f s;
+      SbRotation so;
+      mm.getTransform(t, r, s, so);
+      
+      update_scale(scale, SbVec3f(scalefactor/s[0], scalefactor/s[1], scalefactor/s[2]));
+#else
       update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
+
+#endif
+
     }
   }
 }
