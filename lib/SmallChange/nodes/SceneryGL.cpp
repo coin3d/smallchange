@@ -256,7 +256,6 @@ GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
   
   if (state->etexscale != 0.0f) {
     float val = (state->etexscale * elev) + state->etexoffset;
-    if ( val < 0.0f ) val = 0.0f - val;
     cc_glglue_glMultiTexCoord2f(glglue, GL_TEXTURE1, 0.0f, val);
   }
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
