@@ -66,7 +66,6 @@ public:
 };
 
 static void fieldsChangedCallback(void * classObject, SoSensor * sensor);
-static void axisNameChangedCallback(void * classObject, SoSensor * sensor);
 
 #define PRIVATE(p) (p->pimpl)
 #define PUBLIC(p) (p->master)
@@ -104,7 +103,7 @@ SmAxisKit::SmAxisKit()
 
   setPart("topSeparator", PRIVATE(this)->axisRoot);
 
-  PRIVATE(this)->axisNameSensor = new SoFieldSensor(axisNameChangedCallback,PRIVATE(this));
+  PRIVATE(this)->axisNameSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->axisNameSensor->setPriority(0);
   PRIVATE(this)->axisNameSensor->attach(&this->axisName);
 
@@ -218,15 +217,15 @@ SmAxisKitP::setupMasterNodes()
   SoTranslation * trans3 = new SoTranslation;
   trans3->translation.setValue(0.0f, 2.0f, 0.0f);
 
-  axisName = new SoText2;  
-  axisName->string.setValue(this->master->axisName.getValue());
+  SoText2 * newaxisname = new SoText2;  
+  newaxisname->string.setValue(this->master->axisName.getValue());
     
   axisnamesep->addChild(axisColor);
   axisnamesep->addChild(trans1);
   axisnamesep->addChild(trans1);
   axisnamesep->addChild(trans2);
   axisnamesep->addChild(trans3);
-  axisnamesep->addChild(axisName);
+  axisnamesep->addChild(newaxisname);
 
   masterAxis->addChild(sep1);
   masterAxis->addChild(axisnamesep);
@@ -315,7 +314,7 @@ SmAxisKitP::generateAxis(int LODlevel)
   textsep->addChild(ttrans2);
 
   SbString tmpstr;
-  const char * tmptext = (tmpstr.sprintf("%%.%df", this->master->digits)).getString();  
+  const char * tmptext = (tmpstr.sprintf("%%.%df", this->master->digits.getValue())).getString();  
   pos = 0.0f;
   lodskipper = 0;
   
@@ -371,10 +370,4 @@ static void fieldsChangedCallback(void * classObject, SoSensor * sensor)
 
   thisp->axisRoot->removeAllChildren();
   thisp->generateLOD();
-}
-
-static void axisNameChangedCallback(void * classObject, SoSensor * sensor)
-{
-  SmAxisKitP * thisp = (SmAxisKitP *) classObject;  // Fetch caller object
-  thisp->axisName->string.setValue(thisp->master->axisName.getValue());
 }
