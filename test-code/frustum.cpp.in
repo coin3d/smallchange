@@ -9,11 +9,18 @@
 #include <SmallChange/nodes/FrustumCamera.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
+#include <stdio.h>
+
+static void
+usage(void)
+{
+  fprintf(stderr,"Usage: frustum <infile>\n");
+}
 
 int
 main(int argc, char ** argv )
 {
-  assert(argc >= 2);
+  if (argc == 1) { usage(); return 0; }
 
   @WIDGET@ window = So@Gui@::init( argv[0] );
   smallchange_init();
