@@ -50,9 +50,12 @@ Scenery::Scenery(void)
   SO_NODE_CONSTRUCTOR(Scenery);
   
   SO_NODE_ADD_FIELD(filename, (""));
+  SO_NODE_ADD_FIELD(renderSequence, (-1));
   SO_NODE_ADD_FIELD(blockRottger, (20.0f));
   SO_NODE_ADD_FIELD(loadRottger, (16.0f));
   SO_NODE_ADD_FIELD(visualDebug, (FALSE));
+
+  this->renderSequence.setNum(0);
 
   this->filenamesensor = new SoFieldSensor(filenamesensor_cb, this);
   this->filenamesensor->attach(&this->filename);
@@ -287,6 +290,16 @@ Scenery::GLRender(SoGLRenderAction * action)
   sc_ssglue_view_set_hotspots(this->system, this->viewid, 1, hotspot); 
   this->debuglist.truncate(0);
   this->numnewtextures = 0;
+  int num = this->renderSequence.getNum();
+  if ( num == 0 ) {
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, 0, NULL);
+  } else {
+    this->renderSequence.enableNotify(FALSE);
+    int * sequence = this->renderSequence.startEditing();
+    sc_ssglue_view_set_render_sequence_a(this->system, this->viewid, num, sequence);
+    this->renderSequence.finishEditing();
+    this->renderSequence.enableNotify(TRUE);
+  }
   sc_ssglue_view_render(this->system, this->viewid);
 //   fprintf(stderr,"num boxes: %d, new texs: %d\n",
 //           this->debuglist.getLength()/4, this->numnewtextures);

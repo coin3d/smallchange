@@ -6,6 +6,7 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/C/base/hash.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/fields/SoSFFloat.h>
@@ -32,6 +33,7 @@ public:
   Scenery(void);
 
   SoSFString filename;
+  SoMFInt32 renderSequence;
   SoSFFloat blockRottger;
   SoSFFloat loadRottger;
   SoSFBool visualDebug;
