@@ -28,17 +28,14 @@
 
   It should be used in conjunction with the UTMCamera node. The
   UTMPosition node will not be useful unless your camera is an
-  UTMCamera. This node makes it possible for you to stop thinking
-  about floating point precision when building a, for instance,
-  real-world model using UTM coordinates. As long as your objects are
-  placed in the scene using an UTMPosition node, they will,
-  internally, always be placed relative to the position of the
-  UTMCamera.  This way it doesn't matter if you're using large
-  coordinates.
+  UTMCamera.
 
-  There are three fields which controls the translation. easting
-  (along the positive x-axis), northing (along the positive y-axis)
-  and elevation (along the positive z-axis).
+  This node makes it possible for you to stop thinking about floating
+  point precision when building a, for instance, real-world model
+  using UTM coordinates. As long as your objects are placed in the
+  scene using an UTMPosition node, they will, internally, always be
+  placed relative to the position of the UTMCamera.  This way it
+  doesn't matter if you're using large coordinates.
 
   If you use this node, do not have transformation nodes over any
   UTMPosition nodes in your scene graph. This will make it impossible
@@ -56,6 +53,8 @@
 
 */
 
+// *************************************************************************
+
 #include "UTMPosition.h"
 #include <Inventor/actions/SoGetMatrixAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
@@ -71,24 +70,16 @@
 #include <SmallChange/elements/UTMElement.h>
 #include <stdlib.h>
 
-/*!
-  \var SoSFString UTMPosition::easting
-  
-  Controls the easting (+X) position.
-*/
+// *************************************************************************
 
 /*!
-  \var SoSFString UTMPosition::northing
-  
-  Controls the northing (+Y) position.
-*/
+  \var SoSFVec3d UTMPosition::utmposition
 
-/*!
-  \var SoSFString UTMPosition::elevation
-  
-  Controls the elevation (+Z) position.
-*/
+  Decides the translation of the geometry following this node.
 
+  The positioning will \e replace preceding values, and not accumulate
+  with them as for the standard transform nodes.
+*/
 
 // *************************************************************************
 
