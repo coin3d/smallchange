@@ -30,6 +30,9 @@
 */
 
 #include "SmCameraControlKit.h"
+
+#include <float.h>
+
 #include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoSearchAction.h>
@@ -47,15 +50,15 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/sensors/SoTimerSensor.h>
-#include <Inventor/events/SoEvent.h>
+#include <Inventor/events/SoKeyboardEvent.h>
 #include <Inventor/SbVec2s.h>
 #include <Inventor/SbVec2f.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/system/gl.h>
-#include <float.h>
+#include <Inventor/errors/SoDebugError.h>
+
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
-#include <Inventor/errors/SoDebugError.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/UTMCamera.h>
 #include <SmallChange/nodes/SmHeadlight.h>
@@ -174,12 +177,21 @@ void
 SmCameraControlKit::handleEvent(SoHandleEventAction * action)
 {
   inherited::handleEvent(action);
-  if (!action->isHandled()) {
-    SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
-    if (eh) {
-      if (eh) eh->setViewportRegion(SoViewportRegionElement::get(action->getState()));
-      eh->handleEvent(action);
-    }
+  if (action->isHandled()) { return; }
+
+  const SbViewportRegion vpr = SoViewportRegionElement::get(action->getState());
+
+  const SoEvent * ev = action->getEvent();
+  if (SO_KEY_PRESS_EVENT(ev, V)) {
+    this->viewAll(vpr);
+    action->setHandled();
+    return;
+  }
+
+  SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
+  if (eh) {
+    eh->setViewportRegion(vpr);
+    eh->handleEvent(action);
   }
 }
 
