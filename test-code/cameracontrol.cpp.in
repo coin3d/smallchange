@@ -52,7 +52,7 @@ main(int argc, char ** argv )
         helihandler->speed.setValue(atof(argv[3]));
     }
     else if (strcmp(argv[2], "examiner") == 0) {
-      // the default. do nothing
+      ck->eventHandler = new SmExaminerEventHandler;
     } 
     else if (strcmp(argv[2], "sphere") == 0) {
       ck->eventHandler = new SmSphereEventHandler;
@@ -65,6 +65,7 @@ main(int argc, char ** argv )
   SoCamera * camera = (SoCamera*) ck->getPart("camera", TRUE);
   
   So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
+  renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   camera->viewAll(root, renderarea->getViewportRegion() );
   renderarea->setSceneGraph(ck);
   renderarea->setBackgroundColor( SbColor( 0.0f, 0.2f, 0.3f )  );
