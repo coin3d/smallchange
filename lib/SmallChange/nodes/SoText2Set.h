@@ -26,6 +26,7 @@
 
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoMFFloat.h>
+#include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoMFEnum.h>
 #include <Inventor/fields/SoMFVec3f.h>
@@ -51,11 +52,12 @@ public:
   };
   
   // Fields
-  SoMFEnum    justification;
-  SoMFString  string;
-  SoMFVec3f   position;
-  SoMFFloat   rotation;
-  SoSFBool    renderOutline;
+  SoMFEnum justification;
+  SoMFString string;
+  SoMFVec3f position;
+  SoMFFloat rotation;
+  SoSFBool renderOutline;
+  SoSFInt32 numberClosestToCamera;
 
   static void initClass(void);
   virtual void GLRender(SoGLRenderAction * action);

@@ -144,6 +144,19 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
   Default value is FALSE.
 */
 
+struct sotext2set_indexdistance {
+  unsigned int index;
+  float distance; 
+};
+
+static int sotext2set_sortcompare(const void * element1, const void * element2)
+{
+  sotext2set_indexdistance * item1 = (sotext2set_indexdistance *) element1;
+  sotext2set_indexdistance * item2 = (sotext2set_indexdistance *) element2;
+  return ((int) (item2->distance - item1->distance) * 100);
+}
+
+
 class SoText2SetP {
 public:
   SoText2SetP(SoText2Set * master) : master(master) { }
@@ -160,11 +173,11 @@ public:
   float prevfontsize;
   SbBool hasbuiltglyphcache;
   SbBool dirty;
+  sotext2set_indexdistance * textdistancelist;
 
   SbBox3f stringBBox(SoState * s, unsigned int stringidx);
   void getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
                SbVec3f & v2, SbVec3f & v3, unsigned int stringidx);
-
   void flushGlyphCache(const SbBool unrefglyphs);
   void buildGlyphCache(SoState * state);
   SbBool shouldBuildGlyphCache(SoState * state);
@@ -173,7 +186,7 @@ public:
 
   SoText2Set::Justification getJustification(int idx) const;
   float getRotation(int idx) const;
-
+ 
 private:
   SoText2Set * master;
 };
@@ -205,6 +218,7 @@ SoText2Set::SoText2Set(void)
   PRIVATE(this)->prevfontsize = 0.0;
   PRIVATE(this)->hasbuiltglyphcache = FALSE;
   PRIVATE(this)->dirty = TRUE;
+  PRIVATE(this)->textdistancelist = NULL;
 
   SO_NODE_CONSTRUCTOR(SoText2Set);
 
@@ -213,6 +227,7 @@ SoText2Set::SoText2Set(void)
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
   SO_NODE_ADD_FIELD(string, (""));
   SO_NODE_ADD_FIELD(renderOutline, (FALSE));
+  SO_NODE_ADD_FIELD(numberClosestToCamera, (-1));
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
@@ -226,6 +241,8 @@ SoText2Set::SoText2Set(void)
 SoText2Set::~SoText2Set()
 {
   PRIVATE(this)->flushGlyphCache(TRUE);
+  if (PRIVATE(this)->textdistancelist != NULL)
+    delete PRIVATE(this)->textdistancelist;
   delete PRIVATE(this);
 }
 
@@ -283,20 +300,55 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 
-    // Find number of strings to render
+    // Find the number of closest strings to render
     const unsigned int stringcnt = this->string.getNum();
-   
-    // FIXME: Is this warning enough? Or should there be a warning at
+
+    if (PRIVATE(this)->dirty || PRIVATE(this)->textdistancelist == NULL) {    
+      if (PRIVATE(this)->textdistancelist != NULL)
+        delete PRIVATE(this)->textdistancelist;
+      PRIVATE(this)->textdistancelist = new sotext2set_indexdistance[stringcnt];
+    }
+
+    if (this->numberClosestToCamera.getValue() != -1) {
+      SbVec3f campos = vv.getProjectionPoint();
+      // Calculate distance to camera for all strings
+      for (unsigned int i=0;i<stringcnt;++i) {        
+        SbVec3f textpos;
+        if (i < (unsigned int) this->position.getNum()) textpos = this->position[i];
+        else textpos = SbVec3f(0 ,0, 0); // Default position        
+        mat.multVecMatrix(textpos, textpos);        
+        PRIVATE(this)->textdistancelist[i].distance = (textpos - campos).length();
+        PRIVATE(this)->textdistancelist[i].index = i;
+      }
+      // qsort array using distance as key
+      qsort(PRIVATE(this)->textdistancelist, stringcnt, sizeof(sotext2set_indexdistance), sotext2set_sortcompare);
+    } 
+    else {
+      // Regular rendering
+      for (unsigned int i=0;i<stringcnt;++i) {
+        PRIVATE(this)->textdistancelist[i].index = i;
+        PRIVATE(this)->textdistancelist[i].distance = 0;
+      }
+    }
+
+
+    // FIXME: Is this warning enough? Should there be a warning at
     // all? (20040206 handegar)
     if (stringcnt > (unsigned int)this->position.getNum())
       SoDebugError::postWarning("SoText2Set::GLRender", "Position not specfied for all the strings.");
 
+    unsigned int counter = (this->numberClosestToCamera.getValue() != -1) ? 
+      this->numberClosestToCamera.getValue() : stringcnt;
+    if (counter > stringcnt) counter = stringcnt; // Failsafe
+    
 
-    for (unsigned int i = 0; i < stringcnt; i++) {
+    for (unsigned int i = 0; i < counter; i++) {
+
+      const unsigned int index = PRIVATE(this)->textdistancelist[i].index;
 
       SbVec3f nilpoint;
-      if (i < (unsigned int)this->position.getNum())
-        nilpoint = this->position[i];
+      if (index < (unsigned int)this->position.getNum())
+        nilpoint = this->position[index];
       else
         nilpoint = SbVec3f(0 ,0, 0); // Default position
 
@@ -324,7 +376,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       // This culls versus the whole string, i.e. if just a single
       // piece of the string is within the view volume (+ other
       // clipping planes), the (full) string will be shown.
-      const SbBox3f stringbbox = PRIVATE(this)->stringBBox(state, i);
+      const SbBox3f stringbbox = PRIVATE(this)->stringBBox(state, index);
       if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
 #endif
 
@@ -336,29 +388,29 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       float xpos = nilpoint[0];
       float ypos = nilpoint[1];
 
-      const unsigned int charcnt = this->string[i].getLength();
-      switch (PRIVATE(this)->getJustification(i)) {
+      const unsigned int charcnt = this->string[index].getLength();
+      switch (PRIVATE(this)->getJustification(index)) {
       case SoText2Set::LEFT:
         // No action
         break;
       case SoText2Set::RIGHT:
-        xpos -= PRIVATE(this)->stringwidth[i];
-        ypos -= PRIVATE(this)->positions[i][charcnt-1][1];
+        xpos -= PRIVATE(this)->stringwidth[index];
+        ypos -= PRIVATE(this)->positions[index][charcnt-1][1];
         break;
       case SoText2Set::CENTER:
-        xpos -= PRIVATE(this)->stringwidth[i]/2.0f;
-        ypos -= PRIVATE(this)->stringheight[i]/2.0f;
+        xpos -= PRIVATE(this)->stringwidth[index]/2.0f;
+        ypos -= PRIVATE(this)->stringheight[index]/2.0f;
         break;
       }
 
       for (unsigned int i2 = 0; i2 < charcnt; i2++) {
         SbVec2s thispos;
         SbVec2s thissize;
-        unsigned char * buffer = PRIVATE(this)->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
+        unsigned char * buffer = PRIVATE(this)->glyphs[index][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
 
         int ix = thissize[0];
         int iy = thissize[1];
-        SbVec2s position = PRIVATE(this)->positions[i][i2];
+        SbVec2s position = PRIVATE(this)->positions[index][i2];
         float fx = (float)position[0];
         float fy = (float)position[1];
 
@@ -406,6 +458,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+
   }
 
   state->pop();
