@@ -186,6 +186,7 @@ SmCameraControlKit::setAnyPart(const SbName & partname, SoNode * from,
         SoGroup * g = (SoGroup*) parent;
         g->removeChild(cam);
         SoBaseKit::setAnyPart("camera", cam, TRUE);
+        cam->unrefNoDelete();
       }
     }
   }
