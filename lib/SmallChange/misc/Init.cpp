@@ -60,9 +60,11 @@
 #include <SmallChange/nodes/SkyDome.h>
 #include <SmallChange/nodes/SmTooltip.h>
 #include <SmallChange/nodes/SmHQSphere.h>
+#include <SmallChange/nodes/SmColorGradient.h>
 #include <SmallChange/engines/CubicSplineEngine.h>
 
 #include <SmallChange/elements/UTMElement.h>
+#include <SmallChange/elements/SmColorGradientElement.h>
 #include <SmallChange/nodes/UTMCamera.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/UTMCoordinate.h>
@@ -151,4 +153,7 @@ smallchange_init(void)
 
   SmVertexArrayShape::initClass();
   SmToVertexArrayShapeAction::initClass();
+
+  SmColorGradientElement::initClass();
+  SmColorGradient::initClass();
 }
