@@ -26,6 +26,7 @@
 
 #include <SmallChange/nodes/Switchboard.h>
 #include <Inventor/fields/SoMFEnum.h>
+#include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/events/SoKeyboardEvent.h>
 
 class SwitchboardOperator : public Switchboard {
@@ -38,12 +39,19 @@ public:
   SwitchboardOperator(int numchildren);
 
   enum Behavior {
-    NONE, TOGGLE, HOLD, INVERSE_HOLD
+    NONE, TOGGLE, HOLD, INVERSE_HOLD, TIME_HOLD
   };
 
   enum Key {
     ANY = SoKeyboardEvent::ANY,
     UNDEFINED = SoKeyboardEvent::UNDEFINED,
+    LEFT_SHIFT = SoKeyboardEvent::LEFT_SHIFT,
+    RIGHT_SHIFT = SoKeyboardEvent::RIGHT_SHIFT,
+    LEFT_CONTROL = SoKeyboardEvent::LEFT_CONTROL,
+    RIGHT_CONTROL = SoKeyboardEvent::RIGHT_CONTROL,
+    LEFT_ALT = SoKeyboardEvent::LEFT_ALT,
+    RIGHT_ALT = SoKeyboardEvent::RIGHT_ALT,
+    CAPS_LOCK = SoKeyboardEvent::CAPS_LOCK,
     A = SoKeyboardEvent::A,
     B = SoKeyboardEvent::B,
     C = SoKeyboardEvent::C,
@@ -70,11 +78,36 @@ public:
     X = SoKeyboardEvent::X,
     Y = SoKeyboardEvent::Y,
     Z = SoKeyboardEvent::Z,
-    SPACE = SoKeyboardEvent::SPACE
+    NUMBER_0 = SoKeyboardEvent::NUMBER_0,
+    NUMBER_1 = SoKeyboardEvent::NUMBER_1,
+    NUMBER_2 = SoKeyboardEvent::NUMBER_2,
+    NUMBER_3 = SoKeyboardEvent::NUMBER_3,
+    NUMBER_4 = SoKeyboardEvent::NUMBER_4,
+    NUMBER_5 = SoKeyboardEvent::NUMBER_5,
+    NUMBER_6 = SoKeyboardEvent::NUMBER_6,
+    NUMBER_7 = SoKeyboardEvent::NUMBER_7,
+    NUMBER_8 = SoKeyboardEvent::NUMBER_8,
+    NUMBER_9 = SoKeyboardEvent::NUMBER_9,
+    MINUS = SoKeyboardEvent::MINUS,
+    EQUAL = SoKeyboardEvent::EQUAL,
+    SPACE = SoKeyboardEvent::SPACE,
+    BACKSPACE = SoKeyboardEvent::BACKSPACE,
+    TAB = SoKeyboardEvent::TAB,
+    RETURN = SoKeyboardEvent::RETURN,
+    BRACKETLEFT = SoKeyboardEvent::BRACKETLEFT,
+    BRACKETRIGHT = SoKeyboardEvent::BRACKETRIGHT,
+    SEMICOLON = SoKeyboardEvent::SEMICOLON,
+    APOSTROPHE = SoKeyboardEvent::APOSTROPHE,
+    COMMA = SoKeyboardEvent::COMMA,
+    PERIOD = SoKeyboardEvent::PERIOD,
+    SLASH = SoKeyboardEvent::SLASH,
+    BACKSLASH = SoKeyboardEvent::BACKSLASH,
+    GRAVE = SoKeyboardEvent::GRAVE
   };
 
   SoMFEnum key;
   SoMFEnum behavior;
+  SoMFInt32 msecs;
 
   virtual void handleEvent(SoHandleEventAction * action);
 

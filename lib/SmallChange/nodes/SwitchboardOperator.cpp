@@ -28,7 +28,10 @@
 */
 
 // FIXME: implement proper searching / SearchAction handling  2002-02-07 larsa
+//   search should probably just traverse each child once in ChildList order
 // FIXME: implement proper writing / WriteAction handling  2002-02-07 larsa
+//   write should just traverse each child once in ChildList order and
+//   write fields until there's only defaults left in the arrays
 
 #include <SmallChange/nodes/SwitchboardOperator.h>
 #include <Inventor/nodes/SoSubNode.h>
@@ -64,6 +67,16 @@ SwitchboardOperator::constructor(void) // private
 
   SO_NODE_ADD_FIELD(key, (UNDEFINED));
   SO_NODE_ADD_FIELD(behavior, (TOGGLE));
+  SO_NODE_ADD_FIELD(msecs, (0));
+
+  // FIXME: complete this list
+  SO_NODE_DEFINE_ENUM_VALUE(Key, LEFT_SHIFT);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, RIGHT_SHIFT);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, LEFT_CONTROL);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, RIGHT_CONTROL);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, LEFT_ALT);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, RIGHT_ALT);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, CAPS_LOCK);
 
   SO_NODE_DEFINE_ENUM_VALUE(Key, ANY);
   SO_NODE_DEFINE_ENUM_VALUE(Key, UNDEFINED);
@@ -94,10 +107,38 @@ SwitchboardOperator::constructor(void) // private
   SO_NODE_DEFINE_ENUM_VALUE(Key, Y);
   SO_NODE_DEFINE_ENUM_VALUE(Key, Z);
 
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_0);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_1);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_2);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_3);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_4);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_5);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_6);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_7);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_8);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, NUMBER_9);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, MINUS);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, EQUAL);
+
+  SO_NODE_DEFINE_ENUM_VALUE(Key, SPACE);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, BACKSPACE);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, TAB);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, RETURN);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, BRACKETLEFT);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, BRACKETRIGHT);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, SEMICOLON);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, APOSTROPHE);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, COMMA);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, PERIOD);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, SLASH);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, BACKSLASH);
+  SO_NODE_DEFINE_ENUM_VALUE(Key, GRAVE);
+
   SO_NODE_DEFINE_ENUM_VALUE(Behavior, NONE);
   SO_NODE_DEFINE_ENUM_VALUE(Behavior, TOGGLE);
   SO_NODE_DEFINE_ENUM_VALUE(Behavior, HOLD);
   SO_NODE_DEFINE_ENUM_VALUE(Behavior, INVERSE_HOLD);
+  SO_NODE_DEFINE_ENUM_VALUE(Behavior, TIME_HOLD);
 
   SO_NODE_SET_SF_ENUM_TYPE(key, Key);
   SO_NODE_SET_SF_ENUM_TYPE(behavior, Behavior);
@@ -130,6 +171,9 @@ SwitchboardOperator::handleEvent(SoHandleEventAction * action)
         case INVERSE_HOLD:
           if ( idx >= this->enable.getNum() ) this->enable.setNum(idx+1);
           this->enable.set1Value(idx, event->getState() == SoKeyboardEvent::DOWN ? FALSE : TRUE);
+          break;
+        case TIME_HOLD:
+          SoDebugError::postInfo("SwitchboardOperator::handleEvent", "not implemented yet");
           break;
         default:
           break;
