@@ -1,6 +1,4 @@
-===============================================================================
-TODO:
-=====
-
-- add several more nodes. Coming soon.
-
+- add several more nodes. coming soon. (pederb)
+- find a more zappy name than SmallChange (larsa)
+- adapt lib for dynamic loading and auto-initialization from Coin when Coin
+  has that functionality so you don't have to link with SmallChange (larsa)
