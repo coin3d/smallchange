@@ -8,6 +8,7 @@
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoMFVec2f.h>
 #include <Inventor/fields/SoMFVec3f.h>
+#include <Inventor/fields/SoMFColor.h>
 #include <Inventor/fields/SoMFRotation.h>
 
 class SoLODExtrusion : public SoShape
@@ -30,7 +31,7 @@ public:
   SoSFFloat lodDistance1;
   SoSFFloat lodDistance2;
   SoSFVec3f zAxis;
-  SoMFVec3f color;
+  SoMFColor color;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);

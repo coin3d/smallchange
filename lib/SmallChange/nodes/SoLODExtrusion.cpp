@@ -831,7 +831,7 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   const int * iv = this->idx.getArrayPtr();
   const SbVec3f * cv = this->coord.getArrayPtr();
   const SbVec3f * nv = this->gen.getNormals();
-  const SbVec3f * colorv = this->master->color.getValues(0);
+  const SbColor * colorv = this->master->color.getValues(0);
   const int * coloridx = this->color_idx.getArrayPtr();
   int vcnt = this->coord.getLength();
   int startindex = siv[index];

@@ -5,18 +5,33 @@
 #include <Inventor/nodes/SoMatrixTransform.h>
 #include <Inventor/SoInput.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
+#include <stdlib.h>
 
 static void
 setup_lod(SoLODExtrusion * lod)
 {
+  int i;
   lod->radius = 1.0f;
   lod->spine.setNum(100);
   SbVec3f * ptr = lod->spine.startEditing();
-  for (int i = 0; i < 100; i++) {
+  for (i = 0; i < 100; i++) {
     ptr[i] = SbVec3f(0.0f, (float)i*4, 0.0f);
   }
   lod->spine.finishEditing();
   lod->lodDistance1 = 400.0f;
+
+#if 0 // to test multiple colors
+  lod->color.setNum(100);
+  SbColor * col = lod->color.startEditing();
+  for (i = 0; i < 100; i++) {
+    col[i] = SbColor(float(rand())/RAND_MAX,
+                     float(rand())/RAND_MAX,
+                     float(rand())/RAND_MAX);
+  }
+  lod->color.finishEditing();
+
+#endif //colors
+
 }
 
 int
