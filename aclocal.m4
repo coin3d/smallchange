@@ -46,7 +46,7 @@ AC_REQUIRE([SIM_AC_MSVC_DISABLE_OPTION])
 
 BUILD_WITH_MSVC=false
 if $sim_ac_try_msvc; then
-  sim_ac_wrapmsvc=`cd $srcdir; pwd`/cfg/m4/wrapmsvc.exe
+  sim_ac_wrapmsvc=`cd $srcdir; pwd`/cfg/wrapmsvc.exe
   if test -z "$CC" -a -z "$CXX" && $sim_ac_wrapmsvc >/dev/null 2>&1; then
     m4_ifdef([$0_VISITED],
       [AC_FATAL([Macro $0 invoked multiple times])])
@@ -152,7 +152,7 @@ sim_ac_message_file=$1
 ]) # SIM_AC_ERROR_MESSAGE_FILE
 
 AC_DEFUN([SIM_AC_ONE_MESSAGE], [
-: ${sim_ac_message_file=$ac_aux_dir/m4/errors.txt}
+: ${sim_ac_message_file=$ac_aux_dir/errors.txt}
 if test -f $sim_ac_message_file; then
   sim_ac_message="`sed -n -e '/^!$1$/,/^!/ { /^!/ d; p; }' <$sim_ac_message_file`"
   if test x"$sim_ac_message" = x""; then
@@ -4499,20 +4499,22 @@ AC_ARG_ENABLE(
   [enable_warnings=yes])
 
 if test x"$enable_warnings" = x"yes"; then
-  if test x"$GCC" = x"yes"; then
-    SIM_AC_CC_COMPILER_OPTION([-W -Wall -Wno-unused],
-                              [CFLAGS="$CFLAGS -W -Wall -Wno-unused"])
-    SIM_AC_CC_COMPILER_OPTION([-Wno-multichar],
-                              [CFLAGS="$CFLAGS -Wno-multichar"])
-  fi
 
-  if test x"$GXX" = x"yes"; then
-    SIM_AC_CXX_COMPILER_OPTION([-W -Wall -Wno-unused],
-                               [CXXFLAGS="$CXXFLAGS -W -Wall -Wno-unused"])
-    SIM_AC_CXX_COMPILER_OPTION([-Wno-multichar],
-                               [CXXFLAGS="$CXXFLAGS -Wno-multichar"])
-  fi
+  for sim_ac_try_warning_option in \
+    "-W" "-Wall" "-Wno-unused" "-Wno-multichar" "-Woverloaded-virtual"; do
 
+    if test x"$GCC" = x"yes"; then
+      SIM_AC_CC_COMPILER_OPTION([$sim_ac_try_warning_option],
+                                [CFLAGS="$CFLAGS $sim_ac_try_warning_option"])
+    fi
+  
+    if test x"$GXX" = x"yes"; then
+      SIM_AC_CXX_COMPILER_OPTION([$sim_ac_try_warning_option],
+                                 [CXXFLAGS="$CXXFLAGS $sim_ac_try_warning_option"])
+    fi
+
+  done
+    
   case $host in
   *-*-irix*) 
     ### Turn on all warnings ######################################
@@ -5231,10 +5233,14 @@ if $sim_ac_coin_desired; then
     sim_ac_path=$sim_ac_path:$prefix/bin
 
   AC_PATH_PROG(sim_ac_coin_configcmd, coin-config, false, $sim_ac_path)
-  if $sim_ac_coin_configcmd; then
+
+  if ! test "X$sim_ac_coin_configcmd" = "Xfalse"; then
     test -n "$CONFIG" &&
       $sim_ac_coin_configcmd --alternate=$CONFIG >/dev/null 2>/dev/null &&
       sim_ac_coin_configcmd="$sim_ac_coin_configcmd --alternate=$CONFIG"
+  fi
+
+  if $sim_ac_coin_configcmd; then
     sim_ac_coin_version=`$sim_ac_coin_configcmd --version`
     sim_ac_coin_cppflags=`$sim_ac_coin_configcmd --cppflags`
     sim_ac_coin_cflags=`$sim_ac_coin_configcmd --cflags 2>/dev/null`
