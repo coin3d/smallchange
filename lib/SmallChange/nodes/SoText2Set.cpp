@@ -87,6 +87,8 @@
 #endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
 
+#include <string.h>
+
 /*!
   \enum SoText2Set::Justification
 
