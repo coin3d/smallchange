@@ -373,13 +373,13 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
     SbVec3f v0 = sptr[i];
     SbVec3f v1 = sptr[i+1];
 
-    float l1 = (v0-cameralocal).sqrLength();
-    float l2 = (v1-cameralocal).sqrLength();
-
-    if (l1 < d2 || l2 < d2) {
-      SbLine line(v0, v1);
-      SbVec3f op0, op1; // object space
-      if (op0 != op1) {
+    if (v0 != v1) {
+      float l1 = (v0-cameralocal).sqrLength();
+      float l2 = (v1-cameralocal).sqrLength();
+      
+      if (l1 < d2 || l2 < d2) {
+        SbLine line(v0, v1);
+        SbVec3f op0, op1; // object space
         if (ray.getClosestPoints(line, op0, op1)) {
           // clamp op1 between v0 and v1
           if ((op1-v0).dot(line.getDirection()) < 0.0f) op1 = v0;
