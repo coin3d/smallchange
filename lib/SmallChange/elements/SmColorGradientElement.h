@@ -31,17 +31,17 @@
 // Avoid problem with Microsoft Visual C++ Win32 API headers (they
 // #define RELATIVE/ABSOLUTE in their header files (WINGDI.H)
 #ifdef RELATIVE
-#define SMCOLORGRADIENTELEMENT_RELATIVE_DEFINED
 #undef RELATIVE
 #endif // RELATIVE
 
 #ifdef ABSOLUTE
-#define SMCOLORGRADIENTELEMENT_ABSOLUTE_DEFINED
 #undef ABSOLUTE
 #endif // ABSOLUTE
 
 #include <SmallChange/basic.h>
+
 class SbColor;
+
 
 class SMALLCHANGE_DLL_API SmColorGradientElement : public SoReplacedElement {
   typedef SoReplacedElement inherited;
@@ -82,16 +82,5 @@ private:
   const SbColor * colors;
   
 };
-
-// fix for Windows header files (see above)
-#ifdef SMCOLORGRADIENTELEMENT_RELATIVE_DEFINED
-#define RELATIVE 2
-#undef SMCOLORGRADIENTELEMENT_RELATIVE_DEFINED
-#endif // SMCOLORGRADIENTELEMENT_RELATIVE_DEFINED
-
-#ifdef SMCOLORGRADIENTELEMENT_ABSOLUTE_DEFINED
-#define ABSOLUTE 1
-#undef SMCOLORGRADIENTELEMENT_ABSOLUTE_DEFINED
-#endif // SMCOLORGRADIENTELEMENT_ABSOLUTE_DEFINED
 
 #endif // !SMALLCHANGE_COLORGRADIENTELEMENT_H

@@ -36,12 +36,10 @@
 // Avoid problem with Microsoft Visual C++ Win32 API headers (they
 // #define RELATIVE/ABSOLUTE in their header files (WINGDI.H)
 #ifdef RELATIVE
-#define SMCOLORGRADIENT_RELATIVE_DEFINED
 #undef RELATIVE
 #endif // RELATIVE
 
 #ifdef ABSOLUTE
-#define SMCOLORGRADIENT_ABSOLUTE_DEFINED
 #undef ABSOLUTE
 #endif // ABSOLUTE
 
@@ -85,16 +83,5 @@ private:
   static void filenameSensorCB(void * data, SoSensor *);
 
 };
-
-// fix for Windows header files (see above)
-#ifdef SMCOLORGRADIENT_RELATIVE_DEFINED
-#define RELATIVE 2
-#undef SMCOLORGRADIENT_RELATIVE_DEFINED
-#endif // SMCOLORGRADIENT_RELATIVE_DEFINED
-
-#ifdef SMCOLORGRADIENT_ABSOLUTE_DEFINED
-#define ABSOLUTE 1
-#undef SMCOLORGRADIENT_ABSOLUTE_DEFINED
-#endif // SMCOLORGRADIENT_ABSOLUTE_DEFINED
 
 #endif // !SMALLCHANGE_COLORGRADIENT_H

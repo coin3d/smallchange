@@ -29,43 +29,40 @@
 #include <stdio.h>
 #include <limits.h>
 
-#include <Inventor/errors/SoDebugError.h>
-#include <Inventor/misc/SoState.h>
-#include <Inventor/bundles/SoTextureCoordinateBundle.h>
-#include <Inventor/actions/SoGLRenderAction.h>
-#include <Inventor/actions/SoCallbackAction.h>
-#include <Inventor/actions/SoRayPickAction.h>
-#include <Inventor/actions/SoGetPrimitiveCountAction.h>
-#include <Inventor/SoPrimitiveVertex.h>
-#include <Inventor/nodes/SoVertexProperty.h>
-#include <Inventor/nodes/SoShape.h>
-#include <Inventor/bundles/SoMaterialBundle.h>
-#include <Inventor/details/SoPointDetail.h>
-#include <Inventor/details/SoFaceDetail.h>
-#include <Inventor/misc/SoGLImage.h>
-#include <Inventor/elements/SoModelMatrixElement.h>
-#include <Inventor/elements/SoViewVolumeElement.h>
-#include <Inventor/elements/SoCacheElement.h>
-#include <Inventor/elements/SoCullElement.h>
-#include <Inventor/elements/SoGLTextureImageElement.h>
-#include <Inventor/elements/SoGLLazyElement.h>
-#include <Inventor/elements/SoGLCacheContextElement.h>
-#include <Inventor/elements/SoTextureQualityElement.h>
-#include <Inventor/elements/SoViewportRegionElement.h>
-#include <Inventor/sensors/SoFieldSensor.h>
-#include <Inventor/lists/SbStringList.h>
-#include <Inventor/SbLine.h>
-#include <SmallChange/elements/SmColorGradientElement.h>
-
-#include <Inventor/SoInput.h>
-
-#include <Inventor/misc/SoGLImage.h>
 #include <Inventor/C/glue/gl.h>
 #include <Inventor/C/tidbits.h>
+#include <Inventor/SbLine.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/actions/SoCallbackAction.h>
+#include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoGetPrimitiveCountAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
+#include <Inventor/bundles/SoMaterialBundle.h>
+#include <Inventor/bundles/SoTextureCoordinateBundle.h>
+#include <Inventor/details/SoFaceDetail.h>
+#include <Inventor/details/SoPointDetail.h>
+#include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoCullElement.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/elements/SoGLLazyElement.h>
+#include <Inventor/elements/SoGLTextureImageElement.h>
+#include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoTextureQualityElement.h>
+#include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoViewportRegionElement.h>
+#include <Inventor/errors/SoDebugError.h>
+#include <Inventor/lists/SbStringList.h>
+#include <Inventor/misc/SoGLImage.h>
+#include <Inventor/misc/SoState.h>
+#include <Inventor/nodes/SoShape.h>
+#include <Inventor/nodes/SoVertexProperty.h>
+#include <Inventor/sensors/SoFieldSensor.h>
 
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/SmScenery.h>
 #include <SmallChange/nodes/SceneryGL.h>
+#include <SmallChange/elements/SmColorGradientElement.h>
 
 // FIXME: implement rayPick() method
 // (is this old, or does it still count for undef-blocks? 20031019 larsa)
