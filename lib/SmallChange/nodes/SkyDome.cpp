@@ -58,6 +58,13 @@
   Specifies the radius (+X and +Y) if the skydome.
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
+#include <stdlib.h>
+#include <assert.h>
+
 #include "SkyDome.h"
 #include <Inventor/misc/SoState.h>
 #include <Inventor/actions/SoGetMatrixAction.h>
@@ -73,15 +80,8 @@
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbMatrix.h>
 #include <Inventor/SbPlane.h>
-#include <Inventor/lists/SbList.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/SbXfBox3f.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>

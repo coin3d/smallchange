@@ -21,6 +21,13 @@
  *
 \**************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
+#include <stdlib.h>
+#include <assert.h>
+
 #include "Coinboard.h"
 #include <Inventor/misc/SoState.h>
 #include <Inventor/actions/SoGetMatrixAction.h>
@@ -36,18 +43,11 @@
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbMatrix.h>
 #include <Inventor/SbPlane.h>
-#include <Inventor/lists/SbList.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/SbXfBox3f.h>
-#include <stdlib.h>
-#include <assert.h>
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/details/SoFaceDetail.h>
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>
