@@ -53,4 +53,5 @@ private:
 
 };
 
-#endif COIN_SOSOUND_H
+#endif // COIN_SOSOUND_H
+

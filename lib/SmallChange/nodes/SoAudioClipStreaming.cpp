@@ -350,7 +350,6 @@ SbBool SoAudioClipStreaming::loadUrl(void)
       SoAudioClip::getSubdirectories());
 
     if (filename.getLength() <= 0) {
-      char errstr[256];
 		  SoDebugError::postWarning("SoAudioClipStreaming::loadUrl(index)",
                                 "File not found: '%s'",
                                 filename.getString());
@@ -413,7 +412,8 @@ SbBool SoAudioClipStreamingP::openFile(int playlistIndex)
                               this->playlist[playlistIndex].filename.getString());
     return FALSE;
   }
-};
+  return FALSE;
+}
 
 
 

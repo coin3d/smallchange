@@ -150,7 +150,6 @@ SbBool SoAudioClip::loadUrl(void)
   }
 
   if (filename.getLength() <= 0) {
-    char errstr[256];
 		SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "File not found: '%s'",
                               filename.getString());
