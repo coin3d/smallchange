@@ -27,6 +27,7 @@
 #include <Inventor/nodekits/SoSubKit.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoMFString.h>
 #include <SmallChange/basic.h>
@@ -59,8 +60,18 @@ class SMALLCHANGE_DLL_API SmTooltipKit : public SoBaseKit {
 public:
   SmTooltipKit(void);
   static void initClass(void);
+
   virtual void GLRender(SoGLRenderAction * action);
-  
+  virtual void handleEvent(SoHandleEventAction * action);
+  virtual void getBoundingBox(SoGetBoundingBoxAction * action);
+  virtual void search(SoSearchAction * action);
+  virtual void callback(SoCallbackAction * action);
+  virtual void getMatrix(SoGetMatrixAction * action);
+  virtual void pick(SoPickAction * action);
+  virtual void rayPick(SoRayPickAction * action);
+  virtual void audioRender(SoAudioRenderAction * action);
+  virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
+
 protected:
   virtual ~SmTooltipKit();
   
@@ -69,9 +80,10 @@ public:
   void setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & vp);
   void setViewportRegion(const SbViewportRegion & vp);
 
-  SoSFBool delayedRender;
+  SoSFBool autoTrigger;
+  SoSFTime autoTriggerTime;
   SoSFBool isActive;
-  SoMFString tooltipString;
+  SoMFString description;
   SoSFInt32 frameSize;
 
 private:
@@ -79,6 +91,7 @@ private:
   void updateBackground(void);
 
   static void tooltip_changed_cb(void * closure, SoSensor * s);
+  static void alarm_cb(void * closure, SoSensor * s);
   friend class SmTooltipKitP;
   SmTooltipKitP * pimpl;
 };

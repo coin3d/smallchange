@@ -29,11 +29,47 @@
   FIXME: doc
 */
 
+/*!
+  \var SoSFBool SmTooltipKit::autoTrigger
+  
+  When TRUE, will search for SmTooltip nodes in front of shapes and
+  pop up a tooltip when the mouse pointer has been still over an
+  object for over autoTriggerTime seconds. Default value is FALSE.
+*/
+
+/*!
+  \var SoSFBool SmTooltipKit::autoTriggerTime
+  
+  The time before the tooltip triggers. Default value is 1.0.
+*/
+
+/*!
+  \var SoSFBool SmTooltipKit::isActive
+  
+  TRUE when tooltip is active, FALSE otherwise.
+*/
+
+/*!
+  \var SoMFString SmTooltipKit::description
+
+  The tooltip string.
+*/
+
+/*!
+  \var SoSFInt32 SmTooltipKit::frameSize
+
+  The amount of extra pixels around the frame. The default value is 3.
+
+*/
+
 #include "SmTooltipKit.h"
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
+#include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/sensors/SoFieldSensor.h>
+#include <Inventor/sensors/SoAlarmSensor.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <SmallChange/nodes/DepthBuffer.h>
 #include <Inventor/nodes/SoResetTransform.h>
@@ -52,15 +88,24 @@
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SoFullPath.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
+#include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/events/SoLocation2Event.h>
+#include <SmallChange/nodes/SmTooltip.h>
 
 class SmTooltipKitP {
 public:
   SmTooltipKitP(void) 
-    : ba(SbViewportRegion(100,100)) { }
+    : bba(SbViewportRegion(100,100)),
+      rpa(SbViewportRegion(100,100))
+  { }
   SoFieldSensor * tooltipsensor;
   SoSearchAction sa;
-  SoGetBoundingBoxAction ba;
+  SoGetBoundingBoxAction bba;
+  SoRayPickAction rpa;
   SbViewportRegion vp;
+  SoAlarmSensor * alarm;
+  SoNode * alarm_root;
+  SbVec2f alarm_pos;
 };
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -76,9 +121,10 @@ SmTooltipKit::SmTooltipKit(void)
 
   SO_KIT_CONSTRUCTOR(SmTooltipKit);
   
-  SO_KIT_ADD_FIELD(delayedRender, (TRUE));
+  SO_KIT_ADD_FIELD(autoTrigger, (FALSE));
+  SO_KIT_ADD_FIELD(autoTriggerTime, (1.0));
   SO_KIT_ADD_FIELD(isActive, (FALSE));
-  SO_KIT_ADD_FIELD(tooltipString, (""));
+  SO_KIT_ADD_FIELD(description, (""));
   SO_KIT_ADD_FIELD(frameSize, (3));
   
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
@@ -128,7 +174,9 @@ SmTooltipKit::SmTooltipKit(void)
   col->rgb = SbColor(1.0f, 1.0f, 0.0f);
 
   PRIVATE(this)->tooltipsensor = new SoFieldSensor(tooltip_changed_cb, this);
-  PRIVATE(this)->tooltipsensor->attach(&this->tooltipString);
+  PRIVATE(this)->tooltipsensor->attach(&this->description);
+  PRIVATE(this)->alarm = new SoAlarmSensor(alarm_cb, this);
+  PRIVATE(this)->alarm_root = NULL;
 }
 
 /*!
@@ -136,6 +184,10 @@ SmTooltipKit::SmTooltipKit(void)
 */
 SmTooltipKit::~SmTooltipKit(void)
 {
+  delete PRIVATE(this)->alarm;
+  if (PRIVATE(this)->alarm_root) {
+    PRIVATE(this)->alarm_root->unref();
+  }
   delete PRIVATE(this)->tooltipsensor;
   delete PRIVATE(this);
 }
@@ -158,11 +210,84 @@ SmTooltipKit::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->vp = SoViewportRegionElement::get(action->getState());
   if (!this->isActive.getValue()) return;
 
-  if (this->delayedRender.getValue() && !action->isRenderingDelayedPaths()) {
+  if (!action->isRenderingDelayedPaths()) {
     action->addDelayedPath(action->getCurPath()->copy());
     return;
   }
   inherited::GLRender(action);
+}
+
+void 
+SmTooltipKit::handleEvent(SoHandleEventAction * action)
+{
+  PRIVATE(this)->vp = SoViewportRegionElement::get(action->getState());
+  if (this->autoTrigger.getValue()) {
+    const SoEvent * ev = action->getEvent();
+    if (ev->isOfType(SoLocation2Event::getClassTypeId())) {
+      if (this->isActive.getValue()) this->isActive = FALSE;
+      if (PRIVATE(this)->alarm->isScheduled()) {
+        PRIVATE(this)->alarm->unschedule();
+        assert(PRIVATE(this)->alarm_root);
+        PRIVATE(this)->alarm_root->unref();
+        PRIVATE(this)->alarm_root = NULL;
+      }
+      PRIVATE(this)->alarm_root = action->getPickRoot();
+      PRIVATE(this)->alarm_root->ref();
+      PRIVATE(this)->alarm->setTimeFromNow(SbTime(this->autoTriggerTime.getValue()));
+      PRIVATE(this)->alarm_pos = ev->getNormalizedPosition(PRIVATE(this)->vp);
+      PRIVATE(this)->alarm->schedule();
+    }
+  }
+  inherited::handleEvent(action);
+}
+
+void 
+SmTooltipKit::getBoundingBox(SoGetBoundingBoxAction * action)
+{
+  SoCacheElement::invalidate(action->getState());
+}
+
+void 
+SmTooltipKit::search(SoSearchAction * action)
+{
+  // don't search under this nodekit
+  SoNode::search(action);
+}
+
+void 
+SmTooltipKit::callback(SoCallbackAction * action)
+{
+  SoNode::callback(action);
+}
+
+void 
+SmTooltipKit::getMatrix(SoGetMatrixAction * action) 
+{ 
+  SoNode::getMatrix(action);
+}
+
+void 
+SmTooltipKit::pick(SoPickAction * action) 
+{
+  SoNode::pick(action);
+}
+
+void
+SmTooltipKit::rayPick(SoRayPickAction * action) 
+{ 
+  SoNode::rayPick(action);
+}
+
+void 
+SmTooltipKit::audioRender(SoAudioRenderAction * action) 
+{
+  SoNode::audioRender(action);
+}
+
+void 
+SmTooltipKit::getPrimitiveCount(SoGetPrimitiveCountAction * action) 
+{
+  SoNode::getPrimitiveCount(action);
 }
 
 /*!  
@@ -231,13 +356,41 @@ SmTooltipKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & 
   PRIVATE(this)->sa.reset();
 }
 
+void 
+SmTooltipKit::alarm_cb(void * closure, SoSensor * s)
+{
+  SmTooltipKit * thisp = (SmTooltipKit*) closure;
+  assert(PRIVATE(thisp)->alarm_root);
+  
+  PRIVATE(thisp)->rpa.setViewportRegion(PRIVATE(thisp)->vp);
+  PRIVATE(thisp)->rpa.setPickAll(FALSE);
+  PRIVATE(thisp)->rpa.setNormalizedPoint(PRIVATE(thisp)->alarm_pos);
+  PRIVATE(thisp)->rpa.apply(PRIVATE(thisp)->alarm_root);
+  
+  SoPickedPoint * pp = PRIVATE(thisp)->rpa.getPickedPoint();
+  if (pp) {
+    PRIVATE(thisp)->sa.setType(SmTooltip::getClassTypeId());
+    PRIVATE(thisp)->sa.setInterest(SoSearchAction::LAST);
+    PRIVATE(thisp)->sa.apply(pp->getPath());
+    if (PRIVATE(thisp)->sa.getPath()) {
+      SoFullPath * p = (SoFullPath*) PRIVATE(thisp)->sa.getPath();
+      SmTooltip * tooltip = (SmTooltip*) p->getTail();
+      thisp->description = tooltip->description;
+      thisp->setPickedPoint(pp, PRIVATE(thisp)->vp);
+    }
+    PRIVATE(thisp)->sa.reset();
+  }
+ 
+  PRIVATE(thisp)->alarm_root->unref();
+  PRIVATE(thisp)->alarm_root = NULL;
+}
 
 void 
 SmTooltipKit::tooltip_changed_cb(void * closure, SoSensor * s)
 {
   SmTooltipKit * thisp = (SmTooltipKit*) closure;
   SoText2 * text = (SoText2*) thisp->getAnyPart("textShape", TRUE);
-  text->string = thisp->tooltipString;
+  text->string = thisp->description;
   thisp->updateBackground();
 }
 
@@ -251,9 +404,9 @@ SmTooltipKit::updateBackground(void)
   SoFaceSet * fs = (SoFaceSet*) this->getAnyPart("backgroundShape", TRUE);
   fs->numVertices = 0;
 
-  PRIVATE(this)->ba.setViewportRegion(PRIVATE(this)->vp);
-  PRIVATE(this)->ba.apply(p);
-  SbBox3f bb = PRIVATE(this)->ba.getBoundingBox();
+  PRIVATE(this)->bba.setViewportRegion(PRIVATE(this)->vp);
+  PRIVATE(this)->bba.apply(p);
+  SbBox3f bb = PRIVATE(this)->bba.getBoundingBox();
   p->unref();
 
   SoVertexProperty * vp = (SoVertexProperty*) fs->vertexProperty.getValue();
