@@ -49,8 +49,6 @@ public:
   SoFieldSensor * markerWidthSensor;
   SoFieldSensor * textIntervalSensor;
   SoFieldSensor * digitsSensor;
-  SoFieldSensor * axisNameSensor;
-  SoFieldSensor * arrowColorSensor;
 
   SoSeparator * axisRoot;
   SoSeparator * generateAxis(int LODlevel) const;
@@ -98,10 +96,6 @@ SmAxisKit::SmAxisKit()
 
   setPart("topSeparator", PRIVATE(this)->axisRoot);
 
-  PRIVATE(this)->axisNameSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
-  PRIVATE(this)->axisNameSensor->setPriority(0);
-  PRIVATE(this)->axisNameSensor->attach(&this->axisName);
-
   PRIVATE(this)->axisRangeSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->axisRangeSensor->setPriority(0);
   PRIVATE(this)->axisRangeSensor->attach(&this->axisRange);
@@ -121,10 +115,6 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->digitsSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->digitsSensor->setPriority(0);
   PRIVATE(this)->digitsSensor->attach(&this->digits);
-
-  PRIVATE(this)->arrowColorSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
-  PRIVATE(this)->arrowColorSensor->setPriority(0);
-  PRIVATE(this)->arrowColorSensor->attach(&this->arrowColor);
 }
 
 SmAxisKit::~SmAxisKit()
@@ -134,8 +124,6 @@ SmAxisKit::~SmAxisKit()
   delete PRIVATE(this)->markerWidthSensor;
   delete PRIVATE(this)->textIntervalSensor;
   delete PRIVATE(this)->digitsSensor;
-  delete PRIVATE(this)->axisNameSensor;
-  delete PRIVATE(this)->arrowColorSensor;
 
   PRIVATE(this)->axisRoot->unref();
 }
@@ -194,7 +182,7 @@ SmAxisKitP::setupMasterNodes(void) const
   trans1->translation.setValue(0.0f, range/2, 0.0f);
   trans2->translation.setValue(0.0f, 1.75f, 0.0f);
   complexity1->value.setValue(0.2f);
-  arrowColor->rgb.setValue(PUBLIC(this)->arrowColor.getValue());
+  arrowColor->rgb.connectFrom(&PUBLIC(this)->arrowColor);
 
   sep1->addChild(complexity1);
   sep1->addChild(axisColor);
@@ -210,7 +198,7 @@ SmAxisKitP::setupMasterNodes(void) const
   trans3->translation.setValue(0.0f, 2.0f, 0.0f);
 
   SoText2 * newaxisname = new SoText2;  
-  newaxisname->string.setValue(PUBLIC(this)->axisName.getValue());
+  newaxisname->string.connectFrom(&PUBLIC(this)->axisName);
     
   axisnamesep->addChild(axisColor);
   axisnamesep->addChild(trans1);
