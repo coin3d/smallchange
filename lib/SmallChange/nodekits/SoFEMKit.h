@@ -33,6 +33,7 @@ class SoFEMKitP;
 class SbColor;
 class SbPlane;
 class SoSensor;
+class SbVec3f;
 
 class SoFEMKit : public SoBaseKit {
   typedef SoBaseKit inherited;
