@@ -13,6 +13,7 @@
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
 #include <Inventor/nodes/SoRotation.h>
 #include <Inventor/nodes/SoEventCallback.h>
+#include <Inventor/nodes/SoTexture2.h>
 #include <Inventor/events/SoKeyboardEvent.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/sensors/SoFieldSensor.h>
@@ -136,7 +137,7 @@ int
 main(int argc, char ** argv )
 {
   if (argc == 1) {
-    fprintf(stderr,"Usage: scenemgr <ivfile> [helicopter|examiner|sphere] [speed]\n");
+    fprintf(stderr,"Usage: scenemgr <ivfile> [-m helicopter|examiner|sphere] [speed]] [-t menutex]\n");
     return -1;
   } 
   @WIDGET@ window = So@Gui@::init( argv[0] );
@@ -175,24 +176,41 @@ main(int argc, char ** argv )
     ck->viewUp = SbVec3f(0.0f, 1.0f, 0.0f);
     ck->setPart("scene", root);
   }
-  if (argc >= 3) {
-    if (strcmp(argv[2], "helicopter") == 0) {
-      SmHelicopterEventHandler *helihandler;
-      ck->eventHandler = helihandler = new SmHelicopterEventHandler;
-      if (argc >= 4) 
-        helihandler->speed.setValue(atof(argv[3]));
-    }
-    else if (strcmp(argv[2], "examiner") == 0) {
-      ck->eventHandler = new SmExaminerEventHandler;
-    } 
-    else if (strcmp(argv[2], "sphere") == 0) {
-      ck->eventHandler = new SmSphereEventHandler;
-    }
-    else {
-      fprintf(stderr,"Unknown event handler. Using examiner\n");
-    }
-  }
 
+  char * menutex = NULL;
+
+  int i = 1;
+  while (i < argc) {
+    if (strcmp(argv[i], "-m") == 0 && i < argc-1) {
+      i++;
+      if (strcmp(argv[i], "helicopter") == 0) {
+        SmHelicopterEventHandler *helihandler;
+        ck->eventHandler = helihandler = new SmHelicopterEventHandler;
+        i++;
+        if (i < argc) { 
+          helihandler->speed.setValue(atof(argv[i]));
+          i++;
+        }
+      }
+      else if (strcmp(argv[i], "examiner") == 0) {
+        ck->eventHandler = new SmExaminerEventHandler;
+      } 
+      else if (strcmp(argv[i], "sphere") == 0) {
+        ck->eventHandler = new SmSphereEventHandler;
+      }
+      else {
+        fprintf(stderr,"Unknown event handler. Using examiner\n");
+        i++;
+      }
+    }
+    else if (strcmp(argv[i], "-t") == 0 && i < argc-1) {
+      i++;
+      menutex = argv[i];
+      i++;
+    }
+    else i++;
+  }
+  
   SoCamera * camera = NULL;
   
   // handle VRML97 Viewpoints
@@ -216,7 +234,12 @@ main(int argc, char ** argv )
   scenemgr->activate();
 
   SmPopupMenuKit * menu = new SmPopupMenuKit;
-  
+
+  if (menutex) {
+    SoTexture2 * tex = new SoTexture2;
+    tex->filename = menutex;
+    menu->setPart("backgroundTexture", tex);
+  }  
   const char * items[] = {
     "As Is",
     "Wireframe",
