@@ -61,12 +61,17 @@ Separator {
 
  *
 ** Ideas for future improvements:
+** + Normals and their length are currently computed in local object space,
+**   which will cause local scaling parameters to affect them.  The placement
+**   of the normal endpoints should be adjusted in worldspace instead so all
+**   normals will be of uniform size; the actual size given in the length
+**   field.
 ** + SoSFColor color field for setting the material (or give access to the
 **   material node in the nodekit directly instead?
 ** + SoSFEnum which { VERTEX_NORMALS, TRIANGLE_NORMALS, FACE_NORMALS }
 **   field to control what you get normals for - not just normals for
 **   vertices.
-** + optimize how coordinates are accumulated in the scene traversal (lots
+** + Optimize how coordinates are accumulated in the scene traversal (lots
 **   of array expansions - probably slow for large scenes).
 **
 ** Problems:
@@ -179,6 +184,9 @@ NormalsKitP::scenesensor_cb(void * closure, SoSensor * sensor)
   thisp->lines->touch(); // redraw scene
 }
 
+/*
+  Does this "point callback" make any sense?  I'm doubtful.  20031017 larsa
+*/
 void
 NormalsKitP::pointCB(void * closure, SoCallbackAction * action, const SoPrimitiveVertex * v)
 {
