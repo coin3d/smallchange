@@ -148,6 +148,8 @@ public:
 void
 sc_renderstate_construct(RenderState * state)
 {
+  state->state = NULL;
+  state->action = NULL;
   // construct lists
   state->reusetexlist = (void *) new SbList<TexInfo *>;
   state->tmplist = (void *) new SbList<unsigned int>;
