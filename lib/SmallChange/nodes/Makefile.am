@@ -1,6 +1,5 @@
 
 INCLUDES = -I$(top_srcdir)/lib
-# INCLUDES = -I$(top_srcdir)/lib -I/cygdrive/e/Users/thammer/Code/Checkout/openal/include
 
 if BUILD_WITH_MSVC
 noinst_LIBRARIES = nodes.lst
@@ -14,17 +13,6 @@ libnodes_la_SOURCES = \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp Switchboard.h \
 	SwitchboardOperator.cpp SwitchboardOperator.h \
-	SoAudioClip.cpp \
-	SoAudioClip.h \
-	SoAudioClipP.h \
-	SoAudioClipStreaming.cpp \
-	SoAudioClipStreaming.h \
-	SoAudioClipStreamingP.h \
-	SoListener.cpp \
-	SoListener.h \
-	SoSound.cpp \
-	SoSound.h \
-	SoSoundP.h \
 	SoTCBCurve.cpp \
 	SoTCBCurve.h \
 	SoText2Set.cpp \
@@ -40,17 +28,6 @@ nodes_lst_SOURCES = \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp Switchboard.h \
 	SwitchboardOperator.cpp SwitchboardOperator.h \
-	SoAudioClip.cpp \
-	SoAudioClip.h \
-	SoAudioClipP.h \
-	SoAudioClipStreaming.cpp \
-	SoAudioClipStreaming.h \
-	SoAudioClipStreamingP.h \
-	SoListener.cpp \
-	SoListener.h \
-	SoSound.cpp \
-	SoSound.h \
-	SoSoundP.h \
 	SoTCBCurve.cpp \
 	SoTCBCurve.h \
 	SoText2Set.cpp \
@@ -67,15 +44,10 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Switchboard.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SwitchboardOperator.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClip.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreaming.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoText2Set.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoTCBCurve.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoPointCloud.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoLODExtrusion.h
-	
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -83,7 +83,7 @@ AM_INIT_AUTOMAKE(SmallChange, $VERSION)
 #  Files to cram results from the configure tests into.
 AM_CONFIG_HEADER(config.h)
 
-#  Check for pthread (required for multithreaded streaming sound)
+#  Check for pthread 
 SIM_AC_CHECK_PTHREAD([
   CPPFLAGS="$CPPFLAGS $sim_ac_pthread_cppflags"
   LDFLAGS="$LDFLAGS $sim_ac_pthread_ldflags"
@@ -92,35 +92,9 @@ SIM_AC_CHECK_PTHREAD([
   SIM_AC_CONFIGURATION_SETTING([pthread support], [Yes])
 ], 
 [
-  AC_MSG_WARN([pthread is needed for multithreaded streaming sound])
   SIM_AC_CONFIGURATION_SETTING([pthread support], [No])
 ]
 )
-
-#  Check for openal (required for sound)
-SIM_AC_HAVE_OPENAL_IFELSE([
-  CPPFLAGS="$CPPFLAGS $sim_ac_openal_cppflags"
-  LDFLAGS="$LDFLAGS $sim_ac_openal_ldflags"
-  LIBS="$sim_ac_openal_libs $LIBS"
-  AC_DEFINE(HAVE_OPENAL, 1, [openal extensions available])
-  SIM_AC_CONFIGURATION_SETTING([OpenAL support], [Yes])
-], [
-  AC_MSG_WARN([openal is needed for sound])
-  SIM_AC_CONFIGURATION_SETTING([OpenAL support], [No])
-])
-
-#  Check for OggVorbis
-SIM_AC_CHECK_OGGVORBIS([
-  CPPFLAGS="$CPPFLAGS $sim_ac_oggvorbis_cppflags"
-  LDFLAGS="$LDFLAGS $sim_ac_oggvorbis_ldflags"
-  LIBS="$sim_ac_oggvorbis_libs $LIBS"
-  AC_DEFINE(HAVE_OGGVORBIS, 1, [Ogg Vorbis extensions available])
-  SIM_AC_CONFIGURATION_SETTING([Ogg Vorbis support], [Yes])
-], [
-  AC_MSG_WARN([Streaming of Ogg Vorbis files unavailable])
-  SIM_AC_CONFIGURATION_SETTING([Ogg Vorbis support], [No])
-])
-
 
 #  Default to not building a shared library.
 #  Can be overridden by the user with --enable-shared.
