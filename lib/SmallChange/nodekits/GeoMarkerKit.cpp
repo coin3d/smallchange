@@ -123,6 +123,15 @@ GeoMarkerKitP::scene[] = {
   "  Translation {\n",
   "    translation 0 1 0\n",
   "  }\n",
+
+  // cull away backfacing polygons, to work better with low Z-buffer
+  // resolution
+  "  ShapeHints {\n",
+  "    vertexOrdering COUNTERCLOCKWISE\n",
+  "    shapeType SOLID\n",
+  "    faceType CONVEX\n",
+  "  }\n",
+
   "  Cylinder { }\n",
   "  Scale { scaleFactor 2.5 0.1 2.5 }\n",
   "  Translation { translation 0 10 0 }\n",
