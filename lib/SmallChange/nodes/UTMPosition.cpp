@@ -143,8 +143,8 @@ UTMPosition::doAction(SoAction * action)
   SbMatrix oldm = SoModelMatrixElement::get(state);
   // eliminate translation
   oldm[3][0] = 0.0f;
-  oldm[3][0] = 0.0f;
-  oldm[3][0] = 0.0f;
+  oldm[3][1] = 0.0f;
+  oldm[3][2] = 0.0f;
   SbVec3f trans = UTMElement::setPosition(action->getState(),
                                           utm[0], utm[1], utm[2]);
                                           
