@@ -1,4 +1,4 @@
-// max optimized render callback. Define the SEND_VERTEX macro before including
+// optimized render callback. Define the SEND_VERTEX macro before including
 
 (void * closure, const int x, const int y,
   const int len, const unsigned int bitmask)
