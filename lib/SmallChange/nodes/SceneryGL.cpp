@@ -726,10 +726,6 @@ struct RenderStateP {
   float invtsizescale[2]; // (1.0f / blocksize) * tscale[n]
   unsigned int scenerytexid;
 
-  // temporary
-  unsigned char * texdata;
-  int texw, texh, texnc;
-
   // picking
   int intersected;
   float intersection[3];
@@ -1702,15 +1698,19 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
         (PRIVATE(renderstate)->activetexturecontext != PRIVATE(renderstate)->glcontextid)) {
       TexInfo * texinfo = sc_find_texture(renderstate, PRIVATE(renderstate)->scenerytexid);
       if ( !texinfo ) {
-        ss_render_get_texture_image(info, PRIVATE(renderstate)->scenerytexid,
-                                    &PRIVATE(renderstate)->texdata,
-                                    &PRIVATE(renderstate)->texw,
-                                    &PRIVATE(renderstate)->texh,
-                                    &PRIVATE(renderstate)->texnc);
+        unsigned char * texdata;
+        int texw, texh, texnc;
+        ss_render_get_texture_image(info,
+                                    PRIVATE(renderstate)->scenerytexid,
+                                    &texdata,
+                                    &texw,
+                                    &texh,
+                                    &texnc);
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        void * opaquetexstruct = texture_construct(PRIVATE(renderstate)->texdata, PRIVATE(renderstate)->texw, PRIVATE(renderstate)->texh, PRIVATE(renderstate)->texnc, clampmode, clampmode, 0.9f, 0);
+        void * opaquetexstruct = texture_construct(texdata, texw, texh, texnc,
+                                                   clampmode, clampmode, 0.9f, 0);
 
         texinfo = sc_place_texture_in_hash(renderstate,
                                            PRIVATE(renderstate)->scenerytexid,
@@ -2233,15 +2233,15 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
         (PRIVATE(state)->activetexturecontext != PRIVATE(state)->glcontextid)) {
       TexInfo * texinfo = sc_find_texture(state, PRIVATE(state)->scenerytexid);
       if ( !texinfo ) {
+        unsigned char * texdata;
+        int texw, texh, texnc;
         ss_render_get_texture_image(info, PRIVATE(state)->scenerytexid,
-                                    &PRIVATE(state)->texdata,
-                                    &PRIVATE(state)->texw,
-                                    &PRIVATE(state)->texh,
-                                    &PRIVATE(state)->texnc);
+                                    &texdata, &texw, &texh, &texnc);
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        void * opaquetexstruct = texture_construct(PRIVATE(state)->texdata, PRIVATE(state)->texw, PRIVATE(state)->texh, PRIVATE(state)->texnc, clampmode, clampmode, 0.9f, 0);
+        void * opaquetexstruct = texture_construct(texdata, texw, texh, texnc,
+                                                   clampmode, clampmode, 0.9f, 0);
 
         texinfo = sc_place_texture_in_hash(state, PRIVATE(state)->scenerytexid,
                                            opaquetexstruct);
