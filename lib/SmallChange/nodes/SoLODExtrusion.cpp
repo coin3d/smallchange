@@ -939,7 +939,7 @@ SoLODExtrusionP::makeCircleCrossSection(const float radius, const int segments)
   // rendering (not good for multipipe rendering).
   SbBool old = this->master->crossSection.enableNotify(FALSE);
   this->master->crossSection.setValues( 0, templist.getLength(), templist.getArrayPtr() );
-  this->master->crossSection.enableNotify(FALSE);
+  this->master->crossSection.enableNotify(old);
 }
 
 #endif // DOXYGEN_SKIP_THIS
