@@ -494,34 +494,49 @@ SmPopupMenuKit::setNormalizedPoint(const SbVec3f & npt)
 {
   PRIVATE(this)->flipupdown = FALSE;
   PRIVATE(this)->flipleftright = FALSE;
-  if (npt[0] > 0.5) PRIVATE(this)->flipleftright = TRUE;
-  if (npt[1] < 0.5) PRIVATE(this)->flipupdown = TRUE;
-  
-  SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
-  t->translation = npt;
 
-  this->updateBackground();
+  do {  
+    SoTranslation * t = (SoTranslation*) this->getAnyPart("position", TRUE);
+    t->translation = npt;
+    
+    this->updateBackground();
+    
+    SbVec2s of = this->offset.getValue();
+    SbVec3f fof(0.0f, 0.0f, 0.0f);
+    fof[0] = float(of[0]) / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
+    fof[1] = float(of[1]) / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+    
+    if (PRIVATE(this)->flipleftright) fof[0] = -fof[0];
+    if (PRIVATE(this)->flipupdown) fof[1] = -fof[1];
+    
+    fof[1] -= float(PRIVATE(this)->fontsize) /  float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+    
+    SbVec3f j(0.0f, 0.0f, 0.0f);
+    if (PRIVATE(this)->flipleftright) j[0] = -PRIVATE(this)->bbw;
+    if (PRIVATE(this)->flipupdown) j[1] = PRIVATE(this)->bbh;
+    
+    j[0] += fof[0];
+    j[1] += fof[1];
+    t->translation = npt + j;    
+    this->updateBackground();  
+    
+    // check if parts of the menu is outside the window
+    SbBool dobreak = TRUE;
+    
+    if (PRIVATE(this)->backgroundmenulow < 0.0f) {
+      PRIVATE(this)->flipupdown = TRUE;
+      dobreak = FALSE;
+    }
+    if (PRIVATE(this)->backgroundright > 1.0f) {
+      PRIVATE(this)->flipleftright = TRUE;
+      dobreak = FALSE;
+    }
+
+    if (dobreak) break;
+  } while (!PRIVATE(this)->flipupdown || !PRIVATE(this)->flipleftright);
   
-  SbVec2s of = this->offset.getValue();
-  SbVec3f fof(0.0f, 0.0f, 0.0f);
-  fof[0] = float(of[0]) / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
-  fof[1] = float(of[1]) / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
   
-  if (PRIVATE(this)->flipleftright) fof[0] = -fof[0];
-  if (PRIVATE(this)->flipupdown) fof[1] = -fof[1];
-  
-  fof[1] -= float(PRIVATE(this)->fontsize) /  float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
-  
-  SbVec3f j(0.0f, 0.0f, 0.0f);
-  if (PRIVATE(this)->flipleftright) j[0] = -PRIVATE(this)->bbw;
-  if (PRIVATE(this)->flipupdown) j[1] = PRIVATE(this)->bbh;
-  
-  j[0] += fof[0];
-  j[1] += fof[1];
-  t->translation = npt + j;    
-  
-  // calculate again to account for offset and justification
-  this->updateBackground();  
+
 }
 
 
