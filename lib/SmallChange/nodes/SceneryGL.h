@@ -5,6 +5,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define SM_SCENERY_ELEVATION_TEXTURE_SIZE        (2048)
+#define SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS     (4)
+
 typedef struct cc_glglue cc_glglue;
 
 typedef struct {

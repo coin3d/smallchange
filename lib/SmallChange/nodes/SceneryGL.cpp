@@ -79,9 +79,6 @@ sc_disable_texturing(void)
 
 /* ********************************************************************** */
 
-#define ELEMENTS    (1024)
-#define COMPONENTS     (4)
-
 #define R 0
 #define G 1
 #define B 2
@@ -98,14 +95,15 @@ sc_generate_elevation_line_texture(float distance,
 {
   assert(distance > 0.0f);
   assert(thickness > 0.0f);
+  assert(SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS == 4);
 
   int i;
   // clear texture to white first
-  for ( i = 0; i < ELEMENTS; i++ ) {
-    buffer[i*COMPONENTS+R] = 255;
-    buffer[i*COMPONENTS+G] = 255;
-    buffer[i*COMPONENTS+B] = 255;
-    buffer[i*COMPONENTS+A] = 255;
+  for ( i = 0; i < SM_SCENERY_ELEVATION_TEXTURE_SIZE; i++ ) {
+    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 255;
+    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 255;
+    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 255;
+    buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+A] = 255;
   }
 
   float lines = 1.0f;
@@ -120,22 +118,22 @@ sc_generate_elevation_line_texture(float distance,
   float pixelpos = 0.0f;
   // set elevation lines to black
   int bolds = 0;
-  for ( i = 0; i < ELEMENTS; i++ ) {
+  for ( i = 0; i < SM_SCENERY_ELEVATION_TEXTURE_SIZE; i++ ) {
     float pixelpos = i * pixelsize;
     if ( (fabs(fmod(pixelpos, distance)) <= (thickness * 0.5f)) ||
          ((distance - fabs(fmod(pixelpos, distance))) < (thickness * 0.5f)) ) {
-      buffer[i*COMPONENTS+R] = 0;
-      buffer[i*COMPONENTS+G] = 0;
-      buffer[i*COMPONENTS+B] = 0;
-      buffer[i*COMPONENTS+A] = 255;
+      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 0;
+      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 0;
+      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 0;
+      buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+A] = 255;
     }
     else if ( lines > 1.0f ) {
       if ( (fabs(fmod(pixelpos, (lines * distance))) <= (thickness * 1.5f)) ||
            (((lines * distance) - fabs(fmod(pixelpos, (lines * distance)))) < (thickness * 1.5f)) ) {
-        buffer[i*COMPONENTS+R] = 0;
-        buffer[i*COMPONENTS+G] = 0;
-        buffer[i*COMPONENTS+B] = 0;
-        buffer[i*COMPONENTS+A] = 255;
+        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+R] = 0;
+        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+G] = 0;
+        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+B] = 0;
+        buffer[i*SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS+A] = 255;
         bolds++;
       }
     }
@@ -144,9 +142,6 @@ sc_generate_elevation_line_texture(float distance,
   *texcoordscale = 1.0f / (lines * distance);
   *texcoordoffset = offset * (*texcoordscale);
 }
-
-#undef ELEMENTS
-#undef COMPONENTS
 
 /* ********************************************************************** */
 

@@ -1090,7 +1090,9 @@ SceneryP::elevationlinestexchange(void)
     assert(this->elevationlinesimage);
   }
   if ( this->elevationlinesdata == NULL ) {
-    this->elevationlinesdata = (uint8_t *) malloc(1024 * 4); // size is hardcoded for now
+    this->elevationlinesdata = (uint8_t *)
+      malloc(SM_SCENERY_ELEVATION_TEXTURE_SIZE *
+             SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
     assert(this->elevationlinesdata);
   }
 
@@ -1104,7 +1106,9 @@ SceneryP::elevationlinestexchange(void)
                                      &(this->renderstate.etexscale),
                                      &(this->renderstate.etexoffset));
 
-  this->elevationlinesimage->setData(this->elevationlinesdata, SbVec2s(1, 1024), 4);
+  this->elevationlinesimage->setData(this->elevationlinesdata,
+      SbVec2s(1, SM_SCENERY_ELEVATION_TEXTURE_SIZE),
+      SM_SCENERY_ELEVATION_TEXTURE_COMPONENTS);
 }
 
 // *************************************************************************
