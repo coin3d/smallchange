@@ -169,8 +169,29 @@
 */
 
 /*!
-  \var SoSFBool SmScenery::elevationTexture
-  \brief Not implemented
+  \var SoSFBool SmScenery::elevationLines
+  \brief Whether or not the elevation lines feature should be used.
+*/
+
+/*!
+  \var SoSFFloat SmScenery::elevationLineDistance
+  \brief The elevation distance between elevation lines.
+
+  The math is not correct for this feature yet.
+*/
+
+/*!
+  \var SoSFFloat SmScenery::elevationLineOffset
+  \brief Offset the elevation lines with this value.
+
+  The math is not correct for this feature yet.
+*/
+
+/*!
+  \var SoSFShort SmScenery::elevationLineEmphasis
+  \brief Emphasize every Nth elevation line.
+
+  Not implemented yet.
 */
 
 /*!
