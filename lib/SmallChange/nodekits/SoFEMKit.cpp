@@ -48,6 +48,7 @@
 #include <Inventor/SbPlane.h>
 #include <Inventor/SbBSPTree.h>
 #include <Inventor/sensors/SoFieldSensor.h>
+#include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 
 #include <string.h>
@@ -88,10 +89,10 @@ public:
   SbList <int> nodelookup;
   SbList <SoFEMLookup> elementlookup;
 
-  SbBool needupdate;
   SbBool removehidden;
 
   SoFieldSensor * ccwsensor;
+  SoOneShotSensor * updatesensor;
 };
 
 #endif // DOXYGEN_SKIP_THIS
@@ -108,13 +109,11 @@ SO_KIT_SOURCE(SoFEMKit);
 SoFEMKit::SoFEMKit(void) 
 {
   THIS = new SoFEMKitP;
-  THIS->needupdate = FALSE;
   THIS->removehidden = TRUE;
 
   SO_KIT_CONSTRUCTOR(SoFEMKit);
 
   SO_KIT_ADD_FIELD(ccw, (TRUE));
-  SO_KIT_ADD_FIELD(threadSafe, (FALSE));
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shapehints, SoShapeHints, FALSE, topSeparator, mbind, TRUE);
@@ -139,6 +138,9 @@ SoFEMKit::SoFEMKit(void)
   THIS->ccwsensor->setPriority(0);
   THIS->ccwsensor->attach(&this->ccw);
   
+  THIS->updatesensor = new SoOneShotSensor(update_cb, this);
+  THIS->updatesensor->setPriority(1); // high priority so that it triggers before rendering
+
   // set up shape hints
   SoFEMKit::ccw_cb(this, THIS->ccwsensor);
   this->shapehints.setDefault(TRUE);
@@ -161,6 +163,7 @@ SoFEMKit::ccw_cb(void * closure, SoSensor *)
 SoFEMKit::~SoFEMKit()
 {
   THIS->ccwsensor->detach();
+  delete THIS->updatesensor;
   delete THIS->ccwsensor;
   delete THIS;
 }
@@ -195,7 +198,10 @@ SoFEMKit::reset(void)
   this->setAnyPart("normals", new SoNormal);
   this->setAnyPart("faceset", new SoIndexedFaceSet);
 
-  THIS->needupdate = FALSE;
+  if (THIS->updatesensor->isScheduled()) {
+    THIS->updatesensor->unschedule();
+  }
+
 }
 
 /*!
@@ -207,8 +213,6 @@ SoFEMKit::reset(void)
 void 
 SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
 {
-  THIS->needupdate = TRUE;
-
   int n = THIS->nodes.getLength();
   
   while (THIS->nodelookup.getLength() <= nodeidx) {
@@ -220,6 +224,8 @@ SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
   node.coords = xyz;
   node.coloridx = -1;
   THIS->nodes.append(node);
+
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -244,8 +250,6 @@ SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
 void 
 SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int layerindex)
 {
-  THIS->needupdate = TRUE;
-
   SoFEM3DElement elem;
   elem.active = TRUE;
   elem.layerindex = layerindex;
@@ -267,6 +271,8 @@ SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int la
   THIS->elementlookup[elementidx] = lookup;  
 
   THIS->elements3d.append(elem);
+
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -289,8 +295,6 @@ SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int la
 void 
 SoFEMKit::add2DElement(const int elementidx, const int32_t * nodes, const int layerindex)
 {
-  THIS->needupdate = TRUE;
-
   SoFEM2DElement elem;
   elem.active = TRUE;
   elem.layerindex = layerindex;
@@ -310,6 +314,8 @@ SoFEMKit::add2DElement(const int elementidx, const int32_t * nodes, const int la
   lookup.index = n;
   lookup.is3d = TRUE;
   THIS->elementlookup[elementidx] = lookup;  
+
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -320,14 +326,13 @@ SoFEMKit::add2DElement(const int elementidx, const int32_t * nodes, const int la
 void 
 SoFEMKit::setNodeColor(const int nodeidx, const SbColor & color)
 {
-  THIS->needupdate = TRUE;
-
   assert(nodeidx >= 0 && nodeidx < THIS->nodelookup.getLength());
 
   int coloridx = THIS->colors.getLength();
   THIS->colors.append(color.getPackedValue());
   
   THIS->nodes[THIS->nodelookup[nodeidx]].coloridx = coloridx;
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -336,8 +341,6 @@ SoFEMKit::setNodeColor(const int nodeidx, const SbColor & color)
 void 
 SoFEMKit::setElementColor(const int elementidx, const SbColor & color)
 {
-  THIS->needupdate = TRUE;
-
   assert(elementidx >= 0 && elementidx < THIS->elementlookup.getLength());
   SoFEMLookup lookup = THIS->elementlookup[elementidx];
 
@@ -350,6 +353,7 @@ SoFEMKit::setElementColor(const int elementidx, const SbColor & color)
   else {
     THIS->elements2d[lookup.index].coloridx = coloridx;
   }
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -358,7 +362,6 @@ SoFEMKit::setElementColor(const int elementidx, const SbColor & color)
 void 
 SoFEMKit::enableAllElements(const SbBool onoroff)
 {
-  THIS->needupdate = TRUE;
   int i;
 
   for (i = 0; i < THIS->elements3d.getLength(); i++) {
@@ -367,6 +370,7 @@ SoFEMKit::enableAllElements(const SbBool onoroff)
   for (i = 0; i < THIS->elements2d.getLength(); i++) {
     THIS->elements2d[i].active = onoroff;
   }
+  THIS->updatesensor->schedule();
 }
 
 static SbBool
@@ -396,8 +400,6 @@ intersect_plane(const SbPlane & p,
 void
 SoFEMKit::enableElements(const SbPlane & plane, const SbBool onoroff)
 {
-  THIS->needupdate = TRUE;
-
   int i;
   for (i = 0; i < THIS->elements3d.getLength(); i++) {
     SbBool isect = intersect_plane(plane, THIS->elements3d[i].nodes, 8, THIS->nodes,
@@ -413,6 +415,7 @@ SoFEMKit::enableElements(const SbPlane & plane, const SbBool onoroff)
       THIS->elements2d[i].active = onoroff;
     }
   }
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -421,8 +424,6 @@ SoFEMKit::enableElements(const SbPlane & plane, const SbBool onoroff)
 void 
 SoFEMKit::enableElement(const int elementidx, const SbBool onoff)
 {
-  THIS->needupdate = TRUE;
-
   assert(elementidx >= 0 && elementidx < THIS->elementlookup.getLength());
   SoFEMLookup lookup = THIS->elementlookup[elementidx];
 
@@ -432,6 +433,7 @@ SoFEMKit::enableElement(const int elementidx, const SbBool onoff)
   else {
     THIS->elements2d[lookup.index].active = onoff;
   }
+  THIS->updatesensor->schedule();
 }
 
 /*!
@@ -440,8 +442,6 @@ SoFEMKit::enableElement(const int elementidx, const SbBool onoff)
 void 
 SoFEMKit::enableLayer(const int layerindex, const SbBool onoroff)
 {
-  THIS->needupdate = TRUE;
-
   int i;
   for (i = 0; i < THIS->elements3d.getLength(); i++) {
     if (THIS->elements3d[i].layerindex == layerindex) {
@@ -453,6 +453,7 @@ SoFEMKit::enableLayer(const int layerindex, const SbBool onoroff)
       THIS->elements2d[i].active = onoroff;
     }
   }
+  THIS->updatesensor->schedule();
 }
 
 
@@ -460,27 +461,20 @@ SoFEMKit::enableLayer(const int layerindex, const SbBool onoroff)
 void 
 SoFEMKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
-  this->updateScene();
+  // SoGetBoundingBoxAction might be applied before the toolkit
+  // processes the sensors. Do a manual check and update scene here
+  // just in case.
+  if (THIS->updatesensor->isScheduled()) {
+    THIS->updatesensor->unschedule();
+    update_cb(this, THIS->updatesensor);
+  }
   inherited::getBoundingBox(action);
-}
-
-/*!
-  Method needed for thread safe rendering. If multiple threads are used to
-  render a scene graph containing this nodekit, you must set the threadSafe
-  field to TRUE, and use an SoCallbackAction to call this method before 
-  rendering the scene graph.
-*/
-void
-SoFEMKit::preRender(SoAction * action)
-{
-  this->updateScene();
 }
 
 // doc in parent
 void 
 SoFEMKit::GLRender(SoGLRenderAction * action)
 {
-  if (!this->threadSafe.getValue()) this->preRender(action);
   inherited::GLRender(action);
 }
 
@@ -703,12 +697,8 @@ add_elem_2d(SoFEMKit * fem,
 void 
 SoFEMKit::updateScene(void)
 {
-  if (!THIS->needupdate) return;
-
   SbBSPTree normalbsp;
   int i;
-
-  THIS->needupdate = FALSE;
 
   SoNormal * normal = new SoNormal;
   SoCoordinate3 * coords = new SoCoordinate3;
@@ -817,7 +807,13 @@ SoFEMKit::removeHiddenFaces(const SbBool onoff)
 {
   if (onoff != THIS->removehidden) {
     THIS->removehidden = onoff;
-    THIS->needupdate = TRUE;
+    THIS->updatesensor->schedule();
   }
+}
+
+void 
+SoFEMKit::update_cb(void * data, SoSensor * sensor)
+{
+  ((SoFEMKit*)data)->updateScene();
 }
 

@@ -56,8 +56,6 @@ public:
   SoFEMKit(void);
   
   SoSFBool ccw;
-  SoSFBool threadSafe;
-
   static void initClass(void);
 
 protected:
@@ -65,13 +63,10 @@ protected:
 
 public:
   
-  void preRender(SoAction * action);
-
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void GLRender(SoGLRenderAction * action);
 
   void reset(void);
-
   void removeHiddenFaces(const SbBool onoff);
   
   void addNode(const int nodeidx, const SbVec3f & xyz);
@@ -94,6 +89,7 @@ private:
   void updateScene(void);
 
   static void ccw_cb(void * data, SoSensor * sensor);
+  static void update_cb(void * data, SoSensor * sensor);
   SoFEMKitP * pimpl;
 
 };
