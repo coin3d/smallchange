@@ -1673,6 +1673,40 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
   return abgr;
 }
 
+SbBool 
+SmScenery::getElevation(const double tx, const double ty, float & elev)
+{
+  if (PRIVATE(this)->system) {
+    double origo[3];
+    sc_ssglue_system_get_origo_world_position(PRIVATE(this)->system, origo);
+    double x = tx - origo[0];
+    double y = ty - origo[1];
+    double bmin[3];
+    double bmax[3];
+    sc_ssglue_system_get_object_box(PRIVATE(this)->system, bmin, bmax);
+    if (x >= bmin[0] && x < bmax[0] && y >= bmin[1] && y < bmax[1]) {
+      double pos[3];
+      pos[0] = tx;
+      pos[1] = ty;
+      pos[2] = 0.0;
+
+      float normal[3];
+      uint32_t rgba;
+      int datasets[1] = { 0 };
+      int n = sc_ssglue_system_get_elevation(PRIVATE(this)->system, 1, 
+                                             datasets, 1, 
+                                             pos, normal, &rgba,
+                                             NULL,
+                                             SS_USE_RESIDENT_ONLY);
+      if (n == 1) {
+        elev = (float) pos[2];
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
 uint32_t
 SceneryP::invokecolortexturecb(void * closure, double * pos, float elevation, double * spacing)
 {

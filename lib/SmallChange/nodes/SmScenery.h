@@ -107,6 +107,8 @@ public:
   // action callbacks
   static SoCallbackAction::Response evaluateS(void * userdata, SoCallbackAction * action, const SoNode * node);
 
+  SbBool getElevation(const double x, const double y, float & elev);
+
 protected:
   virtual ~SmScenery(void);
   virtual void generatePrimitives(SoAction * action);

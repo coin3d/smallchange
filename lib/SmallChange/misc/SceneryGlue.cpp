@@ -49,6 +49,12 @@ typedef void ss_view_set_render_pre_callback_f(ss_system * system, int viewid, s
 typedef void ss_view_set_render_post_callback_f(ss_system * system, int viewid, ss_render_block_cb * postcb, void * closure);
 typedef void ss_view_set_undef_render_callback_f(ss_system * system, int viewid, ss_render_cb * cb, void * closure);
 typedef void ss_view_set_render_sequence_a_f(ss_system * system, int viewid, int num, int * sequence);
+typedef int ss_system_get_elevation_f(ss_system * system, 
+                                      int numdatasets, int * datasets,
+                                      int numpoints, double * points,
+                                      float * normals, uint32_t * rgba,
+                                      int * datasetids,
+                                      unsigned int flags);
 
 /* ********************************************************************** */
 
@@ -90,6 +96,7 @@ typedef struct sc_scenery_api {
   ss_view_set_render_post_callback_f * view_set_render_post_callback;
   ss_view_set_undef_render_callback_f * view_set_undef_render_callback;
   ss_view_set_render_sequence_a_f * view_set_render_sequence_a;
+  ss_system_get_elevation_f * system_get_elevation;
 } sc_scenery_api;
 
 /* ********************************************************************** */
@@ -183,6 +190,7 @@ sc_scenery(void)
     SC_SCENERY_API_REGISTER(view_set_render_post_callback);
     SC_SCENERY_API_REGISTER(view_set_undef_render_callback);
     SC_SCENERY_API_REGISTER(view_set_render_sequence_a);
+    SC_SCENERY_API_REGISTER(system_get_elevation);
 #undef SC_SCENERY_REGISTER
   }
 fin:
@@ -504,6 +512,22 @@ sc_ssglue_view_set_render_sequence_a(ss_system * system, int viewid, int num, in
   assert(sc_scenery_available());
   const sc_scenery_api * ss = sc_scenery();
   ss->view_set_render_sequence_a(system, viewid, num, sequence);
+}
+
+int
+sc_ssglue_system_get_elevation(ss_system * system, 
+                               int numdatasets, int * datasets,
+                               int numpoints, double * points,
+                               float * normals, uint32_t * rgba,
+                               int * datasetids,
+                               unsigned int flags)
+{
+  assert(sc_scenery_available());
+  const sc_scenery_api * ss = sc_scenery();
+  return ss->system_get_elevation(system, numdatasets, datasets,
+                                  numpoints, points,
+                                  normals, rgba,
+                                  datasetids, flags);
 }
 
 /* EOF ****************************************************************** */

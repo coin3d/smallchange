@@ -43,6 +43,7 @@ extern "C" {
 
 #define SS_ELEVATION_TYPE        (1)
 #define SS_TEXTURE_TYPE          (2)
+#define SS_USE_RESIDENT_ONLY  0x0001
 
 /*************************************************************************/
 
@@ -152,6 +153,12 @@ void sc_ssglue_view_set_undef_render_callback(ss_system * system, int viewid,
                                               void * closure);
 void sc_ssglue_view_set_render_sequence_a(ss_system * system, int viewid,
                                           int num, int * sequence);
+int sc_ssglue_system_get_elevation(ss_system * system, 
+                                   int numdatasets, int * datasets,
+                                   int numpoints, double * points,
+                                   float * normals, uint32_t * rgba,
+                                   int * datasetids,
+                                   unsigned int flags);
 
 /*************************************************************************/
 
