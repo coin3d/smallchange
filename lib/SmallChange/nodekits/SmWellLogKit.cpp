@@ -27,6 +27,117 @@
   
 */
 
+/*!
+  \var SoSFFloat SmWellLogKit::undefVal
+  The value that is used for specifying undefined curve data. 
+  Default value is -999.25.
+*/
+
+/*!  
+  \var SoSFString SmWellLogKit::name The name of the
+  Well. Currently not used, but we might add support for displaying
+  this later.
+*/
+
+/*!
+  \var SoMFVec3d SmWellLogKit::wellCoord
+  The absolute (UTM) positions of each well position.
+*/
+  
+/*!
+  \var SoMFString SmWellLogKit::curveNames
+
+  The names for each curve in the well log data. The first value
+  should be the depth.
+
+*/
+
+/*!  
+  \var SoMFString SmWellLogKit::curveUnits 
+  
+  The unit for each curve in the well log. Will soon be added as info
+  in the tooltip.
+*/
+
+/*!
+  \var SoMFFloat SmWellDataLogKit::curveData
+
+  The raw well log data. Each log position will first have a depth
+  value, then the rest of the curves values, repeated for each log
+  position.
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::leftSize
+
+  The (maximum) size of the left curve visualization.
+
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::rightSize
+
+  The (maximum) size of the right curve visualization.
+
+*/
+
+/*!
+  SoSFInt32 SmWellLogKit::leftCurveIndex
+
+  The curve index of the left curve. Is used to select the curve on
+  the left side of the wel. Use -1 to disable.
+*/
+
+/*!
+  SoSFInt32 SmWellLogKit::rightCurveIndex
+
+  The curve index of the right curve. Is used to select the curve on
+  the right side of the well. Use -1 to disable.
+
+*/
+
+/*!  
+  SoSFColor SmWellLogKit::leftColor
+
+  The color of the left curve.
+*/
+
+/*!
+  SoSFColor SmWellLogKit::rightColor
+
+  The color of the right curve.
+*/
+
+/*!
+  SoSFBool SmWellLogKit::leftUseLog
+
+  Set to TRUE to use a logarithmic function for visualizing the left curve.
+*/
+
+/*!
+  SoSFBool SmWellLogKit::rightUseLog;
+
+  Set to TRUE to use a logarithmic function for visualizing the right curve.
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::lodDistance1
+
+  The distance where the well will be rendered as a line, not a cylinder.
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::lodDistance2
+
+  The distance where the well will not be rendered.
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::wellRadius
+
+  The radius of the well.
+*/
+
 #include "SmWellLogKit.h"
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
