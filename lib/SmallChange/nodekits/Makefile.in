@@ -102,16 +102,19 @@ INCLUDES = -I$(top_srcdir)/lib
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libnodekits.la
 
 libnodekits_la_SOURCES = \
-	LegendKit.cpp LegendKit.h
+	LegendKit.cpp LegendKit.h \
+	SoFEMKit.cpp SoFEMKit.h
 
 
 nodekits_lst_SOURCES = \
-	LegendKit.cpp LegendKit.h
+	LegendKit.cpp LegendKit.h \
+	SoFEMKit.cpp SoFEMKit.h
 
 
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
-	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
+	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h
 
 subdir = lib/SmallChange/nodekits
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
@@ -121,13 +124,13 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 nodekits_lst_AR = $(AR) cru
 nodekits_lst_LIBADD =
-am_nodekits_lst_OBJECTS = LegendKit.$(OBJEXT)
+am_nodekits_lst_OBJECTS = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libnodekits_la_LDFLAGS =
 libnodekits_la_LIBADD =
-am_libnodekits_la_OBJECTS = LegendKit.lo
+am_libnodekits_la_OBJECTS = LegendKit.lo SoFEMKit.lo
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -136,7 +139,8 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/LegendKit.Plo $(DEPDIR)/LegendKit.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/LegendKit.Plo $(DEPDIR)/LegendKit.Po \
+@AMDEP_TRUE@	$(DEPDIR)/SoFEMKit.Plo $(DEPDIR)/SoFEMKit.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -199,6 +203,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/LegendKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/LegendKit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoFEMKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoFEMKit.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
