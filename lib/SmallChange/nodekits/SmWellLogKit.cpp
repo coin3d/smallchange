@@ -170,6 +170,35 @@
   The fonts size (=world space height of characters) the topsNames strings.
 */
 
+/*!
+  SoSFFloat SmWellLogKit::leftCurveMin
+
+  Clamp left curve values. Clamping will be done when leftCurveMin < leftCurveMax.
+  Default value is 1.0 (no clamping, since max is 0.0)
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::leftCurveMax
+
+  Clamp left curve values. Clamping will be done when leftCurveMin < leftCurveMax.
+  Default value is 0.0 (no clamping, since min is 1.0)
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::rightCurveMin
+
+  Clamp right curve values. Clamping will be done when leftCurveMin < leftCurveMax.
+  Default value is 1.0 (no clamping, since max is 0.0)
+
+*/
+
+/*!
+  SoSFFloat SmWellLogKit::rightCurveMax
+
+  Clamp right curve values. Clamping will be done when leftCurveMin < leftCurveMax.
+  Default value is 0.0 (no clamping, since min is 1.0)
+*/
+
 #include "SmWellLogKit.h"
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
@@ -312,6 +341,12 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(topsNames, (NULL));
   SO_KIT_ADD_FIELD(topsColor, (0.8f, 0.4f, 0.4f));
   SO_KIT_ADD_FIELD(topsSize, (10.0f));
+
+  SO_KIT_ADD_FIELD(leftCurveMin, (1.0f));
+  SO_KIT_ADD_FIELD(leftCurveMax, (0.0f));
+
+  SO_KIT_ADD_FIELD(rightCurveMin, (1.0f));
+  SO_KIT_ADD_FIELD(rightCurveMax, (0.0f));
 
   this->wellCoord.setNum(0);
   this->wellCoord.setDefault(TRUE);
@@ -701,6 +736,11 @@ SmWellLogKit::getLeftCurveData(const int idx) const
     int fidx = idx*num + this->leftCurveIndex.getValue();
     assert(fidx < this->curveData.getNum());
     if (fidx < this->curveData.getNum()) {
+      float minv = this->leftCurveMin.getValue();
+      float maxv = this->leftCurveMax.getValue(); 
+      if (maxv > minv) {
+        return SbClamp(this->curveData[fidx], minv, maxv);
+      }
       return this->curveData[fidx];
     }
   }
@@ -716,6 +756,11 @@ SmWellLogKit::getRightCurveData(const int idx) const
     int fidx = idx*num + this->rightCurveIndex.getValue();
     assert(fidx < this->curveData.getNum());
     if (fidx < this->curveData.getNum()) {
+      float minv = this->rightCurveMin.getValue();
+      float maxv = this->rightCurveMax.getValue(); 
+      if (maxv > minv) {
+        return SbClamp(this->curveData[fidx], minv, maxv);
+      }
       return this->curveData[fidx];
     }
   }

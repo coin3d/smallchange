@@ -108,6 +108,12 @@ public:
   SoSFColor topsColor;
   SoSFFloat topsSize;
 
+  SoSFFloat leftCurveMin;
+  SoSFFloat leftCurveMax;
+
+  SoSFFloat rightCurveMin;
+  SoSFFloat rightCurveMax;
+
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void handleEvent(SoHandleEventAction * action);
