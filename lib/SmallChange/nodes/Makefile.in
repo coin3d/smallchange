@@ -71,6 +71,7 @@ AS = @AS@
 AWK = @AWK@
 BUILD_WITH_MSVC = @BUILD_WITH_MSVC@
 CC = @CC@
+CPP = @CPP@
 CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
@@ -99,9 +100,10 @@ install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
 
-noinst_LTLIBRARIES = libnodes.la
-
 INCLUDES = -I$(top_srcdir)/lib
+
+@BUILD_WITH_MSVC_TRUE@noinst_LIBRARIES = nodes.lst
+@BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libnodes.la
 
 libnodes_la_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
@@ -109,8 +111,13 @@ libnodes_la_SOURCES = \
 	Coinboard.cpp Coinboard.h
 
 
-libnodesincdir = $(includedir)/SmallChange/nodes
+nodes_lst_SOURCES = \
+	DepthBuffer.cpp DepthBuffer.h \
+	ViewportRegion.cpp ViewportRegion.h \
+	Coinboard.cpp Coinboard.h
 
+
+libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
@@ -122,13 +129,21 @@ subdir = lib/SmallChange/nodes
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
+LIBRARIES = $(noinst_LIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+nodes_lst_AR = $(AR) cru
+nodes_lst_LIBADD = 
+am_nodes_lst_OBJECTS = DepthBuffer.$(OBJEXT) ViewportRegion.$(OBJEXT) \
+Coinboard.$(OBJEXT)
+nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
+AR = ar
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+
 libnodes_la_LDFLAGS = 
 libnodes_la_LIBADD = 
 am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo
@@ -143,16 +158,17 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(libnodes_la_SOURCES)
+DIST_SOURCES = $(nodes_lst_SOURCES) $(libnodes_la_SOURCES)
 HEADERS = $(libnodesinc_HEADERS)
 
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
-@AMDEP@DEP_FILES = $(DEPDIR)/Coinboard.Plo $(DEPDIR)/DepthBuffer.Plo \
-@AMDEP@ $(DEPDIR)/ViewportRegion.Plo
+@AMDEP@DEP_FILES = $(DEPDIR)/Coinboard.Plo $(DEPDIR)/Coinboard.Po \
+@AMDEP@ $(DEPDIR)/DepthBuffer.Plo $(DEPDIR)/DepthBuffer.Po \
+@AMDEP@ $(DEPDIR)/ViewportRegion.Plo $(DEPDIR)/ViewportRegion.Po
 DIST_COMMON = $(libnodesinc_HEADERS) Makefile.am Makefile.in
 
-SOURCES = $(libnodes_la_SOURCES)
-OBJECTS = $(am_libnodes_la_OBJECTS)
+SOURCES = $(nodes_lst_SOURCES) $(libnodes_la_SOURCES)
+OBJECTS = $(am_nodes_lst_OBJECTS) $(am_libnodes_la_OBJECTS)
 
 all: all-am
 
@@ -168,8 +184,8 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -185,6 +201,9 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
 
 libnodes.la: $(libnodes_la_OBJECTS) $(libnodes_la_DEPENDENCIES)
 	$(CXXLINK)  $(libnodes_la_LDFLAGS) $(libnodes_la_OBJECTS) $(libnodes_la_LIBADD) $(LIBS)
@@ -239,8 +258,11 @@ distclean-tags:
 	-rm -f TAGS ID
 
 @AMDEP@@_am_include@ $(DEPDIR)/Coinboard.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/Coinboard.Po
 @AMDEP@@_am_include@ $(DEPDIR)/DepthBuffer.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/DepthBuffer.Po
 @AMDEP@@_am_include@ $(DEPDIR)/ViewportRegion.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/ViewportRegion.Po
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -286,7 +308,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(HEADERS)
 
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(libnodesincdir)
@@ -319,8 +341,8 @@ maintainer-clean-generic:
 	-rm -f Makefile.in
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLIBRARIES \
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 
@@ -357,17 +379,22 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 uninstall-am: uninstall-libnodesincHEADERS
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-noinstLTLIBRARIES distclean distclean-compile \
-	distclean-depend distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-libnodesincHEADERS \
-	install-man install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool tags uninstall uninstall-am \
-	uninstall-libnodesincHEADERS
+	clean-noinstLIBRARIES clean-noinstLTLIBRARIES distclean \
+	distclean-compile distclean-depend distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am info \
+	info-am install install-am install-data install-data-am \
+	install-exec install-exec-am install-info \
+	install-libnodesincHEADERS install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool tags uninstall \
+	uninstall-am uninstall-libnodesincHEADERS
 
+
+nodes.lst: $(nodes_lst_OBJECTS)
+	@echo "Linking $@..."; \
+	rm -f $@; \
+	for i in $(nodes_lst_OBJECTS); do echo $$i >>$@; done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -72,6 +72,33 @@ AC_SUBST(BUILD_WITH_MSVC)
 
 # EOF **********************************************************************
 
+# serial 3
+
+# AM_CONDITIONAL(NAME, SHELL-CONDITION)
+# -------------------------------------
+# Define a conditional.
+#
+# FIXME: Once using 2.50, use this:
+# m4_match([$1], [^TRUE\|FALSE$], [AC_FATAL([$0: invalid condition: $1])])dnl
+AC_DEFUN([AM_CONDITIONAL],
+[ifelse([$1], [TRUE],
+        [errprint(__file__:__line__: [$0: invalid condition: $1
+])dnl
+m4exit(1)])dnl
+ifelse([$1], [FALSE],
+       [errprint(__file__:__line__: [$0: invalid condition: $1
+])dnl
+m4exit(1)])dnl
+AC_SUBST([$1_TRUE])
+AC_SUBST([$1_FALSE])
+if $2; then
+  $1_TRUE=
+  $1_FALSE='#'
+else
+  $1_TRUE='#'
+  $1_FALSE=
+fi])
+
 # Do all the work for Automake.  This macro actually does too much --
 # some checks are only needed if your package does certain things.
 # But this isn't really a big deal.
@@ -262,6 +289,30 @@ fi
 #   relative, but fail if $srcdir is absolute
 # - conversly, calling $ax_aux_dir/missing would fail if $srcdir is
 #   absolute, and success on relative paths.
+#
+# Consequently, we define and use $am_aux_dir, the "always absolute"
+# version of $ac_aux_dir.
+
+AC_DEFUN([AM_AUX_DIR_EXPAND], [
+# expand $ac_aux_dir to an absolute path
+am_aux_dir=`CDPATH=:; cd $ac_aux_dir && pwd`
+])
+
+# AM_AUX_DIR_EXPAND
+
+# For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
+# $ac_aux_dir to ${srcdir}/foo.  In other projects, it is set to `.'.
+# Of course, Automake must honor this variable whenever it calls a tool
+# from the auxiliary directory.  The problem is that $srcdir (and therefore
+# $ac_aux_dir as well) can be either an absolute path or a path relative to
+# $top_srcdir, depending on how configure is run.  This is pretty annoying,
+# since it makes $ac_aux_dir quite unusable in subdirectories: in the top
+# source directory, any form will work fine, but in subdirectories a relative
+# path needs to be adjusted first.
+# - calling $top_srcdir/$ac_aux_dir/missing would succeed if $ac_aux_dir was
+#   relative, but fail if it was absolute.
+# - conversly, calling $ac_aux_dir/missing would fail if $ac_aux_dir was
+#   relative, and succeed on absolute paths.
 #
 # Consequently, we define and use $am_aux_dir, the "always absolute"
 # version of $ac_aux_dir.
@@ -995,33 +1046,6 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 ]
 )
 
-# serial 3
-
-# AM_CONDITIONAL(NAME, SHELL-CONDITION)
-# -------------------------------------
-# Define a conditional.
-#
-# FIXME: Once using 2.50, use this:
-# m4_match([$1], [^TRUE\|FALSE$], [AC_FATAL([$0: invalid condition: $1])])dnl
-AC_DEFUN([AM_CONDITIONAL],
-[ifelse([$1], [TRUE],
-        [errprint(__file__:__line__: [$0: invalid condition: $1
-])dnl
-m4exit(1)])dnl
-ifelse([$1], [FALSE],
-       [errprint(__file__:__line__: [$0: invalid condition: $1
-])dnl
-m4exit(1)])dnl
-AC_SUBST([$1_TRUE])
-AC_SUBST([$1_FALSE])
-if $2; then
-  $1_TRUE=
-  $1_FALSE='#'
-else
-  $1_TRUE='#'
-  $1_FALSE=
-fi])
-
 # Usage:
 #   SIM_AC_DEBUGSYMBOLS
 #
@@ -1391,7 +1415,9 @@ AC_SUBST(DSUFFIX)
 #  the variable $sim_ac_oivxt_avail is set to "yes" if the Xt glue
 #  library for the Open Inventor development system is found.
 #
-# Author: Morten Eriksen, <mortene@sim.no>.
+# Authors:
+#   Morten Eriksen, <mortene@sim.no>.
+#   Lars J. Aas, <larsa@sim.no>.
 #
 
 AC_DEFUN([SIM_CHECK_OIV_XT], [
@@ -1507,17 +1533,41 @@ if $sim_ac_want_inventor; then
   # Let's at least test for "libInventor".
   sim_ac_inventor_chk_libs="-lInventor"
 
+  AC_MSG_CHECKING([the Open Inventor version])
   # See if we can get the TGS_VERSION number for including a
   # check for inv{ver}.lib.
+  # TGS did not include TGS_VERSION before 2.6, so this may have to be
+  # back-ported to SO_VERSION+SO_REVISION usage.  larsa 2001-07-25
     cat <<EOF > conftest.c
 #include <Inventor/SbBasic.h>
+#ifdef __COIN__
+#error Testing for original Open Inventor, but found Coin...
+#endif
 PeekInventorVersion: TGS_VERSION
 EOF
-  tgs_version=`$CPP $sim_ac_inventor_cppflags $CPPFLAGS conftest.c 2>/dev/null | grep "^PeekInventorVersion" | sed 's/.* //g'`
+  if test x"$CPP" = x; then
+    AC_MSG_ERROR([cpp not detected - aborting.  notify maintainer at coin-support@coin3d.org.])
+  fi
+  echo "$CPP $sim_ac_inventor_cppflags $CPPFLAGS conftest.c" >&AS_MESSAGE_LOG_FD
+  tgs_version_line=`$CPP $sim_ac_inventor_cppflags $CPPFLAGS conftest.c 2>&AS_MESSAGE_LOG_FD | grep "^PeekInventorVersion"`
+  if test x"$tgs_version_line" = x; then
+    echo "second try..." >&AS_MESSAGE_LOG_FD
+    echo "$CPP -DWIN32 $sim_ac_inventor_cppflags $CPPFLAGS conftest.c" >&AS_MESSAGE_LOG_FD
+    tgs_version_line=`$CPP -DWIN32 $sim_ac_inventor_cppflags $CPPFLAGS conftest.c 2>&AS_MESSAGE_LOG_FD | grep "^PeekInventorVersion"`
+  fi
   rm -f conftest.c
-  if test x"$tgs_version" != xTGS_VERSION; then
-    tgs_version=`echo $tgs_version | cut -c-3`
-    sim_ac_inventor_chk_libs="$sim_ac_inventor_chk_libs -linv${tgs_version}"
+  tgs_version=`echo $tgs_version_line | cut -c22-24`
+  tgs_suffix=
+  if test x"${enable_inventor_debug+set}" = xset &&
+     test x"${enable_inventor_debug}" = xyes; then
+    tgs_suffix=d
+  fi
+  if test x"$tgs_version" != xTGS; then
+    sim_ac_inventor_chk_libs="$sim_ac_inventor_chk_libs -linv$tgs_version$tgs_suffix"
+    tgs_version_string=`echo $tgs_version | sed 's/\(.\)\(.\)\(.\)/\1.\2.\3/g'`
+    AC_MSG_RESULT([TGS Open Inventor v$tgs_version_string])
+  else
+    AC_MSG_RESULT([probably SGI or older TGS Open Inventor])
   fi
 
   AC_MSG_CHECKING([for Open Inventor library])

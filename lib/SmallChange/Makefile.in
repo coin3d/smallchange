@@ -71,6 +71,7 @@ AS = @AS@
 AWK = @AWK@
 BUILD_WITH_MSVC = @BUILD_WITH_MSVC@
 CC = @CC@
+CPP = @CPP@
 CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
@@ -99,11 +100,12 @@ install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
 
-SUBDIRS = nodekits nodes elements engines .
-
 INCLUDES = -I$(top_srcdir)/lib
 
-lib_LTLIBRARIES = libSmallChange.la
+SUBDIRS = nodekits nodes elements engines .
+
+@BUILD_WITH_MSVC_TRUE@lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
+@BUILD_WITH_MSVC_FALSE@lib_LTLIBRARIES = libSmallChange.la
 
 libSmallChange_la_SOURCES = 
 
@@ -116,19 +118,34 @@ libSmallChange_la_LDFLAGS = \
 	-no-undefined \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
+
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES = 
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
+	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
+	engines/engines.lst
+
 EXEEXT =
 OBJEXT = o
 subdir = lib/SmallChange
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(lib_LTLIBRARIES)
+LIBRARIES = $(lib_LIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_AR = $(AR) cru
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES = \
+nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
+engines/engines.lst
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS = \
+$(am_SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS)
+AR = ar
+LTLIBRARIES = $(lib_LTLIBRARIES)
+
 libSmallChange_la_DEPENDENCIES = nodekits/libnodekits.la \
 nodes/libnodes.la elements/libelements.la engines/libengines.la
 libSmallChange_la_OBJECTS = $(am_libSmallChange_la_OBJECTS)
@@ -137,12 +154,13 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(libSmallChange_la_SOURCES)
+DIST_SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES) \
+$(libSmallChange_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
 
 DIST_SUBDIRS = $(SUBDIRS)
-SOURCES = $(libSmallChange_la_SOURCES)
-OBJECTS = $(am_libSmallChange_la_OBJECTS)
+SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES) $(libSmallChange_la_SOURCES)
+OBJECTS = $(am_SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) $(am_libSmallChange_la_OBJECTS)
 
 all: all-recursive
 
@@ -157,6 +175,52 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
+install-libLIBRARIES: $(lib_LIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+	@$(POST_INSTALL)
+	@list='$(lib_LIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(RANLIB) $(DESTDIR)$(libdir)/$$p"; \
+	    $(RANLIB) $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lib_LIBRARIES)'; for p in $$list; do \
+	  echo " rm -f $(DESTDIR)$(libdir)/$$p"; \
+	  rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+clean-libLIBRARIES:
+	-test -z "$(lib_LIBRARIES)" || rm -f $(lib_LIBRARIES)
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT) core *.core
+
+distclean-compile:
+	-rm -f *.tab.c
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+	-rm -f libtool
+
+SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES)
+	-rm -f SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
+	$(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_AR) SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD)
+	$(RANLIB) SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)
@@ -176,21 +240,6 @@ uninstall-libLTLIBRARIES:
 
 clean-libLTLIBRARIES:
 	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-
-mostlyclean-compile:
-	-rm -f *.$(OBJEXT) core *.core
-
-distclean-compile:
-	-rm -f *.tab.c
-
-mostlyclean-libtool:
-	-rm -f *.lo
-
-clean-libtool:
-	-rm -rf .libs _libs
-
-distclean-libtool:
-	-rm -f libtool
 
 libSmallChange.la: $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
 	$(LINK) -rpath $(libdir) $(libSmallChange_la_LDFLAGS) $(libSmallChange_la_OBJECTS) $(libSmallChange_la_LIBADD) $(LIBS)
@@ -322,11 +371,11 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) all-local
+all-am: Makefile $(LIBRARIES) $(LTLIBRARIES)
 
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(libdir)
 
 install: install-recursive
 install-exec: install-exec-recursive
@@ -356,8 +405,8 @@ maintainer-clean-generic:
 	-rm -f Makefile.in
 clean: clean-recursive
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	mostlyclean-am
+clean-am: clean-generic clean-libLIBRARIES clean-libLTLIBRARIES \
+	clean-libtool mostlyclean-am
 
 distclean: distclean-recursive
 
@@ -374,7 +423,8 @@ info-am:
 
 install-data-am: install-data-local
 
-install-exec-am: install-exec-local install-libLTLIBRARIES
+install-exec-am: install-exec-local install-libLIBRARIES \
+	install-libLTLIBRARIES
 
 install-info:
 
@@ -391,45 +441,43 @@ mostlyclean: mostlyclean-recursive
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-uninstall-am: uninstall-libLTLIBRARIES uninstall-local
+uninstall-am: uninstall-libLIBRARIES uninstall-libLTLIBRARIES \
+	uninstall-local
 
-.PHONY: all all-am all-local all-recursive check check-am \
-	check-recursive clean clean-generic clean-libLTLIBRARIES \
+.PHONY: all all-am all-recursive check check-am check-recursive clean \
+	clean-generic clean-libLIBRARIES clean-libLTLIBRARIES \
 	clean-libtool clean-recursive distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-recursive \
 	distclean-tags distdir dvi dvi-am dvi-recursive info info-am \
 	info-recursive install install-am install-data install-data-am \
 	install-data-local install-data-recursive install-exec \
 	install-exec-am install-exec-local install-exec-recursive \
-	install-info install-info-recursive install-libLTLIBRARIES \
-	install-man install-recursive install-strip installcheck \
-	installcheck-am installcheck-recursive installdirs \
-	installdirs-am installdirs-recursive maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-recursive tags tags-recursive uninstall \
-	uninstall-am uninstall-info-recursive uninstall-libLTLIBRARIES \
-	uninstall-local uninstall-recursive
+	install-info install-info-recursive install-libLIBRARIES \
+	install-libLTLIBRARIES install-man install-recursive \
+	install-strip installcheck installcheck-am \
+	installcheck-recursive installdirs installdirs-am \
+	installdirs-recursive maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-recursive \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-info-recursive uninstall-libLIBRARIES \
+	uninstall-libLTLIBRARIES uninstall-local uninstall-recursive
 
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
+SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
+  $(libSmallChange_la_OBJECTS) \
+  $(libSmallChange_la_DEPENDENCIES)
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
-	if @BUILD_WITH_MSVC@; then \
-	  echo "Linking $$basename.lib..."; \
-	  echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
-	    `echo $(libSmallChange_la_OBJECTS) | sed 's%\.lo%.obj%g'` \
-	    $(libSmallChange_la_LIBADD) $(LIBS); \
-	  $(CC) $(LDFLAGS) $(LIBFLAGS) \
-	    `echo $(libSmallChange_la_OBJECTS) | sed 's%\.lo%.obj%g'` \
-	    $(libSmallChange_la_LIBADD) $(LIBS); \
-	else \
-	  touch "$$basename.dll" "$$basename.lib"; \
-	fi
+	echo "Linking $$basename.lib..."; \
+	echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS); \
+	$(CC) $(LDFLAGS) $(LIBFLAGS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS);
 
 # **************************************************************************
-
-all-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
 
 install-exec-local:
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \

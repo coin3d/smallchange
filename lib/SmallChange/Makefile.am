@@ -1,8 +1,13 @@
-SUBDIRS = nodekits nodes elements engines .
 
 INCLUDES = -I$(top_srcdir)/lib
 
+SUBDIRS = nodekits nodes elements engines .
+
+if BUILD_WITH_MSVC
+lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
+else
 lib_LTLIBRARIES = libSmallChange.la
+endif
 
 libSmallChange_la_SOURCES =
 
@@ -14,25 +19,25 @@ libSmallChange_la_LDFLAGS = \
 	-no-undefined \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES =
+SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
+	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
+	engines/engines.lst
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
+SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
+  $(libSmallChange_la_OBJECTS) \
+  $(libSmallChange_la_DEPENDENCIES)
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
-	if @BUILD_WITH_MSVC@; then \
-	  echo "Linking $$basename.lib..."; \
-	  echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
-	    `echo $(libSmallChange_la_OBJECTS) | sed 's%\.lo%.obj%g'` \
-	    $(libSmallChange_la_LIBADD) $(LIBS); \
-	  $(CC) $(LDFLAGS) $(LIBFLAGS) \
-	    `echo $(libSmallChange_la_OBJECTS) | sed 's%\.lo%.obj%g'` \
-	    $(libSmallChange_la_LIBADD) $(LIBS); \
-	else \
-	  touch "$$basename.dll" "$$basename.lib"; \
-	fi
+	echo "Linking $$basename.lib..."; \
+	echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS); \
+	$(CC) $(LDFLAGS) $(LIBFLAGS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS);
 
 # **************************************************************************
-
-all-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
 
 install-exec-local:
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \

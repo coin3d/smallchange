@@ -71,6 +71,7 @@ AS = @AS@
 AWK = @AWK@
 BUILD_WITH_MSVC = @BUILD_WITH_MSVC@
 CC = @CC@
+CPP = @CPP@
 CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
@@ -99,16 +100,20 @@ install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
 
-noinst_LTLIBRARIES = libengines.la
-
 INCLUDES = -I$(top_srcdir)/lib
+
+@BUILD_WITH_MSVC_TRUE@noinst_LIBRARIES = engines.lst
+@BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libengines.la
 
 libengines_la_SOURCES = \
 	Rot2Heading.cpp Rot2Heading.h
 
 
-libenginesincdir = $(includedir)/SmallChange/engines
+engines_lst_SOURCES = \
+	Rot2Heading.cpp Rot2Heading.h
 
+
+libenginesincdir = $(includedir)/SmallChange/engines
 libenginesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/engines/Rot2Heading.h
 
@@ -118,13 +123,20 @@ subdir = lib/SmallChange/engines
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
+LIBRARIES = $(noinst_LIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I$(top_builddir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+engines_lst_AR = $(AR) cru
+engines_lst_LIBADD = 
+am_engines_lst_OBJECTS = Rot2Heading.$(OBJEXT)
+engines_lst_OBJECTS = $(am_engines_lst_OBJECTS)
+AR = ar
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+
 libengines_la_LDFLAGS = 
 libengines_la_LIBADD = 
 am_libengines_la_OBJECTS = Rot2Heading.lo
@@ -139,15 +151,15 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(libengines_la_SOURCES)
+DIST_SOURCES = $(engines_lst_SOURCES) $(libengines_la_SOURCES)
 HEADERS = $(libenginesinc_HEADERS)
 
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
-@AMDEP@DEP_FILES = $(DEPDIR)/Rot2Heading.Plo
+@AMDEP@DEP_FILES = $(DEPDIR)/Rot2Heading.Plo $(DEPDIR)/Rot2Heading.Po
 DIST_COMMON = $(libenginesinc_HEADERS) Makefile.am Makefile.in
 
-SOURCES = $(libengines_la_SOURCES)
-OBJECTS = $(am_libengines_la_OBJECTS)
+SOURCES = $(engines_lst_SOURCES) $(libengines_la_SOURCES)
+OBJECTS = $(am_engines_lst_OBJECTS) $(am_libengines_la_OBJECTS)
 
 all: all-am
 
@@ -163,8 +175,8 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 	  CONFIG_HEADERS= CONFIG_LINKS= \
 	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -180,6 +192,9 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
 
 libengines.la: $(libengines_la_OBJECTS) $(libengines_la_DEPENDENCIES)
 	$(CXXLINK)  $(libengines_la_LDFLAGS) $(libengines_la_OBJECTS) $(libengines_la_LIBADD) $(LIBS)
@@ -234,6 +249,7 @@ distclean-tags:
 	-rm -f TAGS ID
 
 @AMDEP@@_am_include@ $(DEPDIR)/Rot2Heading.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/Rot2Heading.Po
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -279,7 +295,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(HEADERS)
 
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(libenginesincdir)
@@ -312,8 +328,8 @@ maintainer-clean-generic:
 	-rm -f Makefile.in
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLIBRARIES \
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 
@@ -350,17 +366,22 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 uninstall-am: uninstall-libenginesincHEADERS
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-noinstLTLIBRARIES distclean distclean-compile \
-	distclean-depend distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-libenginesincHEADERS \
-	install-man install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool tags uninstall uninstall-am \
-	uninstall-libenginesincHEADERS
+	clean-noinstLIBRARIES clean-noinstLTLIBRARIES distclean \
+	distclean-compile distclean-depend distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am info \
+	info-am install install-am install-data install-data-am \
+	install-exec install-exec-am install-info \
+	install-libenginesincHEADERS install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool tags uninstall \
+	uninstall-am uninstall-libenginesincHEADERS
 
+
+engines.lst: $(engines_lst_OBJECTS)
+	@echo "Linking $@..."; \
+	rm -f $@; \
+	for i in $(engines_lst_OBJECTS); do echo $$i >>$@; done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
