@@ -239,6 +239,13 @@ SmTooltipKit::GLRender(SoGLRenderAction * action)
   state->pop();
 }
 
+SbBool 
+SmTooltipKit::affectsState(void) const
+{
+  // important since we might add delayed paths to SoGLRenderAction
+  return FALSE;
+}
+
 void 
 SmTooltipKit::handleEvent(SoHandleEventAction * action)
 {

@@ -505,6 +505,13 @@ LegendKit::GLRender(SoGLRenderAction * action)
   state->pop();
 }
 
+SbBool 
+LegendKit::affectsState(void) const
+{
+  // important since we might add delayed paths to SoGLRenderAction
+  return FALSE;
+}
+
 void 
 LegendKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {

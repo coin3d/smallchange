@@ -229,6 +229,14 @@ SmAxisDisplayKit::GLRender(SoGLRenderAction *action)
   }
 }
 
+SbBool 
+SmAxisDisplayKit::affectsState(void) const
+{
+  // important since we might add delayed paths to SoGLRenderAction
+  return FALSE;
+}
+
+
 void 
 SmAxisDisplayKit::handleEvent(SoHandleEventAction * action)
 {

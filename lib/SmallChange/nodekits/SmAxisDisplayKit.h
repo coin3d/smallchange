@@ -75,6 +75,7 @@ protected:
   virtual ~SmAxisDisplayKit();
   virtual void notify(SoNotList * l);
   virtual void setDefaultOnNonWritingFields(void);
+  virtual SbBool affectsState(void) const;
   
 private:
   class SmAxisDisplayKitP * pimpl;

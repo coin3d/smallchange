@@ -76,6 +76,7 @@ public:
 
 protected:
   virtual ~SmTooltipKit();
+  virtual SbBool affectsState(void) const;
   
 public:
   
