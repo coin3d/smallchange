@@ -1,6 +1,3 @@
-#ifndef SMALLCHANGE_SOSOUNDP_H
-#define SMALLCHANGE_SOSOUNDP_H
-
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
@@ -24,43 +21,5 @@
  *
 \**************************************************************************/
 
-#include <AL/altypes.h>
+// obsolete. 20021011 thammer
 
-#include <SmallChange/misc/SbAudioWorkerThread.h>
-
-class SoSoundP
-{
-public:
-  SoSoundP(SoSound * interfaceptr) : ifacep(interfaceptr) {};
-  SoSound *ifacep;
-
-  static void sourceSensorCBWrapper(void *, SoSensor *);
-  void sourceSensorCB(SoSensor *);
-
-  SbBool stopPlaying(SbBool force = FALSE);
-  SbBool startPlaying(SbBool force = FALSE);
-
-  class SoFieldSensor * sourcesensor;
-  ALuint sourceId;
-  class SoAudioClip *currentAudioClip;
-  SbBool isStreaming;
-  SbBool asyncStreamingMode;
-
-  static void timercb(void * data, SoSensor *);
-  SoTimerSensor * timersensor;
-  SbAudioWorkerThread *workerThread;
-  short int *audioBuffer;
-
-  static int threadCallbackWrapper(void *userdata);
-  int threadCallback();
-  int fillBuffers();
-
-  SbTime actualStartTime;
-
-#ifdef HAVE_PTHREAD
-  static pthread_mutex_t syncmutex;
-  static int refcount;
-#endif
-};
-
-#endif // !SMALLCHANGE_SOSOUNDP_H

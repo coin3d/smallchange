@@ -1,5 +1,5 @@
-#ifndef SMALLCHANGE_SOAUDIOCLIPSTREAMING_H
-#define SMALLCHANGE_SOAUDIOCLIPSTREAMING_H
+#ifndef SMALLCHANGE_SBAUDIOWOPRKERTHREAD_H
+#define SMALLCHANGE_SBAUDIOWOPRKERTHREAD_H
 
 /**************************************************************************\
  *
@@ -24,40 +24,60 @@
  *
 \**************************************************************************/
 
-#include <SmallChange/nodes/SoAudioClip.h>
+#include <Inventor/SbBasic.h>
+#include <stdlib.h>
 
-class SoAudioClipStreaming : public SoAudioClip
+#if HAVE_PTHREAD
+#include <pthread.h>
+#endif
+
+class SbAudioWorkerThread
 {
-  typedef SoAudioClip inherited;
-  SO_NODE_HEADER(SoAudioClipStreaming);
-
-  friend class SoSound;
 public:
-  static void initClass(void);
-  SoAudioClipStreaming();
-
-  void setAsyncMode(SbBool flag=FALSE);
-  SbBool getAsyncMode();
-  void setBufferInfo(int bufferSize, int numBuffers);
-  void setSampleFormat(int channels = 1, int samplerate = 44100, int bitspersample=16);
-  void getSampleFormat(int &channels, int &samplerate, int &bitspersample);
-  int getNumChannels();
-  int getBufferSize();
-  int getNumBuffers();
-  void setUserCallback(int (*user_callback)(void *buffer, int length, void * userdataptr),
-    void *userdata=NULL);
-  void setKeepAlive(SbBool alive=TRUE);
+  SbAudioWorkerThread(int (*user_callback)(void * userdataptr) = NULL, void * userdata = NULL,
+    int sleeptime = 0);
+  void start(void);
+  void stop(void);
+  SbBool isActive(void) const;
+  void sleep(int milliseconds) const;
+  void setThreadLoopSleepTime(int milliseconds);
 
 protected:
-  virtual ~SoAudioClipStreaming();
+  struct sbaudio_thread * threadinfo;
+  SbBool usethread;
+  volatile SbBool exitthread;
+  SbBool isactive;
+  int (*user_callback)(void * userdataptr);
+  void * userdata;
+  int sleeptime; // in milliseconds
 
-  virtual SbBool loadUrl(void); 
-  virtual void unloadUrl(void);
+  void start_thread(void);
+  void stop_thread(void);  
 
-protected:
-  class SoAudioClipStreamingP *soaudioclipstreaming_impl;
-  friend class SoAudioClipStreamingP;
-  friend class SoSoundP;
+  static void * main_thread(void *);
+
+
 };
 
-#endif // SMALLCHANGE_SOAUDIOCLIPSTREAMING_H
+#if HAVE_PTHREAD
+
+class SbAutoLock
+{
+protected:
+  pthread_mutex_t *mutex;
+public:
+  SbAutoLock(pthread_mutex_t *mutex)
+  {
+    this->mutex = mutex;
+    pthread_mutex_lock(this->mutex);
+
+  };
+  ~SbAutoLock()
+  {
+    pthread_mutex_unlock(this->mutex);
+  };
+};
+
+#endif // HAVE_PTHREAD
+
+#endif // !SMALLCHANGE_SBAUDIOWOPRKERTHREAD_H

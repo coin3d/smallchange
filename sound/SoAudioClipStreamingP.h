@@ -1,5 +1,5 @@
-#ifndef SMALLCHANGE_SOAUDIOCLIPP_H
-#define SMALLCHANGE_SOAUDIOCLIPP_H
+#ifndef SMALLCHANGE_SOAUDIOCLIPSTREAMINGP_H
+#define SMALLCHANGE_SOAUDIOCLIPSTREAMINGP_H
 
 /**************************************************************************\
  *
@@ -24,24 +24,6 @@
  *
 \**************************************************************************/
 
-#ifndef DOXYGEN_SKIP_THIS
+// obsolete. 20021011 thammer
 
-#include <Inventor/sensors/SoFieldSensor.h>
-
-class SoAudioClipP
-{
-public:
-  SoAudioClipP(SoAudioClip * interfaceptr) : ifacep(interfaceptr) {};
-  SoAudioClip *ifacep;
-
-  double duration; // duration at pitch = 1.0
-  ALuint bufferId;
-  int readstatus;
-  SoFieldSensor * urlsensor;
-  static void urlSensorCBWrapper(void *, SoSensor *);
-  void urlSensorCB(SoSensor *);
-  SbBool playedOnce;
-};
-
-#endif // !DOXYGEN_SKIP_THIS
-#endif // !SMALLCHANGE_SOAUDIOCLIPP_H
+#endif // !SMALLCHANGE_SOAUDIOCLIPSTREAMINGP_H
