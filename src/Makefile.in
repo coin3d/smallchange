@@ -48,6 +48,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_FLAG =
+INSTALL_HEADER = $(INSTALL_DATA)
 transform = @program_transform_name@
 
 NORMAL_INSTALL = :
@@ -88,6 +89,7 @@ SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
 SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
 SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
 VERSION = @VERSION@
+_am_include = @_am_include@
 install_sh = @install_sh@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
@@ -96,15 +98,15 @@ SUBDIRS = nodekits nodes elements .
 
 INCLUDES = -I$(top_srcdir)/src
 
-lib_LTLIBRARIES = libsmallchange.la
+lib_LTLIBRARIES = libSmallChange.la
 
-libsmallchange_la_SOURCES = 
+libSmallChange_la_SOURCES = 
 
-libsmallchange_la_LIBADD = \
+libSmallChange_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la
 
 
-libsmallchange_la_LDFLAGS = \
+libSmallChange_la_LDFLAGS = \
 	-no-undefined \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
@@ -119,15 +121,15 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libsmallchange_la_DEPENDENCIES =  nodekits/libnodekits.la \
+libSmallChange_la_DEPENDENCIES =  nodekits/libnodekits.la \
 nodes/libnodes.la elements/libelements.la
-libsmallchange_la_OBJECTS =  $(am_libsmallchange_la_OBJECTS)
+libSmallChange_la_OBJECTS =  $(am_libSmallChange_la_OBJECTS)
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =  $(libsmallchange_la_SOURCES)
+DIST_SOURCES =  $(libSmallChange_la_SOURCES)
 DIST_COMMON =  Makefile.am Makefile.in
 
 
@@ -135,8 +137,8 @@ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
 DIST_SUBDIRS =  $(SUBDIRS)
-SOURCES = $(libsmallchange_la_SOURCES)
-OBJECTS = $(am_libsmallchange_la_OBJECTS)
+SOURCES = $(libSmallChange_la_SOURCES)
+OBJECTS = $(am_libSmallChange_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -146,17 +148,20 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configur
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
-	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= CONFIG_LINKS= CONFIG_COMMANDS= $(SHELL) ./config.status
 
 
 mostlyclean-libLTLIBRARIES:
+
 
 clean-libLTLIBRARIES:
 	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
 
 distclean-libLTLIBRARIES:
 
+
 maintainer-clean-libLTLIBRARIES:
+
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -178,12 +183,8 @@ uninstall-libLTLIBRARIES:
 mostlyclean-compile:
 	-rm -f *.o core *.core
 
-clean-compile:
-
 distclean-compile:
 	-rm -f *.tab.c
-
-maintainer-clean-compile:
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -192,11 +193,10 @@ clean-libtool:
 	-rm -rf .libs _libs
 
 distclean-libtool:
+	-rm -f libtool
 
-maintainer-clean-libtool:
-
-libsmallchange.la: $(libsmallchange_la_OBJECTS) $(libsmallchange_la_DEPENDENCIES)
-	$(LINK) -rpath $(libdir) $(libsmallchange_la_LDFLAGS) $(libsmallchange_la_OBJECTS) $(libsmallchange_la_LIBADD) $(LIBS)
+libSmallChange.la: $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(libSmallChange_la_LDFLAGS) $(libSmallChange_la_OBJECTS) $(libSmallChange_la_LIBADD) $(LIBS)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -257,6 +257,7 @@ tags-recursive:
 
 tags: TAGS
 
+
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -289,16 +290,11 @@ GTAGS:
 	  && cd $(top_srcdir) \
 	  && gtags -i $$here
 
-mostlyclean-tags:
-
-clean-tags:
-
 distclean-tags:
 	-rm -f TAGS ID
 
-maintainer-clean-tags:
-
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -317,7 +313,8 @@ distdir: $(DISTFILES)
 	    test -d $(distdir)/$$subdir \
 	    || mkdir $(distdir)/$$subdir \
 	    || exit 1; \
-	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
+	    (cd $$subdir && \
+	      $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
 	      || exit 1; \
 	  fi; \
 	done
@@ -351,73 +348,58 @@ installdirs-am:
 
 mostlyclean-generic:
 
+
 clean-generic:
+
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
+	@echo "This command is intended for maintainers to use"
+	@echo "it deletes files that may require special tools to rebuild."
 	-rm -f Makefile.in
-mostlyclean-am:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-tags \
-		mostlyclean-generic
-
-mostlyclean: mostlyclean-recursive
-
-clean-am:  clean-libLTLIBRARIES clean-compile clean-libtool clean-tags \
-		clean-generic mostlyclean-am
-
 clean: clean-recursive
 
-distclean-am:  distclean-libLTLIBRARIES distclean-compile \
-		distclean-libtool distclean-tags distclean-generic \
-		clean-am
-	-rm -f libtool
+clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
+	mostlyclean-am
 
 distclean: distclean-recursive
 
-maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
-		maintainer-clean-compile maintainer-clean-libtool \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean-am
-	@echo "This command is intended for maintainers to use;"
-	@echo "it deletes files that may require special tools to rebuild."
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-libLTLIBRARIES distclean-libtool distclean-tags
 
 maintainer-clean: maintainer-clean-recursive
 
-.PHONY:   all all all-am all-am all-recursive all-recursive \
-all-recursive-am all-redirect all-redirect check check check-am \
-check-am check-recursive check-recursive clean clean clean-compile \
-clean-generic clean-generic clean-hdr clean-libLTLIBRARIES \
-clean-libtool clean-recursive clean-recursive clean-tags clean-tags \
-distclean distclean distclean-compile distclean-generic \
-distclean-generic distclean-hdr distclean-libLTLIBRARIES \
-distclean-libtool distclean-recursive distclean-recursive \
-distclean-tags distclean-tags distdir distdir dvi dvi dvi-am dvi-am \
-dvi-recursive dvi-recursive info info info-am info-am info-recursive \
-info-recursive install install install-am install-am install-data \
-install-data install-data-am install-data-am install-data-recursive \
-install-data-recursive install-exec install-exec install-exec-am \
-install-exec-am install-exec-recursive install-exec-recursive \
-install-libLTLIBRARIES install-recursive install-recursive \
-install-strip install-strip installcheck installcheck installcheck-am \
-installcheck-am installcheck-recursive installcheck-recursive \
-installdirs installdirs installdirs-am installdirs-am \
-installdirs-recursive installdirs-recursive maintainer-clean \
-maintainer-clean maintainer-clean-compile maintainer-clean-generic \
-maintainer-clean-generic maintainer-clean-hdr \
-maintainer-clean-libLTLIBRARIES maintainer-clean-libtool \
-maintainer-clean-recursive maintainer-clean-recursive \
-maintainer-clean-tags maintainer-clean-tags mostlyclean mostlyclean \
-mostlyclean-compile mostlyclean-generic mostlyclean-generic \
-mostlyclean-hdr mostlyclean-libLTLIBRARIES mostlyclean-libtool \
-mostlyclean-recursive mostlyclean-recursive mostlyclean-tags \
-mostlyclean-tags tags tags tags-recursive tags-recursive uninstall \
-uninstall uninstall-am uninstall-am uninstall-libLTLIBRARIES \
-uninstall-recursive uninstall-recursive
+maintainer-clean-am: distclean-am maintainer-clean-generic \
+	maintainer-clean-libLTLIBRARIES
+
+mostlyclean: mostlyclean-recursive
+
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libLTLIBRARIES mostlyclean-libtool
+
+.PHONY: all all-am all-recursive all-redirect check check-am \
+	check-recursive clean clean-generic clean-libLTLIBRARIES \
+	clean-libtool clean-recursive distclean distclean-compile \
+	distclean-generic distclean-libLTLIBRARIES distclean-libtool \
+	distclean-recursive distclean-tags distdir dvi dvi-am \
+	dvi-recursive info info-am info-recursive install install-am \
+	install-data install-data-am install-data-recursive \
+	install-exec install-exec-am install-exec-recursive \
+	install-libLTLIBRARIES install-recursive install-strip \
+	installcheck installcheck-am installcheck-recursive installdirs \
+	installdirs-am installdirs-recursive maintainer-clean \
+	maintainer-clean-generic maintainer-clean-libLTLIBRARIES \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libLTLIBRARIES \
+	mostlyclean-libtool mostlyclean-recursive tags tags-recursive \
+	uninstall uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-recursive
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
+
