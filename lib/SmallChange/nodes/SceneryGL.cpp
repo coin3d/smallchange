@@ -126,7 +126,6 @@ void
 sc_renderstate_construct(RenderState * state)
 {
   // construct lists
-  printf("helleu\n");
   state->reusetexlist = (void *) new SbList<TexInfo *>;
   state->tmplist = (void *) new SbList<unsigned int>;
   state->debuglist = (void *) new SbList<float>;
@@ -137,7 +136,6 @@ sc_renderstate_construct(RenderState * state)
 void
 sc_renderstate_destruct(RenderState * state)
 {
-  printf("goodbye\n");
   // delete lists
   if ( state->debuglist ) {
     SbList<float> * list = (SbList<float> *) state->debuglist;
