@@ -45,8 +45,6 @@ class SMALLCHANGE_DLL_API SmAxisDisplayKit : public SoBaseKit
   SO_KIT_CATALOG_ENTRY_HEADER(camera);
   SO_KIT_CATALOG_ENTRY_HEADER(viewportRegion);
   SO_KIT_CATALOG_ENTRY_HEADER(drawstyle);
-  SO_KIT_CATALOG_ENTRY_HEADER(headlightSwitch);
-  SO_KIT_CATALOG_ENTRY_HEADER(headlightDummy);
   SO_KIT_CATALOG_ENTRY_HEADER(headlightNode);
   SO_KIT_CATALOG_ENTRY_HEADER(axessep);
 

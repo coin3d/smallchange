@@ -108,6 +108,7 @@
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <SmallChange/nodes/ViewportRegion.h>
+#include <SmallChange/nodes/SmHeadlight.h>
 
 class SmAxisDisplayKitP {
 public:
@@ -153,10 +154,8 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(cameraCallback, SoCallback, FALSE, topSeparator, camera, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(camera, SoPerspectiveCamera, FALSE, topSeparator, viewportRegion, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(viewportRegion, ViewportRegion, FALSE, topSeparator, drawstyle, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, headlightSwitch, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightSwitch, SoSwitch, FALSE, topSeparator, axessep, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightDummy, SoInfo, FALSE, headlightSwitch, headlightNode, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SoDirectionalLight, FALSE, headlightSwitch, "", TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, headlightNode, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SmHeadlight, FALSE, topSeparator, axessep, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(axessep, SoSeparator, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
@@ -173,11 +172,8 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SoDrawStyle *drawstyle = (SoDrawStyle *)this->getAnyPart("drawstyle", TRUE);
   drawstyle->lineWidth = 2;
 
-  SoSwitch * sw = (SoSwitch*) this->getAnyPart("headlightSwitch", TRUE);
-  sw->whichChild.connectFrom(&this->headlight);
-
-  SoDirectionalLight * l = (SoDirectionalLight*) this->getAnyPart("headlightNode", TRUE);
-  l->direction.enableNotify(FALSE);
+  SmHeadlight * hl = (SmHeadlight*) this->getAnyPart("headlightNode", TRUE);
+  hl->on.connectFrom(&this->headlight);
 }
 
 /*!
@@ -440,20 +436,11 @@ SmAxisDisplayKitP::callback_cb(void * userdata, SoAction * action)
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
     SoPerspectiveCamera *camera = 
       (SoPerspectiveCamera *)PUBLIC(thisp)->getAnyPart("camera", TRUE);
-
+    
     SbRotation rot = PUBLIC(thisp)->orientation.getValue();
     SbVec3f dir;
     rot.multVec(SbVec3f(0.0f, 0.0f, 1.0f), dir);
     camera->position.setValue(7.0f*dir); // Just a good guess
-
-
-    if (PUBLIC(thisp)->headlight.getValue()) {
-      SoDirectionalLight * l = (SoDirectionalLight*) PUBLIC(thisp)->getAnyPart("headlightNode", TRUE);
-      SbVec3f dir(0.0f, 0.0f, -1.0f);
-      l->direction.enableNotify(FALSE);
-      camera->orientation.getValue().multVec(dir, dir);
-      l->direction = dir;
-    }
   }
 }
 
