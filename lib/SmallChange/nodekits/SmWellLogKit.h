@@ -46,6 +46,7 @@ class SMALLCHANGE_DLL_API SmWellLogKit : public SoBaseKit {
   SO_KIT_HEADER(SmWellLogKit);
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(tooltip);
   SO_KIT_CATALOG_ENTRY_HEADER(utm);
   SO_KIT_CATALOG_ENTRY_HEADER(transform);
   SO_KIT_CATALOG_ENTRY_HEADER(topLod);
@@ -74,6 +75,7 @@ public:
   SoMFVec3d wellCoord;
   
   SoMFString curveNames;
+  SoMFString curveUnits;
   SoMFFloat curveData;
   SoSFFloat leftSize;
   SoSFFloat rightSize;
@@ -91,13 +93,16 @@ public:
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
 
 protected:
+  virtual SbBool readInstance(SoInput * in, unsigned short flags);
   virtual void notify(SoNotList * l);
   virtual ~SmWellLogKit();
+  virtual void setDefaultOnNonWritingFields(void);
   
 public:
   
 private:
-  
+
+  void connectNodes(void);
   int getNumCurves(void) const;
   int getNumCurveValues(void) const;
   float getDepth(const int idx) const;

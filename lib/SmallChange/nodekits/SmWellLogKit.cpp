@@ -30,6 +30,7 @@
 #include "SmWellLogKit.h"
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
+#include <SmallChange/nodekits/SmTooltipKit.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/nodes/SoSeparator.h>
@@ -133,6 +134,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
 
   SO_KIT_ADD_FIELD(curveNames, (""));
+  SO_KIT_ADD_FIELD(curveUnits, (""));
   SO_KIT_ADD_FIELD(curveData, (0.0f));
   SO_KIT_ADD_FIELD(leftSize, (50.0f));
   SO_KIT_ADD_FIELD(rightSize, (50.0f));
@@ -153,8 +155,11 @@ SmWellLogKit::SmWellLogKit(void)
   this->curveNames.setDefault(TRUE);
   this->curveData.setNum(0);
   this->curveData.setDefault(TRUE);
+  this->curveUnits.setNum(0);
+  this->curveUnits.setDefault(TRUE);
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(tooltip, SmTooltipKit, FALSE, topSeparator, utm, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(utm, UTMPosition, FALSE, topSeparator, transform, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(transform, SoTransform, FALSE, topSeparator, topLod, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(topLod, SoLOD, FALSE, topSeparator, "", TRUE);
@@ -182,9 +187,9 @@ SmWellLogKit::SmWellLogKit(void)
   sh->faceType = SoShapeHints::CONVEX;
 
   SoLODExtrusion * well = (SoLODExtrusion*) this->getAnyPart("well", TRUE);
+  well->ccw = TRUE;
   well->lodDistance1.connectFrom(&this->lodDistance1);
   well->radius.connectFrom(&this->wellRadius);
-  well->ccw = TRUE;
   
   SoPickStyle * ps = (SoPickStyle*) this->getAnyPart("pickStyle", TRUE);
   ps->style = SoPickStyle::UNPICKABLE;
@@ -232,6 +237,34 @@ SmWellLogKit::getBoundingBox(SoGetBoundingBoxAction * action)
     SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
   }
   inherited::getBoundingBox(action);
+}
+
+SbBool 
+SmWellLogKit::readInstance(SoInput * in, unsigned short flags)
+{
+  SbBool ret = inherited::readInstance(in, flags);
+  if (ret) {
+    // only really needed to load old files...
+    this->connectNodes(); // make connections from fields to nodes
+  }
+  return ret;
+}
+
+void 
+SmWellLogKit::connectNodes(void)
+{
+  SoLODExtrusion * well = (SoLODExtrusion*) this->getAnyPart("well", TRUE);
+  well->lodDistance1.connectFrom(&this->lodDistance1);
+  well->radius.connectFrom(&this->wellRadius);
+
+  SoLOD * toplod = (SoLOD*) this->getAnyPart("topLod", TRUE);
+  toplod->range.connectFrom(&this->lodDistance1);
+
+  SoLOD * facelod = (SoLOD*) this->getAnyPart("lod", TRUE);
+  facelod->range.connectFrom(&this->lodDistance2);
+
+  SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
+  cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
 }
 
 int 
@@ -316,6 +349,37 @@ SmWellLogKit::notify(SoNotList * l)
     }
   }
   inherited::notify(l);
+}
+
+/*!
+
+  Overloaded to set most node fields to default. The parts in this
+  nodekit are mostly internal.
+
+*/
+void 
+SmWellLogKit::setDefaultOnNonWritingFields(void)
+{
+  SoFieldList fl;
+  (void) this->getFields(fl);
+  for (int i = 0; i < fl.getLength(); i++) {
+    SoField * f = fl[i];
+    if (f->isOfType(SoSFNode::getClassTypeId()) &&
+        f != &this->transform) {
+      f->setDefault(TRUE);
+    }
+  }
+  
+  this->tooltip.setDefault(TRUE);
+  this->well.setDefault(TRUE);
+  this->utm.setDefault(TRUE);
+  this->topLod.setDefault(TRUE);
+  this->topLodGroup.setDefault(TRUE);
+  this->lod.setDefault(TRUE);
+  this->callback.setDefault(TRUE);
+  this->faceSet.setDefault(TRUE);
+
+  inherited::setDefaultOnNonWritingFields();
 }
 
 #undef PRIVATE
