@@ -45,6 +45,8 @@
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoModelMatrixElement.h>
 #include <float.h>
 
 #define DEFAULT_SIZE 100.0f
@@ -335,12 +337,34 @@ SmWellLogKitP::callback_cb(void * userdata, SoAction * action)
     SoCacheElement::invalidate(action->getState());
   }
   else if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
-    SoCacheElement::invalidate(action->getState());
+    SoState * state = action->getState();
+    SoCacheElement::invalidate(state);
 
-    SbVec3f axis(1.0f, 0.0f, 0.0f);
-    // FIXME!!!
-//     SoCamera * cam = currviewer->getCamera();
-//     cam->orientation.getValue().multVec(axis, axis);
+    const SbViewVolume & vv = SoViewVolumeElement::get(state);
+    SbVec3f Z = vv.getProjectionDirection();
+    SbVec3f Y = vv.getViewUp();
+    SbVec3f X = Y.cross(Z);
+    
+    // make log gfx face the viewer/camera
+    SbMatrix m;
+    m.makeIdentity();
+    m[0][0] = X[0];
+    m[0][1] = X[1];
+    m[0][2] = X[2];
+
+    m[1][0] = Y[0];
+    m[1][1] = Y[1];
+    m[1][2] = Y[2];
+
+    m[2][0] = Z[0];
+    m[2][1] = Z[1];
+    m[2][2] = Z[2];
+    
+    // account for model matrix
+    m.multRight(SoModelMatrixElement::get(state).inverse());
+    
+    SbVec3f axis(1.0f, 0.0f, 0.0f); // FIXME: possible to configure by user?
+    m.multDirMatrix(axis, axis);
     
     axis[2] = 0.0f;
     if (axis == SbVec3f(0.0f, 0.0f, 0.0f)) axis = SbVec3f(1.0f, 0.0f, 0.0f);
