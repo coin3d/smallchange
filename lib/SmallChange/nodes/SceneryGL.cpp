@@ -59,13 +59,7 @@
 #include <SmallChange/misc/SceneryGlue.h>
 #endif
 
-#include <Inventor/C/glue/gl.h>
-#include <Inventor/elements/SoGLCacheContextElement.h>
-
 /* ********************************************************************** */
-
-#define GL_SHAPE_FLUSH() /* glFlush() */
-#define GL_BLOCK_FLUSH() /* glFlush() */
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
