@@ -1104,6 +1104,24 @@ SmScenery::generatePrimitives(SoAction * action)
   if (PRIVATE(this)->system == NULL) return;
   if (!PRIVATE(this)->didevaluateonce) return;
 
+  const int sequencelen = this->renderSequence.getNum();
+  if (sequencelen == 0) return;
+  if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
+    // FIXME: add runtime colortexture
+    int localsequence[2] = { PRIVATE(this)->colormaptexid, 0 };
+    sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 2, localsequence);
+  } 
+  else if (sequencelen == 0) {
+    sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 0, NULL);
+  } 
+  else {
+    this->renderSequence.enableNotify(FALSE);
+    int * sequence = this->renderSequence.startEditing();
+    sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, sequencelen, sequence);
+    this->renderSequence.finishEditing();
+    this->renderSequence.enableNotify(TRUE);
+  }
+
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                      SceneryP::gen_cb, this);
   sc_ssglue_view_set_undef_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
