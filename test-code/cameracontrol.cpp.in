@@ -6,6 +6,8 @@
 #include <Inventor/@Gui@/So@Gui@RenderArea.h>
 #include <SmallChange/misc/Init.h>
 #include <SmallChange/nodekits/SmCameraControlKit.h>
+#include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
+#include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 
 #include <stdio.h>
 
@@ -15,7 +17,7 @@ int
 main(int argc, char ** argv )
 {
   if (argc == 1) {
-    fprintf(stderr,"Usage: cameracontrol <ivfile>\n");
+    fprintf(stderr,"Usage: cameracontrol <ivfile> [helicopter|examiner|sphere]\n");
     return -1;
   } 
   @WIDGET@ window = So@Gui@::init( argv[0] );
@@ -40,6 +42,19 @@ main(int argc, char ** argv )
   SmCameraControlKit * ck = new SmCameraControlKit;
   ck->ref();
   ck->setPart("scene", root);
+
+  if (argc >= 3) {
+    if (strcmp(argv[2], "helicopter") == 0) {
+      ck->eventHandler = new SmHelicopterEventHandler;
+    }
+    else if (strcmp(argv[2], "examiner") == 0) {
+      // the default. do nothing
+    }
+    else {
+      fprintf(stderr,"Unknown event handler. Using examiner\n");
+    }
+  }
+
   SoCamera * camera = (SoCamera*) ck->getPart("camera", TRUE);
   
   So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
