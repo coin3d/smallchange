@@ -213,6 +213,7 @@ class SceneryP {
 public:
   SmScenery * api;
 
+  SoFieldSensor * renderseqsensor;
   SoFieldSensor * filenamesensor;
   SoFieldSensor * blocksensor;
   SoFieldSensor * loadsensor;
@@ -269,6 +270,7 @@ public:
   static void colortexsensor_cb(void * closure, SoSensor * sensor);
   static void old_colortexturesensor_cb(void * closure, SoSensor * sensor);
   static void elevationlinessensor_cb(void * closure, SoSensor * sensor);
+  static void renderseqsensor_cb(void * closure, SoSensor * sensor);
 
   // generate primitives / raypick
   void GEN_VERTEX(RenderState * state, const int x, const int y, const float elev);
@@ -550,6 +552,10 @@ SceneryP::commonConstructor(void)
 
   this->elevationemphasissensor = new SoFieldSensor(SceneryP::elevationlinessensor_cb, PUBLIC(this));
   this->elevationemphasissensor->attach(&PUBLIC(this)->elevationLineEmphasis);
+  
+  this->renderseqsensor = new SoFieldSensor(SceneryP::renderseqsensor_cb, PUBLIC(this));
+  this->renderseqsensor->setPriority(0);
+  this->renderseqsensor->attach(&PUBLIC(this)->renderSequence);
 
   // elevation texture test
   this->renderstate.etexscale = 0.0f;
@@ -563,6 +569,7 @@ SceneryP::commonConstructor(void)
 
 SmScenery::~SmScenery(void)
 {
+  delete PRIVATE(this)->renderseqsensor;
   delete PRIVATE(this)->filenamesensor;
   delete PRIVATE(this)->blocksensor;
   delete PRIVATE(this)->loadsensor;
@@ -1180,6 +1187,16 @@ SmScenery::refreshTextures(const int id)
 }
 
 // *************************************************************************
+
+void 
+SceneryP::renderseqsensor_cb(void * closure, SoSensor * sensor)
+{
+  assert(closure);
+  if (!sc_scenery_available()) { return; }
+
+  SmScenery * thisp = (SmScenery *) closure;
+  thisp->refreshTextures(-1);
+}
 
 void 
 SceneryP::filenamesensor_cb(void * closure, SoSensor * sensor)
