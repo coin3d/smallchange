@@ -101,6 +101,7 @@ sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
 
 
 INCLUDES = -I$(top_srcdir)/lib
+# INCLUDES = -I$(top_srcdir)/lib -I/cygdrive/e/Users/thammer/Code/Checkout/openal/include
 
 @BUILD_WITH_MSVC_TRUE@noinst_LIBRARIES = nodes.lst
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libnodes.la
@@ -108,20 +109,49 @@ INCLUDES = -I$(top_srcdir)/lib
 libnodes_la_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
-	Coinboard.cpp Coinboard.h
+	Coinboard.cpp Coinboard.h \
+	SoAudioClip.cpp \
+	SoAudioClip.h \
+	SoAudioClipP.h \
+	SoAudioClipStreaming.cpp \
+	SoAudioClipStreaming.h \
+	SoAudioClipStreamingP.h \
+	SoListener.cpp \
+	SoListener.h \
+	SoSound.cpp \
+	SoSound.h \
+	SoSoundP.h
 
 
 nodes_lst_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
-	Coinboard.cpp Coinboard.h
+	Coinboard.cpp Coinboard.h \
+	SoAudioClip.cpp \
+	SoAudioClip.h \
+	SoAudioClipP.h \
+	SoAudioClipStreaming.cpp \
+	SoAudioClipStreaming.h \
+	SoAudioClipStreamingP.h \
+	SoListener.cpp \
+	SoListener.h \
+	SoSound.cpp \
+	SoSound.h \
+	SoSoundP.h
 
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
-	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h
+	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClip.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipP.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreaming.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreamingP.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoSound.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SoSoundP.h
 
 EXEEXT =
 OBJEXT = o
@@ -139,14 +169,16 @@ LIBS = @LIBS@
 nodes_lst_AR = $(AR) cru
 nodes_lst_LIBADD = 
 am_nodes_lst_OBJECTS = DepthBuffer.$(OBJEXT) ViewportRegion.$(OBJEXT) \
-Coinboard.$(OBJEXT)
+Coinboard.$(OBJEXT) SoAudioClip.$(OBJEXT) \
+SoAudioClipStreaming.$(OBJEXT) SoListener.$(OBJEXT) SoSound.$(OBJEXT)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 AR = ar
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libnodes_la_LDFLAGS = 
 libnodes_la_LIBADD = 
-am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo
+am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo \
+SoAudioClip.lo SoAudioClipStreaming.lo SoListener.lo SoSound.lo
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -164,7 +196,12 @@ HEADERS = $(libnodesinc_HEADERS)
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 @AMDEP@DEP_FILES = $(DEPDIR)/Coinboard.Plo $(DEPDIR)/Coinboard.Po \
 @AMDEP@ $(DEPDIR)/DepthBuffer.Plo $(DEPDIR)/DepthBuffer.Po \
-@AMDEP@ $(DEPDIR)/ViewportRegion.Plo $(DEPDIR)/ViewportRegion.Po
+@AMDEP@ $(DEPDIR)/SoAudioClip.Plo $(DEPDIR)/SoAudioClip.Po \
+@AMDEP@ $(DEPDIR)/SoAudioClipStreaming.Plo \
+@AMDEP@ $(DEPDIR)/SoAudioClipStreaming.Po $(DEPDIR)/SoListener.Plo \
+@AMDEP@ $(DEPDIR)/SoListener.Po $(DEPDIR)/SoSound.Plo \
+@AMDEP@ $(DEPDIR)/SoSound.Po $(DEPDIR)/ViewportRegion.Plo \
+@AMDEP@ $(DEPDIR)/ViewportRegion.Po
 DIST_COMMON = $(libnodesinc_HEADERS) Makefile.am Makefile.in
 
 SOURCES = $(nodes_lst_SOURCES) $(libnodes_la_SOURCES)
@@ -261,6 +298,14 @@ distclean-tags:
 @AMDEP@@_am_include@ $(DEPDIR)/Coinboard.Po
 @AMDEP@@_am_include@ $(DEPDIR)/DepthBuffer.Plo
 @AMDEP@@_am_include@ $(DEPDIR)/DepthBuffer.Po
+@AMDEP@@_am_include@ $(DEPDIR)/SoAudioClip.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/SoAudioClip.Po
+@AMDEP@@_am_include@ $(DEPDIR)/SoAudioClipStreaming.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/SoAudioClipStreaming.Po
+@AMDEP@@_am_include@ $(DEPDIR)/SoListener.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/SoListener.Po
+@AMDEP@@_am_include@ $(DEPDIR)/SoSound.Plo
+@AMDEP@@_am_include@ $(DEPDIR)/SoSound.Po
 @AMDEP@@_am_include@ $(DEPDIR)/ViewportRegion.Plo
 @AMDEP@@_am_include@ $(DEPDIR)/ViewportRegion.Po
 

@@ -29,7 +29,7 @@ AC_DEFUN([SIM_AC_SETUP_MSVC_IFELSE],
 # compiling with it and to generate an MSWindows .dll file.
 
 : ${BUILD_WITH_MSVC=false}
-sim_ac_msvccc=`cd $srcdir; pwd`/cfg/m4/msvccc
+sim_ac_msvccc=`cd $srcdir; pwd`/cfg/m4/wrapmsvc.exe
 if test -z "$CC" -a -z "$CXX" && $sim_ac_msvccc >/dev/null 2>&1; then
   m4_ifdef([$0_VISITED],
     [AC_FATAL([Macro $0 invoked multiple times])])
@@ -48,27 +48,6 @@ else
   $2
 fi
 ]) # SIM_AC_SETUP_MSVC_IFELSE
-
-# **************************************************************************
-
-AC_DEFUN([SIM_AC_MSVC_SUPPORT],
-[# **************************************************************************
-# If the Microsoft Visual C++ cl.exe compiler is available, set us up for
-# compiling with it and to generate an MSWindows .dll file.
-
-: ${BUILD_WITH_MSVC=false}
-sim_ac_msvccc=`cd $srcdir; pwd`/cfg/m4/msvccc
-if test -z "$CC" -a -z "$CXX" && $sim_ac_msvccc >/dev/null 2>&1; then
-  m4_ifdef([$0_VISITED],
-    [AC_FATAL([Macro $0 invoked multiple times])])
-  m4_define([$0_VISITED], 1)
-  CC=$sim_ac_msvccc
-  CXX=$sim_ac_msvccc
-  export CC CXX
-  BUILD_WITH_MSVC=true
-fi
-AC_SUBST(BUILD_WITH_MSVC)
-]) # SIM_AC_MSVC_SUPPORT
 
 # EOF **********************************************************************
 
@@ -301,21 +280,42 @@ am_aux_dir=`CDPATH=:; cd $ac_aux_dir && pwd`
 # AM_AUX_DIR_EXPAND
 
 # For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
-# $ac_aux_dir to ${srcdir}/foo.  In other projects, it is set to `.'.
-# Of course, Automake must honor this variable whenever it calls a tool
-# from the auxiliary directory.  The problem is that $srcdir (and therefore
-# $ac_aux_dir as well) can be either an absolute path or a path relative to
-# $top_srcdir, depending on how configure is run.  This is pretty annoying,
-# since it makes $ac_aux_dir quite unusable in subdirectories: in the top
-# source directory, any form will work fine, but in subdirectories a relative
-# path needs to be adjusted first.
-# - calling $top_srcdir/$ac_aux_dir/missing would succeed if $ac_aux_dir was
-#   relative, but fail if it was absolute.
-# - conversly, calling $ac_aux_dir/missing would fail if $ac_aux_dir was
-#   relative, and succeed on absolute paths.
+# $ac_aux_dir to `$srcdir/foo'.  In other projects, it is set to
+# `$srcdir', `$srcdir/..', or `$srcdir/../..'.
 #
-# Consequently, we define and use $am_aux_dir, the "always absolute"
-# version of $ac_aux_dir.
+# Of course, Automake must honor this variable whenever it calls a
+# tool from the auxiliary directory.  The problem is that $srcdir (and
+# therefore $ac_aux_dir as well) can be either absolute or relative,
+# depending on how configure is run.  This is pretty annoying, since
+# it makes $ac_aux_dir quite unusable in subdirectories: in the top
+# source directory, any form will work fine, but in subdirectories a
+# relative path needs to be adjusted first.
+#
+# $ac_aux_dir/missing
+#    fails when called from a subdirectory if $ac_aux_dir is relative
+# $top_srcdir/$ac_aux_dir/missing
+#    fails if $ac_aux_dir is absolute,
+#    fails when called from a subdirectory in a VPATH build with
+#          a relative $ac_aux_dir
+#
+# The reason of the latter failure is that $top_srcdir and $ac_aux_dir
+# are both prefixed by $srcdir.  In an in-source build this is usually
+# harmless because $srcdir is `.', but things will broke when you
+# start a VPATH build or use an absolute $srcdir.
+#
+# So we could use something similar to $top_srcdir/$ac_aux_dir/missing,
+# iff we strip the leading $srcdir from $ac_aux_dir.  That would be:
+#   am_aux_dir='\$(top_srcdir)/'`expr "$ac_aux_dir" : "$srcdir//*\(.*\)"`
+# and then we would define $MISSING as
+#   MISSING="\${SHELL} $am_aux_dir/missing"
+# This will work as long as MISSING is not called from configure, because
+# unfortunately $(top_srcdir) has no meaning in configure.
+# However there are other variables, like CC, which are often used in
+# configure, and could therefore not use this "fixed" $ac_aux_dir.
+#
+# Another solution, used here, is to always expand $ac_aux_dir to an
+# absolute PATH.  The drawback is that using absolute paths prevent a
+# configured tree to be moved without reconfiguration.
 
 AC_DEFUN([AM_AUX_DIR_EXPAND], [
 # expand $ac_aux_dir to an absolute path
@@ -611,6 +611,290 @@ AC_DEFUN([AM_CONFIG_HEADER],
     esac
     am_indx=\`expr \$am_indx + 1\`
   done])
+])
+
+# Usage:
+#  SIM_AC_CHECK_PTHREAD([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+#
+#  Try to find the PTHREAD development system. If it is found, these
+#  shell variables are set:
+#
+#    $sim_ac_pthread_cppflags (extra flags the compiler needs for pthread)
+#    $sim_ac_pthread_ldflags  (extra flags the linker needs for pthread)
+#    $sim_ac_pthread_libs     (link libraries the linker needs for pthread)
+#
+#  The CPPFLAGS, LDFLAGS and LIBS flags will also be modified accordingly.
+#  In addition, the variable $sim_ac_pthread_avail is set to "yes" if the
+#  pthread development system is found.
+#
+#
+# Author: Morten Eriksen, <mortene@sim.no>.
+
+AC_DEFUN([SIM_AC_CHECK_PTHREAD], [
+
+AC_ARG_WITH(
+  [pthread],
+  AC_HELP_STRING([--with-pthread=DIR],
+                 [pthread installation directory]),
+  [],
+  [with_pthread=yes])
+
+sim_ac_pthread_avail=no
+
+if test x"$with_pthread" != xno; then
+  if test x"$with_pthread" != xyes; then
+    sim_ac_pthread_cppflags="-I${with_pthread}/include"
+    sim_ac_pthread_ldflags="-L${with_pthread}/lib"
+  fi
+  sim_ac_pthread_libs="-lpthread"
+
+  sim_ac_save_cppflags=$CPPFLAGS
+  sim_ac_save_ldflags=$LDFLAGS
+  sim_ac_save_libs=$LIBS
+
+  CPPFLAGS="$CPPFLAGS $sim_ac_pthread_cppflags"
+  LDFLAGS="$LDFLAGS $sim_ac_pthread_ldflags"
+  LIBS="$sim_ac_pthread_libs $LIBS"
+
+  AC_CACHE_CHECK(
+    [whether the pthread development system is available],
+    sim_cv_lib_pthread_avail,
+    [AC_TRY_LINK([#include <pthread.h>],
+                 [(void)pthread_create(0L, 0L, 0L, 0L);],
+                 [sim_cv_lib_pthread_avail=yes],
+                 [sim_cv_lib_pthread_avail=no])])
+
+  if test x"$sim_cv_lib_pthread_avail" = xyes; then
+    sim_ac_pthread_avail=yes
+    $1
+  else
+    CPPFLAGS=$sim_ac_save_cppflags
+    LDFLAGS=$sim_ac_save_ldflags
+    LIBS=$sim_ac_save_libs
+    $2
+  fi
+fi
+])
+
+
+
+# **************************************************************************
+# configuration_summary.m4
+#
+# This file contains some utility macros for making it easy to have a short
+# summary of the important configuration settings printed at the end of the
+# configure run.
+#
+# Authors:
+#   Lars J. Aas <larsa@sim.no>
+#
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_SETTING( DESCRIPTION, SETTING )
+#
+# This macro registers a configuration setting to be dumped by the
+# SIM_AC_CONFIGURATION_SUMMARY macro.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_SETTING],
+[if test x${sim_ac_configuration_settings+set} != xset; then
+  sim_ac_configuration_settings="$1:$2"
+else
+  sim_ac_configuration_settings="$sim_ac_configuration_settings|$1:$2"
+fi
+]) # SIM_AC_CONFIGURATION_SETTING
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_WARNING( WARNING )
+#
+# This macro registers a configuration warning to be dumped by the
+# SIM_AC_CONFIGURATION_SUMMARY macro.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_WARNING],
+[if test x${sim_ac_configuration_warnings+set} != xset; then
+  sim_ac_configuration_warnings="$1"
+else
+  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|$1"
+fi
+]) # SIM_AC_CONFIGURATION_WARNING
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_SUMMARY
+#
+# This macro dumps the settings and warnings summary.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_SUMMARY],
+[sim_ac_settings=$sim_ac_configuration_settings
+sim_ac_num_settings=`echo "$sim_ac_settings" | tr -d -c "|" | wc -c`
+sim_ac_maxlength=0
+while test $sim_ac_num_settings -ge 0; do
+  sim_ac_description=`echo "$sim_ac_settings" | cut -d: -f1`
+  sim_ac_length=`echo "$sim_ac_description" | wc -c`
+  if test $sim_ac_length -gt $sim_ac_maxlength; then
+    sim_ac_maxlength=`expr $sim_ac_length + 0`
+  fi
+  sim_ac_settings=`echo $sim_ac_settings | cut -d"|" -f2-`
+  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
+done
+
+sim_ac_maxlength=`expr $sim_ac_maxlength + 3`
+sim_ac_padding=`echo "                                             " |
+  cut -c1-$sim_ac_maxlength`
+
+sim_ac_num_settings=`echo "$sim_ac_configuration_settings" | tr -d -c "|" | wc -c`
+echo ""
+echo "$PACKAGE configuration settings:"
+while test $sim_ac_num_settings -ge 0; do
+  sim_ac_setting=`echo $sim_ac_configuration_settings | cut -d"|" -f1`
+  sim_ac_description=`echo "$sim_ac_setting" | cut -d: -f1`
+  sim_ac_status=`echo "$sim_ac_setting" | cut -d: -f2-`
+  # hopefully not too many terminals are too dumb for this
+  echo -e "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:"
+  sim_ac_configuration_settings=`echo $sim_ac_configuration_settings | cut -d"|" -f2-`
+  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
+done
+
+if test x${sim_ac_configuration_warnings+set} = xset; then
+sim_ac_num_warnings=`echo "$sim_ac_configuration_warnings" | tr -d -c "|" | wc -c`
+echo ""
+echo "$PACKAGE configuration warnings:"
+while test $sim_ac_num_warnings -ge 0; do
+  sim_ac_warning=`echo "$sim_ac_configuration_warnings" | cut -d"|" -f1`
+  echo "  * $sim_ac_warning"
+  sim_ac_configuration_warnings=`echo $sim_ac_configuration_warnings | cut -d"|" -f2-`
+  sim_ac_num_warnings=`expr $sim_ac_num_warnings - 1`
+done
+fi
+]) # SIM_AC_CONFIGURATION_SUMMARY
+
+
+# Usage:
+#  SIM_AC_CHECK_OPENAL([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+#
+#  Try to find the OpenAL development system. If it is found, these
+#  shell variables are set:
+#
+#    $sim_ac_openal_cppflags (extra flags the compiler needs for openal)
+#    $sim_ac_openal_ldflags  (extra flags the linker needs for openal)
+#    $sim_ac_openal_libs     (link libraries the linker needs for openal)
+#
+#  The CPPFLAGS, LDFLAGS and LIBS flags will also be modified accordingly.
+#  In addition, the variable $sim_ac_openal_avail is set to "yes" if the
+#  openal development system is found.
+#
+#  Download OpenAL from www.openal.org
+#
+# Author: Thomas Hammer, <thammer@sim.no>
+
+AC_DEFUN([SIM_AC_CHECK_OPENAL], [
+
+AC_ARG_WITH(
+  [openal],
+  AC_HELP_STRING([--with-openal=DIR],
+                 [openal installation directory]),
+  [],
+  [with_openal=yes])
+
+sim_ac_openal_avail=no
+
+if test x"$with_openal" != xno; then
+  if test x"$with_openal" != xyes; then
+    sim_ac_openal_cppflags="-I${with_openal}/include"
+    sim_ac_openal_ldflags="-L${with_openal}/lib"
+  fi
+  sim_ac_openal_libs="-lopenal32 -lalut"
+
+  sim_ac_save_cppflags=$CPPFLAGS
+  sim_ac_save_ldflags=$LDFLAGS
+  sim_ac_save_libs=$LIBS
+
+  CPPFLAGS="$CPPFLAGS $sim_ac_openal_cppflags"
+  LDFLAGS="$LDFLAGS $sim_ac_openal_ldflags"
+  LIBS="$sim_ac_openal_libs $LIBS"
+
+  AC_CACHE_CHECK(
+    [whether the openal development system is available],
+    sim_cv_lib_openal_avail,
+    [AC_TRY_LINK([#include <AL/al.h>],
+                 [(void)alGetError();],
+                 [sim_cv_lib_openal_avail=yes],
+                 [sim_cv_lib_openal_avail=no])])
+
+  if test x"$sim_cv_lib_openal_avail" = xyes; then
+    sim_ac_openal_avail=yes
+    $1
+  else
+    CPPFLAGS=$sim_ac_save_cppflags
+    LDFLAGS=$sim_ac_save_ldflags
+    LIBS=$sim_ac_save_libs
+    $2
+  fi
+fi
+])
+
+
+
+# Usage:
+#  SIM_AC_CHECK_OGGVORBIS([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
+#
+#  Try to find the OggVorbis development system. If it is found, these
+#  shell variables are set:
+#
+#    $sim_ac_oggvorbis_cppflags (extra flags the compiler needs for oggvorbis)
+#    $sim_ac_oggvorbis_ldflags  (extra flags the linker needs for oggvorbis)
+#    $sim_ac_oggvorbis_libs     (link libraries the linker needs for oggvorbis)
+#
+#  The CPPFLAGS, LDFLAGS and LIBS flags will also be modified accordingly.
+#  In addition, the variable $sim_ac_oggvorbis_avail is set to "yes" if the
+#  oggvorbis development system is found.
+#
+#  Download Oggvorbis from http://www.xiph.org/ogg/vorbis/index.html
+#
+# Author: Thomas Hammer, <thammer@sim.no>
+
+AC_DEFUN([SIM_AC_CHECK_OGGVORBIS], [
+
+AC_ARG_WITH(
+  [oggvorbis],
+  AC_HELP_STRING([--with-oggvorbis=DIR],
+                 [oggvorbis installation directory]),
+  [],
+  [with_oggvorbis=yes])
+
+sim_ac_oggvorbis_avail=no
+
+if test x"$with_oggvorbis" != xno; then
+  if test x"$with_oggvorbis" != xyes; then
+    sim_ac_oggvorbis_cppflags="-I${with_oggvorbis}/include"
+    sim_ac_oggvorbis_ldflags="-L${with_oggvorbis}/lib"
+  fi
+  sim_ac_oggvorbis_libs="-logg -lvorbis -lvorbisfile"
+
+  sim_ac_save_cppflags=$CPPFLAGS
+  sim_ac_save_ldflags=$LDFLAGS
+  sim_ac_save_libs=$LIBS
+
+  CPPFLAGS="$CPPFLAGS $sim_ac_oggvorbis_cppflags"
+  LDFLAGS="$LDFLAGS $sim_ac_oggvorbis_ldflags"
+  LIBS="$sim_ac_oggvorbis_libs $LIBS"
+
+  AC_CACHE_CHECK(
+    [whether the oggvorbis development system is available],
+    sim_cv_lib_oggvorbis_avail,
+    [AC_TRY_LINK([#include <vorbis/vorbisfile.h>],
+                 [(void)ov_open(NULL, NULL, NULL, 0);],
+                 [sim_cv_lib_oggvorbis_avail=yes],
+                 [sim_cv_lib_oggvorbis_avail=no])])
+
+  if test x"$sim_cv_lib_oggvorbis_avail" = xyes; then
+    sim_ac_oggvorbis_avail=yes
+    $1
+  else
+    CPPFLAGS=$sim_ac_save_cppflags
+    LDFLAGS=$sim_ac_save_ldflags
+    LIBS=$sim_ac_save_libs
+    $2
+  fi
+fi
 ])
 
 
@@ -1696,95 +1980,6 @@ eval "$1=\"`echo $2 | sed -e 's%\\/%\\\\%g'`\""
 AC_DEFUN([SIM_AC_DODOUBLEBACKSLASH], [
 eval "$1=\"`echo $2 | sed -e 's%\\/%\\\\\\\\\\\\\\\\%g'`\""
 ])
-
-
-# **************************************************************************
-# configuration_summary.m4
-#
-# This file contains some utility macros for making it easy to have a short
-# summary of the important configuration settings printed at the end of the
-# configure run.
-#
-# Authors:
-#   Lars J. Aas <larsa@sim.no>
-#
-
-# **************************************************************************
-# SIM_AC_CONFIGURATION_SETTING( DESCRIPTION, SETTING )
-#
-# This macro registers a configuration setting to be dumped by the
-# SIM_AC_CONFIGURATION_SUMMARY macro.
-
-AC_DEFUN([SIM_AC_CONFIGURATION_SETTING],
-[if test x${sim_ac_configuration_settings+set} != xset; then
-  sim_ac_configuration_settings="$1:$2"
-else
-  sim_ac_configuration_settings="$sim_ac_configuration_settings|$1:$2"
-fi
-]) # SIM_AC_CONFIGURATION_SETTING
-
-# **************************************************************************
-# SIM_AC_CONFIGURATION_WARNING( WARNING )
-#
-# This macro registers a configuration warning to be dumped by the
-# SIM_AC_CONFIGURATION_SUMMARY macro.
-
-AC_DEFUN([SIM_AC_CONFIGURATION_WARNING],
-[if test x${sim_ac_configuration_warnings+set} != xset; then
-  sim_ac_configuration_warnings="$1"
-else
-  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|$1"
-fi
-]) # SIM_AC_CONFIGURATION_WARNING
-
-# **************************************************************************
-# SIM_AC_CONFIGURATION_SUMMARY
-#
-# This macro dumps the settings and warnings summary.
-
-AC_DEFUN([SIM_AC_CONFIGURATION_SUMMARY],
-[sim_ac_settings=$sim_ac_configuration_settings
-sim_ac_num_settings=`echo "$sim_ac_settings" | tr -d -c "|" | wc -c`
-sim_ac_maxlength=0
-while test $sim_ac_num_settings -ge 0; do
-  sim_ac_description=`echo "$sim_ac_settings" | cut -d: -f1`
-  sim_ac_length=`echo "$sim_ac_description" | wc -c`
-  if test $sim_ac_length -gt $sim_ac_maxlength; then
-    sim_ac_maxlength=`expr $sim_ac_length + 0`
-  fi
-  sim_ac_settings=`echo $sim_ac_settings | cut -d"|" -f2-`
-  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
-done
-
-sim_ac_maxlength=`expr $sim_ac_maxlength + 3`
-sim_ac_padding=`echo "                                             " |
-  cut -c1-$sim_ac_maxlength`
-
-sim_ac_num_settings=`echo "$sim_ac_configuration_settings" | tr -d -c "|" | wc -c`
-echo ""
-echo "$PACKAGE configuration settings:"
-while test $sim_ac_num_settings -ge 0; do
-  sim_ac_setting=`echo $sim_ac_configuration_settings | cut -d"|" -f1`
-  sim_ac_description=`echo "$sim_ac_setting" | cut -d: -f1`
-  sim_ac_status=`echo "$sim_ac_setting" | cut -d: -f2-`
-  # hopefully not too many terminals are too dumb for this
-  echo -e "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:"
-  sim_ac_configuration_settings=`echo $sim_ac_configuration_settings | cut -d"|" -f2-`
-  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
-done
-
-if test x${sim_ac_configuration_warnings+set} = xset; then
-sim_ac_num_warnings=`echo "$sim_ac_configuration_warnings" | tr -d -c "|" | wc -c`
-echo ""
-echo "$PACKAGE configuration warnings:"
-while test $sim_ac_num_warnings -ge 0; do
-  sim_ac_warning=`echo "$sim_ac_configuration_warnings" | cut -d"|" -f1`
-  echo "  * $sim_ac_warning"
-  sim_ac_configuration_warnings=`echo $sim_ac_configuration_warnings | cut -d"|" -f2-`
-  sim_ac_num_warnings=`expr $sim_ac_num_warnings - 1`
-done
-fi
-]) # SIM_AC_CONFIGURATION_SUMMARY
 
 
 # Usage:

@@ -1,5 +1,14 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
+/* Ogg Vorbis extensions available */
+#undef HAVE_OGGVORBIS
+
+/* openal extensions available */
+#undef HAVE_OPENAL
+
+/* pthread extensions available */
+#undef HAVE_PTHREAD
+
 /* Define if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
