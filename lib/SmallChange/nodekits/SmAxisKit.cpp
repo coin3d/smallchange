@@ -167,10 +167,15 @@ SmAxisKitP::setupMasterNodes(void) const
 
   // Making an invisible axis out of a cube to make sure the LOD will
   // work properly
+  SoSeparator * invisibleCubeSep = new SoSeparator;
   SoDrawStyle * drawStyle = new SoDrawStyle;
   drawStyle->style = SoDrawStyleElement::INVISIBLE;
   SoCube * invisibleCube = new SoCube;
   invisibleCube->width.setValue(range);
+
+  invisibleCubeSep->addChild(drawStyle);
+  invisibleCubeSep->addChild(invisibleCube);
+  sep1->addChild(invisibleCubeSep);
 
   SoCoordinate3 * axisCoords = new SoCoordinate3;
   SoLineSet * axisLine = new SoLineSet;  
@@ -186,9 +191,6 @@ SmAxisKitP::setupMasterNodes(void) const
   sep1->addChild(axisColor);
   sep1->addChild(axisCoords);
   sep1->addChild(axisLine);
-
-  sep1->addChild(drawStyle);
-  sep1->addChild(invisibleCube);
     
   SoSeparator * axisnamesep = new SoSeparator;
   SoTranslation * trans3 = new SoTranslation;
