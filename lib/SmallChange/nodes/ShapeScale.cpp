@@ -38,6 +38,7 @@
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoCullElement.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -91,23 +92,16 @@ ShapeScale::preRender(SoAction * action)
     update_scale(scale, SbVec3f(1.0f, 1.0f, 1.0f));
   }
   else {
-    const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-    const SbViewVolume & vv = SoViewVolumeElement::get(state);
-#if 0 // obsoleted
-    SbBox3f bbox;
-    SbVec3f center;
-    shape->computeBBox(action, bbox, center);
-    SbVec3f size = bbox.getMax() - bbox.getMin();
-    float maxsize = size[0];
-    if (size[1] > maxsize) maxsize = size[1];
-    if (size[2] > maxsize) maxsize = size[2];
-#else // obsoleted
-    SbVec3f center(0.0f, 0.0f, 0.0f);
-#endif
-    const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[1]);
-    SoModelMatrixElement::get(state).multVecMatrix(center, center);
-    const float scalefactor = vv.getWorldToScreenScale(center, nsize);
-    update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
+    SbBox3f bbox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
+    if (!SoCullElement::cullTest(state, bbox, TRUE)) {
+      const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+      const SbViewVolume & vv = SoViewVolumeElement::get(state);
+      SbVec3f center(0.0f, 0.0f, 0.0f);
+      const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[1]);
+      SoModelMatrixElement::get(state).multVecMatrix(center, center);
+      const float scalefactor = vv.getWorldToScreenScale(center, nsize);
+      update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
+    }
   }
 }
 
