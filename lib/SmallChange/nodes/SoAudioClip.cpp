@@ -166,14 +166,23 @@ SbBool SoAudioClip::loadUrl(void)
   int channels;
   int samplerate;
   int bitspersample;
+
     
   ret = readWaveFile(filename.getString(), buffer, size, format, 
                     channels, samplerate, bitspersample);
   if (!ret) {
 		SoDebugError::postWarning("SoAudioClip::loadUrl",
-                              "Couldn't load file %s.",
+                              "Couldn't load file %s. Using blank buffer.",
                               filename.getString());
-    return FALSE;
+    size=44100;
+    samplerate=44100;
+    channels=1;
+    bitspersample=16;
+    format = 1;
+//    buffer = new char[size*bitspersample/8*channels];
+    buffer = new char[size];
+    for (int i=0; i<size; i++)
+      buffer[i]=0;
   }
 
   ALsizei alsize = size;

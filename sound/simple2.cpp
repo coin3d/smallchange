@@ -609,8 +609,8 @@ main(
     mybuf[i*2+1]=(int)32000.0*sin( (float)(i)/44100.0*2*3.14159*freq );
   }
   */
-  clip2->setBuffer(mybuf, 44100, 2, 16, 44100);
-//  clip2->url.setValue("lyd2.wav");
+//  clip2->setBuffer(mybuf, 44100, 2, 16, 44100);
+  clip2->url.setValue("lydxx.wav");
   delete[] mybuf;
   
   clip2->loop.setValue(TRUE);
