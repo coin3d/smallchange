@@ -23,14 +23,14 @@ if test x"$@" = x"" -a ! -f cfg/mkinstalldirs; then
 fi
 
 AUTOCONF_VER=2.5[023456789]
-AUTOMAKE_VER=1.4
-LIBTOOL_VER=1.3.5
+AUTOMAKE_VER=1.5
+LIBTOOL_VER=1.4.2
 
 PROJECT=Coin
 MACRODIR=cfg/m4
 AUTOMAKE_ADD=
 
-libtoolize=false
+do_libtoolize=false
 if test "$1" = "--clean"; then
   rm -f aclocal.m4 \
         config.h.in \
@@ -52,7 +52,7 @@ if test "$1" = "--clean"; then
   exit
 elif test "$1" = "--add"; then
   AUTOMAKE_ADD="--add-missing --gnu --copy"
-  libtoolize=true
+  do_libtoolize=true
 fi
 
 echo "Checking the installed configuration tools..."
@@ -77,12 +77,25 @@ if test -z "`automake --version 2>/dev/null | grep \" $AUTOMAKE_VER\"`"; then
     DIE=true
 fi
 
-if test -z "`libtool --version 2>/dev/null | egrep \"$LIBTOOL_VER\"`"; then
+if libtoolize --version >/dev/null 2>&1; then
+    libtoolize=libtoolize
+elif glibtoolize --version >/dev/null 2>&1; then
+    libtoolize=glibtoolize
+else
     echo ""
     echo "You must have libtool version $LIBTOOL_VER installed to"
     echo "generate configure information and Makefiles for $PROJECT."
     echo ""
-    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool/libtool-1.3.5.tar.gz"
+    echo "Look in ftp://ftp.gnu.org/pub/gnu/libtool/"
+    DIE=true
+fi
+
+if test -z "`$libtoolize --version 2>/dev/null | egrep \"$LIBTOOL_VER\"`"; then
+    echo ""
+    echo "You must have libtool version $LIBTOOL_VER installed to"
+    echo "generate configure information and Makefiles for $PROJECT."
+    echo ""
+    echo "Look in ftp://ftp.gnu.org/pub/gnu/libtool/"
     DIE=true
 fi
 
@@ -112,8 +125,8 @@ ${DIE=false} && echo "" && echo "Aborted." && exit 1
 echo "Running aclocal (generating aclocal.m4)..."
 aclocal -I $MACRODIR
 
-if $libtoolize; then
-  libtoolize --copy --force
+if $do_libtoolize; then
+  $libtoolize --copy --force
   ( cd cfg;
     test -f ltmain.sh.diff && patch -p0 < ltmain.sh.diff
     test -f ltconfig.diff  && patch -p0 < ltconfig.diff

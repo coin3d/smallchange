@@ -1,5 +1,17 @@
-#  This can be any file in the package.
-AC_INIT(lib/SmallChange/nodes/DepthBuffer.cpp)
+
+m4_define([SMALLCHANGE_MAJOR], [1])
+m4_define([SMALLCHANGE_MINOR], [0])
+m4_define([SMALLCHANGE_MICRO], [0])
+
+# this is bogus, but policy has not been set for this yet
+m4_define([SC_ABI_CURRENT], [SMALLCHANGE_MAJOR])
+m4_define([SC_ABI_AGE], [0])
+m4_define([SC_ABI_REVISION], [m4_eval((SMALLCHANGE_MINOR*100)+SMALLCHANGE_MICRO)])
+
+
+AC_INIT([SmallChange], [1.0.0], [coin-bugs@coin3d.org])
+
+AC_CONFIG_SRCDIR(lib/SmallChange/nodes/DepthBuffer.cpp)
 AC_CONFIG_AUX_DIR(cfg)
 
 # If the Microsoft Visual C++ cl.exe compiler is available, set us up for
@@ -15,29 +27,31 @@ SIM_AC_SETUP_MSVC_IFELSE([], [
   esac
 ])
 
+if $BUILD_WITH_MSVC; then
+  SIM_AC_SETUP_MSVCRT([
+    CPPFLAGS="$CPPFLAGS $sim_ac_msvcrt_CPPFLAGS"
+    CFLAGS="$CFLAGS $sim_ac_msvcrt_CFLAGS"
+    CXXFLAGS="$CXXFLAGS $sim_ac_msvcrt_CXXFLAGS"
+    LDFLAGS="$CFLAGS $sim_ac_msvcrt_LDFLAGS"
+    LIBS="$CXXFLAGS $sim_ac_msvcrt_LIBS"
+  ])
+fi
+
 AM_CONDITIONAL(BUILD_WITH_MSVC, $BUILD_WITH_MSVC)
 
-SMALLCHANGE_MAJOR_VERSION=1
-SMALLCHANGE_MINOR_VERSION=0
-SMALLCHANGE_MICRO_VERSION=0
-SMALLCHANGE_VERSION=$SMALLCHANGE_MAJOR_VERSION.$SMALLCHANGE_MINOR_VERSION.$SMALLCHANGE_MICRO_VERSION
-VERSION=$SMALLCHANGE_VERSION
+AC_SUBST([SMALLCHANGE_MAJOR_VERSION], [SMALLCHANGE_MAJOR])
+AC_SUBST([SMALLCHANGE_MINOR_VERSION], [SMALLCHANGE_MINOR])
+AC_SUBST([SMALLCHANGE_MICRO_VERSION], [SMALLCHANGE_MICRO])
+AC_SUBST([SMALLCHANGE_VERSION], [SMALLCHANGE_MAJOR.SMALLCHANGE_MINOR.SMALLCHANGE_MICRO])
 
-AC_SUBST(SMALLCHANGE_MAJOR_VERSION)
-AC_SUBST(SMALLCHANGE_MINOR_VERSION)
-AC_SUBST(SMALLCHANGE_MICRO_VERSION)
-AC_SUBST(SMALLCHANGE_VERSION)
+VERSION=$SMALLCHANGE_VERSION
 
 SC_MAJOR=$SMALLCHANGE_MAJOR_VERSION
 
 # Libtool versioning
-LT_CURRENT=$SMALLCHANGE_MAJOR_VERSION
-LT_AGE=0
-LT_REVISION=`expr $SMALLCHANGE_MINOR_VERSION \* 100 + $SMALLCHANGE_MICRO_VERSION`
-
-AC_SUBST(LT_CURRENT)
-AC_SUBST(LT_REVISION)
-AC_SUBST(LT_AGE)
+AC_SUBST([LT_CURRENT], [SMALLCHANGE_ABI_CURRENT])
+AC_SUBST([LT_REVISION], [SMALLCHANGE_ABI_REVISION])
+AC_SUBST([LT_AGE], [SMALLCHANGE_ABI_AGE])
 
 AC_DEFINE_UNQUOTED([SMALLCHANGE_MAJOR_VERSION], [$SMALLCHANGE_MAJOR_VERSION],
   [define this to the libSmallchange major version number])
@@ -123,29 +137,21 @@ else
 #  Initialize libtool
 AC_PROG_LIBTOOL
 
-case "$host_os" in
-  irix*)
-    if test x"${AR+set}" != x"set"; then
-      if test x"$CXX" = xCC; then
-        echo "modifying libtool"
-        mv libtool libtool.orig
-        sed -e 's/\\\$AR cru/CC -ar -o/' <libtool.orig >libtool
-        chmod 755 libtool
-        rm -f libtool.org
-      fi
-    fi
-    ;;
-esac
+# case "$host_os" in
+#   irix*)
+#     if test x"${AR+set}" != x"set"; then
+#       if test x"$CXX" = xCC; then
+#         echo "modifying libtool"
+#         mv libtool libtool.orig
+#         sed -e 's/\\\$AR cru/CC -ar -o/' <libtool.orig >libtool
+#         chmod 755 libtool
+#         rm -f libtool.org
+#       fi
+#     fi
+#     ;;
+# esac
 
 fi
-
-#  These are used for constructing the coin-config file.
-# COIN_EXTRA_CPPFLAGS=$CPPFLAGS
-# COIN_EXTRA_LDFLAGS=$LDFLAGS
-# COIN_EXTRA_LIBS=$LIBS
-# AC_SUBST(COIN_EXTRA_CPPFLAGS)
-# AC_SUBST(COIN_EXTRA_LDFLAGS)
-# AC_SUBST(COIN_EXTRA_LIBS)
 
 SIM_AC_DEBUGSYMBOLS
 SIM_AC_RTTI_SUPPORT
@@ -169,15 +175,6 @@ SIM_AC_COMPILE_DEBUG([
 #  CPPFLAGS="$CPPFLAGS -DNDEBUG"
 ])
 
-# huh?  What is this?
-# case $enable_debug in
-# yes | true)  SMALLCHANGE_SHARED=true;;
-# *)           SMALLCHANGE_SHARED=false;;
-# esac
-
-LIBFLAGS=
-AC_SUBST(LIBFLAGS)
-
 if test x"${with_inventor+set}" = x"set" &&
    test x"${with_inventor}" != x"no"; then
   SIM_AC_HAVE_INVENTOR_IFELSE([
@@ -195,10 +192,13 @@ else
   SIM_AC_CONFIGURATION_SETTING([Open Inventor brand], [Coin])
 fi
 
+AC_SUBST([LIBFLAGS], [])
+
 if $BUILD_WITH_MSVC; then
-  if $SMALLCHANGE_STATIC; then
-    :
-  else
+  rm -f vc60.pdb
+  LIBFLAGS="$LIBFLAGS $sim_ac_msvcrt_LIBLDFLAGS"
+  LIBS="$LIBS $sim_ac_msvcrt_LIBLIBS"
+  if $SMALLCHANGE_STATIC; then :; else
     CPPFLAGS="-DSMALLCHANGE_MAKE_DLL $CPPFLAGS"
     SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS -DSMALLCHANGE_DLL"
   fi
@@ -206,13 +206,13 @@ if $BUILD_WITH_MSVC; then
   debugfile=`cygpath -w "$debugfile" | sed 's,\\\\,\\\\\\\\,g'`
   if $SMALLCHANGE_STATIC; then
     SIM_AC_CONFIGURATION_SETTING([SmallChange build type], [static .lib])
-    LIBFLAGS="-LIB"
+    LIBFLAGS="-LIB $LIBFLAGS"
     LIBFLAGS="$LIBFLAGS /OUT:SmallChange$SC_MAJOR.lib"
     SMALLCHANGE_EXTRA_CPPFLAGS="-I$includedir"
     SMALLCHANGE_EXTRA_LDFLAGS="-L$libdir"
     SMALLCHANGE_EXTRA_LIBS=
   else
-    LIBFLAGS="-DLL /INCREMENTAL:NO"
+    LIBFLAGS="-DLL /INCREMENTAL:NO $LIBFLAGS"
     case $enable_symbols in
     no | false)
       SIM_AC_CONFIGURATION_SETTING([SmallChange build type],
@@ -230,6 +230,7 @@ if $BUILD_WITH_MSVC; then
 
     LIBFLAGS="$LIBFLAGS /OUT:SmallChange$SC_MAJOR.dll"
   fi
+  SIM_AC_CONFIGURATION_SETTING([C library type], [$sim_ac_msvcrt])
 
   SMALLCHANGE_EXTRA_LIBS="-lSmallChange$SC_MAJOR $SMALLCHANGE_EXTRA_LIBS"
 else
