@@ -39,6 +39,8 @@
 
 class SmWellLogKitP;
 class SoSensor;
+class SbString;
+class SmTooltipKit;
 
 class SMALLCHANGE_DLL_API SmWellLogKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -91,6 +93,8 @@ public:
   SoSFFloat wellRadius;
 
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
+  virtual void handleEvent(SoHandleEventAction * action);
+
 
 protected:
   virtual SbBool readInstance(SoInput * in, unsigned short flags);
@@ -101,7 +105,9 @@ protected:
 public:
   
 private:
-
+  
+  int findPickIdx(const SbVec3f & p) const;
+  SbBool setTooltipInfo(const int idx, SmTooltipKit * tooltip); 
   void connectNodes(void);
   int getNumCurves(void) const;
   int getNumCurveValues(void) const;

@@ -33,6 +33,7 @@
 #include <SmallChange/nodekits/SmTooltipKit.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoLOD.h>
 #include <Inventor/nodes/SoMaterial.h>
@@ -56,6 +57,10 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/events/SoMouseButtonEvent.h>
+#include <Inventor/events/SoLocation2Event.h>
+#include <Inventor/SoPickedPoint.h>
+#include <Inventor/details/SoLineDetail.h>
 #include <float.h>
 
 #define DEFAULT_SIZE 100.0f
@@ -130,7 +135,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_CONSTRUCTOR(SmWellLogKit);
   
   SO_KIT_ADD_FIELD(undefVal, (-999.25));
-  SO_KIT_ADD_FIELD(name,(""));
+  SO_KIT_ADD_FIELD(name,("MyWell"));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
 
   SO_KIT_ADD_FIELD(curveNames, (""));
@@ -239,6 +244,57 @@ SmWellLogKit::getBoundingBox(SoGetBoundingBoxAction * action)
   inherited::getBoundingBox(action);
 }
 
+void 
+SmWellLogKit::handleEvent(SoHandleEventAction * action)
+{
+  // the kit has changed but the sensor has not triggered
+  // yet. Calculate manually and unschedule() so that we get the
+  // correct bounding box.
+  if (PRIVATE(this)->oneshot->isScheduled()) {
+    PRIVATE(this)->oneshot->unschedule();
+    SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
+  }
+
+  SmTooltipKit * tooltip = (SmTooltipKit*)this->getAnyPart("tooltip", TRUE);
+  const SoEvent * event = action->getEvent();
+
+  SbBool handled = FALSE;
+  
+  if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
+    if (tooltip->isActive.getValue()) {
+      tooltip->isActive = FALSE;
+      handled = TRUE;
+    }
+  }
+
+  if ((!tooltip->isActive.getValue() && SO_MOUSE_PRESS_EVENT(event, BUTTON1)) ||
+      (tooltip->isActive.getValue() && event->isOfType(SoLocation2Event::getClassTypeId()))) {
+    
+    const SoPickedPoint * pp = action->getPickedPoint();
+    SoSeparator * topsep = (SoSeparator*) this->getAnyPart("topSeparator", TRUE);
+
+    if (pp) {
+      SoFullPath * path = (SoFullPath*) pp->getPath();
+      int idx = path->findNode(topsep);
+      if (idx >= 0) {
+        const SoDetail * detail = pp->getDetail();
+        if (detail && detail->isOfType(SoLineDetail::getClassTypeId())) {
+          idx = this->findPickIdx(pp->getObjectPoint());
+          if (this->setTooltipInfo(idx, tooltip)) {
+            tooltip->setPickedPoint(pp, action->getViewportRegion());
+            tooltip->isActive = TRUE;
+          }
+        }
+      }
+    }
+  }
+  
+  if (handled) action->setHandled();
+  else inherited::handleEvent(action);
+}
+
+
+
 SbBool 
 SmWellLogKit::readInstance(SoInput * in, unsigned short flags)
 {
@@ -248,6 +304,62 @@ SmWellLogKit::readInstance(SoInput * in, unsigned short flags)
     this->connectNodes(); // make connections from fields to nodes
   }
   return ret;
+}
+
+int 
+SmWellLogKit::findPickIdx(const SbVec3f & pos) const
+{
+  int n = PRIVATE(this)->poslist.getLength();
+  for (int i = 0; i < n; i++) {
+    if (pos[2] > PRIVATE(this)->poslist[i].pos[2]) return i;
+  }
+  return n-1;
+}
+
+SbBool
+SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
+{
+  if (idx < 0 || idx >= PRIVATE(this)->poslist.getLength()) return FALSE;
+
+  const well_pos & pos = PRIVATE(this)->poslist[idx];
+  
+  SbString l("UNDEFINED");
+  SbString r("UNDEFINED");
+  
+  float undefval = this->undefVal.getValue();
+  
+  if (pos.left != undefval) {
+    l.sprintf("%g", pos.left);
+  }
+  if (pos.right != undefval) {
+    r.sprintf("%g", pos.right);
+  }
+  SbString str;
+
+  int num = 3;
+  int lidx = this->leftCurveIndex.getValue();
+  if (lidx >= 0) num++;
+  int ridx = this->rightCurveIndex.getValue();
+  if (ridx >= 0) num++;
+
+  tooltip->description.setNum(num);
+  tooltip->description.set1Value(0, this->name.getValue());
+  str.sprintf("Depth: %g", pos.mdepth);
+  tooltip->description.set1Value(1, str);
+  str.sprintf("TVDSS: %g", -pos.tvdepth);
+  tooltip->description.set1Value(2, str);
+
+  if (lidx >= 0) {
+    str.sprintf("%s: %s",
+                this->curveNames[lidx].getString(), l.getString());
+    tooltip->description.set1Value(3, str);
+  }
+  if (ridx >= 0) {
+    str.sprintf("%s: %s",
+                this->curveNames[ridx].getString(), r.getString());
+    tooltip->description.set1Value(lidx >= 0 ? 4 : 3, str);    
+  }
+  return TRUE;
 }
 
 void 
@@ -370,15 +482,6 @@ SmWellLogKit::setDefaultOnNonWritingFields(void)
     }
   }
   
-  this->tooltip.setDefault(TRUE);
-  this->well.setDefault(TRUE);
-  this->utm.setDefault(TRUE);
-  this->topLod.setDefault(TRUE);
-  this->topLodGroup.setDefault(TRUE);
-  this->lod.setDefault(TRUE);
-  this->callback.setDefault(TRUE);
-  this->faceSet.setDefault(TRUE);
-
   inherited::setDefaultOnNonWritingFields();
 }
 
