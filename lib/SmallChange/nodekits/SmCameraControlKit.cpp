@@ -251,8 +251,6 @@ SmCameraControlKit::pointDir(const SbVec3f & dir, const SbBool resetroll)
   }
 }
 
-
-
 SbBool 
 SmCameraControlKit::setAnyPart(const SbName & partname, SoNode * from,
                                SbBool anypart)
@@ -543,6 +541,10 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   return TRUE;
 }
 
+/*!
+  Resets the roll. Useful if you want the "up" vector of the camera to
+  be pointing as much up as possible.
+*/
 void
 SmCameraControlKit::resetCameraRoll(void)
 {
