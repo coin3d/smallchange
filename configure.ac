@@ -280,8 +280,8 @@ if $BUILD_WITH_MSVC; then
     *)
       SIM_AC_CONFIGURATION_SETTING([SmallChange build type],
                                    [dynamic .dll + .pdb])
-      CFLAGS="/Fd$debugfile $CFLAGS"
-      CXXFLAGS="/Fd$debugfile $CXXFLAGS"
+      CFLAGS="/Fd$debugfile -g $CFLAGS"
+      CXXFLAGS="/Fd$debugfile -g $CXXFLAGS"
       LIBFLAGS="$LIBFLAGS /DEBUG /PDB:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
       ;;
     esac

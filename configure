@@ -20832,8 +20832,8 @@ else
   sim_ac_configuration_settings="SmallChange build type:dynamic .dll + .pdb"
 fi
 
-      CFLAGS="/Fd$debugfile $CFLAGS"
-      CXXFLAGS="/Fd$debugfile $CXXFLAGS"
+      CFLAGS="/Fd$debugfile -g $CFLAGS"
+      CXXFLAGS="/Fd$debugfile -g $CXXFLAGS"
       LIBFLAGS="$LIBFLAGS /DEBUG /PDB:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
       ;;
     esac
@@ -20850,7 +20850,7 @@ fi
 
   SMALLCHANGE_EXTRA_LIBS="-lSmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX} $SMALLCHANGE_EXTRA_LIBS"
 else
-  SMALLCHANGE_EXTRA_LIBS="-lSmallChange $SMALLCHANGE_EXTRA_LIBS"
+  SMALLCHANGE_EXTRA_LIBS="-lSmallChange${SUFFIX} $SMALLCHANGE_EXTRA_LIBS"
 fi
 
 # **************************************************************************
