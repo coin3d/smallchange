@@ -21,6 +21,11 @@
  *
 \**************************************************************************/
 
+// FIXME: this code does not compile as it is. I'm not sure whether
+// that is due to bit-rot or if it was just never completed. It
+// /looks/ fairly complete, but check with Torbjørn Vik before
+// attempting to fix. 20030109 mortene.
+
 #include <Inventor/SoDB.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
