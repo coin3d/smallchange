@@ -46,7 +46,6 @@ public:
 
   SoFieldSensor * axisRangeSensor;
   SoFieldSensor * markerIntervalSensor;
-  SoFieldSensor * markerWidthSensor;
   SoFieldSensor * textIntervalSensor;
   SoFieldSensor * digitsSensor;
 
@@ -104,10 +103,6 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->markerIntervalSensor->setPriority(0);
   PRIVATE(this)->markerIntervalSensor->attach(&this->markerInterval);
 
-  PRIVATE(this)->markerWidthSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
-  PRIVATE(this)->markerWidthSensor->setPriority(0);
-  PRIVATE(this)->markerWidthSensor->attach(&this->markerInterval);
-
   PRIVATE(this)->textIntervalSensor = new SoFieldSensor(fieldsChangedCallback,PRIVATE(this));
   PRIVATE(this)->textIntervalSensor->setPriority(0);
   PRIVATE(this)->textIntervalSensor->attach(&this->textInterval);
@@ -121,7 +116,6 @@ SmAxisKit::~SmAxisKit()
 {
   delete PRIVATE(this)->axisRangeSensor;
   delete PRIVATE(this)->markerIntervalSensor;
-  delete PRIVATE(this)->markerWidthSensor;
   delete PRIVATE(this)->textIntervalSensor;
   delete PRIVATE(this)->digitsSensor;
 
@@ -229,11 +223,11 @@ SmAxisKitP::generateAxis(int LODlevel) const
   SoTranslation * mtrans2 = new SoTranslation;
   SoBaseColor * markerColor = new SoBaseColor;
 
-  marker1->height.setValue(PUBLIC(this)->markerWidth.getValue());
+  marker1->height.connectFrom(&PUBLIC(this)->markerWidth);
   marker1->width.setValue(0.1f);
   marker1->depth.setValue(0.7f);
   
-  marker2->height.setValue(PUBLIC(this)->markerWidth.getValue());
+  marker2->height.connectFrom(&PUBLIC(this)->markerWidth);
   marker2->width.setValue(0.1f);
   marker2->depth.setValue(1.2f);
 
