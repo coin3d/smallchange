@@ -2,6 +2,8 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+#include <stdio.h>
+
 #include <Inventor/misc/SoState.h>
 #include <Inventor/bundles/SoTextureCoordinateBundle.h>
 #include <Inventor/SoPrimitiveVertex.h>
@@ -30,11 +32,7 @@
 #include <Inventor/elements/SoTextureQualityElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 
-#ifdef HAVE_LIBSCENERY
-#include <sim/cbase/io/largefile.h>
-#include <sim/scenery/scenery.h>
-#endif /* HAVE_LIBSCENERY */
-
+#include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/Scenery.h>
 
 #define MAX_UNUSED_COUNT 200
@@ -83,8 +81,8 @@ Scenery::~Scenery()
 
 #ifdef HAVE_LIBSCENERY
   if (this->system) {
-    ss_view_deallocate(this->system, this->viewid);
-    ss_system_close(this->system);
+    sc_ssglue_view_deallocate(this->system, this->viewid);
+    sc_ssglue_system_close(this->system);
   }
 #endif // HAVE_LIBSCENERY
   delete this->pvertex;
@@ -100,7 +98,7 @@ Scenery::initClass(void)
   if (first) {
     first = 0;
 #ifdef HAVE_LIBSCENERY
-    ss_initialize();
+    sc_ssglue_initialize();
 #endif // HAVE_LIBSCENERY
     SO_NODE_INIT_CLASS(Scenery, SoShape, "Shape");
   }
@@ -164,7 +162,7 @@ Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
   
   RenderState & renderstate = thisp->renderstate;
   
-  ss_render_get_elevation_measures(info, 
+  sc_ssglue_render_get_elevation_measures(info, 
                                    renderstate.voffset,
                                    renderstate.vspacing,
                                    &renderstate.elevdata,
@@ -183,7 +181,7 @@ Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
   thisp->debuglist.append(ox+sx);
   thisp->debuglist.append(oy+sy);
 
-  ss_render_get_texture_measures(info,
+  sc_ssglue_render_get_texture_measures(info,
                                  &renderstate.texid,
                                  renderstate.toffset,
                                  renderstate.tscale);
@@ -194,7 +192,7 @@ Scenery::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
       if (!image) {
         image = thisp->createTexture(renderstate.texid);
         assert(image);      
-        ss_render_get_texture_image(info, renderstate.texid,
+        sc_ssglue_render_get_texture_image(info, renderstate.texid,
                                     &renderstate.texdata,
                                     &renderstate.texw,
                                     &renderstate.texh,
@@ -246,7 +244,7 @@ Scenery::GLRender(SoGLRenderAction * action)
   if (this->system == NULL) return;
   if (!this->shouldGLRender(action)) return;
 
-  //  ss_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, 400.0f);
+  //  sc_ssglue_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, 400.0f);
 
   SoState * state = action->getState();
   SbVec2s vpsize = SoViewportRegionElement::get(state).getViewportSizePixels();
@@ -273,25 +271,25 @@ Scenery::GLRender(SoGLRenderAction * action)
   this->curraction = action;
   this->currstate = state;
 
-  ss_view_set_render_callback(this->system, this->viewid,
+  sc_ssglue_view_set_render_callback(this->system, this->viewid,
                               render_cb, this);
-  ss_view_set_undef_render_callback(this->system, this->viewid,
+  sc_ssglue_view_set_undef_render_callback(this->system, this->viewid,
                                     undefrender_cb, this); 
-  ss_view_set_render_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_render_pre_callback(this->system, this->viewid,
                                   render_pre_cb, this);
-  ss_view_set_culling_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
                                    pre_block_cb, state);
-  ss_view_set_culling_post_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_post_callback(this->system, this->viewid,
                                     post_block_cb, state);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
   hotspot[2] = campos[2];
 
-  ss_view_set_hotspots(this->system, this->viewid, 1, hotspot); 
+  sc_ssglue_view_set_hotspots(this->system, this->viewid, 1, hotspot); 
   this->debuglist.truncate(0);
   this->numnewtextures = 0;
-  ss_view_render(this->system, this->viewid);
+  sc_ssglue_view_render(this->system, this->viewid);
 //   fprintf(stderr,"num boxes: %d, new texs: %d\n",
 //           this->debuglist.getLength()/4, this->numnewtextures);
   
@@ -303,9 +301,9 @@ Scenery::GLRender(SoGLRenderAction * action)
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
 
   state->pop();
-  ss_view_set_culling_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
                                    NULL, NULL);
-  ss_view_set_culling_post_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_post_callback(this->system, this->viewid,
                                     NULL, NULL);
 
   if (this->visualDebug.getValue()) {
@@ -389,16 +387,16 @@ void
 Scenery::rayPick(SoRayPickAction * action)
 {
 #ifdef HAVE_LIBSCENERY
-  ss_view_set_culling_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
                                    raypick_pre_cb, action);
-  ss_view_set_culling_post_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_post_callback(this->system, this->viewid,
                                     raypick_post_cb, action);
 
   inherited::rayPick(action); // just generate primitives
   
-  ss_view_set_culling_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
                                    NULL, NULL);
-  ss_view_set_culling_post_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_post_callback(this->system, this->viewid,
                                     NULL, NULL);
 #endif // HAVE_LIBSCENERY
 }
@@ -420,22 +418,22 @@ Scenery::callback(SoCallbackAction * action)
   worldtolocal.multVecMatrix(campos, campos);
   this->currhotspot = campos;
 
-  ss_view_set_culling_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
                                      pre_block_cb, state);
-  ss_view_set_culling_post_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_post_callback(this->system, this->viewid,
                                       post_block_cb, state);
-  ss_view_set_render_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_render_pre_callback(this->system, this->viewid,
                                   NULL, this);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
   hotspot[2] = campos[2];
-  ss_view_set_hotspots(this->system, this->viewid, 1, hotspot); 
-  ss_view_evaluate(this->system, this->viewid);
+  sc_ssglue_view_set_hotspots(this->system, this->viewid, 1, hotspot); 
+  sc_ssglue_view_evaluate(this->system, this->viewid);
 
-  ss_view_set_culling_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_pre_callback(this->system, this->viewid,
                                    NULL, NULL);
-  ss_view_set_culling_post_callback(this->system, this->viewid,
+  sc_ssglue_view_set_culling_post_callback(this->system, this->viewid,
                                     NULL, NULL);
 #endif // HAVE_LIBSCENERY
 }
@@ -447,18 +445,18 @@ Scenery::generatePrimitives(SoAction * action)
   if (this->system == NULL) return;
   SoState * state = action->getState();
 
-  ss_view_set_render_callback(this->system, this->viewid,
+  sc_ssglue_view_set_render_callback(this->system, this->viewid,
                               gen_cb, this);
-  ss_view_set_undef_render_callback(this->system, this->viewid,
+  sc_ssglue_view_set_undef_render_callback(this->system, this->viewid,
                                     undefgen_cb, this);
 
-  ss_view_set_render_pre_callback(this->system, this->viewid,
+  sc_ssglue_view_set_render_pre_callback(this->system, this->viewid,
                                   gen_pre_cb, this);
 
   SoPointDetail pointDetail;
   this->pvertex->setDetail(&pointDetail);
   this->curraction = action;
-  ss_view_render(this->system, this->viewid);
+  sc_ssglue_view_render(this->system, this->viewid);
 #endif // HAVE_LIBSCENERY
 }
 
@@ -490,7 +488,7 @@ static
 ss_system *
 readxyz(const char * filename)
 {
-  FILE * fp = sc_fopen(filename, "rb");
+  FILE * fp = fopen(filename, "rb");
   if ( !fp ) return NULL;
   int points = 0;
   int loop = TRUE;
@@ -499,13 +497,13 @@ readxyz(const char * filename)
     if ( fscanf(fp, "%f %f %f", &fx, &fy, &fz) == 3 ) {
       points++;
     } else {
-      if ( !sc_feof(fp) ) points = 0; // something fishy
-      sc_fclose(fp);
+      if ( !feof(fp) ) points = 0; // something fishy
+      fclose(fp);
       loop = FALSE;
     }
   }
   if ( points < 2 ) return NULL;
-  fp = sc_fopen(filename, "rb");
+  fp = fopen(filename, "rb");
   if ( !fp ) return NULL;
   float * values = (float *) malloc(points * 3 * sizeof(float));
   assert(values);
@@ -519,8 +517,8 @@ readxyz(const char * filename)
       values[points*3+2] = fz;
       points++;
     } else {
-      if ( !sc_feof(fp) ) points = 0; // something fishy
-      sc_fclose(fp);
+      if ( !feof(fp) ) points = 0; // something fishy
+      fclose(fp);
       loop = FALSE;
     }
   }
@@ -562,7 +560,7 @@ readxyz(const char * filename)
   assert(spacing[1] > 0.0);
 
   fprintf(stderr, "xyz import - cols: %d rows: %d (%d points - %d)\n", dimension[0], dimension[1], points, (dimension[0]*dimension[1]));
-  ss_system * system = ss_system_construct(1, origo, spacing, dimension, elevations, 999999.0f);
+  ss_system * system = sc_ssglue_system_construct(1, origo, spacing, dimension, elevations, 999999.0f);
   free(elevations);
   return system;
 }
@@ -591,8 +589,8 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
 
   if (thisp->system) {
 #ifdef HAVE_LIBSCENERY
-    ss_view_deallocate(thisp->system, thisp->viewid);
-    ss_system_close(thisp->system);
+    sc_ssglue_view_deallocate(thisp->system, thisp->viewid);
+    sc_ssglue_system_close(thisp->system);
 #endif // HAVE_LIBSCENERY
   }
   thisp->viewid = -1;
@@ -607,25 +605,25 @@ Scenery::filenamesensor_cb(void * data, SoSensor * sensor)
     }
 #endif
     if ( !thisp->system )
-      thisp->system = ss_system_open(s.getString(), 1);
+      thisp->system = sc_ssglue_system_open(s.getString(), 1);
     if (!thisp->system) {
       fprintf(stderr,"Unable to open Scenery system\n");
     }
     else {
 #if SS_RTTEXTURE2D_TEST
-      if ( (ss_system_get_num_datasets(thisp->system) == 1) &&
-           (ss_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
+      if ( (sc_ssglue_system_get_num_datasets(thisp->system) == 1) &&
+           (sc_ssglue_system_get_dataset_type(thisp->system, 0) == SS_ELEVATION_TYPE) ) {
         // only elevation data - fitting dataset to add runtime texture dataset to
         // for testing purposes...
-        ss_system_add_runtime_texture2d(thisp->system, 0, calctex_cb, thisp->system);
+        sc_ssglue_system_add_runtime_texture2d(thisp->system, 0, calctex_cb, thisp->system);
       }
 #endif
-      ss_system_get_object_box(thisp->system, thisp->bboxmin, thisp->bboxmax); 
-      thisp->blocksize = ss_system_get_blocksize(thisp->system);
+      sc_ssglue_system_get_object_box(thisp->system, thisp->bboxmin, thisp->bboxmax); 
+      thisp->blocksize = sc_ssglue_system_get_blocksize(thisp->system);
       thisp->renderstate.blocksize = (float) (thisp->blocksize-1);
-      thisp->viewid = ss_view_allocate(thisp->system);
+      thisp->viewid = sc_ssglue_view_allocate(thisp->system);
       assert(thisp->viewid >= 0);
-      ss_view_enable(thisp->system, thisp->viewid);
+      sc_ssglue_view_enable(thisp->system, thisp->viewid);
       //      fprintf(stderr,"system: %p, viewid: %d\n", thisp->system, thisp->viewid);
     }
 #endif // HAVE_LIBSCENERY
@@ -637,7 +635,7 @@ Scenery::preFrame(void)
 {
 #ifdef HAVE_LIBSCENERY
   if (this->system) {
-    ss_view_pre_frame(this->system, this->viewid);
+    sc_ssglue_view_pre_frame(this->system, this->viewid);
     cc_hash_apply(this->texhash, hash_inc_unused, NULL);
   }
 #endif // HAVE_LIBSCENERY
@@ -649,7 +647,7 @@ Scenery::postFrame(void)
 #ifdef HAVE_LIBSCENERY
   if (this->system) {
     this->deleteUnusedTextures();
-    return ss_view_post_frame(this->system, this->viewid);
+    return sc_ssglue_view_post_frame(this->system, this->viewid);
   }
 #endif // HAVE_LIBSCENERY
   return 0;
@@ -660,7 +658,7 @@ Scenery::setBlockRottger(const float c)
 {
 #ifdef HAVE_LIBSCENERY
   if (this->system) {
-    ss_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, c);
+    sc_ssglue_view_set_evaluate_rottger_parameters(this->system, this->viewid, 16.0f, c);
   }
 #endif // HAVE_LIBSCENERY
 }
@@ -670,7 +668,7 @@ Scenery::setLoadRottger(const float c)
 {
 #ifdef HAVE_LIBSCENERY
   if (this->system) {
-    ss_view_set_load_rottger_parameters(this->system, this->viewid, 16.0f, c);
+    sc_ssglue_view_set_load_rottger_parameters(this->system, this->viewid, 16.0f, c);
   }
 #endif // HAVE_LIBSCENERY
 }
@@ -680,7 +678,7 @@ Scenery::refreshTextures(const int id)
 {
 #ifdef HAVE_LIBSCENERY
   if (this->system) {
-    ss_system_refresh_runtime_texture2d(this->system, id);
+    sc_ssglue_system_refresh_runtime_texture2d(this->system, id);
 
     this->tmplist.truncate(0);
     cc_hash_apply(this->texhash, hash_add_all, &this->tmplist);
@@ -709,7 +707,7 @@ Scenery::gen_pre_cb(void * closure, ss_render_pre_cb_info * info)
 
   RenderState & renderstate = thisp->renderstate;
   
-  ss_render_get_elevation_measures(info, 
+  sc_ssglue_render_get_elevation_measures(info, 
                                    renderstate.voffset,
                                    renderstate.vspacing,
                                    &renderstate.elevdata,
@@ -777,7 +775,7 @@ Scenery::undefrender_cb(void * closure, const int x, const int y, const int len,
   const float * elev = renderstate->elevdata;
   const int W = thisp->blocksize;
 
-  const signed char * ptr = ss_render_get_undef_array(bitmask_org);
+  const signed char * ptr = sc_ssglue_render_get_undef_array(bitmask_org);
 
   int numv = *ptr++;
   int tx, ty;
@@ -957,7 +955,7 @@ Scenery::undefgen_cb(void * closure, const int x, const int y, const int len,
 
 #define ELEVATION(x,y) elev[(y)*W+(x)]
 
-  const signed char * ptr = ss_render_get_undef_array(bitmask_org);
+  const signed char * ptr = sc_ssglue_render_get_undef_array(bitmask_org);
 
   int numv = *ptr++;
   int tx, ty;
