@@ -36,8 +36,8 @@
 /*!  
   \var SoSFString SmWellLogKit::name
 
-  The name of the Well. Currently not used, but we might add support
-  for displaying this later.
+  A user-specified name for the well. If set, will be displayed at the
+  top of the value information tooltip.
 */
 
 /*!
@@ -284,7 +284,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_CONSTRUCTOR(SmWellLogKit);
   
   SO_KIT_ADD_FIELD(undefVal, (-999.25));
-  SO_KIT_ADD_FIELD(name,("MyWell"));
+  SO_KIT_ADD_FIELD(name,(""));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
 
   SO_KIT_ADD_FIELD(curveNames, (""));
@@ -611,30 +611,34 @@ SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
   if (pos.right != undefval) {
     r.sprintf("%g", pos.right);
   }
+
+  // Reset to avoid old cruft showing up. Multifield will expand
+  // automatically on the set1Value() calls below.
+  tooltip->description.setNum(0);
+
+  unsigned int stridx = 0;
+  if (this->name.getValue() != "") {
+    tooltip->description.set1Value(stridx++, this->name.getValue());
+  }
+
   SbString str;
-
-  int num = 3;
-  int lidx = this->leftCurveIndex.getValue();
-  if (lidx >= 0) num++;
-  int ridx = this->rightCurveIndex.getValue();
-  if (ridx >= 0) num++;
-
-  tooltip->description.setNum(num);
-  tooltip->description.set1Value(0, this->name.getValue());
   str.sprintf("Depth: %g", pos.mdepth);
-  tooltip->description.set1Value(1, str);
+  tooltip->description.set1Value(stridx++, str);
   str.sprintf("TVDSS: %g", pos.tvdepth);
-  tooltip->description.set1Value(2, str);
+  tooltip->description.set1Value(stridx++, str);
+
+  const int lidx = this->leftCurveIndex.getValue();
+  const int ridx = this->rightCurveIndex.getValue();
 
   if (lidx >= 0) {
     str.sprintf("%s: %s",
                 this->curveNames[lidx].getString(), l.getString());
-    tooltip->description.set1Value(3, str);
+    tooltip->description.set1Value(stridx++, str);
   }
   if (ridx >= 0) {
     str.sprintf("%s: %s",
                 this->curveNames[ridx].getString(), r.getString());
-    tooltip->description.set1Value(lidx >= 0 ? 4 : 3, str);    
+    tooltip->description.set1Value(stridx++, str);    
   }
   return TRUE;
 }
