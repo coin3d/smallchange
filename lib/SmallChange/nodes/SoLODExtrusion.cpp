@@ -113,10 +113,14 @@
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/misc/SoState.h>
 #include <Inventor/nodes/SoIndexedFaceSet.h>
 #include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/SoPickedPoint.h>
+#include <Inventor/SbLine.h>
 #include <Inventor/details/SoPointDetail.h>
+#include <Inventor/details/SoLineDetail.h>
 #include <Inventor/details/SoFaceDetail.h>
 #include <float.h>
 #include <math.h>
@@ -329,6 +333,69 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   SoGLCacheContextElement::shouldAutoCache(action->getState(),
                                            SoGLCacheContextElement::DONT_AUTO_CACHE);
 
+}
+
+void 
+SoLODExtrusion::rayPick(SoRayPickAction * action)
+{
+  if (!shouldRayPick(action)) return;
+
+  SoState * state = action->getState();
+
+  // Find camera position in local coordinate space
+  SbVec3f cameralocal;
+  const SbMatrix & tempmat = SoModelMatrixElement::get(state);
+  const SbMatrix matrix = tempmat.inverse();
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
+  matrix.multVecMatrix(vv.getProjectionPoint(), cameralocal);
+  
+  action->setObjectSpace();
+  const SbLine & ray = action->getLine();
+
+  const float r = this->radius.getValue();
+  const int num = this->spine.getNum();
+  const SbVec3f * sptr = this->spine.getValues(0);
+
+  float d2 = this->lodDistance2.getValue();
+  if (d2 < 0.0f) {
+    d2 = FLT_MAX;
+  }
+  else {
+    d2 *= d2; // square it
+  }
+  float r2 = r*r;
+
+  SoPointDetail pd0;
+  SoPointDetail pd1;
+
+  for (int i = 0; i < num-1; i++) {
+    SbVec3f v0 = sptr[i];
+    SbVec3f v1 = sptr[i+1];
+
+    float l1 = (v0-cameralocal).sqrLength();
+    float l2 = (v1-cameralocal).sqrLength();
+
+    if (l1 < d2 || l2 < d2) {
+      SbLine line(v0, v1);
+      SbVec3f op0, op1; // object space
+      if (ray.getClosestPoints(line, op0, op1)) {
+        // clamp op1 between v0 and v1
+        if ((op1-v0).dot(line.getDirection()) < 0.0f) op1 = v0;
+        else if ((v1-op1).dot(line.getDirection()) < 0.0f) op1 = v1;
+ 
+        if ((op1-op0).sqrLength() <= r2) {
+          SoPickedPoint * pp = action->addIntersection(op0);
+          pd0.setCoordinateIndex(i);
+          pd1.setCoordinateIndex(i+1);
+          SoLineDetail * detail = new SoLineDetail;
+          detail->setPoint0(&pd0);
+          detail->setPoint1(&pd1);
+          detail->setLineIndex(i);
+          pp->setDetail(detail, this);
+        }
+      }
+    }
+  }
 }
 
 void

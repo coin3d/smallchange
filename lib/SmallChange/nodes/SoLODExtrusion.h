@@ -61,6 +61,7 @@ public:
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
   virtual void computeBBox(SoAction * action,
                            SbBox3f & bbox, SbVec3f & center);
+  virtual void rayPick(SoRayPickAction * action);
 
 protected:
   virtual ~SoLODExtrusion();
