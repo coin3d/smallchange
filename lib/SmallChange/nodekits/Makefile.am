@@ -21,7 +21,7 @@ libnodekitsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmWellKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/SmWellLogKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \

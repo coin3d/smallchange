@@ -182,7 +182,7 @@ libnodekitsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmWellKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/SmWellLogKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
