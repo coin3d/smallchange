@@ -50,7 +50,6 @@ public:
   SoSFFloat textInterval;
   SoSFInt32 digits;
   SoSFString axisName;
-  SoSFColor arrowColor;
 
 protected:
   virtual ~SmAxisKit();
