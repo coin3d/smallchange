@@ -464,7 +464,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os BUILD_WITH_MSVC BUILD_WITH_MSVC_TRUE BUILD_WITH_MSVC_FALSE SMALLCHANGE_MAJOR_VERSION SMALLCHANGE_MINOR_VERSION SMALLCHANGE_MICRO_VERSION SMALLCHANGE_BETA_VERSION SMALLCHANGE_VERSION LT_CURRENT LT_REVISION LT_AGE smallchange_build_dir smallchange_src_dir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP SMALLCHANGE_EXTRA_CPPFLAGS SMALLCHANGE_EXTRA_CFLAGS SMALLCHANGE_EXTRA_CXXFLAGS SMALLCHANGE_EXTRA_LDFLAGS SMALLCHANGE_EXTRA_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB F77 FFLAGS ac_ct_F77 LIBTOOL DSUFFIX CONFIG SUFFIX sim_ac_coin_configcmd LIBFLAGS SMALLCHANGE_COMPILER ac_compiler_gnu LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os BUILD_WITH_MSVC BUILD_WITH_MSVC_TRUE BUILD_WITH_MSVC_FALSE SMALLCHANGE_MAJOR_VERSION SMALLCHANGE_MINOR_VERSION SMALLCHANGE_MICRO_VERSION SMALLCHANGE_BETA_VERSION SMALLCHANGE_VERSION LT_CURRENT LT_REVISION LT_AGE smallchange_build_dir smallchange_src_dir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP SMALLCHANGE_EXTRA_CPPFLAGS SMALLCHANGE_EXTRA_CFLAGS SMALLCHANGE_EXTRA_CXXFLAGS SMALLCHANGE_EXTRA_LDFLAGS SMALLCHANGE_EXTRA_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB F77 FFLAGS ac_ct_F77 LIBTOOL DSUFFIX CONFIG SUFFIX sim_ac_coin_configcmd LIBFLAGS SMALLCHANGE_COMPILER ac_compiler_gnu SMALLCHANGE_DSP_LIBS SMALLCHANGE_DSP_INCS SMALLCHANGE_DSP_DEFS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -22450,6 +22450,94 @@ exec_prefix=$sim_ac_save_exec_prefix
 # unset sim_ac_eval_uniq
 
 
+
+
+SMALLCHANGE_DSP_LIBDIRS=
+SMALLCHANGE_DSP_LIBS=
+SMALLCHANGE_DSP_INCS=
+SMALLCHANGE_DSP_DEFS=
+
+if $sim_ac_make_dsp; then
+
+if test x"${sim_ac_configuration_settings+set}" = x"set"; then
+  sim_ac_configuration_settings="$sim_ac_configuration_settings|SmallChange build type:msvc .dsp"
+else
+  sim_ac_configuration_settings="SmallChange build type:msvc .dsp"
+fi
+
+
+  # -DHAVE_CONFIG_H is set up in $DEFS too late for us to use, and some
+  # include directives are usually set up in the Makefile.am files
+  for arg in -DHAVE_CONFIG_H -I$smallchange_build_dir/lib -I$smallchange_src_dir/lib $CPPFLAGS $LDFLAGS $LIBS; do
+    case $arg in
+    -L* )
+      libdir=`echo $arg | cut -c3-`
+      SMALLCHANGE_DSP_LIBDIRS="$SMALLCHANGE_DSP_LIBDIRS $libdir"
+      ;;
+    -l* )
+      libname=`echo $arg | cut -c3-`
+      for libdir in $SMALLCHANGE_DSP_LIBDIRS; do
+        if test -f $libdir/$libname.lib; then
+          # lib is not in any standard location - use full path
+          libname=`cygpath -w "$libdir/$libname" 2>/dev/null || echo "$libdir/$libname"`
+          break
+        fi
+      done
+      if test x"$SMALLCHANGE_DSP_LIBS" = x""; then
+        SMALLCHANGE_DSP_LIBS="$libname.lib"
+      else
+        SMALLCHANGE_DSP_LIBS="$SMALLCHANGE_DSP_LIBS $libname.lib"
+      fi
+      ;;
+    -I* )
+      incdir=`echo $arg | cut -c3-`
+      incdir=`cygpath -w "$incdir" 2>/dev/null || echo "$incdir"`
+      if test x"$SMALLCHANGE_DSP_INCS" = x""; then
+        SMALLCHANGE_DSP_INCS="/I \"$incdir\""
+      else
+        SMALLCHANGE_DSP_INCS="$SMALLCHANGE_DSP_INCS /I \"$incdir\""
+      fi
+      ;;
+    -DSMALLCHANGE_DEBUG* | -DNDEBUG )
+      # Defines that vary between release/debug configurations can't be
+      # set up dynamically in <lib>_DSP_DEFS - they must be static in the
+      # gendsp.sh script.  We therefore catch them here so we can ignore
+      # checking for them below.
+      ;;
+    -D*=* | -D* )
+      define=`echo $arg | cut -c3-`
+      if test x"$SMALLCHANGE_DSP_DEFS" = x""; then
+        SMALLCHANGE_DSP_DEFS="/D \"$define\""
+      else
+        SMALLCHANGE_DSP_DEFS="$SMALLCHANGE_DSP_DEFS /D \"$define\""
+      fi
+      ;;
+    esac
+  done
+
+  CC=$smallchange_src_dir/cfg/gendsp.sh
+  CXX=$smallchange_src_dir/cfg/gendsp.sh
+  CXXLD=$smallchange_src_dir/cfg/gendsp.sh
+  # Yes, this is totally bogus stuff, but don't worry about it.  As long
+  # as gendsp.sh recognizes it...  20030219 larsa
+  CPPFLAGS="$CPPFLAGS -Ddspfile=$smallchange_build_dir/smallchange$SMALLCHANGE_MAJOR_VERSION.dsp"
+  LDFLAGS="$LDFLAGS -Wl,-Ddspfile=$smallchange_build_dir/smallchange$SMALLCHANGE_MAJOR_VERSION.dsp"
+  LIBFLAGS="$LIBFLAGS -o smallchange$SMALLCHANGE_MAJOR_VERSION.so.0"
+
+  # this can't be set up at the point the libtool script is generated
+  mv libtool libtool.bak
+  sed -e "s%^CC=\"gcc\"%CC=\"$smallchange_src_dir/cfg/gendsp.sh\"%" \
+      -e "s%^CC=\".*/wrapmsvc.exe\"%CC=\"$smallchange_src_dir/cfg/gendsp.sh\"%" \
+      <libtool.bak >libtool
+  rm -f libtool.bak
+  chmod 755 libtool
+fi
+
+
+
+
+
+
 # **************************************************************************
 
                                                                                                                                   ac_config_files="$ac_config_files Makefile bin/Makefile lib/Makefile lib/SmallChange/Makefile lib/SmallChange/actions/Makefile lib/SmallChange/misc/Makefile lib/SmallChange/nodekits/Makefile lib/SmallChange/nodes/Makefile lib/SmallChange/elements/Makefile lib/SmallChange/engines/Makefile lib/SmallChange/draggers/Makefile lib/SmallChange/eventhandlers/Makefile lib/SmallChange/basic.h"
@@ -23216,6 +23304,9 @@ s,@sim_ac_coin_configcmd@,$sim_ac_coin_configcmd,;t t
 s,@LIBFLAGS@,$LIBFLAGS,;t t
 s,@SMALLCHANGE_COMPILER@,$SMALLCHANGE_COMPILER,;t t
 s,@ac_compiler_gnu@,$ac_compiler_gnu,;t t
+s,@SMALLCHANGE_DSP_LIBS@,$SMALLCHANGE_DSP_LIBS,;t t
+s,@SMALLCHANGE_DSP_INCS@,$SMALLCHANGE_DSP_INCS,;t t
+s,@SMALLCHANGE_DSP_DEFS@,$SMALLCHANGE_DSP_DEFS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
@@ -23850,13 +23941,19 @@ if test "$no_create" != yes; then
 fi
 
 
+case "$sim_ac_framework:$sim_ac_make_dsp" in
+true:* | *:true )
+  ;;
+* )
 
 if test x"${sim_ac_configuration_settings+set}" = x"set"; then
-  sim_ac_configuration_settings="$sim_ac_configuration_settings|Install prefix:$prefix"
+  sim_ac_configuration_settings="$sim_ac_configuration_settings|Installation prefix:$prefix"
 else
-  sim_ac_configuration_settings="Install prefix:$prefix"
+  sim_ac_configuration_settings="Installation prefix:$prefix"
 fi
 
+  ;;
+esac
 
 
 sim_ac_settings="$sim_ac_configuration_settings"
