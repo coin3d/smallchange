@@ -35,6 +35,7 @@
 #include <Inventor/SbSphere.h>
 #include <Inventor/SbVec4f.h>
 #include <Inventor/SbVec3f.h>
+#include <Inventor/SbLine.h>
 #include <Inventor/system/gl.h>
 #include <stddef.h>
 #include <string.h>
@@ -43,11 +44,11 @@ class HQSphereGenerator {
 public:
   
   HQSphereGenerator(void) {
-    this->icosahedron = NULL;
+    this->orgobject = NULL;
     this->init();
   }
   ~HQSphereGenerator(void) {
-    delete this->icosahedron;
+    delete this->orgobject;
   }
     
   class triangle {
@@ -87,13 +88,14 @@ public:
 private:
   void convert(object * obj, SbBSPTree & bsp, SbList <int> & idx);
   void init(void);
-  object * icosahedron;
+  object * orgobject;
 };
 
 class SmHQSphereP {
 public:
   SbBSPTree bsp;
   SbList <int32_t> idx;
+  SbList <SbVec2f> texcoord;
   HQSphereGenerator generator;
   int currlevel;
 
@@ -159,12 +161,14 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
   int l = this->level.getValue();
   if (l != PRIVATE(this)->currlevel) {
     PRIVATE(this)->genGeom(l);
+    PRIVATE(this)->currlevel = l;
   }
 
   int n = PRIVATE(this)->idx.getLength();
   const int32_t * idx = PRIVATE(this)->idx.getArrayPtr();
   const SbVec3f * pts = PRIVATE(this)->bsp.getPointsArrayPtr();
-
+  const SbVec2f * tc = PRIVATE(this)->texcoord.getArrayPtr();
+  
   float r = this->radius.getValue();
 
   if (r != 1.0f) {
@@ -174,13 +178,29 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
 
   // FIXME: use vertex arrays to speed up rendering
   glBegin(GL_TRIANGLES);
-  for (int i = 0; i < n; i++) {
-    SbVec3f v = pts[idx[i]];
-    glNormal3f(v[0], v[1], v[2]);
-    glVertex3f(v[0], v[1], v[2]);
-  } 
-  glEnd();
-
+  if (sendNormals && doTextures) {
+    for (int i = 0; i < n; i++) {
+      SbVec2f t = tc[idx[i]];
+      glTexCoord2f(t[0], t[1]);
+      SbVec3f v = pts[idx[i]];
+      glNormal3f(v[0], v[1], v[2]);
+      glVertex3f(v[0], v[1], v[2]);
+    }    
+  }
+  else if (sendNormals && !doTextures) {
+    for (int i = 0; i < n; i++) {
+      SbVec3f v = pts[idx[i]];
+      glNormal3f(v[0], v[1], v[2]);
+      glVertex3f(v[0], v[1], v[2]);
+    }
+  }
+  else {
+    for (int i = 0; i < n; i++) {
+      SbVec3f v = pts[idx[i]];
+      glVertex3f(v[0], v[1], v[2]);
+    }
+  }
+  glEnd();  // GL_TRIANGLES
   if (r != 1.0f) {
     glPopMatrix();
   }
@@ -251,14 +271,35 @@ SmHQSphere::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 void 
 SmHQSphereP::genGeom(const int level)
 {
+  int i;
   this->generator.generate(SbClamp(level, 1, 12), this->bsp, this->idx);  
-//   int n = this->bsp.numPoints();
-//   const SbVec3f * pts = this->bsp.getPointsArrayPtr();
+  int n = this->bsp.numPoints();
+  const SbVec3f * pts = this->bsp.getPointsArrayPtr();
+  this->texcoord.truncate(0, TRUE);
+  
+  for (i = 0; i < n; i++) {
+    SbVec3f v = pts[i];
+    
+    SbVec3f v0 = v;
+    v0[1] = 0.0f;
+    if (v0.length()) v0.normalize();
+
+    double d0 = (double) -v0[2];
+    double d1 = (double) -v[1];
+    
+    double a0 = acos(SbClamp(d0, -1.0, 1.0));
+    double a1 = acos(SbClamp(d1, -1.0, 1.0));
+    
+    if (v[0] > 0.0f) a0 = 2.0 * M_PI - a0;
+    
+    this->texcoord.append(SbVec2f((float) (a0/(2.0*M_PI)), (float)(a1/M_PI)));
+  }
 }
 
 void
 HQSphereGenerator::init(void)
 {  
+#if 0 // octahedron looks better
   /* Twelve vertices of icosahedron on unit sphere */
   const float tau = 0.8506508084f; /* t=(1+sqrt(5))/2, tau=t/sqrt(1+t^2)  */
   const float one =0.5257311121f; /* one=1/sqrt(1+t^2) , unit sphere     */
@@ -299,8 +340,30 @@ HQSphereGenerator::init(void)
     triangle(YD, ZC, XB),
     triangle(YC, XC, ZC)
   };
-  this->icosahedron = 
+  this->orgobject = 
     new object(20, triangles);
+#else
+  const SbVec3f XPLUS(1,  0,  0);
+  const SbVec3f XMIN(-1,  0,  0);
+  const SbVec3f YPLUS(0,  1,  0);
+  const SbVec3f YMIN(0, -1,  0);
+  const SbVec3f ZPLUS(0,  0,  1);
+  const SbVec3f ZMIN(0,  0, -1);
+
+  /* Vertices of a unit octahedron */
+  triangle triangles[] = {
+    triangle(XPLUS, ZPLUS, YPLUS),
+    triangle(YPLUS, ZPLUS, XMIN),
+    triangle(XMIN , ZPLUS, YMIN),
+    triangle(YMIN , ZPLUS, XPLUS),
+    triangle(XPLUS, YPLUS, ZMIN),
+    triangle(YPLUS, XMIN , ZMIN),
+    triangle(XMIN , YMIN , ZMIN),
+    triangle(YMIN , XPLUS, ZMIN)
+  };
+  this->orgobject = 
+    new object(8, triangles);
+#endif
 };
 
 void
@@ -312,7 +375,7 @@ HQSphereGenerator::generate(const int maxlevel,
   
   bsp.clear();
   idx.truncate(0, TRUE);
-  object * old = this->icosahedron;
+  object * old = this->orgobject;
 
   /* Subdivide each starting triangle (maxlevel - 1) times */
   for (level = 1; level < maxlevel; level++) {
@@ -368,12 +431,12 @@ HQSphereGenerator::generate(const int maxlevel,
       newt->pt[2] = oldt->pt[2];
     }
     
-    if (old != this->icosahedron) delete old;
+    if (old != this->orgobject) delete old;
     /* Continue subdividing new triangles */
     old = newobj;
   }
   this->convert(old, bsp, idx);
-  if (old != this->icosahedron) delete old;
+  if (old != this->orgobject) delete old;
 }
 
 SbVec3f 
