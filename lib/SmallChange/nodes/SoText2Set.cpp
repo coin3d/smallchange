@@ -1,7 +1,7 @@
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
- *  Copyright (C) 1998-2002 by Systems in Motion.  All rights reserved.
+ *  Copyright (C) 1998-2003 by Systems in Motion.  All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -22,418 +22,423 @@
 \**************************************************************************/
 
 /*!
-  \class SoText2Set SoText2Set.h Inventor/nodes/SoText2Set.h
-  \brief The SoText2Set class is a node type for visualizing a set of 2D texttags aligned with the camera plane.
+  \class SoText2Set SoText2Set.h SmallChange/nodes/SoText2Set.h
+  \brief The SoText2Set class is a node type for visualizing a set of 2D texts aligned with the camera plane.
   \ingroup nodes
 
-  SoText2Set text is not scaled according to the distance from the
-  camera, and is not influenced by rotation or scaling as 3D
-  primitives are. If these are properties that you want the text to
-  have, you should instead use an SoText3 or SoAsciiText node.
+  See documentation of Inventor/shapenodes/SoText2
 
-  Note that even though the size of the 2D text is not influenced by
-  the distance from the camera, the text is still subject to the usual
-  rules with regard to the depthbuffer, so it \e will be obscured by
-  graphics laying in front of it.
+  SoText2Set is identical to the built-in SoText2 node except for:
 
-  The text will be \e positioned according to the current transformation.
-  The x origin of the text is the first pixel of the leftmost character
-  of the text. The y origin of the text is the baseline of the first line
-  of text (the baseline being the imaginary line on which all upper case
-  characters are standing).
+  - Each string is positioned independently in 3D space
+  - Each string is aligned independently
+  - Each string is rotated independently (in the camera plane)
+  
+  The main purpose of this node is optimization; by collecting all text
+  that should be rendered with the same font settings in one SoText2Set
+  node, overhead is reduced.
 
-  \sa SoFont, SoFontStyle, SoText3, SoText2, SoAsciiText
+  A secondary purpose is to allow rotated rendering of 2D text.
+  
+  Note that if you want to render multi-line text, SoText2 is probably
+  a better choice since that node takes care of vertical spacing
+  automatically. With SoText2Set each string is positioned directly in
+  3D space.
+  
+  FIXME:
+  rayPick() does not function properly with rotated strings unless they
+  are CENTERed. 
+  
+  \sa SoText2
 */
 
-// FIXME -- FIXME -- FIXME
-//
-//  * computeBoundingBox() is not implemented properly, rayPick() and
-//    generatePrimitives() are just stubs
-//  * allocations aren't cleaned out on exit (Display *, XFontStructs,
-//    SbDict, OpenGL display lists, ...)
-//  * integrate with libfreetype to remove dependency on X11.
-//         -- 19990418 mortene.
+#include "SoText2Set.h"
+#include <Inventor/nodes/SoSubNode.h>
 
-//  * This code is more or less copied directly from SoText2. I couldn't
-//    figure out this strange SoText2P-class, so I removed the 
-//    function called getFontSize and inserted a constant instead. 
-//     
-//         -- 06182002 torbjorv
+#include <Inventor/errors/SoDebugError.h>
 
-
-
-#include <SmallChange/nodes/SoText2Set.h>
-
-#include <Inventor/actions/SoGLRenderAction.h>
-#include <Inventor/elements/SoGLCoordinateElement.h>
-#include <Inventor/SoPrimitiveVertex.h>
-#include <Inventor/details/SoLineDetail.h>
-#include <Inventor/bundles/SoMaterialBundle.h>
-#include <Inventor/elements/SoLazyElement.h>
-#include <Inventor/elements/SoModelMatrixElement.h>
-#include <Inventor/elements/SoViewportRegionElement.h>
-#include <Inventor/elements/SoViewVolumeElement.h>
-#include <Inventor/actions/SoRayPickAction.h>
-#include <Inventor/SbLine.h>
-#include <Inventor/SbPlane.h>
-#include <Inventor/SbVec2f.h>
-#include <Inventor/SoPickedPoint.h>
-#include <Inventor/details/SoTextDetail.h>
-#include <Inventor/actions/SoGetPrimitiveCountAction.h>
-
-#if HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif // HAVE_CONFIG_H
 
+#ifdef HAVE_GLX
+#include <GL/glx.h>
+#endif // HAVE_GLX
 
-#ifdef HAVE_WINDOWS_H
-#include <windows.h>
-#endif // HAVE_WINDOWS_H
-#include <GL/gl.h>
+#include <Inventor/system/gl.h>
+#include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoViewportRegionElement.h>
+#include <Inventor/elements/SoFontNameElement.h>
+#include <Inventor/elements/SoFontSizeElement.h>
+#include <Inventor/elements/SoLazyElement.h>
+#include <Inventor/elements/SoCullElement.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
+#include <Inventor/bundles/SoMaterialBundle.h>
+#include <Inventor/actions/SoGetPrimitiveCountAction.h>
+#include <Inventor/details/SoTextDetail.h>
+#include <Inventor/SoPickedPoint.h>
+#include <Inventor/SbPlane.h>
+#include <Inventor/SbLine.h>
+#include <Inventor/SbString.h>
+#include <Inventor/SbBox2s.h>
+#include <Inventor/misc/SoGlyph.h>
 
+#include <limits.h>
 #include <string.h>
+#include <stdio.h>
+
+static const unsigned int NOT_AVAILABLE = UINT_MAX;
 
 /*!
   \enum SoText2Set::Justification
 
   Enum contains the various options for how the horizontal text layout
-  text should be done.
+  text should be done. Valid values are LEFT, RIGHT and CENTER.
 */
-
-
 /*!
-  \var SoMFString SoText2Set::strings
-
-  The set of strings to render.  Each string in the multiple value
-  field will be according to the coordinates on the state. 
+  \var SoMFString SoText2Set::string
+  
+  The set of strings to render. string[i] is rendered at position[i],
+  justified according to justification[i] and rotated according
+  to rotation[i].
 
   The default value of the field is a single empty string.
 */
-
 /*!
-  \var SoSFEnum SoText2Set::justification
+  \var SoMFVec3f SoText2Set::position
 
-  Decides how the horizontal layout of the text strings is done.
+  Position of each string in local coordinate space.
 */
- 
 /*!
-  \var SoSFVec2f SoText2Set::displacement
+  \var SoMFFloat SoText2Set::rotation
+  
+  Angle in radians between the text and the horisontal, in the camera
+  plane. Positive direction is counter clockwise.
+*/
+/*!
+  \var SoMFEnum SoText2Set::justification
 
-  Pixelwise displacement of the text after projection of 3D-position.
+  Decides how the horizontal layout of each text string is done.
 */
 
-
-// *************************************************************************
-
-SO_NODE_SOURCE(SoText2Set);
-
-// *************************************************************************
-
-class SoText2SetP{
+class SoText2SetP {
 public:
-  SoText2SetP(SoText2Set * master) {
-    this->master = master;
-  }
+  SoText2SetP(SoText2Set * textnode) : textnode(textnode) {}
 
-  static const SbVec2f fontsize;
-private:
-  SoText2Set * master;
+  SoText2Set * textnode;
+  
+  SoGlyph *** glyphs;
+  SbVec2s ** positions;
+  int * stringwidth;
+  int * stringheight;
+  SbList <SbBox2s> bboxes;
+  SbVec2s ** charbboxes;
+  int linecnt;
+  int validarraydims;
+  SbName prevfontname;
+  float prevfontsize;
+  SbBool useglyphcache;
+  SbBool hasbuiltglyphcache;
+  SbBool dirty;
+  
+public:
+  void getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
+               SbVec3f & v2, SbVec3f & v3, int stringidx);
+  void flushGlyphCache(const SbBool unrefglyphs);
+  int buildGlyphCache(SoState * state);
+  SbBool shouldBuildGlyphCache(SoState * state);
+  void dumpGlyphCache();
+  void dumpBuffer(unsigned char * buffer, SbVec2s size, SbVec2s pos);
+  SbVec2s findBitmapBBox(unsigned char * buf, SbVec2s & size);
 };
 
-
-#define PRIVATE(p) p->pimpl
-#define PUBLIC(p) p->master
-
 // *************************************************************************
 
+#undef THIS
+#define THIS this->pimpl
 
-const SbVec2f SoText2SetP::fontsize = SbVec2f(8.0f, 12.0f);
+SO_NODE_SOURCE(SoText2Set);
 
 /*!
   Constructor.
 */
 SoText2Set::SoText2Set(void)
 {
+  THIS = new SoText2SetP(this);
+  THIS->glyphs = NULL;
+  THIS->positions = NULL;
+  THIS->charbboxes = NULL;
+  THIS->linecnt = 0;
+  THIS->validarraydims = 0;
+  THIS->stringwidth = NULL;
+  THIS->stringheight = NULL;
+  THIS->bboxes.truncate(0);
+  THIS->prevfontname = SbName("");
+  THIS->prevfontsize = 0.0;
+  THIS->useglyphcache = TRUE;
+  THIS->hasbuiltglyphcache = FALSE;
+  THIS->dirty = TRUE;
+  
   SO_NODE_CONSTRUCTOR(SoText2Set);
-  PRIVATE(this) = new SoText2SetP(this);
-
-
-  SO_NODE_ADD_FIELD(strings, (""));
+  
+  SO_NODE_ADD_FIELD(position, (SbVec3f(0.0f, 0.0f, 0.0f)));
+  SO_NODE_ADD_FIELD(rotation, (0.0f));
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
-  SO_NODE_ADD_FIELD(displacement, (0.0f, 0.0f));
-    
+  SO_NODE_ADD_FIELD(string, (""));
+  
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
-  SO_NODE_SET_SF_ENUM_TYPE(justification, Justification);
-}//Constructor
-
-
+  SO_NODE_SET_MF_ENUM_TYPE(justification, Justification);
+}
 
 /*!
   Destructor.
 */
 SoText2Set::~SoText2Set()
 {
-  delete PRIVATE(this);
+  THIS->flushGlyphCache(TRUE);
+  delete THIS;
 }
 
-
-
-
-// Doc from parent class.
+// doc in super
 void
 SoText2Set::initClass(void)
 {
-  static int first = 0;
-  if (first == 1) return;
-  first = 1;
-
-  SO_NODE_INIT_CLASS(SoText2Set, SoShape, "Shape");
+  SO_NODE_INIT_CLASS(SoText2Set, SoShape, SoShape);
 }
 
-static unsigned char fontdata[][12] = {
-  {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, //
-  {  0,  0, 12, 12,  0,  8, 12, 12, 12, 12, 12,  0 }, // !
-  {  0,  0,  0,  0,  0,  0,  0,  0,  0, 20, 20, 20 }, // "
-  {  0,  0, 18, 18, 18, 63, 18, 18, 63, 18, 18,  0 }, // #
-  {  0,  8, 28, 42, 10, 10, 12, 24, 40, 42, 28,  8 }, // $
-  {  0,  0,  6, 73, 41, 22,  8, 52, 74, 73, 48,  0 }, // %
-  {  0, 12, 18, 18, 12, 25, 37, 34, 34, 29,  0,  0 }, // &
-  {  0,  0,  0,  0,  0,  0,  0,  0,  0, 24, 12, 12 }, // '
-  {  0,  6,  8,  8, 16, 16, 16, 16, 16,  8,  8,  6 }, // (
-  {  0, 48,  8,  8,  4,  4,  4,  4,  4,  8,  8, 48 }, // )
-  {  0,  0,  0,  0,  0,  0,  8, 42, 20, 42,  8,  0 }, // *
-  {  0,  0,  0,  8,  8,  8,127,  8,  8,  8,  0,  0 }, // +
-  {  0, 24, 12, 12,  0,  0,  0,  0,  0,  0,  0,  0 }, // ,
-  {  0,  0,  0,  0,  0,  0,127,  0,  0,  0,  0,  0 }, // -
-  {  0,  0, 24, 24,  0,  0,  0,  0,  0,  0,  0,  0 }, // .
-  {  0, 32, 32, 16, 16,  8,  8,  8,  4,  4,  2,  2 }, // /
-  {  0,  0, 28, 34, 34, 34, 34, 34, 34, 34, 28,  0 }, // 0
-  {  0,  0,  8,  8,  8,  8,  8,  8, 40, 24,  8,  0 }, // 1
-  {  0,  0, 62, 32, 16,  8,  4,  2,  2, 34, 28,  0 }, // 2
-  {  0,  0, 28, 34,  2,  2, 12,  2,  2, 34, 28,  0 }, // 3
-  {  0,  0,  4,  4,  4,126, 68, 36, 20, 12,  4,  0 }, // 4
-  {  0,  0, 28, 34,  2,  2,  2, 60, 32, 32, 62,  0 }, // 5
-  {  0,  0, 28, 34, 34, 34, 60, 32, 32, 34, 28,  0 }, // 6
-  {  0,  0, 16, 16, 16,  8,  8,  4,  2,  2, 62,  0 }, // 7
-  {  0,  0, 28, 34, 34, 34, 28, 34, 34, 34, 28,  0 }, // 8
-  {  0,  0, 28, 34,  2,  2, 30, 34, 34, 34, 28,  0 }, // 9
-  {  0,  0, 24, 24,  0,  0,  0, 24, 24,  0,  0,  0 }, // :
-  {  0, 48, 24, 24,  0,  0,  0, 24, 24,  0,  0,  0 }, // ;
-  {  0,  0,  0,  2,  4,  8, 16,  8,  4,  2,  0,  0 }, // <
-  {  0,  0,  0,  0,  0,127,  0,127,  0,  0,  0,  0 }, // =
-  {  0,  0,  0, 16,  8,  4,  2,  4,  8, 16,  0,  0 }, // >
-  {  0,  0, 16, 16,  0, 16, 28,  2,  2,  2, 60,  0 }, // ?
-  {  0,  0, 28, 32, 73, 86, 82, 82, 78, 34, 28,  0 }, // @
-  {  0,  0, 33, 33, 33, 63, 18, 18, 18, 12, 12,  0 }, // A
-  {  0,  0, 60, 34, 34, 34, 60, 34, 34, 34, 60,  0 }, // B
-  {  0,  0, 14, 16, 32, 32, 32, 32, 32, 18, 14,  0 }, // C
-  {  0,  0, 56, 36, 34, 34, 34, 34, 34, 36, 56,  0 }, // D
-  {  0,  0, 62, 32, 32, 32, 60, 32, 32, 32, 62,  0 }, // E
-  {  0,  0, 16, 16, 16, 16, 30, 16, 16, 16, 30,  0 }, // F
-  {  0,  0, 14, 18, 34, 34, 32, 32, 32, 18, 14,  0 }, // G
-  {  0,  0, 34, 34, 34, 34, 62, 34, 34, 34, 34,  0 }, // H
-  {  0,  0, 62,  8,  8,  8,  8,  8,  8,  8, 62,  0 }, // I
-  {  0,  0,112,  8,  8,  8,  8,  8,  8,  8, 62,  0 }, // J
-  {  0,  0, 33, 33, 34, 36, 56, 40, 36, 34, 33,  0 }, // K
-  {  0,  0, 30, 16, 16, 16, 16, 16, 16, 16, 16,  0 }, // L
-  {  0,  0, 33, 33, 33, 45, 45, 45, 51, 51, 33,  0 }, // M
-  {  0,  0, 34, 34, 38, 38, 42, 42, 50, 50, 34,  0 }, // N
-  {  0,  0, 12, 18, 33, 33, 33, 33, 33, 18, 12,  0 }, // O
-  {  0,  0, 32, 32, 32, 60, 34, 34, 34, 34, 60,  0 }, // P
-  {  3,  6, 12, 18, 33, 33, 33, 33, 33, 18, 12,  0 }, // Q
-  {  0,  0, 34, 34, 34, 36, 60, 34, 34, 34, 60,  0 }, // R
-  {  0,  0, 60,  2,  2,  6, 28, 48, 32, 32, 30,  0 }, // S
-  {  0,  0,  8,  8,  8,  8,  8,  8,  8,  8,127,  0 }, // T
-  {  0,  0, 28, 34, 34, 34, 34, 34, 34, 34, 34,  0 }, // U
-  {  0,  0, 12, 12, 18, 18, 18, 33, 33, 33, 33,  0 }, // V
-  {  0,  0, 34, 34, 34, 54, 85, 73, 73, 73, 65,  0 }, // W
-  {  0,  0, 34, 34, 20, 20,  8, 20, 20, 34, 34,  0 }, // X
-  {  0,  0,  8,  8,  8,  8, 20, 20, 34, 34, 34,  0 }, // Y
-  {  0,  0, 62, 32, 16, 16,  8,  4,  4,  2, 62,  0 }, // Z
-  {  0, 14,  8,  8,  8,  8,  8,  8,  8,  8,  8, 14 }, // [
-  {  0,  2,  2,  4,  4,  8,  8,  8, 16, 16, 32, 32 }, // [backslash]
-  {  0, 56,  8,  8,  8,  8,  8,  8,  8,  8,  8, 56 }, // ]
-  {  0,  0,  0,  0,  0, 34, 34, 20, 20,  8,  8,  0 }, // ^
-  {  0,127,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, // _
-  {  0,  0,  0,  0,  0,  0,  0,  0,  0, 24, 24, 12 }, // `
-  {  0,  0, 29, 34, 34, 30,  2, 34, 28,  0,  0,  0 }, // a
-  {  0,  0, 60, 34, 34, 34, 34, 50, 44, 32, 32, 32 }, // b
-  {  0,  0, 14, 16, 32, 32, 32, 16, 14,  0,  0,  0 }, // c
-  {  0,  0, 26, 38, 34, 34, 34, 34, 30,  2,  2,  2 }, // d
-  {  0,  0, 28, 34, 32, 62, 34, 34, 28,  0,  0,  0 }, // e
-  {  0,  0, 16, 16, 16, 16, 16, 16, 62, 16, 16, 14 }, // f
-  { 28,  2,  2, 26, 38, 34, 34, 34, 30,  0,  0,  0 }, // g
-  {  0,  0, 34, 34, 34, 34, 34, 50, 44, 32, 32, 32 }, // h
-  {  0,  0,  8,  8,  8,  8,  8,  8, 56,  0,  8,  8 }, // i
-  { 56,  4,  4,  4,  4,  4,  4,  4, 60,  0,  4,  4 }, // j
-  {  0,  0, 33, 34, 36, 56, 40, 36, 34, 32, 32, 32 }, // k
-  {  0,  0,  8,  8,  8,  8,  8,  8,  8,  8,  8, 56 }, // l
-  {  0,  0, 73, 73, 73, 73, 73,109, 82,  0,  0,  0 }, // m
-  {  0,  0, 34, 34, 34, 34, 34, 50, 44,  0,  0,  0 }, // n
-  {  0,  0, 28, 34, 34, 34, 34, 34, 28,  0,  0,  0 }, // o
-  { 32, 32, 60, 34, 34, 34, 34, 50, 44,  0,  0,  0 }, // p
-  {  2,  2, 26, 38, 34, 34, 34, 34, 30,  0,  0,  0 }, // q
-  {  0,  0, 16, 16, 16, 16, 16, 24, 22,  0,  0,  0 }, // r
-  {  0,  0, 60,  2,  2, 28, 32, 32, 30,  0,  0,  0 }, // s
-  {  0,  0, 14, 16, 16, 16, 16, 16, 62, 16, 16,  0 }, // t
-  {  0,  0, 26, 38, 34, 34, 34, 34, 34,  0,  0,  0 }, // u
-  {  0,  0,  8,  8, 20, 20, 34, 34, 34,  0,  0,  0 }, // v
-  {  0,  0, 34, 34, 34, 85, 73, 73, 65,  0,  0,  0 }, // w
-  {  0,  0, 34, 34, 20,  8, 20, 34, 34,  0,  0,  0 }, // x
-  { 48, 16,  8,  8, 20, 20, 34, 34, 34,  0,  0,  0 }, // y
-  {  0,  0, 62, 32, 16,  8,  4,  2, 62,  0,  0,  0 }, // z
-  {  0,  6,  8,  8,  8,  4, 24,  4,  8,  8,  8,  6 }, // {
-  {  0,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8 }, // |
-  {  0, 48,  8,  8,  8, 16, 12, 16,  8,  8,  8, 48 }, // }
-  {  0,  0,  0,  0,  0,  0, 78, 57,  0,  0,  0,  0 },  // ~
-  // iso-latin-1 norwegian letters
-  {  0,  0, 59, 76, 72, 62,  9, 73, 54,  0,  0,  0 }, // ae
-  {  0,  0, 92, 34, 50, 42, 42, 38, 29,  0,  0,  0 }, // oe
-  {  0,  0, 29, 34, 34, 30,  2, 34, 28,  8, 20,  8 }, // aa
-  {  0,  0, 79, 72, 72, 72,127, 72, 72, 72, 63,  0 }, // AE
-  {  0,  0, 44, 18, 41, 41, 41, 37, 37, 18, 13,  0 }, // OE
-  {  0,  0, 33, 33, 33, 63, 18, 18, 12, 12, 18, 12 }  // AA
-};
 
-// map from iso-latin1 to font data array index
-static int fontdata_isolatin1_mapping[] = {
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   1,   2,   3,   4,   5,   6,   7,
-    8,   9,  10,  11,  12,  13,  14,  15,
-   16,  17,  18,  19,  20,  21,  22,  23,
-   24,  25,  26,  27,  28,  29,  30,  31,
-   32,  33,  34,  35,  36,  37,  38,  39,
-   40,  41,  42,  43,  44,  45,  46,  47,
-   48,  49,  50,  51,  52,  53,  54,  55,
-   56,  57,  58,  59,  60,  61,  62,  63,
-   64,  65,  66,  67,  68,  69,  70,  71,
-   72,  73,  74,  75,  76,  77,  78,  79,
-   80,  81,  82,  83,  84,  85,  86,  87,
-   88,  89,  90,  91,  92,  93,  94,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0, 100,  98,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-   99,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,  97,  95,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,
-   96,   0,   0,   0,   0,   0,   0,   0
-};
+// **************************************************************************
+
 
 // doc in super
-void 
-SoText2Set::GLRender(SoGLRenderAction *action)
+void
+SoText2Set::GLRender(SoGLRenderAction * action)
 {
+  if (!this->shouldGLRender(action)) return;
+
   SoState * state = action->getState();
+
   state->push();
-
   SoLazyElement::setLightModel(state, SoLazyElement::BASE_COLOR);
-
-  if (!shouldGLRender(action)) {
-    state->pop();
-    return;
+  
+  // Render using SoGlyphs
+  if (THIS->buildGlyphCache(state) == 0) {
+    SbBox3f box;
+    SbVec3f center;
+    // FIXME: cull per string, not for the entire node. preng 2003-03-27.
+    this->computeBBox(action, box, center);
+    if (!SoCullElement::cullTest(state, box, SbBool(TRUE))) {
+      SoMaterialBundle mb(action);
+      mb.sendFirst();
+      SbVec3f nilpoint;
+      const SbMatrix & mat = SoModelMatrixElement::get(state);
+      const SbViewVolume & vv = SoViewVolumeElement::get(state);
+      const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+      const SbVec2s vpsize = vp.getViewportSizePixels();
+      // Set new state.
+      glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
+      glLoadIdentity();
+      glMatrixMode(GL_PROJECTION);
+      glPushMatrix();
+      glLoadIdentity();
+      glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
+      glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+      
+      float xpos;
+      float ypos;
+      float fx, fy, rasterx, rastery, rpx, rpy, offsetx, offsety;
+      int ix, iy, charcnt, offvp;
+      SbVec2s thispos;
+      SbVec2s position;
+      SbVec2s thissize;
+      GLboolean gldbg;
+      unsigned char * buffer;
+      // Find number of strings to render
+      int stringcnt = this->string.getNum();
+      stringcnt = SbMin(stringcnt, this->position.getNum());
+      stringcnt = SbMin(stringcnt, this->rotation.getNum());
+      stringcnt = SbMin(stringcnt, this->justification.getNum());
+      for (int i = 0; i < stringcnt; i++) {
+        // Find nilpoint for this string
+        nilpoint = this->position[i];
+        mat.multVecMatrix(nilpoint, nilpoint);
+        vv.projectToScreen(nilpoint, nilpoint);
+        nilpoint[2] *= 2.0f;
+        nilpoint[2] -= 1.0f;
+        nilpoint[0] = nilpoint[0] * float(vpsize[0]);
+        nilpoint[1] = nilpoint[1] * float(vpsize[1]);
+        xpos = nilpoint[0];
+        ypos = nilpoint[1];
+        
+        charcnt = this->string[i].getLength();
+        switch (this->justification[i]) {
+        case SoText2Set::LEFT:
+          // No action
+          break;
+        case SoText2Set::RIGHT:
+          xpos -= THIS->stringwidth[i];
+          ypos -= THIS->positions[i][charcnt-1][1];
+          break;
+        case SoText2Set::CENTER:
+          xpos -= THIS->stringwidth[i]/2.0f;
+          ypos -= THIS->stringheight[i]/2.0f;
+          break;
+        }
+        for (int i2 = 0; i2 < charcnt; i2++) {
+          buffer = THIS->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
+          ix = thissize[0];
+          iy = thissize[1];
+          position = THIS->positions[i][i2];
+          fx = (float)position[0];
+          fy = (float)position[1];
+          
+          rasterx = xpos + fx;
+          rpx = rasterx >= 0 ? rasterx : 0;
+          offvp = rasterx < 0 ? 1 : 0;
+          offsetx = rasterx >= 0 ? 0 : rasterx;
+          
+          rastery = ypos + fy;
+          rpy = rastery >= 0 ? rastery : 0;
+          offvp = offvp || rastery < 0 ? 1 : 0;
+          offsety = rastery >= 0 ? 0 : rastery;
+         
+          glRasterPos3f(rpx, rpy, -nilpoint[2]);
+          if (offvp)
+            glBitmap(0,0,0,0,offsetx,offsety,NULL);
+          glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer);
+        }
+      }
+      
+      glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+      // Pop old GL state.
+      glMatrixMode(GL_PROJECTION);
+      glPopMatrix();
+      glMatrixMode(GL_MODELVIEW);
+      glPopMatrix();
+    }
   }
-  const SoCoordinateElement *coords;
-  coords = SoCoordinateElement::getInstance(state);
-  assert(coords);
-
-  SoMaterialBundle mb(action);
-  mb.sendFirst();
-
-  const SbMatrix & mat = SoModelMatrixElement::get(state);
-
-  const SbViewVolume & vv = SoViewVolumeElement::get(state);
-  const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-  SbVec2s vpsize = vp.getViewportSizePixels();
-
-  // Set new state.
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadIdentity();
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity();
-  glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
-  glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-
-  int xpos,ypos,width;
-
-  // Draw all strings
-  for (int i = 0; i < this->strings.getNum(); i++) {
-    SbVec3f nilpoint = coords->get3(i);
-
-    mat.multVecMatrix(nilpoint, nilpoint);
-    vv.projectToScreen(nilpoint, nilpoint);
-    nilpoint[2] = nilpoint[2]*2 - 1;
-    nilpoint[0] = nilpoint[0] * float(vpsize[0]);
-    nilpoint[1] = nilpoint[1] * float(vpsize[1]);
-
-    xpos = (int)nilpoint[0];      
-    ypos = (int)nilpoint[1];
-
-    const char *s = this->strings[i].getString();
-    width = strlen(s);
-
-    switch (this->justification.getValue()) {
-
-    case SoText2Set::LEFT:
-      xpos = (int)nilpoint[0];
-      break;
-
-
-    case SoText2Set::RIGHT:
-      xpos = (int)nilpoint[0] - (width*8);
-      break;
-
-
-    case SoText2Set::CENTER:
-      xpos = (int)nilpoint[0] - (width*8)/2;
-      break;
-    }//switch
-
-    xpos += (int) (displacement.getValue()[0]);
-    ypos -= (int) (displacement.getValue()[1]);
-
-    for (int i2 = 0; i2 < strings[i].getLength(); i2++) {
-      if (s[i2] >= 32) {
-        glRasterPos3f(float(xpos), float(ypos), -nilpoint[2]);
-        glBitmap(8,12,0,0,0,0,(const GLubyte *)fontdata 
-                 + 12 * fontdata_isolatin1_mapping[s[i2]]);
-      }// if
-      xpos += 8;
-    }// for
-  }// for
-
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-
-
-  // Pop old GL state.
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-
+  
   state->pop();
-}// GLRender
+
+  // don't auto cache SoText2Set nodes.
+  SoGLCacheContextElement::shouldAutoCache(action->getState(),
+                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
+}
+
+// **************************************************************************
 
 
+// doc in super
+void
+SoText2Set::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
+{
+  SbVec3f v0, v1, v2, v3;
+  // this will cause a cache dependency on the view volume,
+  // model matrix and viewport.
+  box.makeEmpty();
+  for (int i=0; i<this->string.getNum(); i++) {
+    THIS->getQuad(action->getState(), v0, v1, v2, v3, i);
+    box.extendBy(v0);
+    box.extendBy(v1);
+    box.extendBy(v2);
+    box.extendBy(v3);
+  }
+  center = box.getCenter();
+}
 
+// doc in super
+void
+SoText2Set::rayPick(SoRayPickAction * action)
+{
+  if (!this->shouldRayPick(action)) return;
+  SoState * state = action->getState();
+  THIS->buildGlyphCache(state);
+  
+  state->push();
+  action->setObjectSpace();
+  SbVec3f v0, v1, v2, v3;
+  for (int stringidx=0; stringidx < this->string.getNum(); stringidx++) {
+    THIS->getQuad(state, v0, v1, v2, v3, stringidx);
+    if (v0 == v1 || v0 == v3) return; // empty
+    
+    SbVec3f isect;
+    SbVec3f bary;
+    SbBool front;
+    SbBool hit = action->intersect(v0, v1, v2, isect, bary, front);
+    if (!hit) hit = action->intersect(v0, v2, v3, isect, bary, front);
+    
+    if (hit && action->isBetweenPlanes(isect)) {
+      // FIXME: account for pivot point position in quad. preng 2003-04-01.
+      // find normalized 2D hitpoint on quad
+      float h = (v3-v0).length();
+      float w = (v1-v0).length();
+      SbLine horiz(v2,v3);
+      SbVec3f ptonline = horiz.getClosestPoint(isect);
+      float vdist = (ptonline-isect).length();
+      vdist /= h;
+    
+      SbLine vert(v0,v3);
+      ptonline = vert.getClosestPoint(isect);
+      float hdist = (ptonline-isect).length();
+      hdist /= w;
+      
+      // find the character
+      int charidx = -1;
+      int strlength = this->string[stringidx].getLength();
+      short minx, miny, maxx, maxy;
+      THIS->bboxes[stringidx].getBounds(minx, miny, maxx, maxy);
+      float bbwidth = (float)(maxx - minx);
+      float bbheight = (float)(maxy - miny);
+      float charleft, charright, charbottom, chartop;
+      SbVec2s thissize, thispos;
+      for (int i=0; i<strlength; i++) {
+        THIS->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
+        charleft = (THIS->positions[stringidx][i][0] - minx) / bbwidth;
+        charright = (THIS->positions[stringidx][i][0] + THIS->charbboxes[stringidx][i][0] - minx) / bbwidth;
+        
+        if (hdist >= charleft && hdist <= charright) {
+          chartop = (maxy - THIS->positions[stringidx][i][1] - THIS->charbboxes[stringidx][i][1]) / bbheight;
+          charbottom = (maxy - THIS->positions[stringidx][i][1]) / bbheight;
+          
+          if (vdist >= chartop && vdist <= charbottom) {
+            charidx = i;
+            i = strlength;
+          }
+        }
+      }
+    
+      if (charidx >= 0 && charidx < strlength) { // we have a hit!
+        SoPickedPoint * pp = action->addIntersection(isect);
+        if (pp) {
+          // SoDebugError::postInfo("SoText2Set::rayPick", "picked char %d in '%s'", charidx, this->string[stringidx].getString());
+          SoTextDetail * detail = new SoTextDetail;
+          detail->setStringIndex(stringidx);
+          detail->setCharacterIndex(charidx);
+          pp->setDetail(detail, this);
+          pp->setMaterialIndex(0);
+          pp->setObjectNormal(SbVec3f(0.0f, 0.0f, 1.0f));
+        }
+      }
+    }
+  }
+  state->pop();
+}
 
+// doc in super
+void
+SoText2Set::getPrimitiveCount(SoGetPrimitiveCountAction *action)
+{
+  if (!this->shouldPrimitiveCount(action)) return;
 
+  action->addNumText(this->string.getNum());
+}
 
 // doc in super
 void
@@ -442,251 +447,303 @@ SoText2Set::generatePrimitives(SoAction * action)
   // This is supposed to be empty. There are no primitives.
 }
 
-
-
-// doc in super
+/*!
+  Overloaded to disable geometry cache.
+*/
 void
-SoText2Set::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
+SoText2Set::notify(SoNotList * list)
 {
-  SoState * state = action->getState();
-
-  const SoCoordinateElement *coords;
-  coords = SoCoordinateElement::getInstance(state);
-  assert(coords);
-
-  const SbMatrix & mat = SoModelMatrixElement::get(state);
-  SbMatrix inv = mat.inverse();
-  SbVec3f screenpoint;
-  const SbViewVolume &vv = SoViewVolumeElement::get(state);
-
-  const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-  SbVec2s vpsize = vp.getViewportSizePixels();
-
-  // FIXME: this only works for the default font
-  SbVec2f fontsize = PRIVATE(this)->fontsize;
-  fontsize[0] /= vpsize[0];
-  fontsize[1] /= vpsize[1];
-
-  // Check all texttags
-  for (int i = 0; i < strings.getNum(); i++) {
-    SbVec3f v0, v1, v2, v3;
-
-    // Calculate a quad fencing strings[i]
-    SbVec3f nilpoint = coords->get3(i);
-    mat.multVecMatrix(nilpoint, nilpoint);
-    vv.projectToScreen(nilpoint, screenpoint);
-
-    float w = strings[i].getLength()*fontsize[0];
-
-    float halfw = w * 0.5f;
-    SbVec2f n0, n1, n2, n3;
-
-    n0 = SbVec2f(screenpoint[0]-halfw, screenpoint[1]);
-    n1 = SbVec2f(screenpoint[0]+halfw, screenpoint[1]);
-    n2 = SbVec2f(screenpoint[0]+halfw, screenpoint[1] + fontsize[1]);
-    n3 = SbVec2f(screenpoint[0]-halfw, screenpoint[1] + fontsize[1]);
-
-    switch (justification.getValue()) {
-    case SoText2Set::LEFT:
-      n0[0] += halfw;
-      n1[0] += halfw;
-      n2[0] += halfw;
-      n3[0] += halfw;
-      break;
-    case SoText2Set::RIGHT:
-      n0[0] -= halfw;
-      n1[0] -= halfw;
-      n2[0] -= halfw;
-      n3[0] -= halfw;
-      break;
-    case SoText2Set::CENTER:
-      break;
-    }//switch
-
-    // get distance from nilpoint to camera plane
-    float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
-
-    // find the four image points in the plane
-    v0 = vv.getPlanePoint(dist, n0);
-    v1 = vv.getPlanePoint(dist, n1);
-    v2 = vv.getPlanePoint(dist, n2);
-    v3 = vv.getPlanePoint(dist, n3);
-
-    // transform back to object space
-    inv.multVecMatrix(v0, v0);
-    inv.multVecMatrix(v1, v1);
-    inv.multVecMatrix(v2, v2);
-    inv.multVecMatrix(v3, v3);
-
-    box.extendBy(v0);
-    box.extendBy(v1);
-    box.extendBy(v2);
-    box.extendBy(v3);
-  }//for
-}//computeBBox
-
-
-
-
-// doc in super
-void
-SoText2Set::getPrimitiveCount(SoGetPrimitiveCountAction *action)
-{
-  if (!this->shouldPrimitiveCount(action)) return;
-
-  action->addNumText(this->strings.getNum());
+  THIS->dirty = TRUE;
+  inherited::notify(list);
 }
 
 
 
-// doc in super
+// SoText2SetP methods below
+#undef THIS
+
 void
-SoText2Set::rayPick(SoRayPickAction * action)
+SoText2SetP::flushGlyphCache(const SbBool unrefglyphs)
 {
-  if (!this->shouldRayPick(action)) return;
-  action->setObjectSpace();
-
-  SoState * state = action->getState();
-
-  const SoCoordinateElement *coords;
-  coords = SoCoordinateElement::getInstance(state);
-  assert(coords);
-
-  const SbMatrix & mat = SoModelMatrixElement::get(state);
-  SbMatrix inv = mat.inverse();
-  SbVec3f screenpoint;
-  const SbViewVolume &vv = SoViewVolumeElement::get(state);
-
-  const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-  SbVec2s vpsize = vp.getViewportSizePixels();
-
-  // FIXME: this only works for the default font
-  SbVec2f fontsize = PRIVATE(this)->fontsize;
-  fontsize[0] /= vpsize[0];
-  fontsize[1] /= vpsize[1];
-
-  // Check all texttags
-  for (int i = 0; i < strings.getNum(); i++) {
-    SbVec3f v0, v1, v2, v3;
-
-
-
-    // Calculate a quad fencing strings[i]
-    SbVec3f nilpoint = coords->get3(i);
-    mat.multVecMatrix(nilpoint, nilpoint);
-    vv.projectToScreen(nilpoint, screenpoint);
-
-    float w = strings[i].getLength()*PRIVATE(this)->fontsize[0];
-
-    float halfw = w * 0.5f;
-    SbVec2f n0, n1, n2, n3;
-
-    n0 = SbVec2f(screenpoint[0]-halfw, screenpoint[1]);
-    n1 = SbVec2f(screenpoint[0]+halfw, screenpoint[1]);
-    n2 = SbVec2f(screenpoint[0]+halfw, screenpoint[1] + fontsize[1]);
-    n3 = SbVec2f(screenpoint[0]-halfw, screenpoint[1] + fontsize[1]);
-
-    switch (justification.getValue()) {
-    case SoText2Set::LEFT:
-      n0[0] += halfw;
-      n1[0] += halfw;
-      n2[0] += halfw;
-      n3[0] += halfw;
-      break;
-    case SoText2Set::RIGHT:
-      n0[0] -= halfw;
-      n1[0] -= halfw;
-      n2[0] -= halfw;
-      n3[0] -= halfw;
-      break;
-    case SoText2Set::CENTER:
-      break;
-    }//switch
-
-    // get distance from nilpoint to camera plane
-    float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
-
-    // find the four image points in the plane
-    v0 = vv.getPlanePoint(dist, n0);
-    v1 = vv.getPlanePoint(dist, n1);
-    v2 = vv.getPlanePoint(dist, n2);
-    v3 = vv.getPlanePoint(dist, n3);
-
-    // transform back to object space
-    inv.multVecMatrix(v0, v0);
-    inv.multVecMatrix(v1, v1);
-    inv.multVecMatrix(v2, v2);
-    inv.multVecMatrix(v3, v3);
-
-
-
-    if (v0 == v1 || v0 == v3) return; // empty
-
-    SbVec3f isect;
-    SbVec3f bary;
-    SbBool front;
-    SbBool hit = action->intersect(v0, v1, v2, isect, bary, front);
-    if (!hit) hit = action->intersect(v0, v2, v3, isect, bary, front);
-
-    if (hit && action->isBetweenPlanes(isect)) {
-      // find normalized 2D hitpoint on quad
-      float h = (v3 - v0).length();
-      float w = (v1 - v0).length();
-      SbLine horiz(v2, v3);
-      SbVec3f ptonline = horiz.getClosestPoint(isect);
-      float vdist = (ptonline-isect).length();
-      vdist /= h;
-
-      SbLine vert(v0,v3);
-      ptonline = vert.getClosestPoint(isect);
-      float hdist = (ptonline-isect).length();
-      hdist /= w;
-
-      // find which strings and character was hit
-      float fonth =  1.0f;
-      int stringidx = i;
-
-      // assumes all characters are equal size...
-      float fontw = 1.0f / strings[i].getLength();
-
-      // find the character
-      int charidx = -1;
-      int strlength = this->strings[stringidx].getLength();
-      switch (this->justification.getValue()) {
-      case LEFT:
-        charidx = int(hdist / fontw);
-        break;
-      case RIGHT:
-        charidx = (strlength-1) - int((1.0f-hdist)/fontw);
-        break;
-      case CENTER:
-        {
-          float strstart = 0.5f - fontw*float(strlength)*0.5f;
-          charidx = int((hdist-strstart) / fontw);
+  if (this->glyphs && validarraydims > 0) {
+    free(this->stringwidth);
+    free(this->stringheight);
+    for (int i=0; i<this->linecnt; i++) {
+      if (validarraydims == 2) {
+        if (unrefglyphs) {
+          for (int j=0; j<this->textnode->string[i].getLength(); j++) {
+            if (this->glyphs[i][j])
+              this->glyphs[i][j]->unref();
+          }
         }
-        break;
-      default:
-        assert(0 && "unknown justification");
+        free(this->positions[i]);
+        free(this->charbboxes[i]);
       }
+      free(this->glyphs[i]);
+    }
+    free(this->positions);
+    free(this->charbboxes);
+    free(this->glyphs);
+    this->bboxes.truncate(0);
+  }
+  this->glyphs = NULL;
+  this->positions = NULL;
+  this->charbboxes = NULL;
+  this->linecnt = 0;
+  this->validarraydims = 0;
+  this->stringwidth = NULL;
+  this->stringheight = NULL;
+}
 
-      if (charidx >= 0 && charidx < strlength) { // we have a hit!
-        SoPickedPoint * pp = action->addIntersection(isect);
-        if (pp) {
-          SoTextDetail * detail = new SoTextDetail;
-          detail->setStringIndex(stringidx);
-          detail->setCharacterIndex(charidx);
-          pp->setDetail(detail, this);
-          pp->setMaterialIndex(0);
-          pp->setObjectNormal(SbVec3f(0.0f, 0.0f, 1.0f));
-
-          return;
+// Debug convenience method.
+void
+SoText2SetP::dumpGlyphCache()
+{
+  // FIXME: pure debug method, remove. preng 2003-03-18.
+  fprintf(stderr,"dumpGlyphCache: validarraydims=%d\n", validarraydims);
+  if (this->glyphs && validarraydims > 0) {
+    for (int i=0; i<this->linecnt; i++) {
+      fprintf(stderr,"  stringwidth[%d]=%d\n", i, this->stringwidth[i]);
+      fprintf(stderr,"  stringheight[%d]=%d\n", i, this->stringheight[i]);
+      fprintf(stderr,"  string[%d]=%s\n", i, this->textnode->string[i].getString());
+      if (validarraydims == 2) {
+        for (int j = 0; j < (int) strlen(this->textnode->string[i].getString()); j++) {
+          fprintf(stderr,"    glyph[%d][%d]=%p\n", i, j, this->glyphs[i][j]);
+          fprintf(stderr,"    position[%d][%d]=(%d, %d)\n", i, j, this->positions[i][j][0], this->positions[i][j][1]);
         }
       }
     }
+  }
+}
 
-  }//for
+// Calculates a quad around the text in 3D.
+void
+SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
+                  SbVec3f & v2, SbVec3f & v3, int stringidx)
+{
+  assert (stringidx < this->textnode->position.getNum());
+  
+  this->buildGlyphCache(state);
+  
+  SbVec3f nilpoint = this->textnode->position[stringidx];
+  const SbMatrix & mat = SoModelMatrixElement::get(state);
+  mat.multVecMatrix(nilpoint, nilpoint);
 
+  const SbViewVolume &vv = SoViewVolumeElement::get(state);
 
-}//rayPick
+  SbVec3f screenpoint;
+  vv.projectToScreen(nilpoint, screenpoint);
+  
+  const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+  SbVec2s vpsize = vp.getViewportSizePixels();
+  
+  SbVec2f n0, n1, n2, n3, center;
+  short xmin, ymin, xmax, ymax;
+  float minx, miny, maxx, maxy;
+  this->bboxes[stringidx].getBounds(xmin, ymin, xmax, ymax);
+  center = SbVec2f( (float)(xmin+xmax)/(float)2.0, (float)(ymin+ymax)/(float)2.0);
+  minx = (xmin - center[0]) / vpsize[0];
+  miny = (ymin - center[1]) / vpsize[1];
+  maxx = (xmax - center[0]) / vpsize[0];
+  maxy = (ymax - center[1]) / vpsize[1];
+  n0 = SbVec2f(screenpoint[0] + minx, screenpoint[1] + miny);
+  n1 = SbVec2f(screenpoint[0] + maxx, screenpoint[1] + miny);
+  n2 = SbVec2f(screenpoint[0] + maxx, screenpoint[1] + maxy);
+  n3 = SbVec2f(screenpoint[0] + minx, screenpoint[1] + maxy);
+  
+  float halfw = (maxx - minx) / (float)2.0;
+  float halfh = (maxy - miny) / (float)2.0;
+  switch (this->textnode->justification[stringidx]) {
+  case SoText2Set::LEFT:
+    n0[0] += halfw;
+    n1[0] += halfw;
+    n2[0] += halfw;
+    n3[0] += halfw;
+    n0[1] += halfh;
+    n1[1] += halfh;
+    n2[1] += halfh;
+    n3[1] += halfh;
+    break;
+  case SoText2Set::RIGHT:
+    n0[0] -= halfw;
+    n1[0] -= halfw;
+    n2[0] -= halfw;
+    n3[0] -= halfw; 
+    n0[1] += halfh;
+    n1[1] += halfh;
+    n2[1] += halfh;
+    n3[1] += halfh;
+   break;
+  case SoText2Set::CENTER:
+    break;
+  default:
+    assert(0 && "unknown alignment");
+    break;
+  }
+  
+  // get distance from nilpoint to camera plane
+  float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
 
+  // find the four image points in the plane
+  v0 = vv.getPlanePoint(dist, n0);
+  v1 = vv.getPlanePoint(dist, n1);
+  v2 = vv.getPlanePoint(dist, n2);
+  v3 = vv.getPlanePoint(dist, n3);
 
+  // transform back to object space
+  SbMatrix inv = mat.inverse();
+  inv.multVecMatrix(v0, v0);
+  inv.multVecMatrix(v1, v1);
+  inv.multVecMatrix(v2, v2);
+  inv.multVecMatrix(v3, v3);
+}
+
+// Debug convenience method.
+void
+SoText2SetP::dumpBuffer(unsigned char * buffer, SbVec2s size, SbVec2s pos)
+{
+  // FIXME: pure debug method, remove. preng 2003-03-18.
+  if (!buffer) {
+    fprintf(stderr,"bitmap error: buffer pointer NULL.\n");
+  } else {
+    int rows = size[1];
+    int bytes = size[0] >> 3;
+    fprintf(stderr,"bitmap dump %d * %d bytes at %d, %d:\n", rows, bytes, pos[0], pos[1]);
+    for (int y=rows-1; y>=0; y--) {
+      for (int byte=0; byte<bytes; byte++) {
+        for (int bit=0; bit<8; bit++)
+          fprintf(stderr,"%d", buffer[y*bytes + byte] & 0x80>>bit ? 1 : 0);
+      }
+      fprintf(stderr,"\n");
+    }
+  }
+}
+
+SbBool
+SoText2SetP::shouldBuildGlyphCache(SoState * state)
+{
+  if (!this->hasbuiltglyphcache)
+    return SbBool(TRUE);
+  if (!this->useglyphcache)
+    return SbBool(FALSE);
+  if (this->dirty)
+    return SbBool(TRUE);
+  SbName curfontname = SoFontNameElement::get(state);
+  float curfontsize = SoFontSizeElement::get(state);
+  SbBool fonthaschanged = (this->prevfontname != curfontname 
+                           || this->prevfontsize != curfontsize);
+  if (fonthaschanged)
+    return fonthaschanged;
+  return SbBool(FALSE);
+}
+
+SbVec2s
+SoText2SetP::findBitmapBBox(unsigned char * buf, SbVec2s & size)
+{
+  short maxx = 0;
+  short maxy = 0;
+  int idx;
+  int bytewidth = size[0] >> 3;
+  unsigned char mask;
+  for (int y=0; y<size[1]; y++) {
+    for (int byte=0; byte<bytewidth; byte++) {
+      for (int bit=0; bit<8; bit++) {
+        idx = y * bytewidth + byte;
+        mask = 0x80 >> bit;
+        if (buf[idx] & mask) {
+          if (byte*8 + bit > maxx)
+            maxx = byte*8 + bit;
+          if (y > maxy)
+            maxy = y;
+        }
+      }
+    }
+  }
+  return SbVec2s(maxx, maxy);
+}
+
+int
+SoText2SetP::buildGlyphCache(SoState * state)
+{
+  if (this->shouldBuildGlyphCache(state)) {
+    SoText2Set * t = this->textnode;
+    const char * s;
+    int len, i;
+    SbVec2s penpos, advance, kerning, thissize, thispos;
+    unsigned int idx;
+    SbName curfontname;
+    float curfontsize;
+    float rotation;
+    SbBox2s stringbox;
+    unsigned char * bmbuf;
+    
+    curfontname = SoFontNameElement::get(state);
+    curfontsize = SoFontSizeElement::get(state);
+    this->prevfontname = curfontname;
+    this->prevfontsize = curfontsize;
+    this->flushGlyphCache(FALSE);
+    this->hasbuiltglyphcache = SbBool(TRUE);
+    this->linecnt = t->string.getNum();
+    this->validarraydims = 0;
+    this->glyphs = (SoGlyph ***)malloc(this->linecnt*sizeof(SoGlyph*));
+    this->positions = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
+    this->charbboxes = (SbVec2s **)malloc(this->linecnt*sizeof(SbVec2s*));
+    this->stringwidth = (int *)malloc(this->linecnt*sizeof(int));
+    this->stringheight = (int *)malloc(this->linecnt*sizeof(int));
+    memset(this->glyphs, 0, this->linecnt*sizeof(SoGlyph*));
+    memset(this->positions, 0, this->linecnt*sizeof(SbVec2s*));
+    memset(this->charbboxes, 0, this->linecnt*sizeof(SbVec2s*));
+    memset(this->stringwidth, 0, this->linecnt*sizeof(int));
+    memset(this->stringheight, 0, this->linecnt*sizeof(int));
+    this->validarraydims = 1;
+    penpos[0] = 0;
+    penpos[1] = 0;
+    advance = penpos;
+    kerning = penpos;
+    for (i=0; i<this->linecnt; i++) {
+      s = t->string[i].getString();
+      stringbox.makeEmpty();
+      rotation = t->rotation[i];
+      if ((len = strlen(s)) > 0) {
+        this->glyphs[i] = (SoGlyph **)malloc(len*sizeof(SoGlyph*));
+        this->positions[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
+        this->charbboxes[i] = (SbVec2s *)malloc(len*sizeof(SbVec2s));
+        memset(this->glyphs[i], 0, len*sizeof(SoGlyph*));
+        memset(this->positions[i], 0, len*sizeof(SbVec2s));
+        memset(this->charbboxes[i], 0, len*sizeof(SbVec2s));
+        this->validarraydims = 2;
+        for (int j=0; j<len; j++) {
+          idx = (unsigned char)s[j];
+          this->glyphs[i][j] = (SoGlyph *)(SoGlyph::getGlyph(state, idx, SbVec2s(0,0), rotation));
+          if (!this->glyphs[i][j]) {
+            this->flushGlyphCache(FALSE);
+            this->useglyphcache = FALSE;
+            SoDebugError::postWarning("SoText2Set::buildGlyphCache", "unable to build glyph cache for '%s'", s);
+            return -1;
+          }
+          bmbuf = this->glyphs[i][j]->getBitmap(thissize, thispos, SbBool(FALSE));
+          this->charbboxes[i][j] = this->findBitmapBBox( bmbuf, thissize);
+          
+          if (j > 0) {
+            kerning = this->glyphs[i][j-1]->getKerning((const SoGlyph &)*this->glyphs[i][j]);
+            advance = this->glyphs[i][j-1]->getAdvance();
+          } else {
+            kerning = SbVec2s(0,0);
+            advance = SbVec2s(0,0);
+          }
+          penpos = penpos + advance + kerning;
+          this->positions[i][j] = penpos + thispos + SbVec2s(0, -thissize[1]);
+          stringbox.extendBy(this->positions[i][j]);
+          stringbox.extendBy(this->positions[i][j] + thissize);
+        }
+        // FIXME: incorrect for rotated texts, use stringbox width and height instead!
+        this->stringwidth[i] = this->positions[i][len-1][0] + thissize[0];
+        this->stringheight[i] = this->positions[i][len-1][1] + thissize[1];
+        this->bboxes.append(stringbox);
+        penpos = SbVec2s(0, 0);
+      }
+    }
+  }
+  this->dirty = FALSE;
+  return 0;
+}
