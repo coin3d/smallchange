@@ -597,11 +597,13 @@ SmScenery::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->debuglist.truncate(0);
   PRIVATE(this)->numnewtextures = 0;
 
+  int context = SoGLCacheContextElement::get(state);
+  const cc_glglue * gl = cc_glglue_instance(context);
+  assert(gl);
+  sc_set_glglue_instance(gl);
+
   if ( (PRIVATE(this)->renderstate.etexstretch != 0.0f) &&
        (PRIVATE(this)->elevationlinesimage != NULL) ) {
-    int context = SoGLCacheContextElement::get(state);
-    const cc_glglue * gl = cc_glglue_instance(context);
-    assert(gl);
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     glEnable(GL_TEXTURE_2D);
     PRIVATE(this)->elevationlinesimage->getGLDisplayList(state)->call(state);
@@ -612,9 +614,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
   sc_ssglue_view_render(PRIVATE(this)->system, PRIVATE(this)->viewid);
 
   if ( PRIVATE(this)->renderstate.etexstretch != 0.0f ) {
-    int context = SoGLCacheContextElement::get(state);
-    const cc_glglue * gl = cc_glglue_instance(context);
-    assert(gl);
     cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
     glDisable(GL_TEXTURE_2D);
@@ -1042,7 +1041,6 @@ SceneryP::elevationlinessensor_cb(void * closure, SoSensor * sensor)
   if ( (thisp->elevationLines.getValue() != FALSE) &&
        (thisp->elevationLineDistance.getValue() > 0.0f) ) {
     float fac = (0.01f / 1024.0f) * thisp->elevationLineDistance.getValue();
-    SoDebugError::postInfo("elevationlinessensor_cb", "%g", fac);
     PRIVATE(thisp)->renderstate.etexstretch = fac;
     PRIVATE(thisp)->elevationlinestexchange();
   } else {
@@ -1063,7 +1061,6 @@ SceneryP::colormaptexchange(void)
 void
 SceneryP::elevationlinestexchange(void)
 {
-  SoDebugError::postInfo("SceneryP::elevationlinestexchange", "yo");
   if ( this->elevationlinesimage == NULL ) {
     this->elevationlinesimage = new SoGLImage;
     // this->elevationlinesimage->ref(); ???  unref() but no ref()?
