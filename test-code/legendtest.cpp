@@ -72,7 +72,7 @@ main(
     
     kit->setColorCB(color_cb);
     kit->setImageTransparency(0.2);
-    kit->useTextureNotImage(TRUE);
+    //    kit->useTextureNotImage(TRUE);
     kit->setBackgroundColor(SbColor(1.0f, 1.0f, 1.0f), 0.2f);
     kit->setTickAndLinesColor(SbColor(0.0f, 0.0f, 0.0f), 0.0f);
     kit->bigTickSize = 8;
@@ -82,8 +82,8 @@ main(
     kit->description.set1Value(1, "Juba2, juba2, juba2, juba2");
     kit->description.set1Value(2, "Juba333, juba333, juba333, juba333");
     kit->setPosition(SbVec2s(20, 20));
-    //    kit->set("viewport", "pixelOrigin 10 10");
     kit->descriptionOnTop = FALSE;
+    kit->topSpace = 10.0f;
 
     SbString discrete("juba");
     for (int i = 0; i <= 16; i++) {
