@@ -70,6 +70,7 @@ class SoTCBCurveP {
 public:
   SoTCBCurveP(SoTCBCurve * master) {
     this->master = master;
+    linesPerSegment = 0;
   }
 
   int linesPerSegment;
@@ -95,6 +96,7 @@ SoTCBCurve::SoTCBCurve(void)
   SO_NODE_CONSTRUCTOR(SoTCBCurve);
 
   SO_NODE_ADD_FIELD(numControlpoints, (0));
+
 }// Constructor
 
 
