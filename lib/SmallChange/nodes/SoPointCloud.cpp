@@ -54,6 +54,7 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoGLShadeModelElement.h>
 #include <Inventor/SbPlane.h>
 
 #if COIN_DEBUG
@@ -226,7 +227,6 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   int32_t idx = this->startIndex.getValue();
   int32_t numpts = this->numPoints.getValue();
   if (numpts < 0) numpts = coords->getNum() - idx;
-  int32_t matnr = 0;
   
   float distlimit = this->detailDistance.getValue();
   float r = this->radius.getValue();
@@ -236,6 +236,8 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   
   // render in two loops to avoid frequent OpenGL state changes
 
+  SoGLShadeModelElement::forceSend(state, TRUE);
+
   int i;
   glBegin(GL_QUADS);
   SbVec3f v;
@@ -244,22 +246,21 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
     v = coords->get3(idx+i);
     float dist = - nearplane.getDistance(v);
     if (dist <= distlimit) {
-      if (mbind == PER_VERTEX) mb.send(matnr++, TRUE);
       glVertex3fv((v - yaxis).getValue());
       glVertex3fv((v + xaxis).getValue());
       glVertex3fv((v + yaxis).getValue());
+      if (mbind == PER_VERTEX) mb.send(i, TRUE);
       glVertex3fv((v - xaxis).getValue());
     }
   }
   glEnd();
 
-  matnr = 0;
   glBegin(GL_POINTS);
   for (i = 0; i < numpts; i++) {
     v = coords->get3(idx+i);
     float dist = - nearplane.getDistance(v);
     if (dist > distlimit) {
-      if (mbind == PER_VERTEX) mb.send(matnr++, TRUE);
+      if (mbind == PER_VERTEX) mb.send(i, TRUE);
       glVertex3f(v[0], v[1], v[2]);
     }
   }
