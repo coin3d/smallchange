@@ -16,7 +16,7 @@
  *  http://www.sim.no support@sim.no Voice: +47 22114160 Fax: +47 22207097
  *
 \**************************************************************************/
-
+ 
 /*!
   \class SoText2Set SoText2Set.h Inventor/nodes/SoText2Set.h
   \brief The SoText2Set class is a node type for visualizing a set of 2D texttags aligned with the camera plane.
