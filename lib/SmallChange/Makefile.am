@@ -27,8 +27,8 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
 	draggers/draggers.lst
 
 SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
-  $(libSmallChange_lib_OBJECTS) \
-  $(libSmallChange_lib_DEPENDENCIES)
+  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
+  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES)
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
 	echo "Linking $$basename.lib..."; \
