@@ -1967,17 +1967,16 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
       int indices[10];
       int j;
       const int len = (*lenarray)[i];
+      // assert(len <= 10);
+      for ( j = 0; j < len; j++ ) {
+        indices[j] = offset + j;
+      }
       // printf("len: %d   offset: %d\n", len, offset);
-      for ( j = 0; j < len; j++ ) { indices[j] = offset + j; }
-#if 0
-      GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, offset + len - 1, len, GL_UNSIGNED_INT, idxarrayptr);
-#else
-      GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, numindices, len, GL_UNSIGNED_INT, idxarrayptr);
-#endif
+      GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, offset + len - 1, len, GL_UNSIGNED_INT, indices);
       offset += len;
     }
+    // printf("offset: %d   vertices: %d\n", offset, vertexarray->getLength() / 3);
   }
-  // loop over glDrawRangeElements() instead, and use triangle fans?
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
   if ( normals != NULL && renderstate->texid == 0 ) {
