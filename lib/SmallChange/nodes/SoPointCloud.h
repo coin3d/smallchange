@@ -13,7 +13,9 @@
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoNonIndexedShape.h>
 #include <Inventor/fields/SoSFInt32.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFEnum.h>
 
 class COIN_DLL_API SoPointCloud : public SoNonIndexedShape {
   typedef SoNonIndexedShape inherited;
@@ -26,10 +28,24 @@ public:
 
   SoSFInt32 numPoints;
   SoSFFloat detailDistance;
-  SoSFFloat radius;
+  SoSFFloat xSize;
+  SoSFFloat ySize;
+  SoSFFloat zSize;
+
+  enum Mode {
+    ALWAYS_POINTS,
+    DISTANCE_BASED,
+    ALWAYS_SHAPE
+  };
+  SoSFEnum mode;
+
+  enum Shape {
+    BILLBOARD_DIAMOND,
+    CUBE
+  };
+  SoSFEnum shape;
 
   virtual void GLRender(SoGLRenderAction * action);
-  virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
 
 protected:

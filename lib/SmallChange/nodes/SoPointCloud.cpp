@@ -55,6 +55,7 @@
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoGLShadeModelElement.h>
+#include <Inventor/elements/SoGLLightModelElement.h>
 #include <Inventor/SbPlane.h>
 
 #if COIN_DEBUG
@@ -103,7 +104,21 @@ SoPointCloud::SoPointCloud()
 
   SO_NODE_ADD_FIELD(numPoints, (-1));
   SO_NODE_ADD_FIELD(detailDistance, (10.0f));
-  SO_NODE_ADD_FIELD(radius, (0.1f));
+  SO_NODE_ADD_FIELD(xSize, (0.1f));
+  SO_NODE_ADD_FIELD(ySize, (0.1f));
+  SO_NODE_ADD_FIELD(zSize, (0.1f));
+  SO_NODE_ADD_FIELD(shape, (CUBE));
+  SO_NODE_ADD_FIELD(mode, (DISTANCE_BASED));
+
+  SO_NODE_DEFINE_ENUM_VALUE(Shape, BILLBOARD_DIAMOND);
+  SO_NODE_DEFINE_ENUM_VALUE(Shape, CUBE);
+
+  SO_NODE_DEFINE_ENUM_VALUE(Mode, ALWAYS_POINTS);
+  SO_NODE_DEFINE_ENUM_VALUE(Mode, DISTANCE_BASED);
+  SO_NODE_DEFINE_ENUM_VALUE(Mode, ALWAYS_SHAPE);
+
+  SO_NODE_SET_SF_ENUM_TYPE(mode, Mode);
+  SO_NODE_SET_SF_ENUM_TYPE(shape, Shape);
 }
 
 /*!
@@ -130,18 +145,20 @@ SoPointCloud::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
   inherited::computeCoordBBox(action, this->numPoints.getValue(), box, center);
 
-  const float r = this->radius.getValue();
+  const float rx = this->xSize.getValue() * 0.5f;
+  const float ry = this->ySize.getValue() * 0.5f;
+  const float rz = this->zSize.getValue() * 0.5f;
 
   SbVec3f & bmin = box.getMin();
   SbVec3f & bmax = box.getMax();
   
-  bmin[0] -= r;
-  bmin[1] -= r;
-  bmin[2] -= r;
+  bmin[0] -= rx;
+  bmin[1] -= ry;
+  bmin[2] -= rz;
 
-  bmax[0] += r;
-  bmax[1] += r;
-  bmax[2] += r;
+  bmax[0] += rx;
+  bmax[1] += ry;
+  bmax[2] += rz;
 }
 
 // Internal method which translates the current material binding
@@ -159,6 +176,67 @@ SoPointCloud::findMaterialBinding(SoState * const state) const
   return binding;
 }
 
+//
+// the 6 quads in the cube
+//
+static int cube_vindices[] =
+{
+  0, 1, 3, 2,
+  5, 4, 6, 7,
+  1, 5, 7, 3,
+  4, 0, 2, 6,
+  4, 5, 1, 0,
+  2, 3, 7, 6
+};
+
+static float cube_normals[] =
+{
+  0.0f, 0.0f, 1.0f,
+  0.0f, 0.0f, -1.0f,
+  -1.0f, 0.0f, 0.0f,
+  1.0f, 0.0f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+  0.0f, -1.0f, 0.0f
+};
+
+static void
+generate_cube_vertices(SbVec3f *varray,
+                       const SbVec3f & center,
+                       const float w,
+                       const float h,
+                       const float d)
+{
+  for (int i = 0; i < 8; i++) {
+    varray[i].setValue((i&1) ? -w : w,
+                       (i&2) ? -h : h,
+                       (i&4) ? -d : d);
+    varray[i] += center;
+  }
+}
+
+static void
+render_cube(const SbVec3f & center,
+            const float width,
+            const float height,
+            const float depth)
+{
+  SbVec3f varray[8];
+  generate_cube_vertices(varray,
+                         center,
+                         width * 0.5f,
+                         height * 0.5f,
+                         depth * 0.5f);
+  int * iptr = cube_vindices;
+
+  for (int i = 0; i < 6; i++) { // 6 quads
+    glNormal3fv((const GLfloat*)&cube_normals[i*3]);
+    for (int j = 0; j < 4; j++) {
+      glVertex3fv((const GLfloat*)&varray[*iptr++]);
+    }
+  }
+}
+
+
 // doc from parent
 void
 SoPointCloud::GLRender(SoGLRenderAction * action)
@@ -174,36 +252,27 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
 
   const SoCoordinateElement * tmp;
   const SbVec3f * normals;
-  SbBool needNormals =
-    (SoLightModelElement::get(state) !=
-     SoLightModelElement::BASE_COLOR);
+  SbBool needNormals;
 
   SoVertexShape::getVertexData(state, tmp, normals,
                                needNormals);
 
-  if (normals == NULL && needNormals) {
-    needNormals = FALSE;
-    if (!didpush) {
-      state->push();
-      didpush = TRUE;
-    }
-    SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
-  }
+  Shape rendershape = (Shape) this->shape.getValue();
 
   if (!this->shouldGLRender(action)) {
     if (didpush)
       state->pop();
     return;
   }
+  
+  SbBool waslightingenabled = glIsEnabled(GL_LIGHTING);
+  SbBool wascullingenabled = glIsEnabled(GL_CULL_FACE);
+  SbBool islightingenabled = waslightingenabled;
+  SbBool iscullingenabled = wascullingenabled;
 
-  SbBool wasopen = state->isCacheOpen();
-  // close the cache, since we don't create a cache dependency on
-  // the model matrix or the view volume elements
-  state->setCacheOpen(FALSE);
   const SbMatrix & mm = SoModelMatrixElement::get(state);
   SbMatrix inversemm = mm.inverse();
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
-  state->setCacheOpen(wasopen);
 
   SbVec3f zaxis = vv.getProjectionDirection();
   SbVec3f yaxis = vv.getViewUp();
@@ -224,36 +293,74 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst(); // make sure we have the correct material
 
+  // flat shading
+  SoGLShadeModelElement::forceSend(state, TRUE);
+
   int32_t idx = this->startIndex.getValue();
   int32_t numpts = this->numPoints.getValue();
   if (numpts < 0) numpts = coords->getNum() - idx;
   
   float distlimit = this->detailDistance.getValue();
-  float r = this->radius.getValue();
+
+  float r = this->xSize.getValue() * 0.5f;
   xaxis *= r;
   yaxis *= r;
   zaxis *= r;
   
+  float dx = this->xSize.getValue();
+  float dy = this->ySize.getValue();
+  float dz = this->zSize.getValue();
+
   // render in two loops to avoid frequent OpenGL state changes
 
-  SoGLShadeModelElement::forceSend(state, TRUE);
+
+  // FIXME: add test here when adding more shapes
+  if (rendershape == CUBE) {
+    if (!islightingenabled) {
+      glEnable(GL_LIGHTING);
+      islightingenabled = TRUE;
+    }
+  }
+  else if (islightingenabled) {
+    glDisable(GL_LIGHTING);
+    islightingenabled = FALSE;
+  }
+  
+  if (rendershape == BILLBOARD_DIAMOND) {
+    if (iscullingenabled) {
+      glDisable(GL_CULL_FACE);
+      iscullingenabled = FALSE;
+    }
+  }
 
   int i;
   glBegin(GL_QUADS);
   SbVec3f v;
-
+  
   for (i = 0; i < numpts; i++) {
     v = coords->get3(idx+i);
     float dist = - nearplane.getDistance(v);
     if (dist <= distlimit) {
-      glVertex3fv((v - yaxis).getValue());
-      glVertex3fv((v + xaxis).getValue());
-      glVertex3fv((v + yaxis).getValue());
-      if (mbind == PER_VERTEX) mb.send(i, TRUE);
-      glVertex3fv((v - xaxis).getValue());
+      if (rendershape == CUBE) {
+        if (mbind == PER_VERTEX) mb.send(i, TRUE);
+        render_cube(v, dx, dy, dz);
+      }
+      else if (rendershape == BILLBOARD_DIAMOND) {
+        glVertex3fv((v - yaxis).getValue());
+        glVertex3fv((v + xaxis).getValue());
+        glVertex3fv((v + yaxis).getValue());
+        if (mbind == PER_VERTEX) mb.send(i, TRUE);
+        glVertex3fv((v - xaxis).getValue());
+      }
     }
   }
   glEnd();
+
+  if (islightingenabled) {
+    glDisable(GL_LIGHTING);
+    islightingenabled = FALSE;
+  }
+
 
   glBegin(GL_POINTS);
   for (i = 0; i < numpts; i++) {
@@ -268,6 +375,21 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
 
   if (didpush)
     state->pop();
+
+  if (waslightingenabled && !islightingenabled) {
+    glEnable(GL_LIGHTING);
+  }
+  else if (!waslightingenabled && islightingenabled) {
+    glDisable(GL_LIGHTING);
+  }
+
+  if (iscullingenabled && !wascullingenabled) {
+    glDisable(GL_CULL_FACE);
+  }
+  if (!iscullingenabled && wascullingenabled) {
+    glEnable(GL_CULL_FACE);
+  }
+
 }
 
 // Documented in superclass.
@@ -287,13 +409,6 @@ SoPointCloud::generateDefaultNormals(SoState * state, SoNormalBundle * bundle)
   // Overridden to avoid (faulty) compiler warnings with some version
   // of g++.
   return FALSE;
-}
-
-// doc from parent
-void
-SoPointCloud::getBoundingBox(SoGetBoundingBoxAction *action)
-{
-  inherited::getBoundingBox(action);
 }
 
 // doc from parent
