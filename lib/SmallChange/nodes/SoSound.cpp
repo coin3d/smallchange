@@ -526,8 +526,10 @@ void SoSound::audioRender(SoAudioRenderAction *action)
     if (!looping) {
       if (now - THIS->actualStartTime >= audioClip->getBufferDuration()) {
         // fixme 20011206 thammer, perhaps we need some slack...
-        printf("SoSoundP::audioRender - "
+#ifdef DEBUG_AUDIO
+        fprintf(stderr, "SoSoundP::audioRender - "
                                   "Stopping non-looping sound because the whole buffer has been played\n");
+#endif
         THIS->stopPlaying();
         audioClip->setPlayedOnce();
         return;
