@@ -186,6 +186,7 @@
 #include "LegendKit.h"
 
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/nodekits/SoNodeKitListPart.h>
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/nodes/SoImage.h>
@@ -209,6 +210,7 @@
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/elements/SoCacheElement.h>
 
 #ifdef __COIN__
 #include <Inventor/lists/SbList.h>
@@ -531,7 +533,10 @@ LegendKit::GLRender(SoGLRenderAction * action)
 void 
 LegendKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
-  // this node hasn't got a bounding box
+  // Just invalidate the bbox cache to make sure that we always render
+  // this nodekit (the bounding box for this sub-graph is not in the
+  // same coordinate system as the main scene graph)
+  SoCacheElement::invalidate(action->getState());
 }
 
 
