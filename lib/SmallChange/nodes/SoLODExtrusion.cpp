@@ -379,20 +379,24 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
     if (l1 < d2 || l2 < d2) {
       SbLine line(v0, v1);
       SbVec3f op0, op1; // object space
-      if (ray.getClosestPoints(line, op0, op1)) {
-        // clamp op1 between v0 and v1
-        if ((op1-v0).dot(line.getDirection()) < 0.0f) op1 = v0;
-        else if ((v1-op1).dot(line.getDirection()) < 0.0f) op1 = v1;
-        
-        if ((op1-op0).sqrLength() <= r2 && action->isBetweenPlanes(op0)) {
-          SoPickedPoint * pp = action->addIntersection(op0);
-          pd0.setCoordinateIndex(i);
-          pd1.setCoordinateIndex(i+1);
-          SoLineDetail * detail = new SoLineDetail;
-          detail->setPoint0(&pd0);
-          detail->setPoint1(&pd1);
-          detail->setLineIndex(i);
-          pp->setDetail(detail, this);
+      if (op0 != op1) {
+        if (ray.getClosestPoints(line, op0, op1)) {
+          // clamp op1 between v0 and v1
+          if ((op1-v0).dot(line.getDirection()) < 0.0f) op1 = v0;
+          else if ((v1-op1).dot(line.getDirection()) < 0.0f) op1 = v1;
+          
+          if ((op1-op0).sqrLength() <= r2 && action->isBetweenPlanes(op0)) {
+            SoPickedPoint * pp = action->addIntersection(op0);
+            if (pp) {
+              pd0.setCoordinateIndex(i);
+              pd1.setCoordinateIndex(i+1);
+              SoLineDetail * detail = new SoLineDetail;
+              detail->setPoint0(&pd0);
+              detail->setPoint1(&pd1);
+              detail->setLineIndex(i);
+              pp->setDetail(detail, this);
+            }
+          }
         }
       }
     }
