@@ -34,9 +34,10 @@
 */
 
 /*!  
-  \var SoSFString SmWellLogKit::name The name of the
-  Well. Currently not used, but we might add support for displaying
-  this later.
+  \var SoSFString SmWellLogKit::name
+
+  The name of the Well. Currently not used, but we might add support
+  for displaying this later.
 */
 
 /*!
@@ -55,8 +56,8 @@
 /*!  
   \var SoMFString SmWellLogKit::curveUnits 
   
-  The unit for each curve in the well log. Will soon be added as info
-  in the tooltip.
+  The unit for each curve in the well log. Will be used as textual
+  information in the tooltip.
 */
 
 /*!
