@@ -378,34 +378,25 @@ SmHQSphereP::genGeom(const int level)
   
   // generate texcoords for all vertices
   for (i = 0; i < n; i++) {
-    SbVec3f v = pts[i];
+    SbVec3f pt = pts[i];
+    SbVec2f tc((float) (atan2(pt[0], pt[2]) * (1.0 / (2.0*M_PI)) + 0.5),
+               (float) (atan2(pt[1], sqrt(pt[0]*pt[0] + pt[2]*pt[2])) * (1.0/M_PI) + 0.5));
     
-    SbVec3f v0 = v;
-    v0[1] = 0.0f;
-    if (v0.length()) v0.normalize();
-
-    double d0 = (double) -v0[2];
-    double d1 = (double) -v[1];
-    
-    double a0 = acos(SbClamp(d0, -1.0, 1.0));
-    double a1 = acos(SbClamp(d1, -1.0, 1.0));
-    
-    if (v[0] > 0.0f) a0 = 2.0 * M_PI - a0;
-    
-    SbVec2f tc((float) (a0/(2.0*M_PI)), (float)(a1/M_PI));
     tc[0] = SbClamp(tc[0], 0.0f, 1.0f);
     tc[1] = SbClamp(tc[1], 0.0f, 1.0f);
     // so that right-side-of-texture can be detected below
-    if (tc[0] == 1.0f) tc[0] == 0.0f;
+    if (tc[0] >= 0.99999f) tc[0] = 0.0f;
     this->texcoord.append(tc);
   }
-
+  
   // detect triangles that are on the back side of the sphere, on the
   // right side, with at least one vertex on the right-side-edge of
   // the texture. Fix texture coordinates for those trianges
   n = this->idx.getLength();
   int32_t * iptr = (int32_t*) this->idx.getArrayPtr();
   
+#define FLTCOMPARE(x, y) (fabs((x)-(y)) < 0.000001f)
+
   SbVec3f p[3];
   SbVec2f t[3];
   int cnt = 0;
@@ -413,22 +404,24 @@ SmHQSphereP::genGeom(const int level)
   for (i = 0; i < n; i += 3) {
     SbBool rightside = FALSE;
     for (j = 0; j < 3; j++) {
-      if (p[j][0] > 0.0f) rightside = TRUE;
       p[j] = pts[iptr[i+j]];
       t[j] = this->texcoord[iptr[i+j]];
-      if (p[j][2] > 0.0f) break; // not on the back of the sphere
+      if (p[j][0] > 0.000001f) rightside = TRUE;
+      if (p[j][2] > 0.000001f) break; // not on the back of the sphere
     }    
-    if (rightside && j == 3 && ((p[0][0] == 0.0f || p[1][0] == 0.0f || p[2][0] == 0.0f))) {
+    if (rightside && (j == 3) && 
+        (FLTCOMPARE(p[0][0], 0.0f) || FLTCOMPARE(p[1][0], 0.0f) || FLTCOMPARE(p[2][0], 0.0f))) {
       // just create new vertices for these triangles
       int len = this->coord.getLength();
       for (j = 0; j < 3; j++) {
         iptr[i+j] = len+j;
         this->coord.append(p[j]);
-        if (t[j][0] == 0.0f) t[j][0] = 1.0f;
+        if (t[j][0] <= 0.000001f) t[j][0] = 1.0f;
         this->texcoord.append(t[j]);
       }
     }
   }
+#undef FLTCOMPARE
 }
 
 void

@@ -1737,7 +1737,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
     GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
 
     while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
+      glBegin(GL_TRIANGLES);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
@@ -1770,7 +1770,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
   }  
   else {    
     while (numv) {
-      glBegin(GL_TRIANGLE_FAN);
+      glBegin(GL_TRIANGLES);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
