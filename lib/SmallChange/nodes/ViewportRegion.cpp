@@ -24,6 +24,7 @@
 #include "ViewportRegion.h"
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/threads/SbMutex.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -38,6 +39,14 @@
 #if COIN_DEBUG
 #include <Inventor/errors/SoDebugError.h>
 #endif // COIN_DEBUG
+
+
+class ViewportRegionP {
+public:
+  SbBool usepixelsize;
+  SbBool usepixelorigin;
+  SbMutex mutex;
+};
 
 /*!
   \class ViewportRegion ViewportRegion.h Inventor/nodes/ViewportRegion.h
@@ -104,6 +113,9 @@
   Invert the x coordinate. Normally x=0 is at the left, setting this to TRUE will make x=0 at the right.
 */
 
+#undef PRIVATE
+#define PRIVATE(_thisp_) ((_thisp_)->pimpl)
+
 SO_NODE_SOURCE(ViewportRegion);
 
 /*!
@@ -124,8 +136,9 @@ ViewportRegion::ViewportRegion()
   SO_NODE_ADD_FIELD(flipY, (FALSE));
   SO_NODE_ADD_FIELD(clampSize, (FALSE));
 
-  this->usepixelsize = FALSE;
-  this->usepixelorigin = FALSE;
+  PRIVATE(this) = new ViewportRegionP;
+  PRIVATE(this)->usepixelsize = FALSE;
+  PRIVATE(this)->usepixelorigin = FALSE;
 }
 
 /*!
@@ -133,6 +146,7 @@ ViewportRegion::ViewportRegion()
 */
 ViewportRegion::~ViewportRegion()
 {
+  delete PRIVATE(this);
 }
 
 /*!
@@ -159,8 +173,7 @@ ViewportRegion::doAction(SoAction * action)
   SbVec2s winsize = vp.getWindowSize();
 
   SbVec2f siz = this->pixelSize.getValue();
-
-  if (this->usepixelsize) {
+  if (PRIVATE(this)->usepixelsize) {
     siz[0] /= float(winsize[0]);
     siz[1] /= float(winsize[1]);
   }
@@ -169,7 +182,7 @@ ViewportRegion::doAction(SoAction * action)
   }
 
   SbVec2f org = this->pixelOrigin.getValue();
-  if (this->usepixelorigin) {
+  if (PRIVATE(this)->usepixelorigin) {
     org[0] /= float(winsize[0]);
     org[1] /= float(winsize[1]);
   }
@@ -193,6 +206,8 @@ ViewportRegion::doAction(SoAction * action)
   if (org[0] < 0.0f) org[0] = 0.0f;
   if (org[1] < 0.0f) org[1] = 0.0f;
 
+  PRIVATE(this)->mutex.lock();
+
   // write clamped values back into fields
   SbBool nsize, norigin, npsize, nporigin;
   nsize = this->size.enableNotify(FALSE);
@@ -211,6 +226,8 @@ ViewportRegion::doAction(SoAction * action)
   this->pixelSize.enableNotify(npsize);
   this->pixelOrigin.enableNotify(nporigin);
 
+  PRIVATE(this)->mutex.unlock();
+
   if (this->flipX.getValue()) {
     org[0] = 1.0f - org[0];
     org[0] -= siz[0];
@@ -221,7 +238,8 @@ ViewportRegion::doAction(SoAction * action)
     org[1] -= siz[1];
   }
 
-  vp.setViewport(org, siz);
+  vp.setViewport(org, siz);  
+
   SoViewportRegionElement::set(action->getState(), vp);
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
     GLenum mask = 0;
@@ -292,16 +310,19 @@ ViewportRegion::notify(SoNotList * list)
 {
   SoField *f = list->getLastField();
   if (f == &this->pixelSize) {
-    this->usepixelsize = TRUE;
+    PRIVATE(this)->usepixelsize = TRUE;
   }
   else if (f == &this->size) {
-    this->usepixelsize = FALSE;
+    PRIVATE(this)->usepixelsize = FALSE;
   }
   else if (f == &this->pixelOrigin) {
-    this->usepixelorigin = TRUE;
+    PRIVATE(this)->usepixelorigin = TRUE;
   }
   else if (f == &this->origin) {
-    this->usepixelorigin = FALSE;
+    PRIVATE(this)->usepixelorigin = FALSE;
   }
   SoNode::notify(list);
 }
+
+#undef PRIVATE
+
