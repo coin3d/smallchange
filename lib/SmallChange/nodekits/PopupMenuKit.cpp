@@ -410,12 +410,9 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
     if (pp) {
       SbVec3f p = pp->getObjectPoint();
       p[1] -= PRIVATE(this)->backgroundmenulow;
-      if (this->menuTitle.getValue().getLength() != 0)
-        p[1] += (PRIVATE(this)->padding[1] + 2.0f) /  PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] *= PRIVATE(this)->vp.getViewportSizePixels()[1];
       p[1] /= PRIVATE(this)->fontsize * this->spacing.getValue();
       
-
       if (this->itemList.getNum()) {
         int idx = (int) p[1];
         activeitem = (this->itemList.getNum()-1) - idx;
@@ -846,6 +843,9 @@ SmPopupMenuKitP::buildTextScenegraph()
   SbList <SoSeparator *> lineseparatorlist;
   SbList <SoSeparator *> submenuitemlist;
   
+  SoText2 * dummyseparatortext = new SoText2;
+  dummyseparatortext->string = " "; // An 'invisible' string. Used for creating a correct bbox
+
   int i;
   for (i=0;i<PUBLIC(this)->itemList.getNum();++i) {
     SoSeparator * itemsep = new SoSeparator;
@@ -853,6 +853,7 @@ SmPopupMenuKitP::buildTextScenegraph()
     if (PUBLIC(this)->itemList[i] == "-separator") {      
       // This is a line-separator
       lineseparatorlist.append(itemsep);
+      itemsep->addChild(dummyseparatortext); // Must add this or the bbox becomes wrong...
     }       
     else if (PUBLIC(this)->itemDisabled[i]) {
       // Disabled text item
