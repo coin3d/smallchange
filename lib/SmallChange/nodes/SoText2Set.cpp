@@ -33,22 +33,22 @@
   - Each string is positioned independently in 3D space
   - Each string is aligned independently
   - Each string is rotated independently (in the camera plane)
-  
+
   The main purpose of this node is optimization; by collecting all text
   that should be rendered with the same font settings in one SoText2Set
   node, overhead is reduced.
 
   A secondary purpose is to allow rotated rendering of 2D text.
-  
+
   Note that if you want to render multi-line text, SoText2 is probably
   a better choice since that node takes care of vertical spacing
   automatically. With SoText2Set each string is positioned directly in
   3D space.
-  
+
   FIXME:
   rayPick() does not function properly with rotated strings unless they
-  are CENTERed. 
-  
+  are CENTERed.
+
   \sa SoText2
 */
 
@@ -112,7 +112,7 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
 */
 /*!
   \var SoMFString SoText2Set::string
-  
+
   The set of strings to render. string[i] is rendered at position[i],
   justified according to justification[i] and rotated according
   to rotation[i].
@@ -126,7 +126,7 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
 */
 /*!
   \var SoMFFloat SoText2Set::rotation
-  
+
   Angle in radians between the text and the horisontal, in the camera
   plane. Positive direction is counter clockwise.
 */
@@ -160,7 +160,7 @@ public:
   float prevfontsize;
   SbBool hasbuiltglyphcache;
   SbBool dirty;
-  
+
   SbBox3f stringBBox(SoState * s, unsigned int stringidx);
   void getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
                SbVec3f & v2, SbVec3f & v3, unsigned int stringidx);
@@ -202,15 +202,15 @@ SoText2Set::SoText2Set(void)
   PRIVATE(this)->prevfontsize = 0.0;
   PRIVATE(this)->hasbuiltglyphcache = FALSE;
   PRIVATE(this)->dirty = TRUE;
-  
+
   SO_NODE_CONSTRUCTOR(SoText2Set);
-  
+
   SO_NODE_ADD_FIELD(position, (SbVec3f(0.0f, 0.0f, 0.0f)));
   SO_NODE_ADD_FIELD(rotation, (0.0f));
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
   SO_NODE_ADD_FIELD(string, (""));
   SO_NODE_ADD_FIELD(renderOutline, (FALSE));
-  
+
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
@@ -278,7 +278,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     glLoadIdentity();
     glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-      
+
     // Find number of strings to render
     const unsigned int stringcnt = this->string.getNum();
     // FIXME: this is not good, just asserting. Should warn, then use
@@ -303,7 +303,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       nilpoint[1] = nilpoint[1] * float(vpsize[1]);
       float xpos = nilpoint[0];
       float ypos = nilpoint[1];
-        
+
       const unsigned int charcnt = this->string[i].getLength();
       switch (this->justification[i]) {
       case SoText2Set::LEFT:
@@ -332,14 +332,14 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
 #define RENDER_TEXT(offx, offy) \
         do { \
-          float rasterx = xpos + fx + float(offx); \
-          float rpx = rasterx >= 0 ? rasterx : 0; \
-          float offvp = rasterx < 0 ? 1 : 0; \
-          float offsetx = rasterx >= 0 ? 0 : rasterx; \
-          float rastery = ypos + fy + float(offy); \
-          float rpy = rastery >= 0 ? rastery : 0; \
+          const float rasterx = xpos + fx + float(offx); \
+          const float rpx = rasterx >= 0 ? rasterx : 0; \
+          unsigned int offvp = rasterx < 0 ? 1 : 0; \
+          const float offsetx = rasterx >= 0 ? 0 : rasterx; \
+          const float rastery = ypos + fy + float(offy); \
+          const float rpy = rastery >= 0 ? rastery : 0; \
           offvp = offvp || rastery < 0 ? 1 : 0; \
-          float offsety = rastery >= 0 ? 0 : rastery; \
+          const float offsety = rastery >= 0 ? 0 : rastery; \
           glRasterPos3f(rpx, rpy, -nilpoint[2]); \
           if (offvp) glBitmap(0,0,0,0,offsetx,offsety,NULL); \
           if (buffer) glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer); \
@@ -349,14 +349,14 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           // FIXME: should it be possible to specify colors for
           // outline and base color? pederb, 2003-12-12
           glColor3f(0.0f, 0.0f, 0.0f);
-          RENDER_TEXT(-1,-1);            
-          RENDER_TEXT(0,-1);            
-          RENDER_TEXT(1,-1);            
-          RENDER_TEXT(1,0);            
-          RENDER_TEXT(1,1);            
-          RENDER_TEXT(0,1);            
-          RENDER_TEXT(-1,1);            
-          RENDER_TEXT(-1,0);            
+          RENDER_TEXT(-1,-1);
+          RENDER_TEXT(0,-1);
+          RENDER_TEXT(1,-1);
+          RENDER_TEXT(1,0);
+          RENDER_TEXT(1,1);
+          RENDER_TEXT(0,1);
+          RENDER_TEXT(-1,1);
+          RENDER_TEXT(-1,0);
           glColor3f(1.0f, 1.0f, 1.0f);
           RENDER_TEXT(0,0);
         }
@@ -365,7 +365,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
         }
       }
     }
-      
+
 #undef RENDER_TEXT
 
     glPixelStorei(GL_UNPACK_ALIGNMENT,4);
@@ -375,9 +375,9 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
   }
-  
+
   state->pop();
-  
+
   if (outline) {
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
     glPopAttrib(); // pop depth func
@@ -424,7 +424,7 @@ SoText2Set::rayPick(SoRayPickAction * action)
   if (!this->shouldRayPick(action)) return;
   SoState * state = action->getState();
   PRIVATE(this)->buildGlyphCache(state);
-  
+
   state->push();
   action->setObjectSpace();
   SbVec3f v0, v1, v2, v3;
@@ -432,17 +432,17 @@ SoText2Set::rayPick(SoRayPickAction * action)
   for (unsigned int stringidx = 0; stringidx < (unsigned int)this->string.getNum(); stringidx++) {
     PRIVATE(this)->getQuad(state, v0, v1, v2, v3, stringidx);
 
-    if (v0 == v1 || v0 == v3) 
+    if (v0 == v1 || v0 == v3)
       continue; // empty
-    
+
     SbVec3f isect;
     SbVec3f bary;
     SbBool front;
     SbBool hit = action->intersect(v0, v1, v2, isect, bary, front);
 
-    if (!hit) 
+    if (!hit)
       hit = action->intersect(v0, v2, v3, isect, bary, front);
-    
+
     if (hit && action->isBetweenPlanes(isect)) {
       // FIXME: account for pivot point position in quad. preng 2003-04-01.
       // find normalized 2D hitpoint on quad
@@ -452,12 +452,12 @@ SoText2Set::rayPick(SoRayPickAction * action)
       SbVec3f ptonline = horiz.getClosestPoint(isect);
       float vdist = (ptonline-isect).length();
       vdist /= h;
-    
+
       SbLine vert(v0,v3);
       ptonline = vert.getClosestPoint(isect);
       float hdist = (ptonline-isect).length();
       hdist /= w;
-      
+
       // find the character
       int charidx = -1;
       int strlength = this->string[stringidx].getLength();
@@ -472,18 +472,18 @@ SoText2Set::rayPick(SoRayPickAction * action)
         PRIVATE(this)->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
         charleft = (PRIVATE(this)->positions[stringidx][i][0] - minx) / bbwidth;
         charright = (PRIVATE(this)->positions[stringidx][i][0] + PRIVATE(this)->charbboxes[stringidx][i][0] - minx) / bbwidth;
-        
+
         if (hdist >= charleft && hdist <= charright) {
           chartop = (maxy - PRIVATE(this)->positions[stringidx][i][1] - PRIVATE(this)->charbboxes[stringidx][i][1]) / bbheight;
           charbottom = (maxy - PRIVATE(this)->positions[stringidx][i][1]) / bbheight;
-          
+
           if (vdist >= chartop && vdist <= charbottom) {
             charidx = i;
             i = strlength;
           }
         }
       }
-    
+
       if (charidx >= 0 && charidx < strlength) { // we have a hit!
         SoPickedPoint * pp = action->addIntersection(isect);
         if (pp) {
@@ -595,9 +595,9 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
                      SbVec3f & v2, SbVec3f & v3, unsigned int stringidx)
 {
   assert(stringidx < (unsigned int)PUBLIC(this)->position.getNum());
-    
+
   this->buildGlyphCache(state);
-  
+
   SbVec3f nilpoint = PUBLIC(this)->position[stringidx];
 
   const SbMatrix & mat = SoModelMatrixElement::get(state);
@@ -610,18 +610,18 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
 
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   SbVec2s vpsize = vp.getViewportSizePixels();
-  
+
   SbVec2f n0, n1, n2, n3, center;
   short xmin, ymin, xmax, ymax;
   float minx, miny, maxx, maxy;
   this->bboxes[stringidx].getBounds(xmin, ymin, xmax, ymax);
   center = SbVec2f((float)(-xmin+xmax) / 2.0f, (float)(-ymin+ymax) / 2.0f);
-  
+
   minx = ((float) xmin) / vpsize[0];
   miny = ((float) ymin) / vpsize[1];
   maxx = ((float) xmax) / vpsize[0];
   maxy = ((float) ymax) / vpsize[1];
- 
+
   n0 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + minx, (screenpoint[1] - (center[1]/vpsize[1])) + miny);
   n1 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + maxx, (screenpoint[1] - (center[1]/vpsize[1])) + miny);
   n2 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + maxx, (screenpoint[1] - (center[1]/vpsize[1])) + maxy);
@@ -649,7 +649,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
     n0[0] -= halfw;
     n1[0] -= halfw;
     n2[0] -= halfw;
-    n3[0] -= halfw; 
+    n3[0] -= halfw;
     n0[1] += halfh;
     n1[1] += halfh;
     n2[1] += halfh;
@@ -661,7 +661,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
     assert(0 && "unknown alignment");
     break;
   }
-  
+
   // get distance from nilpoint to camera plane
   float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
 
@@ -710,7 +710,7 @@ SoText2SetP::shouldBuildGlyphCache(SoState * state)
 
   SbName curfontname = SoFontNameElement::get(state);
   float curfontsize = SoFontSizeElement::get(state);
-  SbBool fonthaschanged = (this->prevfontname != curfontname 
+  SbBool fonthaschanged = (this->prevfontname != curfontname
                            || this->prevfontsize != curfontsize);
   return fonthaschanged;
 }
@@ -729,8 +729,6 @@ SoText2SetP::buildGlyphCache(SoState * state)
   float curfontsize;
   float rotation;
   SbBox2s stringbox;
-  unsigned char * bmbuf;
-  float advancex, advancey;
 
   SbBool outline = PUBLIC(this)->renderOutline.getValue();
 
@@ -789,13 +787,13 @@ SoText2SetP::buildGlyphCache(SoState * state)
 
         SbVec2s kerning;
 
-        if (j > 0) 
+        if (j > 0)
           kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
-        else 
+        else
           kerning = SbVec2s(0,0);
-          
+
         this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
-    
+
         SbVec2s pos = penpos +
           SbVec2s((short) thispos[0], (short) thispos[1]) +
           SbVec2s(0, (short) -thissize[1]);
@@ -806,11 +804,11 @@ SoText2SetP::buildGlyphCache(SoState * state)
         this->positions[i][j] = pos;
 
         penpos += advance + kerning;
-	  
+	
       }
 	
       this->stringwidth[i] = stringbox.getMax()[0] - stringbox.getMin()[0];
-      this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];       
+      this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];
       this->bboxes.append(stringbox);
 
       // FIXME: Incorrect bbox for glyphs like 'g' and 'q'
