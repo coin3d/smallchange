@@ -15,6 +15,7 @@ AC_CONFIG_AUX_DIR(cfg)
 
 AC_CANONICAL_SYSTEM
 
+SIM_AC_SETUP_MKS
 
 # *******************************************************************
 # If the Microsoft Visual C++ cl.exe compiler is available, set us up for
@@ -72,7 +73,25 @@ AC_SUBST(smallchange_src_dir)
 #  Locate C++ compiler and set C++ as the default language to use
 #  in tests. The configure script will automatically terminate if
 #  it doesn't find a C++ compiler.
+
+# cross_compiling: On MKS, configure will open a window when trying to run
+# the executable a.out in the cross-compilation test because it is not
+# named *.exe, halting the configure script until it has been closed, even
+# resulting in a faulty conclusion for the test (cross_compiling=yes).
+# By setting the $cross_compiling variable to yes in advance, this test is
+# skipped.  We are of course not cross-compiling, so we correct the variable
+# afterwards.  2003-06-25 larsa
+
+case $build in
+*-mks ) cross_compiling=yes ;;
+esac
+
 AC_PROG_CC
+
+case $build in
+*-mks ) cross_compiling=no ;;
+esac
+
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
@@ -332,21 +351,37 @@ SIM_AC_MSVC_DSP_SETUP([SMALLCHANGE], [SmallChange], [smallchange], [-I$smallchan
 
 # **************************************************************************
 
-AC_OUTPUT([
-	Makefile
-	bin/Makefile
-	lib/Makefile
-	lib/SmallChange/Makefile
-	lib/SmallChange/actions/Makefile
-	lib/SmallChange/misc/Makefile
-	lib/SmallChange/nodekits/Makefile
-	lib/SmallChange/nodes/Makefile
-	lib/SmallChange/elements/Makefile
-	lib/SmallChange/engines/Makefile
-	lib/SmallChange/draggers/Makefile
-	lib/SmallChange/eventhandlers/Makefile
-	lib/SmallChange/basic.h
+AC_CONFIG_FILES([
+        Makefile
+        bin/Makefile
+        lib/Makefile
+        lib/SmallChange/Makefile
+        lib/SmallChange/actions/Makefile
+        lib/SmallChange/misc/Makefile
+        lib/SmallChange/nodekits/Makefile
+        lib/SmallChange/nodes/Makefile
+        lib/SmallChange/elements/Makefile
+        lib/SmallChange/engines/Makefile
+        lib/SmallChange/draggers/Makefile
+        lib/SmallChange/eventhandlers/Makefile
+        lib/SmallChange/basic.h
 ])
+
+# MKS will have "\c" as $ECHO_C, but that string in the config.status
+# substitution command will cause config.status to hang because it is
+# somehow translated to "&c".  We therefore blank it here, and restore
+# it further below, after AC_OUTPUT.
+
+sim_ac_ECHO_C=$ECHO_C
+case $build in
+*-mks ) ECHO_C="" ;;
+esac
+
+AC_OUTPUT
+
+ECHO_C=$sim_ac_ECHO_C
+
+# **************************************************************************
 
 case "$sim_ac_framework:$sim_ac_make_dsp" in
 true:* | *:true )
