@@ -168,6 +168,7 @@ public:
     }
   }
 
+  void closeSubMenues(void);
   void buildTextScenegraph(void);
   static int addSubmenuMarker(); // Creates a right-pointing arrow
 
@@ -480,6 +481,18 @@ SmPopupMenuKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SoCacheElement::invalidate(action->getState());
   SoNode::getBoundingBox(action);
+}
+
+void
+SmPopupMenuKitP::closeSubMenues()
+{
+  for (int i=0;i<master->itemData.getNum();++i) {
+    SoNode * n = master->itemData[i];
+    if (n && n->isOfType(SmPopupMenuKit::getClassTypeId())) {
+      ((SmPopupMenuKit*) n)->visible = FALSE;
+      ((SmPopupMenuKit*) n)->isActive = FALSE;
+    }
+  }
 }
 
 void 
@@ -909,6 +922,10 @@ SmPopupMenuKitP::buildTextScenegraph()
       submenuitemlist.getLength() > 0) {
 
     // Add line separators
+    SoMaterial * sepmaterial = new SoMaterial;
+    sepmaterial->diffuseColor.setValue(0.0f, 0.0f, 0.0f);
+    sepmaterial->transparency.setValue(0.8f);
+
     for (i=0;i<lineseparatorlist.getLength();++i) {
       SoSeparator * itemsep = lineseparatorlist[i];
       SoCoordinate3 * lcoord = new SoCoordinate3;
@@ -916,6 +933,7 @@ SmPopupMenuKitP::buildTextScenegraph()
       lcoord->point.set1Value(1, SbVec3f(sepwidth, ((this->fontsize-1) / 2.0f) / pixelsize[1], 0));
       SoLineSet * lset = new SoLineSet;
       lset->numVertices.setValue(2);
+      itemsep->addChild(sepmaterial);
       itemsep->addChild(lcoord);
       itemsep->addChild(lset);  
     }
