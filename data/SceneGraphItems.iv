@@ -251,14 +251,20 @@ DEF LightNode Separator {
   Cylinder { radius 0.2 height 0.04 }
 }
 
+DEF CameraNode Separator {
+  Texture2Transform { translation 0 1 }
+  RotationXYZ { axis X angle 1.57079 }
+  Cylinder { radius 0.2 height 0.04 }
+}
+
 DEF BlinkerNode Separator {
   Texture2Transform { translation 1 1 }
   RotationXYZ { axis X angle 1.57079 }
   Cylinder { radius 0.2 height 0.04 }
 }
 
-DEF CameraNode Separator {
-  Texture2Transform { translation 0 1 }
+DEF SelectionNode Separator {
+  Texture2Transform { translation 2 1 }
   RotationXYZ { axis X angle 1.57079 }
   Cylinder { radius 0.2 height 0.04 }
 }
