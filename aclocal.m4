@@ -7184,55 +7184,6 @@ else
 fi
 ])
 
-#   Use this file to store miscellaneous macros related to checking
-#   compiler features.
-
-# Usage:
-#   SIM_AC_CC_COMPILER_OPTION(OPTION-TO-TEST, ACTION-IF-TRUE [, ACTION-IF-FALSE])
-#   SIM_AC_CXX_COMPILER_OPTION(OPTION-TO-TEST, ACTION-IF-TRUE [, ACTION-IF-FALSE])
-#
-# Description:
-#
-#   Check whether the current C or C++ compiler can handle a
-#   particular command-line option.
-#
-#
-# Author: Morten Eriksen, <mortene@sim.no>.
-#
-#   * [mortene:19991218] improve macros by catching and analyzing
-#     stderr (at least to see if there was any output there)?
-#
-
-AC_DEFUN([SIM_AC_COMPILER_OPTION], [
-sim_ac_save_cppflags=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $1"
-AC_TRY_COMPILE([], [], [sim_ac_accept_result=yes], [sim_ac_accept_result=no])
-AC_MSG_RESULT([$sim_ac_accept_result])
-CPPFLAGS=$sim_ac_save_cppflags
-# This need to go last, in case CPPFLAGS is modified in $2 or $3.
-if test $sim_ac_accept_result = yes; then
-  ifelse($2, , :, $2)
-else
-  ifelse($3, , :, $3)
-fi
-])
-
-AC_DEFUN([SIM_AC_CC_COMPILER_OPTION], [
-AC_LANG_SAVE
-AC_LANG_C
-AC_MSG_CHECKING([whether $CC accepts $1])
-SIM_AC_COMPILER_OPTION($1, $2, $3)
-AC_LANG_RESTORE
-])
-
-AC_DEFUN([SIM_AC_CXX_COMPILER_OPTION], [
-AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
-AC_MSG_CHECKING([whether $CXX accepts $1])
-SIM_AC_COMPILER_OPTION($1, $2, $3)
-AC_LANG_RESTORE
-])
-
 # Usage:
 #   SIM_AC_DEBUGSYMBOLS
 #
@@ -7356,6 +7307,55 @@ else
 fi
 ])
 
+
+#   Use this file to store miscellaneous macros related to checking
+#   compiler features.
+
+# Usage:
+#   SIM_AC_CC_COMPILER_OPTION(OPTION-TO-TEST, ACTION-IF-TRUE [, ACTION-IF-FALSE])
+#   SIM_AC_CXX_COMPILER_OPTION(OPTION-TO-TEST, ACTION-IF-TRUE [, ACTION-IF-FALSE])
+#
+# Description:
+#
+#   Check whether the current C or C++ compiler can handle a
+#   particular command-line option.
+#
+#
+# Author: Morten Eriksen, <mortene@sim.no>.
+#
+#   * [mortene:19991218] improve macros by catching and analyzing
+#     stderr (at least to see if there was any output there)?
+#
+
+AC_DEFUN([SIM_AC_COMPILER_OPTION], [
+sim_ac_save_cppflags=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $1"
+AC_TRY_COMPILE([], [], [sim_ac_accept_result=yes], [sim_ac_accept_result=no])
+AC_MSG_RESULT([$sim_ac_accept_result])
+CPPFLAGS=$sim_ac_save_cppflags
+# This need to go last, in case CPPFLAGS is modified in $2 or $3.
+if test $sim_ac_accept_result = yes; then
+  ifelse($2, , :, $2)
+else
+  ifelse($3, , :, $3)
+fi
+])
+
+AC_DEFUN([SIM_AC_CC_COMPILER_OPTION], [
+AC_LANG_SAVE
+AC_LANG_C
+AC_MSG_CHECKING([whether $CC accepts $1])
+SIM_AC_COMPILER_OPTION($1, $2, $3)
+AC_LANG_RESTORE
+])
+
+AC_DEFUN([SIM_AC_CXX_COMPILER_OPTION], [
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+AC_MSG_CHECKING([whether $CXX accepts $1])
+SIM_AC_COMPILER_OPTION($1, $2, $3)
+AC_LANG_RESTORE
+])
 
 # Usage:
 #   SIM_AC_PROFILING_SUPPORT
@@ -7506,6 +7506,123 @@ if test x"$enable_warnings" = x"yes"; then
   esac
 fi
 ])
+
+# **************************************************************************
+#
+# SIM_AC_DETECT_COMMON_COMPILER_FLAGS
+#
+# Sets sim_ac_compiler_CFLAGS and sim_ac_compiler_CXXFLAGS
+#
+
+AC_DEFUN([SIM_AC_DETECT_COMMON_COMPILER_FLAGS], [
+
+AC_REQUIRE([SIM_AC_CHECK_PROJECT_BETA_STATUS_IFELSE])
+AC_REQUIRE([SIM_AC_CHECK_SIMIAN_IFELSE])
+
+SIM_AC_COMPILE_DEBUG([
+  if test x"$GCC" = x"yes"; then
+    # no auto string.h-functions
+    SIM_AC_CC_COMPILER_OPTION([-fno-builtin], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -fno-builtin"])
+    SIM_AC_CXX_COMPILER_OPTION([-fno-builtin], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -fno-builtin"])
+
+    # disallow non-standard scoping of for()-variables
+    SIM_AC_CXX_COMPILER_OPTION([-fno-for-scoping], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -fno-for-scope"])
+
+    SIM_AC_CC_COMPILER_OPTION([-finline-functions], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -finline-functions"])
+    SIM_AC_CXX_COMPILER_OPTION([-finline-functions], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -finline-functions"])
+
+    if $sim_ac_simian; then
+      if $sim_ac_source_release; then :; else
+      # break build on warnings, except for in official source code releases
+        SIM_AC_CC_COMPILER_OPTION([-Werror], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Werror"])
+        SIM_AC_CXX_COMPILER_OPTION([-Werror], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Werror"])
+      fi
+    fi
+
+    # warn on missing return-value
+    SIM_AC_CC_COMPILER_OPTION([-Wreturn-type], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wreturn-type"])
+    SIM_AC_CXX_COMPILER_OPTION([-Wreturn-type], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wreturn-type"])
+
+    SIM_AC_CC_COMPILER_OPTION([-Wchar-subscripts], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wchar-subscripts"])
+    SIM_AC_CXX_COMPILER_OPTION([-Wchar-subscripts], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wchar-subscripts"])
+
+    SIM_AC_CC_COMPILER_OPTION([-Wparentheses], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS -Wparentheses"])
+    SIM_AC_CXX_COMPILER_OPTION([-Wparentheses], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS -Wparentheses"])
+
+  else
+    case $CXX in
+    *wrapmsvc* )
+      if $sim_ac_simian; then
+        if $sim_ac_source_release; then :; else
+          # break build on warnings, except for in official source code releases
+          SIM_AC_CC_COMPILER_OPTION([/WX], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /WX"])
+          SIM_AC_CXX_COMPILER_OPTION([/WX], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /WX"])
+        fi
+      fi
+
+      # warning level 3
+      SIM_AC_CC_COMPILER_OPTION([/W3], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /W3"])
+      SIM_AC_CXX_COMPILER_OPTION([/W3], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /W3"])
+
+      # disable bool type
+      SIM_AC_CC_COMPILER_OPTION([/noBool], [sim_ac_compiler_CFLAGS="$sim_ac_compiler_CFLAGS /noBool"])
+      SIM_AC_CXX_COMPILER_OPTION([/noBool], [sim_ac_compiler_CXXFLAGS="$sim_ac_compiler_CXXFLAGS /noBool"])
+      ;;
+    esac
+  fi
+])
+
+ifelse($1, [], :, $1)
+
+])
+  
+
+
+#
+# SIM_AC_CHECK_PROJECT_BETA_STATUS_IFELSE( IF-BETA, IF-BONA-FIDE )
+#
+# Sets sim_ac_source_release to true or false
+#
+
+AC_DEFUN([SIM_AC_CHECK_PROJECT_BETA_STATUS_IFELSE], [
+AC_MSG_CHECKING([for project release status])
+case $VERSION in
+*[[a-z]]* )
+  AC_MSG_RESULT([beta / inbetween releases])
+  sim_ac_source_release=false
+  ifelse($1, [], :, $1)
+  ;;
+* )
+  AC_MSG_RESULT([release version])
+  sim_ac_source_release=true
+  ifelse($2, [], :, $2)
+  ;;
+esac
+])
+
+
+#
+# SIM_AC_CHECK_SIMIAN_IFELSE( IF-SIMIAN, IF-NOT-SIMIAN )
+#
+# Sets $sim_ac_simian to true or false
+#
+
+AC_DEFUN([SIM_AC_CHECK_SIMIAN_IFELSE], [
+AC_MSG_CHECKING([if user is simian])
+case `hostname -d 2>/dev/null || domainname 2>/dev/null || hostname` in
+*.sim.no | sim.no )
+  AC_MSG_RESULT([probably])
+  sim_ac_simian=true
+  ifelse($1, [], :, $1)
+  ;;
+* )
+  AC_MSG_RESULT([probably not])
+  sim_ac_simian=false
+  ifelse($2, [], :, $2)
+  ;;
+esac
+])
+
 
 # Usage:
 #  SIM_CHECK_OIV_XT([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
