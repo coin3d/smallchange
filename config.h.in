@@ -1,5 +1,8 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
+/* Ogg Vorbis extensions available */
+#undef HAVE_OGGVORBIS
+
 /* openal extensions available */
 #undef HAVE_OPENAL
 
