@@ -44,11 +44,12 @@ struct RenderState {
   float etexoffset;
 
   /* temporary */
-  unsigned int currtexid;
-  int texisenabled;
-
-  /* debugging */
-  int newtexcount;
+  unsigned int activescenerytexid; /* FIXME: it is ridiculous design
+                                      to keep this public. AFAICS,
+                                      this is done only for the
+                                      purpose of resetting its value
+                                      between renderings. 20040602
+                                      mortene. */
 
   struct RenderStateP * pimpl;
 };
@@ -62,7 +63,15 @@ struct RenderState {
 #endif /* !APIENTRY */
 
 typedef void (APIENTRY * sc_msghandler_fp)(const char * msg);
-  void sc_probe_gl(sc_msghandler_fp msghandler); /* automatic setup of the below features */
+void sc_probe_gl(sc_msghandler_fp msghandler); /* automatic setup of the below features */
+
+/* used to set the current OpenGL context id from client code,
+   necessary for e.g. making sure texture allocation and destruction
+   is done in the correct context  */
+void sc_set_current_context_id(RenderState * state, unsigned int context);
+void sc_unset_current_context(RenderState * state);
+
+/* ********************************************************************** */
 
 /* don't use the following methods unless completely necessary */
 

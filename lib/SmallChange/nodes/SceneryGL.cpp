@@ -1,4 +1,4 @@
-/**************************************************************************\
+</**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
  *  Copyright (C) 1998-2003 by Systems in Motion.  All rights reserved.
@@ -31,6 +31,7 @@
 #define APIENTRY
 #endif /* !HAVE_WINDOWS_H */
 
+#include <limits.h>
 #include <assert.h>
 #include <stdlib.h> // atoi()
 #include <stdio.h>
@@ -792,10 +793,9 @@ typedef void * sc_texture_create(void);
 class TexInfo {
 public:
   TexInfo() {
-    this->image = NULL;
+    this->clienttexdata = NULL;
   }
-  unsigned int texid;
-  void * image;
+  void * clienttexdata;
   int unusedcount;
 };
 
@@ -807,6 +807,7 @@ struct RenderStateP {
     this->vertexcount = 0;
     this->dataset = -1;
     this->blockinfo = NULL;
+    this->contextidset = FALSE;
   }
 
   ~RenderStateP()
@@ -817,11 +818,14 @@ struct RenderStateP {
   SbHash<TexInfo *, unsigned int> texhash;
   SbList<int> cullstate;
 
+  unsigned int glcontextid;
+  int contextidset;
+
   // local block info
   float tscale[2];
   float toffset[2];
   float invtsizescale[2]; // (1.0f / blocksize) * tscale[n]
-  unsigned int texid;
+  unsigned int scenerytexid;
 
   // temporary
   unsigned char * texdata;
@@ -887,30 +891,40 @@ sc_renderstate_destruct(RenderState * state)
 
 /* ********************************************************************** */
 
-void *
-sc_find_reuse_texture(RenderState * state)
+void
+sc_set_current_context_id(RenderState * state, unsigned int context)
 {
-  TexInfo * tex = NULL;
-  if (PRIVATE(state)->texhash.get(PRIVATE(state)->texid, tex)) {
-    assert(tex->image);
-    tex->unusedcount = 0;
-    return tex->image;
-  }
-  return NULL;
+  PRIVATE(state)->glcontextid = context;
+  PRIVATE(state)->contextidset = TRUE;
 }
 
-void *
-sc_create_texture(RenderState * state, void * image)
+void
+sc_unset_current_context(RenderState * state)
+{
+  PRIVATE(state)->glcontextid = UINT_MAX;
+  PRIVATE(state)->contextidset = FALSE;
+}
+
+/* ********************************************************************** */
+
+static TexInfo *
+sc_find_texture(RenderState * state, unsigned int key)
+{
+  TexInfo * tex = NULL;
+  return PRIVATE(state)->texhash.get(key, tex) ? tex : NULL;
+}
+
+static TexInfo *
+sc_place_texture_in_hash(RenderState * state, unsigned int key, void * clienttexdata)
 {
   assert(state);
 
   TexInfo * tex = new TexInfo;
-  tex->image = image;
-  tex->texid = state->currtexid;
   tex->unusedcount = 0;
+  tex->clienttexdata = clienttexdata;
 
-  PRIVATE(state)->texhash.put(PRIVATE(state)->texid, tex);
-  return tex->image;
+  PRIVATE(state)->texhash.put(key, tex);
+  return tex;
 }
 
 static void sc_texture_hash_inc_unused(const unsigned int & key, TexInfo * const & val, void * closure);
@@ -936,7 +950,7 @@ sc_delete_unused_textures(RenderState * state)
     if (tex->unusedcount > MAX_UNUSED_COUNT) {
       // FIXME: must be done in original GL ctx, of which there is no
       // guarantee with this. 20040512 mortene.
-      texture_release(tex->image);
+      texture_release(tex->clienttexdata);
       delete tex;
       PRIVATE(state)->texhash.remove(key);
     }
@@ -960,7 +974,7 @@ sc_delete_all_textures(RenderState * state)
 
     // FIXME: must be done in original GL ctx, of which there is no
     // guarantee with this. 20040512 mortene.
-    texture_release(tex->image);
+    texture_release(tex->clienttexdata);
     delete tex;
   }
 }
@@ -1596,7 +1610,7 @@ sc_render_pre_cb_common(void * closure, ss_render_block_cb_info * info)
   PRIVATE(renderstate)->toffset[1] = 0.0f;
   PRIVATE(renderstate)->tscale[0] = 1.0f;
   PRIVATE(renderstate)->tscale[1] = 1.0f;
-  ss_render_get_texture_measures(info, &PRIVATE(renderstate)->texid,
+  ss_render_get_texture_measures(info, &PRIVATE(renderstate)->scenerytexid,
                                  PRIVATE(renderstate)->toffset, PRIVATE(renderstate)->tscale);
   // for optimizing texture coordinate calculations
   PRIVATE(renderstate)->invtsizescale[0] = (1.0f / renderstate->blocksize) * PRIVATE(renderstate)->tscale[0];
@@ -1611,11 +1625,11 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   RenderState * renderstate = (RenderState *) closure;
 
   // set up texture for block
-  if (renderstate->dotex && PRIVATE(renderstate)->texid) {
-    if (PRIVATE(renderstate)->texid != renderstate->currtexid) {
-      void * imagehandle = sc_find_reuse_texture(renderstate);
-      if ( !imagehandle ) {
-        ss_render_get_texture_image(info, PRIVATE(renderstate)->texid,
+  if (renderstate->dotex && PRIVATE(renderstate)->scenerytexid) {
+    if (PRIVATE(renderstate)->scenerytexid != renderstate->activescenerytexid) {
+      TexInfo * texinfo = sc_find_texture(renderstate, PRIVATE(renderstate)->scenerytexid);
+      if ( !texinfo ) {
+        ss_render_get_texture_image(info, PRIVATE(renderstate)->scenerytexid,
                                     &PRIVATE(renderstate)->texdata,
                                     &PRIVATE(renderstate)->texw,
                                     &PRIVATE(renderstate)->texh,
@@ -1623,28 +1637,23 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        imagehandle = texture_construct(PRIVATE(renderstate)->texdata, PRIVATE(renderstate)->texw, PRIVATE(renderstate)->texh, PRIVATE(renderstate)->texnc, clampmode, clampmode, 0.9f, 0);
+        void * opaquetexstruct = texture_construct(PRIVATE(renderstate)->texdata, PRIVATE(renderstate)->texw, PRIVATE(renderstate)->texh, PRIVATE(renderstate)->texnc, clampmode, clampmode, 0.9f, 0);
 
-        imagehandle = sc_create_texture(renderstate, imagehandle);
-        assert(imagehandle);
-
-        renderstate->newtexcount++;
+        texinfo = sc_place_texture_in_hash(renderstate,
+                                           PRIVATE(renderstate)->scenerytexid,
+                                           opaquetexstruct);
       }
       assert(texture_activate);
-      texture_activate(renderstate, imagehandle);
+      texture_activate(renderstate, texinfo->clienttexdata);
+      texinfo->unusedcount = 0;
 
-      renderstate->currtexid = PRIVATE(renderstate)->texid;
+      renderstate->activescenerytexid = PRIVATE(renderstate)->scenerytexid;
     }
-    if (!renderstate->texisenabled) {
-      glEnable(GL_TEXTURE_2D);
-      renderstate->texisenabled = TRUE;
-    }
+
+    glEnable(GL_TEXTURE_2D);
   }
   else {
-    if (renderstate->texisenabled) {
-      glDisable(GL_TEXTURE_2D);
-      renderstate->texisenabled = FALSE;
-    }
+    glDisable(GL_TEXTURE_2D);
   }
 }
 
@@ -1669,7 +1678,7 @@ sc_render_cb(void * closure, const int x, const int y,
   const int W = ((int) renderstate->blocksize) + 1;
 
   int idx;
-  if (normals && PRIVATE(renderstate)->texid == 0) {
+  if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
 
 #define SEND_VERTEX(state, x, y) \
   idx = (y)*W + x; \
@@ -1787,7 +1796,7 @@ sc_va_render_cb(void * closure, const int x, const int y,
   const int W = ((int) renderstate->blocksize) + 1;
 
   int idx;
-  if (normals && PRIVATE(renderstate)->texid == 0) {
+  if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
 
 #define SEND_VERTEX(state, x, y) \
   idx = (y)*W + x; \
@@ -1881,7 +1890,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
   int numv = *ptr++;
   int tx, ty;
 
-  if (normals && PRIVATE(renderstate)->texid == 0) {
+  if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
     int idx;
 #define SEND_VERTEX(state, x, y) \
     idx = (y)*W + x; \
@@ -1949,7 +1958,7 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
   int numv = *ptr++;
   int tx, ty;
 
-  if (normals && PRIVATE(renderstate)->texid == 0) {
+  if (normals && PRIVATE(renderstate)->scenerytexid == 0) {
     int idx;
 #define SEND_VERTEX(state, x, y) \
     idx = (y)*W + x; \
@@ -2029,7 +2038,7 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   GL.glEnableClientState(GL_VERTEX_ARRAY);
   GL.glVertexPointer(3, GL_FLOAT, 0, PRIVATE(renderstate)->vertices);
 
-  if ( normals != NULL && PRIVATE(renderstate)->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(renderstate)->scenerytexid == 0 ) {
     // elevation and normals
     if ( GL.USE_BYTENORMALS ) {
       GL.glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
@@ -2093,7 +2102,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   const signed char * normals = state->normaldata; // used as a flag below
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
-  if ( normals != NULL && PRIVATE(state)->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(state)->scenerytexid == 0 ) {
     // elevation and normals
     GL.glDisableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
@@ -2145,11 +2154,11 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // Set up textures before rendering - we delayed this because some blocks have
   // textures, but will be tessellated to 0 triangles if the block is mostly
   // undefined.
-  if (state->dotex && PRIVATE(state)->texid) {
-    if (PRIVATE(state)->texid != state->currtexid) {
-      void * imagehandle = sc_find_reuse_texture(state);
-      if ( !imagehandle ) {
-        ss_render_get_texture_image(info, PRIVATE(state)->texid,
+  if (state->dotex && PRIVATE(state)->scenerytexid) {
+    if (PRIVATE(state)->scenerytexid != state->activescenerytexid) {
+      TexInfo * texinfo = sc_find_texture(state, PRIVATE(state)->scenerytexid);
+      if ( !texinfo ) {
+        ss_render_get_texture_image(info, PRIVATE(state)->scenerytexid,
                                     &PRIVATE(state)->texdata,
                                     &PRIVATE(state)->texw,
                                     &PRIVATE(state)->texh,
@@ -2157,28 +2166,22 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        imagehandle = texture_construct(PRIVATE(state)->texdata, PRIVATE(state)->texw, PRIVATE(state)->texh, PRIVATE(state)->texnc, clampmode, clampmode, 0.9f, 0);
+        void * opaquetexstruct = texture_construct(PRIVATE(state)->texdata, PRIVATE(state)->texw, PRIVATE(state)->texh, PRIVATE(state)->texnc, clampmode, clampmode, 0.9f, 0);
 
-        imagehandle = sc_create_texture(state, imagehandle);
-        assert(imagehandle);
-
-        state->newtexcount++;
+        texinfo = sc_place_texture_in_hash(state, PRIVATE(state)->scenerytexid,
+                                           opaquetexstruct);
       }
       assert(texture_activate);
-      texture_activate(state, imagehandle);
+      texture_activate(state, texinfo->clienttexdata);
+      texinfo->unusedcount = 0;
 
-      state->currtexid = PRIVATE(state)->texid;
+      state->activescenerytexid = PRIVATE(state)->scenerytexid;
     }
-    if (!state->texisenabled) {
-      glEnable(GL_TEXTURE_2D);
-      state->texisenabled = TRUE;
-    }
+
+    glEnable(GL_TEXTURE_2D);
   }
   else {
-    if (state->texisenabled) {
-      glDisable(GL_TEXTURE_2D);
-      state->texisenabled = FALSE;
-    }
+    glDisable(GL_TEXTURE_2D);
   }
 
   const float * vertexarrayptr = PRIVATE(state)->vertexarray.getArrayPtr();
@@ -2195,7 +2198,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   GL.glEnableClientState(GL_VERTEX_ARRAY);
   GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
 
-  if ( normals != NULL && PRIVATE(state)->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(state)->scenerytexid == 0 ) {
     // elevation and normals
     assert(PRIVATE(state)->vertexarray.getLength() == PRIVATE(state)->normalarray.getLength());
     GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
@@ -2258,7 +2261,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   }
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
-  if ( normals != NULL && PRIVATE(state)->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(state)->scenerytexid == 0 ) {
     // elevation and normals
     GL.glDisableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {

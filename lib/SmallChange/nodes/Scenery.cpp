@@ -634,34 +634,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   // printf("SmScenery::GLRender\n");
 
-  // FIXME: this code block is just a very quick and dirty hack to
-  // work around *serious* problems with how the SceneryGL interface
-  // lacks any handling of multiple OpenGL contexts:
-  //
-  // textures are allocated, used and destructed with no regard to
-  // which OpenGL context is current (if any at all!), which will fail
-  // miserably on "true" stereo systems, when doing offscreen
-  // rendering, and in multi-pipe environments.
-  //
-  // I needed this work-around, which just deletes all old textures to
-  // force re-generation when a new GL context is detected, because
-  // the EMGS View'EM applications screenshot export feature triggered
-  // the bugs that are to be expected from this.
-  //
-  // Note that this work-around is also dangerous, in the sense that
-  // OpenGL textures may be destructed out of the context they were
-  // allocated and used in -- something which can theoretically cause
-  // any sort of mayhem (but which seems to work out ok for most
-  // drivers). This is only a stop-gap solution, to make it possible
-  // for oso to grab a few high-res screenshots for EMGS.
-  //
-  // 20040426 mortene.
-  if (PRIVATE(this)->lastglcontext == UINT_MAX) { PRIVATE(this)->lastglcontext = action->getCacheContext(); }
-  if (PRIVATE(this)->lastglcontext != action->getCacheContext()) {
-    sc_delete_all_textures(&PRIVATE(this)->renderstate);
-    PRIVATE(this)->lastglcontext = action->getCacheContext();
-  }
-
   SbBool needpostframe = FALSE;
 
   if (!PRIVATE(this)->didevaluate) {
@@ -684,6 +656,40 @@ SmScenery::GLRender(SoGLRenderAction * action)
     printf("\n");
 #endif
   }
+
+  // FIXME: this code block is just a very quick and dirty hack to
+  // work around *serious* problems with how the SceneryGL interface
+  // lacks any handling of multiple OpenGL contexts:
+  //
+  // textures are allocated, used and destructed with no regard to
+  // which OpenGL context is current (if any at all!), which will fail
+  // miserably on "true" stereo systems, when doing offscreen
+  // rendering, and in multi-pipe environments.
+  //
+  // I needed this work-around, which just deletes all old textures to
+  // force re-generation when a new GL context is detected, because
+  // the EMGS View'EM applications screenshot export feature triggered
+  // the bugs that are to be expected from this.
+  //
+  // Note that this work-around is also dangerous, in the sense that
+  // OpenGL textures may be destructed out of the context they were
+  // allocated and used in -- something which can theoretically cause
+  // any sort of mayhem (but which seems to work out ok for most
+  // drivers). This is only a stop-gap solution, to make it possible
+  // for oso to grab a few high-res screenshots for EMGS.
+  //
+  // 20040426 mortene.
+#if 0
+  if (PRIVATE(this)->lastglcontext == UINT_MAX) { PRIVATE(this)->lastglcontext = action->getCacheContext(); }
+  if (PRIVATE(this)->lastglcontext != action->getCacheContext()) {
+    sc_delete_all_textures(&PRIVATE(this)->renderstate);
+    PRIVATE(this)->lastglcontext = action->getCacheContext();
+  }
+#else
+  /* note: this is matched with an unset call at the end of the function */
+  sc_set_current_context_id(&PRIVATE(this)->renderstate, action->getCacheContext());
+#endif
+
 
   if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
     // FIXME: add runtime colortexture
@@ -765,8 +771,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   SbBool texwasenabled = glIsEnabled(GL_TEXTURE_2D);
 
-  PRIVATE(this)->renderstate.texisenabled = texwasenabled;
-  PRIVATE(this)->renderstate.currtexid = 0;
+  PRIVATE(this)->renderstate.activescenerytexid = 0;
 
   sc_init_debug_info(&PRIVATE(this)->renderstate);
 
@@ -833,8 +838,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   // PRIVATE(this)->debuglist.truncate(0);
   // PRIVATE(this)->numnewtextures = 0;
-  PRIVATE(this)->renderstate.newtexcount = 0;
-
 
   SbBool didenabletexture1 = FALSE;
   float oldetexscale = PRIVATE(this)->renderstate.etexscale;
@@ -900,6 +903,8 @@ SmScenery::GLRender(SoGLRenderAction * action)
       action->getCurPath()->getHead()->touch();
     }
   }
+
+  sc_unset_current_context(&PRIVATE(this)->renderstate);
 }
 
 static int
