@@ -33,6 +33,9 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/lists/SbStringList.h>
+#ifdef __COIN__
+#include <Inventor/C/tidbits.h> // coin_getenv()
+#endif // __COIN__
 
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/SmScenery.h>
@@ -831,11 +834,45 @@ GL_VERTEX(SmScenery::RenderState * state, const int x, const int y, const float 
              elev);
 }
 
+static inline const char *
+sm_getenv(const char * s)
+{
+#ifdef __COIN__
+  return coin_getenv(s);
+#else // other Inventor
+  return getenv(s);
+#endif
+}
+
+// We provide the environment variable below to work around a bug in
+// the 3Dlabs OpenGL driver version 4.10.01.2105-2.16.0866: it doesn't
+// properly handle normals given in byte values (i.e. through
+// glNormal*b*()).
+//
+// This driver is fairly old, and 3Dlabs is more or less defunct now,
+// so we default to the faster (but bug-triggering) GL call.
+static inline SbBool
+ok_to_use_bytevalue_normals(void)
+{
+  static int okflag = -1;
+  if (okflag == -1) {
+    const char * env = sm_getenv("SM_SCENERY_NO_BYTENORMALS");
+    okflag = env && (atoi(env) > 0);
+  }
+  return !okflag;
+}
 
 inline void 
 GL_VERTEX_N(SmScenery::RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
-  glNormal3bv((const GLbyte *)n);
+  if (ok_to_use_bytevalue_normals()) {
+    glNormal3bv((const GLbyte *)n);
+  }
+  else {
+    static const float factor = 1.0f/127.0f;
+    glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
+  }
+
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
              (float) (y*state->vspacing[1] + state->voffset[1]),
              elev);
@@ -844,7 +881,14 @@ GL_VERTEX_N(SmScenery::RenderState * state, const int x, const int y, const floa
 inline void 
 GL_VERTEX_TN(SmScenery::RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
-  glNormal3bv((const GLbyte *)n);
+  if (ok_to_use_bytevalue_normals()) {
+    glNormal3bv((const GLbyte *)n);
+  }
+  else {
+    static const float factor = 1.0f/127.0f;
+    glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
+  }
+
   glTexCoord2f(state->toffset[0] + (float(x)/state->blocksize) * state->tscale[0],
                state->toffset[1] + (float(y)/state->blocksize) * state->tscale[1]);
   glVertex3f((float) (x*state->vspacing[0] + state->voffset[0]),
