@@ -1095,6 +1095,27 @@ SmScenery::getLoadRottger(void) const
   return c;
 }
 
+/*!
+
+  Sets whether vertex array rendering should be used (still a bit
+  slower, but works on ATI cards). Probably faster on OS X.
+
+*/
+void 
+SmScenery::setVertexArraysRendering(const SbBool onoff)
+{
+  PRIVATE(this)->usevertexarrays = (int) onoff;
+}
+
+/*!
+  Returns whether vertex array rendering is used.
+*/
+SbBool 
+SmScenery::getVertexArraysRendering(void) const
+{
+  return (SbBool) PRIVATE(this)->usevertexarrays;
+}
+
 SbVec3f
 SmScenery::getRenderCoordinateOffset(void) const
 {

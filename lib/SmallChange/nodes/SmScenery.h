@@ -93,6 +93,9 @@ public:
   void setLoadRottger(const float c);
   float getLoadRottger(void) const;
 
+  void setVertexArraysRendering(const SbBool onoff);
+  SbBool getVertexArraysRendering(void) const;
+
   SbVec3f getRenderCoordinateOffset(void) const;
   SbVec2f getElevationRange(void) const;
 
