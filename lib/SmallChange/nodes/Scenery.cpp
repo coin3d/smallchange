@@ -1359,11 +1359,16 @@ SceneryP::render_pre_cb(void * closure, ss_render_pre_cb_info * info)
         }
 #endif
       
+        SoGLImage::Wrap clampmode = SoGLImage::CLAMP_TO_EDGE;
+        const int context = SoGLCacheContextElement::get(state);
+        const cc_glglue * gl = cc_glglue_instance(context);
+        assert(gl);
+        if (!cc_glglue_has_texture_edge_clamp(gl)) { clampmode = SoGLImage::CLAMP; }
+
         SbVec2s size(renderstate.texw, renderstate.texh);
         image->setData(renderstate.texdata,
                        size, renderstate.texnc, 
-                       SoGLImage::CLAMP_TO_EDGE,
-                       SoGLImage::CLAMP_TO_EDGE, 0.9, 0, state);
+                       clampmode, clampmode, 0.9, 0, state);
         PRIVATE(thisp)->numnewtextures++;
       }
       image->getGLDisplayList(state)->call(state);
