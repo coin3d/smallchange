@@ -119,6 +119,52 @@ SbBool SoAudioClipStreamingP::stopPlaying(SbBool force)
 SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
 {
   short int *ibuffer = (short int *)buffer;
+  static double freq = 600.0;
+  static double ffreq = 600.0;
+  static int counter = 0;
+  ffreq +=10.0;
+  int a=100;
+  int h=800;
+  int d=100;
+  int p=44100.0/(ffreq/110.0);
+
+  // det klikker av og til fordi vi forandrer p og mod'er med denne
+
+  int c;
+  double value;
+  for (int i=0; i< size; i++)
+  {
+    c = (counter+i)%p;
+    value = sin( ((float)(counter+i))/44100.0*2*3.14159265358979323846264383*freq*2);
+    value=0;
+
+    value = 32000.0*sin( ((float)(counter+i))/44100.0*2*3.14159265358979323846264383*(freq) + 2*value);
+
+
+    if (c<=a)
+      ibuffer[i]= (double)c/(double)a * value;
+    else if (c<=a+h)
+      ibuffer[i]= value;
+    else if (c<=a+h+d)
+      ibuffer[i]= (1.0-(double)(c-(a+h))/(double)d) * value;
+    else
+      ibuffer[i] = 0.0;
+
+
+//      ibuffer[i]= value;
+
+/*
+    if ((counter+i)%4100<2050)
+      ibuffer[i] = 0.0;
+    else
+      ibuffer[i] = 32000.0*sin( ((float)i)/44100.0*2*3.14159265358979323846264383*freq);
+*/
+  }
+  counter+=size;
+
+  return TRUE;
+/*
+  short int *ibuffer = (short int *)buffer;
   static double freq = 880.0;
   static int counter = 0;
   freq -=10.0;
@@ -132,4 +178,5 @@ SbBool SoAudioClipStreamingP::fillBuffer(void *buffer, int size)
   counter+=size;
 
   return TRUE;
+*/
 };
