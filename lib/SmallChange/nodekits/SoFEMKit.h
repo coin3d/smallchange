@@ -15,6 +15,7 @@
 
 class SoFEMKitP;
 class SbColor;
+class SbPlane;
 
 class SoFEMKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -44,14 +45,19 @@ public:
 
   void reset(void);
 
-  void removeHidden(const SbBool onoff);
+  void removeHiddenFaces(const SbBool onoff);
   
   void addNode(const int nodeidx, const SbVec3f & xyz);
-  void add3DElement(const int elementidx, const int32_t * nodes);
-  void add2DElement(const int elementidx, const int32_t * nodes);
+  void add3DElement(const int elementidx, const int32_t * nodes, const int layerindex = 0);
+  void add2DElement(const int elementidx, const int32_t * nodes, const int layerindex = 0);
 
   void setNodeColor(const int nodeidx, const SbColor & color);
   void setElementColor(const int elementidx, const SbColor & color);
+
+  void enableAllElements(const SbBool onoroff);
+  void enableElement(const int elementidx, const SbBool onoroff);
+  void enableElements(const SbPlane & plane, const SbBool onoroff);
+  void enableLayer(const int layerindex, const SbBool onoroff);
 
   void create3DIndices(int32_t * idxarray, const int32_t * nodes); 
   void create2DIndices(int32_t * idxarray, const int32_t * nodes); 

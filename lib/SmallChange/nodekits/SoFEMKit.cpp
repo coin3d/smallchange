@@ -26,6 +26,7 @@
 #include <Inventor/nodes/SoNormalBinding.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbColor.h>
+#include <Inventor/SbPlane.h>
 #include <Inventor/SbBSPTree.h>
 
 #include <string.h>
@@ -34,12 +35,16 @@
 
 typedef struct {
   int coloridx;
+  int layerindex;
   int nodes[4];
+  SbBool active;
 } SoFEM2DElement;
 
 typedef struct {
   int coloridx;
+  int layerindex;
   int nodes[8];
+  SbBool active;
 } SoFEM3DElement;
 
 typedef struct {
@@ -81,7 +86,7 @@ SoFEMKit::SoFEMKit(void)
 {
   THIS = new SoFEMKitP;
   THIS->needupdate = FALSE;
-  THIS->removehidden = FALSE;
+  THIS->removehidden = TRUE;
 
   SO_KIT_CONSTRUCTOR(SoFEMKit);
 
@@ -189,14 +194,18 @@ SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
     --------
    0        3
 
+  \a layerindex can be used to specify the layer this element is in.       
+
 */
 
 void 
-SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes)
+SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int layerindex)
 {
   THIS->needupdate = TRUE;
 
   SoFEM3DElement elem;
+  elem.active = TRUE;
+  elem.layerindex = layerindex;
   elem.coloridx = -1;
   memcpy(elem.nodes, nodes, 8 * sizeof(int32_t));
   
@@ -224,20 +233,24 @@ SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes)
   order:
 
 
-         2______3
-         |      |
-         |      |      
-         |      |           
-         |------|
-         0      1
+  2______3
+  |      |
+  |      |      
+  |      |           
+  |------|
+  0      1
 
+  \a layerindex can be used to specify the layer this element is in.       
 */
+
 void 
-SoFEMKit::add2DElement(const int elementidx, const int32_t * nodes)
+SoFEMKit::add2DElement(const int elementidx, const int32_t * nodes, const int layerindex)
 {
   THIS->needupdate = TRUE;
 
   SoFEM2DElement elem;
+  elem.active = TRUE;
+  elem.layerindex = layerindex;
   elem.coloridx = -1;
   memcpy(elem.nodes, nodes, 4 * sizeof(int32_t));
   
@@ -295,6 +308,110 @@ SoFEMKit::setElementColor(const int elementidx, const SbColor & color)
     THIS->elements2d[lookup.index].coloridx = coloridx;
   }
 }
+
+/*!
+  Enable/disable all elements.
+*/
+void 
+SoFEMKit::enableAllElements(const SbBool onoroff)
+{
+  THIS->needupdate = TRUE;
+  int i;
+
+  for (i = 0; i < THIS->elements3d.getLength(); i++) {
+    THIS->elements3d[i].active = onoroff;
+  }
+  for (i = 0; i < THIS->elements2d.getLength(); i++) {
+    THIS->elements2d[i].active = onoroff;
+  }
+}
+
+static SbBool
+intersect_plane(const SbPlane & p, 
+                const int32_t * nodeidx, const int numnodes,
+                const SbList <SoFEMNode> & nodes,
+                const SbList <int> & nodelookup)
+{
+  int i;
+    
+  int numinfront = 0;
+  int numbehind = 0;
+
+  for (i = 0; i < numnodes; i++) {
+    SbVec3f v = nodes[nodelookup[nodeidx[i]]].coords;
+    if (p.isInHalfSpace(v)) numinfront++;
+    else numbehind++;
+
+    if (numinfront > 0 && numbehind > 0) return TRUE;
+  }
+  return FALSE;
+}
+
+/*!
+  Enable/disable elements intersecting \a plane.
+*/
+void
+SoFEMKit::enableElements(const SbPlane & plane, const SbBool onoroff)
+{
+  THIS->needupdate = TRUE;
+
+  int i;
+  for (i = 0; i < THIS->elements3d.getLength(); i++) {
+    SbBool isect = intersect_plane(plane, THIS->elements3d[i].nodes, 8, THIS->nodes,
+                                   THIS->nodelookup);
+    if (isect) {
+      THIS->elements3d[i].active = onoroff;
+    }
+  }
+  for (i = 0; i < THIS->elements2d.getLength(); i++) {
+    SbBool isect = intersect_plane(plane, THIS->elements2d[i].nodes, 4, 
+                                   THIS->nodes, THIS->nodelookup);
+    if (isect) {
+      THIS->elements2d[i].active = onoroff;
+    }
+  }
+}
+
+/*!
+  Enable/disable the \a elementidx element.
+*/
+void 
+SoFEMKit::enableElement(const int elementidx, const SbBool onoff)
+{
+  THIS->needupdate = TRUE;
+
+  assert(elementidx >= 0 && elementidx < THIS->elementlookup.getLength());
+  SoFEMLookup lookup = THIS->elementlookup[elementidx];
+
+  if (lookup.is3d) {
+    THIS->elements3d[lookup.index].active = onoff;
+  }
+  else {
+    THIS->elements2d[lookup.index].active = onoff;
+  }
+}
+
+/*!
+  Enable/disable elements in the \a leyerindex layer.
+*/
+void 
+SoFEMKit::enableLayer(const int layerindex, const SbBool onoroff)
+{
+  THIS->needupdate = TRUE;
+
+  int i;
+  for (i = 0; i < THIS->elements3d.getLength(); i++) {
+    if (THIS->elements3d[i].layerindex == layerindex) {
+      THIS->elements3d[i].active = onoroff;
+    }
+  }
+  for (i = 0; i < THIS->elements2d.getLength(); i++) {
+    if (THIS->elements2d[i].layerindex == layerindex) {
+      THIS->elements2d[i].active = onoroff;
+    }
+  }
+}
+
 
 // doc in parent
 void 
@@ -407,6 +524,8 @@ count_vertices(SoFEMKit * fem,
                SoFEM3DElement & elem,
                int * vcnt) 
 {
+  if (!elem.active) return;
+
   int i;
 
   int32_t indices[30];
@@ -424,6 +543,8 @@ count_vertices(SoFEMKit * fem,
                SoFEM2DElement & elem,
                int * vcnt) 
 {
+  if (!elem.active) return;
+
   int i;
 
   int32_t indices[5];
@@ -445,6 +566,8 @@ add_elem_3d(SoFEMKit * fem,
             SbBSPTree & normalbsp,
             const int * vcnt)
 {
+  if (!elem.active) return;
+
   int i;
 
   int32_t indices[30];
@@ -492,6 +615,8 @@ add_elem_2d(SoFEMKit * fem,
             SbBSPTree & normalbsp,
             const int * vcnt)
 {
+  if (!elem.active) return;
+
   int i;
 
   int32_t indices[5];
@@ -627,8 +752,13 @@ SoFEMKit::updateScene(void)
   this->setAnyPart("faceset", fs);
 }
 
+/*!
+  Turn on/off simple (but effective!) optimization that removes
+  all faces that are hidden by other faces. Default is
+  to remove hidden faces.
+*/
 void 
-SoFEMKit::removeHidden(const SbBool onoff)
+SoFEMKit::removeHiddenFaces(const SbBool onoff)
 {
   if (onoff != THIS->removehidden) {
     THIS->removehidden = onoff;

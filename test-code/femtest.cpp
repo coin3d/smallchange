@@ -35,24 +35,47 @@ setup_fem(SoFEMKit * fem)
   for (z = 0; z < ZSIZE-1; z++) {
     for (y = 0; y < YSIZE-1; y++) {
       for (x = 0; x < XSIZE-1; x++) {
-        if (rand() & 1) {
-          nodeidx[0] = NODEIDX(x,y,z);
-          nodeidx[1] = NODEIDX(x,y+1,z);
-          nodeidx[2] = NODEIDX(x+1,y+1,z);
-          nodeidx[3] = NODEIDX(x+1,y,z);
-          nodeidx[4] = NODEIDX(x,y,z+1);
-          nodeidx[5] = NODEIDX(x,y+1,z+1);
-          nodeidx[6] = NODEIDX(x+1,y+1,z+1);
-          nodeidx[7] = NODEIDX(x+1,y,z+1);
-          fem->add3DElement(ELEMENTIDX(x,y,z), nodeidx);
-          fem->setElementColor(ELEMENTIDX(x,y,z), SbColor(float(x)/XSIZE,
-                                                          float(y)/YSIZE,
-                                                          float(z)/ZSIZE));
-        }
+        nodeidx[0] = NODEIDX(x,y,z);
+        nodeidx[1] = NODEIDX(x,y+1,z);
+        nodeidx[2] = NODEIDX(x+1,y+1,z);
+        nodeidx[3] = NODEIDX(x+1,y,z);
+        nodeidx[4] = NODEIDX(x,y,z+1);
+        nodeidx[5] = NODEIDX(x,y+1,z+1);
+        nodeidx[6] = NODEIDX(x+1,y+1,z+1);
+        nodeidx[7] = NODEIDX(x+1,y,z+1);
+        fem->add3DElement(ELEMENTIDX(x,y,z), nodeidx);
+        fem->setElementColor(ELEMENTIDX(x,y,z), SbColor(float(x)/XSIZE,
+                                                        float(y)/YSIZE,
+                                                        float(z)/ZSIZE));
       }
     }
   }
-  fem->removeHidden(TRUE);
+
+  fem->enableAllElements(FALSE);
+
+#if 1 // just enable elements on random
+
+  for (z = 0; z < ZSIZE-1; z++) {
+    for (y = 0; y < YSIZE-1; y++) {
+      for (x = 0; x < XSIZE-1; x++) {
+        fem->enableElement(ELEMENTIDX(x,y,z), rand()&1);
+      }
+    }
+  }
+
+#else // enable two planes
+
+  fem->enableElements(SbPlane(SbVec3f(0,0,0), 
+                              SbVec3f(XSIZE, 0, ZSIZE),
+                              SbVec3f(XSIZE, YSIZE, 0)), TRUE);
+
+  fem->enableElements(SbPlane(SbVec3f(0,0,0), 
+                              SbVec3f(XSIZE, 0, 0),
+                              SbVec3f(0, YSIZE, ZSIZE)), TRUE);
+
+#endif // enable/disable debug
+
+  fem->removeHiddenFaces(TRUE);
 }
 
 int
