@@ -37,22 +37,39 @@
 
 /*!
   \var SoSFFloat AutoFile::interval
+
   Sets how often the idle sensor is triggered.
 */
 
 /*!
   \var SoSFFloat AutoFile::delay
-  Sets the delay before file is reloaded after a modification is detected.
+
+  Sets the delay before file is reloaded after a modification is
+  detected.
 */
 
 /*!
   \var SoSFInt32 AutoFile::priority
-  Sets the priority of the idle sensor. It is set to the default priority (100) by default.
+
+  Sets the priority of the idle sensor. It is set to the default
+  priority (100) by default.
 */
 
 /*!
   \var SoSFBool AutoFile::active
+
   Sets whether autoload is active.
+*/
+
+/*!
+  \var SoSFBool AutoFile::stripTopSeparator
+
+  If set to \c TRUE, the root SoSeparator node of the loaded iv-file
+  will be stripped off. This is useful for letting appearance settings
+  in the loaded sub-scene graph, like e.g. materials or textures,
+  influence the rest of the scene graph.
+
+  Default value is \c FALSE.
 */
 
 // *************************************************************************
