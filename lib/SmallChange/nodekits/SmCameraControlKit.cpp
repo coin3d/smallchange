@@ -157,9 +157,11 @@ SmCameraControlKit::GLRender(SoGLRenderAction * action)
 void 
 SmCameraControlKit::handleEvent(SoHandleEventAction * action)
 {
-  SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
-  if (eh) eh->handleEvent(action);
   inherited::handleEvent(action);
+  if (!action->isHandled()) {
+    SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
+    if (eh) eh->handleEvent(action);
+  }
 }
 
 void 
