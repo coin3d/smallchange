@@ -75,6 +75,15 @@ GLDepthBufferElement::init(SoState * state)
   this->updategl();
 }
 
+
+void
+GLDepthBufferElement::push(SoState * state)
+{
+  GLDepthBufferElement * prev = (GLDepthBufferElement*)this->getNextInStack();
+  this->enable = prev->enable;
+  this->func = prev->func;
+  prev->capture(state);
+}
 /*!
   Internal Coin method.
 */
@@ -82,8 +91,10 @@ void
 GLDepthBufferElement::pop(SoState * state,
                           const SoElement * prevTopElement)
 {
-  this->updategl();
-  inherited::pop(state, prevTopElement);
+  GLDepthBufferElement * prev = (GLDepthBufferElement*)prevTopElement;
+  if (this->enable != prev->enable || this->func != prev->func) {
+    this->updategl();
+  }
 }
 
 /*!
@@ -94,9 +105,12 @@ GLDepthBufferElement::set(SoState * state, const Func func, const SbBool enable)
 {
   GLDepthBufferElement * elem = (GLDepthBufferElement*)
     SoElement::getElement(state, classStackIndex);
-  elem->func = func;
-  elem->enable = enable;
-  elem->updategl();
+
+  if (func != elem->func || enable != elem->enable) {
+    elem->enable = enable;
+    elem->func = func;
+    elem->updategl();
+  }
 }
 
 /*!

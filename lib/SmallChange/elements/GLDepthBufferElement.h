@@ -54,6 +54,7 @@ public:
 
   static void set(SoState * state, const Func func, const SbBool enable);
   virtual void init(SoState * state);
+  virtual void push(SoState * state);
   virtual void pop(SoState * state,
                    const SoElement * prevTopElement);
 
