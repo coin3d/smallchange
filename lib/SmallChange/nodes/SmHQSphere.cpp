@@ -172,6 +172,7 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
     glScalef(r, r, r);
   }
 
+  // FIXME: use vertex arrays to speed up rendering
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < n; i++) {
     SbVec3f v = pts[idx[i]];
