@@ -153,8 +153,8 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
   glVertex3f(coords[0][0], coords[0][1], coords[0][2]);
   for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
 
-    // FIXME: should handle timestamp.getNum()==0 as a special
-    // case. 20030108 mortene.
+    // FIXME: should handle timestamp.getNum()==0 as a special case,
+    // and just distribute timevalues uniformly. 20030108 mortene.
     assert(segment + 1 < this->timestamp.getNum());
 
     float timestep  = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
@@ -276,7 +276,6 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
         SoTCBCurve::TCB(coords, this->timestamp, this->numControlpoints.getValue(), time, vec);
-        glVertex3f(vec[0], vec[1], vec[2]);
 
         if (vec[0] < minx) minx = vec[0];
         if (vec[1] < miny) miny = vec[1];
