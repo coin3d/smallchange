@@ -669,6 +669,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->renderstate.texisenabled = texwasenabled;
   PRIVATE(this)->renderstate.currtexid = 0;
   PRIVATE(this)->renderstate.state = action->getState();
+  PRIVATE(this)->renderstate.action = action;
 
   PRIVATE(this)->currhotspot = campos;
   PRIVATE(this)->curraction = action;
@@ -676,9 +677,9 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   // set up culling suitable for rendering
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          SmScenery::box_culling_pre_cb, action);
+                                          SmScenery::box_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SmScenery::box_culling_post_cb, action);
+                                           SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
 
   // callback to initialize for each block
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -762,10 +763,12 @@ void
 SmScenery::rayPick(SoRayPickAction * action)
 {
   if (!sc_scenery_available()) { return; }
+  PRIVATE(this)->renderstate.state = action->getState();
+  PRIVATE(this)->renderstate.action = action;
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          SmScenery::ray_culling_pre_cb, action);
+                                          SmScenery::ray_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SmScenery::ray_culling_post_cb, action);
+                                           SmScenery::ray_culling_post_cb, &PRIVATE(this)->renderstate);
 
   inherited::rayPick(action); // just generate primitives
   
@@ -822,10 +825,13 @@ SmScenery::evaluate(SoAction * action)
   worldtolocal.multVecMatrix(campos, campos);
   PRIVATE(this)->currhotspot = campos;
 
+  PRIVATE(this)->renderstate.state = action->getState();
+  PRIVATE(this)->renderstate.action = action;
+
   sc_ssglue_view_set_culling_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                          SmScenery::box_culling_pre_cb, action);
+                                          SmScenery::box_culling_pre_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
-                                           SmScenery::box_culling_post_cb, action);
+                                           SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                          NULL, this);
   double hotspot[3];
@@ -1332,7 +1338,9 @@ int
 SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
 {
   assert(closure);
-  SoAction * action = (SoAction *) closure;
+  RenderState * renderstate = (RenderState *) closure;
+
+  SoAction * action = renderstate->action;
   assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
          action->isOfType(SoCallbackAction::getClassTypeId()));
 
@@ -1351,7 +1359,9 @@ void
 SmScenery::box_culling_post_cb(void * closure)
 {
   assert(closure);
-  SoAction * action = (SoAction *) closure;
+  RenderState * renderstate = (RenderState *) closure;
+
+  SoAction * action = renderstate->action;
   assert(action->isOfType(SoGLRenderAction::getClassTypeId()) ||
          action->isOfType(SoCallbackAction::getClassTypeId()));
 
@@ -1364,7 +1374,9 @@ int
 SmScenery::ray_culling_pre_cb(void * closure, const double * bmin, const double * bmax)
 {
   assert(closure);
-  SoAction * action = (SoAction *) closure;
+  RenderState * renderstate = (RenderState *) closure;
+
+  SoAction * action = renderstate->action;
   assert(action->isOfType(SoRayPickAction::getClassTypeId()));
   SoRayPickAction * rpaction = (SoRayPickAction *) action;
 
@@ -1381,7 +1393,9 @@ void
 SmScenery::ray_culling_post_cb(void * closure)
 {
   assert(closure);
-  SoAction * action = (SoAction *) closure;
+  RenderState * renderstate = (RenderState *) closure;
+
+  SoAction * action = renderstate->action;
   assert(action->isOfType(SoRayPickAction::getClassTypeId()));
   
   SoState * state = action->getState();
