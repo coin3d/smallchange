@@ -25,10 +25,6 @@ struct RenderState {
   float blocksize;
   double vspacing[2];
   double voffset[2];
-  float tscale[2];
-  float toffset[2];
-  float invtsizescale[2]; // (1.0f / blocksize) * tscale[n]
-  unsigned int texid;
   float * elevdata;
   signed char * normaldata;
 
@@ -42,48 +38,19 @@ struct RenderState {
   float * clipplanes;
   int numclipplanes;
   float raypos[3], raydir[3];
-  void * cullstate; // SbList<int>
-
-  // picking
-  int intersected;
-  float intersection[3];
-  int dataset;
-  ss_render_block_cb_info * blockinfo;
 
   // elevation texture
   float etexscale;
   float etexoffset;
 
-  // internal vertex array state data
-  int vertexcount;
-
-  // post-block loop
-  void * varray;
-  void * narray;
-  void * t1array;
-  void * t2array;
-  void * idxarray;
-  void * lenarray;
-
-  // interleaved
-  float vertices[10*3];
-  unsigned char normals[10*3];
-  float fnormals[10*3];
-  float texture1[10*2];
-  float texture2[10*2];
-
   // temporary
   unsigned int currtexid;
-  unsigned char * texdata;
-  int texw, texh, texnc;
   int texisenabled;
 
-  void * texhash;      // SbHash<TexInfo *, unsigned int>
-  
   // debugging
-  void * debuglist;    // SbList<float>
   int newtexcount;
 
+  struct RenderStateP * pimpl;
 };
 
 /* ********************************************************************** */

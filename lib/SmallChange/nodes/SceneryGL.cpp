@@ -789,27 +789,79 @@ public:
   int unusedcount;
 };
 
+/* ********************************************************************** */
+
+struct RenderStateP {
+  RenderStateP(void)
+  {
+    this->vertexcount = 0;
+    this->dataset = -1;
+    this->blockinfo = NULL;
+  }
+
+  ~RenderStateP()
+  {
+    assert(this->texhash.getNumElements() == 0);
+  }
+
+  SbHash<TexInfo *, unsigned int> texhash;
+  SbList<int> cullstate;
+
+  // local block info
+  float tscale[2];
+  float toffset[2];
+  float invtsizescale[2]; // (1.0f / blocksize) * tscale[n]
+  unsigned int texid;
+
+  // temporary
+  unsigned char * texdata;
+  int texw, texh, texnc;
+
+  // picking
+  int intersected;
+  float intersection[3];
+  int dataset;
+  ss_render_block_cb_info * blockinfo;
+
+  // internal vertex array state data
+  int vertexcount;
+
+  // interleaved
+  float vertices[10*3];
+  unsigned char normals[10*3];
+  float fnormals[10*3];
+  float texture1[10*2];
+  float texture2[10*2];
+
+  // post-block loop
+  SbList<float> vertexarray;
+  SbList<signed char> normalarray;
+  SbList<float> texcoord1array;
+  SbList<float> texcoord2array;
+  SbList<unsigned int> idxarray;
+  SbList<int> lenarray;
+
+  // debugging
+  SbList<float> debuglist;
+};
+
+#define PRIVATE(s) ((s)->pimpl)
+
+/* ********************************************************************** */
+
 void
 sc_renderstate_construct(RenderState * state)
 {
   // construct lists
+
   state->clipplanes = NULL;
   state->numclipplanes = 0;
-  state->cullstate = (void *) new SbList<int>;
-  state->debuglist = (void *) new SbList<float>;
-  state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
+
   state->dotex = TRUE;
 
-  state->vertexcount = 0;
-  state->varray = NULL;
-  state->narray = NULL;
-  state->t1array = NULL;
-  state->t2array = NULL;
-  state->idxarray = NULL;
-  state->lenarray = NULL;
   state->renderpass = FALSE;
-  state->dataset = -1;
-  state->blockinfo = NULL;
+
+  PRIVATE(state) = new struct RenderStateP;
 }
 
 void
@@ -817,26 +869,10 @@ sc_renderstate_destruct(RenderState * state)
 {
   sc_delete_all_textures(state);
 
-  delete (SbHash<TexInfo *, unsigned int> *)state->texhash;
-  state->texhash = NULL;
+  delete PRIVATE(state);
+  PRIVATE(state) = NULL;
 
   // clipplanes are not owned by RenderState - managed elsewhere
-
-#define DELETE_LIST(list, type) \
-  if ( state->list ) { \
-    SbList<type> * instance = (SbList<type> *) state->list; \
-    delete instance; \
-    state->list = NULL; \
-  }
-  DELETE_LIST(debuglist, float);
-  DELETE_LIST(cullstate, int);
-  DELETE_LIST(varray, float);
-  DELETE_LIST(narray, signed char);
-  DELETE_LIST(t1array, float);
-  DELETE_LIST(t2array, float);
-  DELETE_LIST(idxarray, unsigned int);
-  DELETE_LIST(lenarray, int);
-#undef DELETE_LIST
 }
 
 /* ********************************************************************** */
@@ -845,8 +881,7 @@ void *
 sc_find_reuse_texture(RenderState * state)
 {
   TexInfo * tex = NULL;
-  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
-  if (texhash->get(state->texid, tex)) {
+  if (PRIVATE(state)->texhash.get(PRIVATE(state)->texid, tex)) {
     assert(tex->image);
     tex->unusedcount = 0;
     return tex->image;
@@ -858,15 +893,13 @@ void *
 sc_create_texture(RenderState * state, void * image)
 {
   assert(state);
-  assert(state->texhash);
 
   TexInfo * tex = new TexInfo;
   tex->image = image;
   tex->texid = state->currtexid;
   tex->unusedcount = 0;
 
-  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
-  texhash->put(state->texid, tex);
+  PRIVATE(state)->texhash.put(PRIVATE(state)->texid, tex);
   return tex->image;
 }
 
@@ -880,17 +913,14 @@ void
 sc_delete_unused_textures(RenderState * state)
 {
   assert(state);
-  assert(state->texhash);
-
-  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
 
   SbList<unsigned int> keylist;
-  texhash->makeKeyList(keylist);
+  PRIVATE(state)->texhash.makeKeyList(keylist);
   
   for (int i = 0; i < keylist.getLength(); i++) {
     const unsigned int key = keylist[i];
     TexInfo * tex = NULL;
-    texhash->get(key, tex);
+    PRIVATE(state)->texhash.get(key, tex);
     assert(tex);
 
     if (tex->unusedcount > MAX_UNUSED_COUNT) {
@@ -898,7 +928,7 @@ sc_delete_unused_textures(RenderState * state)
       // guarantee with this. 20040512 mortene.
       texture_release(tex->image);
       delete tex;
-      texhash->remove(key);
+      PRIVATE(state)->texhash.remove(key);
     }
   }
 }
@@ -907,18 +937,16 @@ void
 sc_delete_all_textures(RenderState * state)
 {
   assert(state);
-  assert(state->texhash);
-  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
 
   SbList<unsigned int> keylist;
-  texhash->makeKeyList(keylist);
+  PRIVATE(state)->texhash.makeKeyList(keylist);
 
   for (int i = 0; i < keylist.getLength(); i++ ) {
     const unsigned int key = keylist[i];
     TexInfo * tex = NULL;
-    texhash->get(key, tex);
+    PRIVATE(state)->texhash.get(key, tex);
     assert(tex);
-    texhash->remove(key);
+    PRIVATE(state)->texhash.remove(key);
 
     // FIXME: must be done in original GL ctx, of which there is no
     // guarantee with this. 20040512 mortene.
@@ -930,8 +958,7 @@ sc_delete_all_textures(RenderState * state)
 void
 sc_mark_unused_textures(RenderState * state)
 {
-  SbHash<TexInfo *, unsigned int> * texhash = (SbHash<TexInfo *, unsigned int> *) state->texhash;
-  texhash->apply(sc_texture_hash_inc_unused, NULL);
+  PRIVATE(state)->texhash.apply(sc_texture_hash_inc_unused, NULL);
 }
 
 /* ********************************************************************** */
@@ -1011,16 +1038,13 @@ sc_generate_elevation_line_texture(float distance,
 void
 sc_init_debug_info(RenderState * state)
 {
-  SbList<float> * list = (SbList<float> *) state->debuglist;
-  list->truncate(0);
+  PRIVATE(state)->debuglist.truncate(0);
 }
 
 void
 sc_display_debug_info(RenderState * state, float * campos, short * vpsize)
 {
   assert(state);
-  SbList<float> * list = (SbList<float> *) state->debuglist;
-  if ( !list ) return;
 
   int depthtest = glIsEnabled(GL_DEPTH_TEST);
   if ( depthtest ) glDisable(GL_DEPTH_TEST);
@@ -1038,15 +1062,15 @@ sc_display_debug_info(RenderState * state, float * campos, short * vpsize)
   glDepthMask(GL_FALSE);
   glColor3f(1.0f, 0.0f, 0.0f);
 
-  int num = list->getLength() / 4;
+  int num = PRIVATE(state)->debuglist.getLength() / 4;
   int i;
 
   float mind = 1.0f;
 
   for (i = 0; i < num; i++) {
     float x0, x1;
-    x0 = list->operator[](i*4);
-    x1 = list->operator[](i*4+2);
+    x0 = PRIVATE(state)->debuglist.operator[](i*4);
+    x1 = PRIVATE(state)->debuglist.operator[](i*4+2);
 
     float d = x1-x0;
     if (d < mind) mind = d;
@@ -1062,10 +1086,10 @@ sc_display_debug_info(RenderState * state, float * campos, short * vpsize)
   for (i = 0; i < num; i++) {
 
     float x0, x1, y0, y1;
-    x0 = list->operator[](i*4) - 0.5f;
-    y0 = list->operator[](i*4+1) - 0.5f;
-    x1 = list->operator[](i*4+2) - 0.5f;
-    y1 = list->operator[](i*4+3) - 0.5f;
+    x0 = PRIVATE(state)->debuglist.operator[](i*4) - 0.5f;
+    y0 = PRIVATE(state)->debuglist.operator[](i*4+1) - 0.5f;
+    x1 = PRIVATE(state)->debuglist.operator[](i*4+2) - 0.5f;
+    y1 = PRIVATE(state)->debuglist.operator[](i*4+3) - 0.5f;
 
     x0 -= campos[0];
     x1 -= campos[0];
@@ -1108,16 +1132,14 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   // and post() callbacks can be used stack- based and flags can be
   // set to avoid testing against certain planes further down in the
   // recursion when all corners are inside (inside == 8) the plane.
-  SbList<int> * cullstate = (SbList<int> *) state->cullstate;
-  assert(cullstate);
 
   int mask = 0;
-  if ( cullstate->getLength() > 0 ) {
+  if ( PRIVATE(state)->cullstate.getLength() > 0 ) {
     // This optimizes culling by telling which planes we do not need
     // to cull against.  It can only be enabled as long as we recurse
     // the quadtree.  If random order is implemented to render from
     // front to back, this will have to be disabled.
-    mask = cullstate->getLast();
+    mask = PRIVATE(state)->cullstate.getLast();
   }
 
   // set up bbox corner points
@@ -1151,12 +1173,12 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
         bits = bits | (1 << i);
       }
       if ( outside == 8 ) {
-        cullstate->push(0); // push state since post_cb pops it
+        PRIVATE(state)->cullstate.push(0); // push state since post_cb pops it
         return FALSE; // culled
       }
     }
   }
-  cullstate->push(mask | bits); // push culling state for next iteration
+  PRIVATE(state)->cullstate.push(mask | bits); // push culling state for next iteration
 
   // Use the GL_HP_occlusion_test extension to check if bounding box will
   // be totally occluded.
@@ -1224,9 +1246,7 @@ sc_plane_culling_post_cb(void * closure)
 {
   assert(closure);
   RenderState * state = (RenderState *) closure;
-  SbList<int> * cullstate = (SbList<int> *) state->cullstate;
-  assert(cullstate);
-  cullstate->pop();
+  PRIVATE(state)->cullstate.pop();
 }
 
 int
@@ -1281,8 +1301,8 @@ sc_ray_culling_post_cb(void * closure)
 inline void
 GL_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
-  glTexCoord2f(state->toffset[0] + float(x) * state->invtsizescale[0],
-               state->toffset[1] + float(y) * state->invtsizescale[1]);
+  glTexCoord2f(PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0],
+               PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1]);
   
   if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
     GL.glMultiTexCoord2f(GL_TEXTURE1,
@@ -1297,21 +1317,21 @@ inline void
 GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
 {
 #if VA_INTERLEAVED
-  const int idx = state->vertexcount;
-  state->texture1[idx*2+0] = state->toffset[0] + float(x) * state->invtsizescale[0];
-  state->texture1[idx*2+1] = state->toffset[1] + float(y) * state->invtsizescale[1];
-  state->texture2[idx*2+0] = 0.0f;
-  state->texture2[idx*2+1] = (state->etexscale * elev) + state->etexoffset;
-  state->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
-  state->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
-  state->vertices[idx*3+2] = elev;
-  state->vertexcount += 1;
+  const int idx = PRIVATE(state)->vertexcount;
+  PRIVATE(state)->texture1[idx*2+0] = PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0];
+  PRIVATE(state)->texture1[idx*2+1] = PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1];
+  PRIVATE(state)->texture2[idx*2+0] = 0.0f;
+  PRIVATE(state)->texture2[idx*2+1] = (state->etexscale * elev) + state->etexoffset;
+  PRIVATE(state)->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
+  PRIVATE(state)->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
+  PRIVATE(state)->vertices[idx*3+2] = elev;
+  PRIVATE(state)->vertexcount += 1;
 #else // !VA_INTERLEAVED
   static float vertex[3][3];
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = ((state->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     vertex[1][0] = vertex[2][0];
     vertex[1][1] = vertex[2][1];
@@ -1321,8 +1341,8 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
     texture2[1][0] = texture2[2][0];
     texture2[1][1] = texture2[2][1];
   }
-  texture1[idx][0] = state->toffset[0] + float(x) * state->invtsizescale[0];
-  texture1[idx][1] = state->toffset[1] + float(y) * state->invtsizescale[1];
+  texture1[idx][0] = PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0];
+  texture1[idx][1] = PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1];
   texture2[idx][0] = 0.0f;
   texture2[idx][1] = (state->etexscale * elev) + state->etexoffset;
   vertex[idx][0] = (float) (x*state->vspacing[0] + state->voffset[0]);
@@ -1330,32 +1350,26 @@ GL_VA_VERTEX(RenderState * state, const int x, const int y, const float elev)
   vertex[idx][2] = elev;
 
   if ( GL.glDrawElements != NULL ) {
-    SbList<float> * vertexarray = (SbList<float> *) state->varray;
-    SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
-    SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
-    vertexarray->append(vertex[0][0]);
-    vertexarray->append(vertex[0][1]);
-    vertexarray->append(vertex[0][2]);
-    texcoord1array->append(texture1[0][0]);
-    texcoord1array->append(texture1[0][1]);
-    texcoord2array->append(texture2[0][0]);
-    texcoord2array->append(texture2[0][1]);
-    state->vertexcount += 1;
-  } else if ( state->vertexcount >= 2 ) {
+    PRIVATE(state)->vertexarray.append(vertex[0][0]);
+    PRIVATE(state)->vertexarray.append(vertex[0][1]);
+    PRIVATE(state)->vertexarray.append(vertex[0][2]);
+    PRIVATE(state)->texcoord1array.append(texture1[0][0]);
+    PRIVATE(state)->texcoord1array.append(texture1[0][1]);
+    PRIVATE(state)->texcoord2array.append(texture2[0][0]);
+    PRIVATE(state)->texcoord2array.append(texture2[0][1]);
+    PRIVATE(state)->vertexcount += 1;
+  } else if ( PRIVATE(state)->vertexcount >= 2 ) {
     // render is done as triangles
-    SbList<float> * vertexarray = (SbList<float> *) state->varray;
-    SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
-    SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
     for ( int v = 0; v < 3; v++ ) {
-      vertexarray->append(vertex[v][0]);
-      vertexarray->append(vertex[v][1]);
-      vertexarray->append(vertex[v][2]);
-      texcoord1array->append(texture1[v][0]);
-      texcoord1array->append(texture1[v][1]);
-      texcoord2array->append(texture2[v][0]);
-      texcoord2array->append(texture2[v][1]);
+      PRIVATE(state)->vertexarray.append(vertex[v][0]);
+      PRIVATE(state)->vertexarray.append(vertex[v][1]);
+      PRIVATE(state)->vertexarray.append(vertex[v][2]);
+      PRIVATE(state)->texcoord1array.append(texture1[v][0]);
+      PRIVATE(state)->texcoord1array.append(texture1[v][1]);
+      PRIVATE(state)->texcoord2array.append(texture2[v][0]);
+      PRIVATE(state)->texcoord2array.append(texture2[v][1]);
     }
-    state->vertexcount += 1;
+    PRIVATE(state)->vertexcount += 1;
   }
 #endif // !VA_INTERLEAVED
 }
@@ -1379,26 +1393,26 @@ inline void
 GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
 #if VA_INTERLEAVED
-  const int idx = state->vertexcount;
+  const int idx = PRIVATE(state)->vertexcount;
   if ( GL.USE_BYTENORMALS ) {
-    state->normals[idx*3+0] = n[0];
-    state->normals[idx*3+1] = n[1];
-    state->normals[idx*3+2] = n[2];
+    PRIVATE(state)->normals[idx*3+0] = n[0];
+    PRIVATE(state)->normals[idx*3+1] = n[1];
+    PRIVATE(state)->normals[idx*3+2] = n[2];
   } else {
     static const float factor = 1.0f / 127.0f;
-    state->fnormals[idx*3+0] = float(n[0]) * factor;
-    state->fnormals[idx*3+1] = float(n[1]) * factor;
-    state->fnormals[idx*3+2] = float(n[2]) * factor;
+    PRIVATE(state)->fnormals[idx*3+0] = float(n[0]) * factor;
+    PRIVATE(state)->fnormals[idx*3+1] = float(n[1]) * factor;
+    PRIVATE(state)->fnormals[idx*3+2] = float(n[2]) * factor;
   }
-  state->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
-  state->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
-  state->vertices[idx*3+2] = elev;
-  state->vertexcount += 1;
+  PRIVATE(state)->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
+  PRIVATE(state)->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
+  PRIVATE(state)->vertices[idx*3+2] = elev;
+  PRIVATE(state)->vertexcount += 1;
 #else // !VA_INTERLEAVED
   static signed char normal[3][3];
   static float vertex[3][3];
 
-  const int idx = ((state->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1415,27 +1429,23 @@ GL_VA_VERTEX_N(RenderState * state, const int x, const int y, const float elev, 
   vertex[idx][2] = elev;
 
   if ( GL.glDrawElements != NULL ) {
-    SbList<float> * vertexarray = (SbList<float> *) state->varray;
-    SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
-    normalarray->append(normal[0][0]);
-    normalarray->append(normal[0][1]);
-    normalarray->append(normal[0][2]);
-    vertexarray->append(vertex[0][0]);
-    vertexarray->append(vertex[0][1]);
-    vertexarray->append(vertex[0][2]);
-    state->vertexcount += 1;
-  } else if ( state->vertexcount >= 2 ) {
-    SbList<float> * vertexarray = (SbList<float> *) state->varray;
-    SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
+    PRIVATE(state)->normalarray.append(normal[0][0]);
+    PRIVATE(state)->normalarray.append(normal[0][1]);
+    PRIVATE(state)->normalarray.append(normal[0][2]);
+    PRIVATE(state)->vertexarray.append(vertex[0][0]);
+    PRIVATE(state)->vertexarray.append(vertex[0][1]);
+    PRIVATE(state)->vertexarray.append(vertex[0][2]);
+    PRIVATE(state)->vertexcount += 1;
+  } else if ( PRIVATE(state)->vertexcount >= 2 ) {
     for ( int v = 0; v < 3; v++ ) {
-      normalarray->append(normal[v][0]);
-      normalarray->append(normal[v][1]);
-      normalarray->append(normal[v][2]);
-      vertexarray->append(vertex[v][0]);
-      vertexarray->append(vertex[v][1]);
-      vertexarray->append(vertex[v][2]);
+      PRIVATE(state)->normalarray.append(normal[v][0]);
+      PRIVATE(state)->normalarray.append(normal[v][1]);
+      PRIVATE(state)->normalarray.append(normal[v][2]);
+      PRIVATE(state)->vertexarray.append(vertex[v][0]);
+      PRIVATE(state)->vertexarray.append(vertex[v][1]);
+      PRIVATE(state)->vertexarray.append(vertex[v][2]);
     }
-    state->vertexcount += 1;
+    PRIVATE(state)->vertexcount += 1;
   }
 #endif // !VA_INTERLEAVED
 }
@@ -1448,8 +1458,8 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     static const float factor = 1.0f/127.0f;
     glNormal3f(n[0] * factor, n[1] * factor, n[2] * factor);
   }
-  glTexCoord2f(state->toffset[0] + float(x) * state->invtsizescale[0],
-               state->toffset[1] + float(y) * state->invtsizescale[1]);
+  glTexCoord2f(PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0],
+               PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1]);
   if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
     GL.glMultiTexCoord2f(GL_TEXTURE1,
                          0.0f, (state->etexscale * elev) + state->etexoffset);
@@ -1463,32 +1473,32 @@ inline void
 GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, const signed char * n)
 {
 #if VA_INTERLEAVED
-  const int idx = state->vertexcount;
+  const int idx = PRIVATE(state)->vertexcount;
   if ( GL.USE_BYTENORMALS ) {
-    state->normals[idx*3+0] = n[0];
-    state->normals[idx*3+1] = n[1];
-    state->normals[idx*3+2] = n[2];
+    PRIVATE(state)->normals[idx*3+0] = n[0];
+    PRIVATE(state)->normals[idx*3+1] = n[1];
+    PRIVATE(state)->normals[idx*3+2] = n[2];
   } else {
     static const float factor = 1.0f / 127.0f;
-    state->fnormals[idx*3+0] = float(n[0]) * factor;
-    state->fnormals[idx*3+1] = float(n[1]) * factor;
-    state->fnormals[idx*3+2] = float(n[2]) * factor;
+    PRIVATE(state)->fnormals[idx*3+0] = float(n[0]) * factor;
+    PRIVATE(state)->fnormals[idx*3+1] = float(n[1]) * factor;
+    PRIVATE(state)->fnormals[idx*3+2] = float(n[2]) * factor;
   }
-  state->texture1[idx*2+0] = state->toffset[0] + float(x) * state->invtsizescale[0];
-  state->texture1[idx*2+1] = state->toffset[1] + float(y) * state->invtsizescale[1];
-  state->texture2[idx*2+0] = 0.0f;
-  state->texture2[idx*2+1] = (state->etexscale * elev) + state->etexoffset;
-  state->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
-  state->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
-  state->vertices[idx*3+2] = elev;
-  state->vertexcount += 1;
+  PRIVATE(state)->texture1[idx*2+0] = PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0];
+  PRIVATE(state)->texture1[idx*2+1] = PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1];
+  PRIVATE(state)->texture2[idx*2+0] = 0.0f;
+  PRIVATE(state)->texture2[idx*2+1] = (state->etexscale * elev) + state->etexoffset;
+  PRIVATE(state)->vertices[idx*3+0] = (float) (x*state->vspacing[0] + state->voffset[0]);
+  PRIVATE(state)->vertices[idx*3+1] = (float) (y*state->vspacing[1] + state->voffset[1]);
+  PRIVATE(state)->vertices[idx*3+2] = elev;
+  PRIVATE(state)->vertexcount += 1;
 #else // !VA_INTERLEAVED
   static signed char normal[3][3];
   static float vertex[3][3];
   static float texture1[3][2];
   static float texture2[3][2];
 
-  const int idx = ((state->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
+  const int idx = ((PRIVATE(state)->vertexcount == 0) || (GL.glDrawElements != NULL)) ? 0 : 2; // store fan center in idx 0
   if ( idx != 0 ) { // move up old entries
     normal[1][0] = normal[2][0];
     normal[1][1] = normal[2][1];
@@ -1504,8 +1514,8 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   normal[idx][0] = n[0];
   normal[idx][1] = n[1];
   normal[idx][2] = n[2];
-  texture1[idx][0] = state->toffset[0] + float(x) * state->invtsizescale[0];
-  texture1[idx][1] = state->toffset[1] + float(y) * state->invtsizescale[1];
+  texture1[idx][0] = PRIVATE(state)->toffset[0] + float(x) * PRIVATE(state)->invtsizescale[0];
+  texture1[idx][1] = PRIVATE(state)->toffset[1] + float(y) * PRIVATE(state)->invtsizescale[1];
   texture2[idx][0] = 0.0f;
   texture2[idx][1] = (state->etexscale * elev) + state->etexoffset;
   vertex[idx][0] = (float) (x*state->vspacing[0] + state->voffset[0]);
@@ -1513,40 +1523,32 @@ GL_VA_VERTEX_TN(RenderState * state, const int x, const int y, const float elev,
   vertex[idx][2] = elev;
 
   if ( GL.glDrawElements != NULL ) {
-    SbList<float> * vertexarray = (SbList<float> *) state->varray;
-    SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
-    SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
-    SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
-    texcoord1array->append(texture1[0][0]);
-    texcoord1array->append(texture1[0][1]);
-    texcoord2array->append(texture2[0][0]);
-    texcoord2array->append(texture2[0][1]);
-    normalarray->append(normal[0][0]);
-    normalarray->append(normal[0][1]);
-    normalarray->append(normal[0][2]);
-    vertexarray->append(vertex[0][0]);
-    vertexarray->append(vertex[0][1]);
-    vertexarray->append(vertex[0][2]);
-    state->vertexcount += 1;
+    PRIVATE(state)->texcoord1array.append(texture1[0][0]);
+    PRIVATE(state)->texcoord1array.append(texture1[0][1]);
+    PRIVATE(state)->texcoord2array.append(texture2[0][0]);
+    PRIVATE(state)->texcoord2array.append(texture2[0][1]);
+    PRIVATE(state)->normalarray.append(normal[0][0]);
+    PRIVATE(state)->normalarray.append(normal[0][1]);
+    PRIVATE(state)->normalarray.append(normal[0][2]);
+    PRIVATE(state)->vertexarray.append(vertex[0][0]);
+    PRIVATE(state)->vertexarray.append(vertex[0][1]);
+    PRIVATE(state)->vertexarray.append(vertex[0][2]);
+    PRIVATE(state)->vertexcount += 1;
   }
-  else if ( state->vertexcount >= 2 ) { // we have a new triangle
-    SbList<float> * vertexarray = (SbList<float> *) state->varray;
-    SbList<signed char> * normalarray = (SbList<signed char> *) state->narray;
-    SbList<float> * texcoord1array = (SbList<float> *) state->t1array;
-    SbList<float> * texcoord2array = (SbList<float> *) state->t2array;
+  else if ( PRIVATE(state)->vertexcount >= 2 ) { // we have a new triangle
     for ( int v = 0; v < 3; v++ ) {
-      texcoord1array->append(texture1[v][0]);
-      texcoord1array->append(texture1[v][1]);
-      texcoord2array->append(texture2[v][0]);
-      texcoord2array->append(texture2[v][1]);
-      normalarray->append(normal[v][0]);
-      normalarray->append(normal[v][1]);
-      normalarray->append(normal[v][2]);
-      vertexarray->append(vertex[v][0]);
-      vertexarray->append(vertex[v][1]);
-      vertexarray->append(vertex[v][2]);
+      PRIVATE(state)->texcoord1array.append(texture1[v][0]);
+      PRIVATE(state)->texcoord1array.append(texture1[v][1]);
+      PRIVATE(state)->texcoord2array.append(texture2[v][0]);
+      PRIVATE(state)->texcoord2array.append(texture2[v][1]);
+      PRIVATE(state)->normalarray.append(normal[v][0]);
+      PRIVATE(state)->normalarray.append(normal[v][1]);
+      PRIVATE(state)->normalarray.append(normal[v][2]);
+      PRIVATE(state)->vertexarray.append(vertex[v][0]);
+      PRIVATE(state)->vertexarray.append(vertex[v][1]);
+      PRIVATE(state)->vertexarray.append(vertex[v][2]);
     }
-    state->vertexcount += 1;
+    PRIVATE(state)->vertexcount += 1;
   }
 #endif // !VA_INTERLEAVED
 }
@@ -1570,26 +1572,25 @@ sc_render_pre_cb_common(void * closure, ss_render_block_cb_info * info)
                                    &renderstate->normaldata,
                                    NULL);
 
-  if ( renderstate->debuglist ) {
-    float ox = (float) (renderstate->voffset[0] / renderstate->bbmax[0]);
-    float oy = (float) (renderstate->voffset[1] / renderstate->bbmax[1]);
-    float sx = (float) ((renderstate->vspacing[0] * renderstate->blocksize) / renderstate->bbmax[0]);
-    float sy = (float) ((renderstate->vspacing[1] * renderstate->blocksize) / renderstate->bbmax[1]);
-    ((SbList<float> *) renderstate->debuglist)->append(ox);
-    ((SbList<float> *) renderstate->debuglist)->append(oy);
-    ((SbList<float> *) renderstate->debuglist)->append(ox+sx);
-    ((SbList<float> *) renderstate->debuglist)->append(oy+sy);
-  }
+  // Append data used for debugging
+  float ox = (float) (renderstate->voffset[0] / renderstate->bbmax[0]);
+  float oy = (float) (renderstate->voffset[1] / renderstate->bbmax[1]);
+  float sx = (float) ((renderstate->vspacing[0] * renderstate->blocksize) / renderstate->bbmax[0]);
+  float sy = (float) ((renderstate->vspacing[1] * renderstate->blocksize) / renderstate->bbmax[1]);
+  PRIVATE(renderstate)->debuglist.append(ox);
+  PRIVATE(renderstate)->debuglist.append(oy);
+  PRIVATE(renderstate)->debuglist.append(ox+sx);
+  PRIVATE(renderstate)->debuglist.append(oy+sy);
 
-  renderstate->toffset[0] = 0.0f;
-  renderstate->toffset[1] = 0.0f;
-  renderstate->tscale[0] = 1.0f;
-  renderstate->tscale[1] = 1.0f;
-  ss_render_get_texture_measures(info, &renderstate->texid,
-                                 renderstate->toffset, renderstate->tscale);
+  PRIVATE(renderstate)->toffset[0] = 0.0f;
+  PRIVATE(renderstate)->toffset[1] = 0.0f;
+  PRIVATE(renderstate)->tscale[0] = 1.0f;
+  PRIVATE(renderstate)->tscale[1] = 1.0f;
+  ss_render_get_texture_measures(info, &PRIVATE(renderstate)->texid,
+                                 PRIVATE(renderstate)->toffset, PRIVATE(renderstate)->tscale);
   // for optimizing texture coordinate calculations
-  renderstate->invtsizescale[0] = (1.0f / renderstate->blocksize) * renderstate->tscale[0];
-  renderstate->invtsizescale[1] = (1.0f / renderstate->blocksize) * renderstate->tscale[1];
+  PRIVATE(renderstate)->invtsizescale[0] = (1.0f / renderstate->blocksize) * PRIVATE(renderstate)->tscale[0];
+  PRIVATE(renderstate)->invtsizescale[1] = (1.0f / renderstate->blocksize) * PRIVATE(renderstate)->tscale[1];
 }
 
 
@@ -1600,19 +1601,19 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   RenderState * renderstate = (RenderState *) closure;
 
   // set up texture for block
-  if (renderstate->dotex && renderstate->texid) {
-    if (renderstate->texid != renderstate->currtexid) {
+  if (renderstate->dotex && PRIVATE(renderstate)->texid) {
+    if (PRIVATE(renderstate)->texid != renderstate->currtexid) {
       void * imagehandle = sc_find_reuse_texture(renderstate);
       if ( !imagehandle ) {
-        ss_render_get_texture_image(info, renderstate->texid,
-                                    &renderstate->texdata,
-                                    &renderstate->texw,
-                                    &renderstate->texh,
-                                    &renderstate->texnc);
+        ss_render_get_texture_image(info, PRIVATE(renderstate)->texid,
+                                    &PRIVATE(renderstate)->texdata,
+                                    &PRIVATE(renderstate)->texw,
+                                    &PRIVATE(renderstate)->texh,
+                                    &PRIVATE(renderstate)->texnc);
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        imagehandle = texture_construct(renderstate->texdata, renderstate->texw, renderstate->texh, renderstate->texnc, clampmode, clampmode, 0.9f, 0);
+        imagehandle = texture_construct(PRIVATE(renderstate)->texdata, PRIVATE(renderstate)->texw, PRIVATE(renderstate)->texh, PRIVATE(renderstate)->texnc, clampmode, clampmode, 0.9f, 0);
 
         imagehandle = sc_create_texture(renderstate, imagehandle);
         assert(imagehandle);
@@ -1622,7 +1623,7 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
       assert(texture_activate);
       texture_activate(renderstate, imagehandle);
 
-      renderstate->currtexid = renderstate->texid;
+      renderstate->currtexid = PRIVATE(renderstate)->texid;
     }
     if (!renderstate->texisenabled) {
       glEnable(GL_TEXTURE_2D);
@@ -1658,7 +1659,7 @@ sc_render_cb(void * closure, const int x, const int y,
   const int W = ((int) renderstate->blocksize) + 1;
 
   int idx;
-  if (normals && renderstate->texid == 0) {
+  if (normals && PRIVATE(renderstate)->texid == 0) {
 
 #define SEND_VERTEX(state, x, y) \
   idx = (y)*W + x; \
@@ -1741,28 +1742,27 @@ inline
 void
 SEND_VA_TRIANGLE_FAN(RenderState * state)
 {
-  assert(state->vertexcount <= 10);
+  assert(PRIVATE(state)->vertexcount <= 10);
   assert(GL.glDrawElements != NULL);
   static unsigned int indices[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   if ( GL.glDrawRangeElements != NULL ) {
-    GL.glDrawRangeElements(GL_TRIANGLE_FAN, 0, state->vertexcount - 1, state->vertexcount, GL_UNSIGNED_INT, indices);
+    GL.glDrawRangeElements(GL_TRIANGLE_FAN, 0, PRIVATE(state)->vertexcount - 1, PRIVATE(state)->vertexcount, GL_UNSIGNED_INT, indices);
   } else {
-    GL.glDrawElements(GL_TRIANGLE_FAN, state->vertexcount, GL_UNSIGNED_INT, indices);
+    GL.glDrawElements(GL_TRIANGLE_FAN, PRIVATE(state)->vertexcount, GL_UNSIGNED_INT, indices);
   }
 }
 
 #if VA_INTERLEAVED
 #define VA_TRIANGLE_FAN_START() \
-  renderstate->vertexcount = 0
+  PRIVATE(renderstate)->vertexcount = 0
 #define VA_TRIANGLE_FAN_STOP() \
   SEND_VA_TRIANGLE_FAN(renderstate)
 #else
 #define VA_TRIANGLE_FAN_START() \
-  renderstate->vertexcount = 0
+  PRIVATE(renderstate)->vertexcount = 0
 #define VA_TRIANGLE_FAN_STOP() \
   if ( GL.glDrawRangeElements != NULL ) { \
-    SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray; \
-    lenarray->append(renderstate->vertexcount); \
+    PRIVATE(renderstate)->lenarray.append(PRIVATE(renderstate)->vertexcount); \
   }
 #endif
 
@@ -1777,7 +1777,7 @@ sc_va_render_cb(void * closure, const int x, const int y,
   const int W = ((int) renderstate->blocksize) + 1;
 
   int idx;
-  if (normals && renderstate->texid == 0) {
+  if (normals && PRIVATE(renderstate)->texid == 0) {
 
 #define SEND_VERTEX(state, x, y) \
   idx = (y)*W + x; \
@@ -1871,7 +1871,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
   int numv = *ptr++;
   int tx, ty;
 
-  if (normals && renderstate->texid == 0) {
+  if (normals && PRIVATE(renderstate)->texid == 0) {
     int idx;
 #define SEND_VERTEX(state, x, y) \
     idx = (y)*W + x; \
@@ -1939,7 +1939,7 @@ sc_va_undefrender_cb(void * closure, const int x, const int y, const int len,
   int numv = *ptr++;
   int tx, ty;
 
-  if (normals && renderstate->texid == 0) {
+  if (normals && PRIVATE(renderstate)->texid == 0) {
     int idx;
 #define SEND_VERTEX(state, x, y) \
     idx = (y)*W + x; \
@@ -2017,76 +2017,57 @@ sc_va_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   const signed char * normals = renderstate->normaldata; // used as a flag below
   // elevation data is common for all modes
   GL.glEnableClientState(GL_VERTEX_ARRAY);
-  GL.glVertexPointer(3, GL_FLOAT, 0, renderstate->vertices);
+  GL.glVertexPointer(3, GL_FLOAT, 0, PRIVATE(renderstate)->vertices);
 
-  if ( normals != NULL && renderstate->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(renderstate)->texid == 0 ) {
     // elevation and normals
     if ( GL.USE_BYTENORMALS ) {
-      GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
+      GL.glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
     } else {
-      GL.glNormalPointer(GL_FLOAT, 0, renderstate->fnormals);
+      GL.glNormalPointer(GL_FLOAT, 0, PRIVATE(renderstate)->fnormals);
     }
     GL.glEnableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
     if ( GL.USE_BYTENORMALS ) {
-      GL.glNormalPointer(GL_BYTE, 0, renderstate->normals);
+      GL.glNormalPointer(GL_BYTE, 0, PRIVATE(renderstate)->normals);
     } else {
-      GL.glNormalPointer(GL_FLOAT, 0, renderstate->fnormals);
+      GL.glNormalPointer(GL_FLOAT, 0, PRIVATE(renderstate)->fnormals);
     }
     GL.glEnableClientState(GL_NORMAL_ARRAY);
 
     if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture2);
+      GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture2);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture1);
+    GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture1);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
     if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
-      GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture2);
+      GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture2);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
     }
 
-    GL.glTexCoordPointer(2, GL_FLOAT, 0, renderstate->texture1);
+    GL.glTexCoordPointer(2, GL_FLOAT, 0, PRIVATE(renderstate)->texture1);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
     
 #else
   sc_render_pre_cb_common(closure, info);
-  RenderState * renderstate = (RenderState *) closure;
+  RenderState * state = (RenderState *) closure;
 
-  if ( (renderstate->varray == NULL) ) {
-    renderstate->varray = new SbList<float>(4096);
-    renderstate->narray = new SbList<signed char>(4096);
-    renderstate->t1array = new SbList<float>(4096);
-    renderstate->t2array = new SbList<float>(4096);
-    renderstate->idxarray = new SbList<unsigned int>(4096);
-    renderstate->lenarray = new SbList<int>(4096);
-    assert(renderstate->varray);
-    assert(renderstate->narray);
-    assert(renderstate->t1array);
-    assert(renderstate->t2array);
-  }
-
-  SbList<float> * vertexarray = (SbList<float> *) renderstate->varray;
-  SbList<signed char> * normalarray = (SbList<signed char> *) renderstate->narray;
-  SbList<float> * texcoord1array = (SbList<float> *) renderstate->t1array;
-  SbList<float> * texcoord2array = (SbList<float> *) renderstate->t2array;
-  SbList<unsigned int> * idxarray = (SbList<unsigned int> *) renderstate->idxarray;
-  SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
   // reset lists
-  vertexarray->truncate(0);
-  normalarray->truncate(0);
-  texcoord1array->truncate(0);
-  texcoord2array->truncate(0);
-  lenarray->truncate(0);
-  // idxarray->truncate(0); // FIXME: necessary to do this?
+  PRIVATE(state)->vertexarray.truncate(0);
+  PRIVATE(state)->normalarray.truncate(0);
+  PRIVATE(state)->texcoord1array.truncate(0);
+  PRIVATE(state)->texcoord2array.truncate(0);
+  PRIVATE(state)->lenarray.truncate(0);
+  // PRIVATE(state)->idxarray.truncate(0); // FIXME: necessary to do this?
 #endif
 }
 
@@ -2095,20 +2076,20 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
 {
 #if VA_INTERLEAVED
   assert(closure);
-  RenderState * renderstate = (RenderState *) closure;
+  RenderState * state = (RenderState *) closure;
 
   sc_render_post_cb(closure, info);
 
-  const signed char * normals = renderstate->normaldata; // used as a flag below
+  const signed char * normals = state->normaldata; // used as a flag below
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
-  if ( normals != NULL && renderstate->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(state)->texid == 0 ) {
     // elevation and normals
     GL.glDisableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
     GL.glDisableClientState(GL_NORMAL_ARRAY);
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
@@ -2116,7 +2097,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
@@ -2126,22 +2107,14 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
 
 #else
   assert(closure);
-  RenderState * renderstate = (RenderState *) closure;
-  assert(renderstate->varray != NULL);
+  RenderState * state = (RenderState *) closure;
 
-  SbList<float> * vertexarray = (SbList<float> *) renderstate->varray;
-  SbList<signed char> * normalarray = (SbList<signed char> *) renderstate->narray;
-  SbList<float> * texcoord1array = (SbList<float> *) renderstate->t1array;
-  SbList<float> * texcoord2array = (SbList<float> *) renderstate->t2array;
-  SbList<unsigned int> * idxarray = (SbList<unsigned int> *) renderstate->idxarray;
-  SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
-
-  if ( vertexarray->getLength() == 0 ) { return; } // nothing to render in this block
-  if ( idxarray->getLength() < (vertexarray->getLength() / 3) ) {
+  if ( PRIVATE(state)->vertexarray.getLength() == 0 ) { return; } // nothing to render in this block
+  if ( PRIVATE(state)->idxarray.getLength() < (PRIVATE(state)->vertexarray.getLength() / 3) ) {
     int c;
-    const int needed = vertexarray->getLength() / 3;
-    for ( c = idxarray->getLength(); c < needed; c++ ) {
-      idxarray->append(c);
+    const int needed = PRIVATE(state)->vertexarray.getLength() / 3;
+    for ( c = PRIVATE(state)->idxarray.getLength(); c < needed; c++ ) {
+      PRIVATE(state)->idxarray.append(c);
     }
   }
 
@@ -2162,88 +2135,88 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // Set up textures before rendering - we delayed this because some blocks have
   // textures, but will be tessellated to 0 triangles if the block is mostly
   // undefined.
-  if (renderstate->dotex && renderstate->texid) {
-    if (renderstate->texid != renderstate->currtexid) {
-      void * imagehandle = sc_find_reuse_texture(renderstate);
+  if (state->dotex && PRIVATE(state)->texid) {
+    if (PRIVATE(state)->texid != state->currtexid) {
+      void * imagehandle = sc_find_reuse_texture(state);
       if ( !imagehandle ) {
-        ss_render_get_texture_image(info, renderstate->texid,
-                                    &renderstate->texdata,
-                                    &renderstate->texw,
-                                    &renderstate->texh,
-                                    &renderstate->texnc);
+        ss_render_get_texture_image(info, PRIVATE(state)->texid,
+                                    &PRIVATE(state)->texdata,
+                                    &PRIVATE(state)->texw,
+                                    &PRIVATE(state)->texh,
+                                    &PRIVATE(state)->texnc);
 
         int clampmode = GL.CLAMP_TO_EDGE;
         assert(texture_construct);
-        imagehandle = texture_construct(renderstate->texdata, renderstate->texw, renderstate->texh, renderstate->texnc, clampmode, clampmode, 0.9f, 0);
+        imagehandle = texture_construct(PRIVATE(state)->texdata, PRIVATE(state)->texw, PRIVATE(state)->texh, PRIVATE(state)->texnc, clampmode, clampmode, 0.9f, 0);
 
-        imagehandle = sc_create_texture(renderstate, imagehandle);
+        imagehandle = sc_create_texture(state, imagehandle);
         assert(imagehandle);
 
-        renderstate->newtexcount++;
+        state->newtexcount++;
       }
       assert(texture_activate);
-      texture_activate(renderstate, imagehandle);
+      texture_activate(state, imagehandle);
 
-      renderstate->currtexid = renderstate->texid;
+      state->currtexid = PRIVATE(state)->texid;
     }
-    if (!renderstate->texisenabled) {
+    if (!state->texisenabled) {
       glEnable(GL_TEXTURE_2D);
-      renderstate->texisenabled = TRUE;
+      state->texisenabled = TRUE;
     }
   }
   else {
-    if (renderstate->texisenabled) {
+    if (state->texisenabled) {
       glDisable(GL_TEXTURE_2D);
-      renderstate->texisenabled = FALSE;
+      state->texisenabled = FALSE;
     }
   }
 
-  const float * vertexarrayptr = vertexarray->getArrayPtr();
-  const signed char * normalarrayptr = normalarray->getArrayPtr();
-  const float * texcoord1arrayptr = texcoord1array->getArrayPtr();
-  const float * texcoord2arrayptr = texcoord2array->getArrayPtr();
-  const unsigned int * idxarrayptr = idxarray->getArrayPtr();
+  const float * vertexarrayptr = PRIVATE(state)->vertexarray.getArrayPtr();
+  const signed char * normalarrayptr = PRIVATE(state)->normalarray.getArrayPtr();
+  const float * texcoord1arrayptr = PRIVATE(state)->texcoord1array.getArrayPtr();
+  const float * texcoord2arrayptr = PRIVATE(state)->texcoord2array.getArrayPtr();
+  const unsigned int * idxarrayptr = PRIVATE(state)->idxarray.getArrayPtr();
 
-  const int vertices = vertexarray->getLength() / 3;
+  const int vertices = PRIVATE(state)->vertexarray.getLength() / 3;
   const int triangles = vertices / 3;
 
-  const signed char * normals = renderstate->normaldata; // used as a flag below
+  const signed char * normals = state->normaldata; // used as a flag below
   // elevation data is common for all modes
   GL.glEnableClientState(GL_VERTEX_ARRAY);
   GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
 
-  if ( normals != NULL && renderstate->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(state)->texid == 0 ) {
     // elevation and normals
-    assert(vertexarray->getLength() == normalarray->getLength());
+    assert(PRIVATE(state)->vertexarray.getLength() == PRIVATE(state)->normalarray.getLength());
     GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
     GL.glEnableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
-    assert(vertexarray->getLength() == normalarray->getLength());
+    assert(PRIVATE(state)->vertexarray.getLength() == PRIVATE(state)->normalarray.getLength());
     GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
     GL.glEnableClientState(GL_NORMAL_ARRAY);
 
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
+    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+      assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord2array.getLength() / 2));
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
     }
-    assert((vertexarray->getLength() / 3) == (texcoord1array->getLength() / 2));
+    assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord1array.getLength() / 2));
     GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
-      assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
+    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+      assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord2array.getLength() / 2));
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
       GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
     }
 
-    assert((vertexarray->getLength() / 3) == (texcoord1array->getLength() / 2));
+    assert((PRIVATE(state)->vertexarray.getLength() / 3) == (PRIVATE(state)->texcoord1array.getLength() / 2));
     GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord1arrayptr);
     GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   }
@@ -2255,15 +2228,14 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   if ( GL.glDrawRangeElements == NULL ) {
     GL.glDrawArrays(GL_TRIANGLES, 0, vertices);
   } else {
-    SbList<int> * lenarray = (SbList<int> *) renderstate->lenarray;
     int offset = 0;
-    const int numstrips = lenarray->getLength();
-    const int numindices = idxarray->getLength();
+    const int numstrips = PRIVATE(state)->lenarray.getLength();
+    const int numindices = PRIVATE(state)->idxarray.getLength();
     int i;
     for ( i = 0; i < numstrips; i++ ) {
       int indices[10];
       int j;
-      const int len = (*lenarray)[i];
+      const int len = PRIVATE(state)->lenarray[i];
       // assert(len <= 10);
       for ( j = 0; j < len; j++ ) {
         indices[j] = offset + j;
@@ -2272,17 +2244,17 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
       GL.glDrawRangeElements(GL_TRIANGLE_FAN, offset, offset + len - 1, len, GL_UNSIGNED_INT, indices);
       offset += len;
     }
-    // printf("offset: %d   vertices: %d\n", offset, vertexarray->getLength() / 3);
+    // printf("offset: %d   vertices: %d\n", offset, PRIVATE(state)->vertexarray.getLength() / 3);
   }
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
-  if ( normals != NULL && renderstate->texid == 0 ) {
+  if ( normals != NULL && PRIVATE(state)->texid == 0 ) {
     // elevation and normals
     GL.glDisableClientState(GL_NORMAL_ARRAY);
   } else if ( normals ) {
     // elevation, normals and textures
     GL.glDisableClientState(GL_NORMAL_ARRAY);
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
@@ -2290,7 +2262,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   } else {
     // elevation and textures
-    if ( (renderstate->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
+    if ( (state->etexscale != 0.0f) && (GL.glClientActiveTexture != NULL) ) {
       GL.glClientActiveTexture(GL_TEXTURE1);
       GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
       GL.glClientActiveTexture(GL_TEXTURE0);
@@ -2304,7 +2276,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     int tex = glIsEnabled(GL_TEXTURE_2D);
     if ( tex ) { glDisable(GL_TEXTURE_2D); }
 
-    const float height = (renderstate->vspacing[0] + renderstate->vspacing[1]);
+    const float height = (state->vspacing[0] + state->vspacing[1]);
     int i;
 
     // FIXME:  Sort vertices along axis.  Find out why normal doesn't work.
@@ -2312,7 +2284,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     glNormal3f(0.0f, 1.0f, 0.0f);
     glBegin(GL_TRIANGLE_STRIP);
     for ( i = 0; i < vertices; i++ ) {
-      if ( vertexarrayptr[i*3] == renderstate->voffset[0] ) {
+      if ( vertexarrayptr[i*3] == state->voffset[0] ) {
         glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2]);
         glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2] + height);
       }
@@ -2322,7 +2294,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     glNormal3f(1.0f, 0.0f, 0.0f);
     glBegin(GL_TRIANGLE_STRIP);
     for ( i = 0; i < vertices; i++ ) {
-      if ( vertexarrayptr[i*3+1] == renderstate->voffset[1] ) {
+      if ( vertexarrayptr[i*3+1] == state->voffset[1] ) {
         glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2]);
         glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2] + height);
       }
@@ -2362,10 +2334,10 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
   if ( (intersectionpoint[0] >= bounds[0][0]) && (intersectionpoint[0] <= bounds[1][0]) &&
        (intersectionpoint[1] >= bounds[0][1]) && (intersectionpoint[1] <= bounds[1][1]) &&
        (intersectionpoint[2] >= bounds[0][2]) && (intersectionpoint[2] <= bounds[1][2]) ) {
-    if ( state->intersected ) { // already have an intersection
+    if ( PRIVATE(state)->intersected ) { // already have an intersection
       const SbVec3<float> newvec = intersectionpoint - raypos;
       const SbVec3<float> oldvec =
-        SbVec3<float>(state->intersection[0], state->intersection[1], state->intersection[2]) - raypos;
+        SbVec3<float>(PRIVATE(state)->intersection[0], PRIVATE(state)->intersection[1], PRIVATE(state)->intersection[2]) - raypos;
       if ( oldvec.sqrLength() <= newvec.sqrLength() ) {
         // old pickpoint is closer, whether this is an actual hit or not,
         // and we're only interested in the closest intersection
@@ -2382,11 +2354,11 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
     const int inside = pl0.isInHalfSpace(intersectionpoint);
     if ( (inside == pl1.isInHalfSpace(intersectionpoint)) &&
          (inside == pl2.isInHalfSpace(intersectionpoint)) ) {
-      state->intersected = TRUE;
-      state->intersection[0] = intersectionpoint[0];
-      state->intersection[1] = intersectionpoint[1];
-      state->intersection[2] = intersectionpoint[2];
-      if ( state->dataset != -2 ) {
+      PRIVATE(state)->intersected = TRUE;
+      PRIVATE(state)->intersection[0] = intersectionpoint[0];
+      PRIVATE(state)->intersection[1] = intersectionpoint[1];
+      PRIVATE(state)->intersection[2] = intersectionpoint[2];
+      if ( PRIVATE(state)->dataset != -2 ) {
         // we want to know which dataset we picked on
         double voffset[2];
         double vspacing[2];
@@ -2394,8 +2366,8 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
         float * elevation;
         signed char * texture;
         int * datasets;
-        assert(state->blockinfo);
-        ss_render_get_elevation_measures(state->blockinfo,
+        assert(PRIVATE(state)->blockinfo);
+        ss_render_get_elevation_measures(PRIVATE(state)->blockinfo,
                                          voffset, vspacing,
                                          dimension,
 	 &elevation, &texture,
@@ -2405,7 +2377,7 @@ intersect(RenderState * state, const SbVec3<float> & a, const SbVec3<float> & b,
         // printf("x, y   : %g, %g\n", intersectionpoint[0], intersectionpoint[1]);
         // printf("offset : %g, %g\n", voffset[0], voffset[1]);
         // printf("index  : %d, %d = dataset %d\n", x, y, datasets[y*dimension[0]+x]);
-        state->dataset = datasets[y*dimension[0]+x];
+        PRIVATE(state)->dataset = datasets[y*dimension[0]+x];
       }
     }
   }
@@ -2418,33 +2390,33 @@ void
 sc_raypick_pre_cb(void * closure, ss_render_block_cb_info * info)
 {
   assert(closure);
-  RenderState * renderstate = (RenderState *) closure;
+  RenderState * state = (RenderState *) closure;
   ss_render_get_elevation_measures(info,
-                                   renderstate->voffset,
-                                   renderstate->vspacing,
+                                   state->voffset,
+                                   state->vspacing,
                                    NULL,
-                                   &renderstate->elevdata,
-                                   &renderstate->normaldata,
+                                   &state->elevdata,
+                                   &state->normaldata,
                                    NULL);
-  renderstate->blockinfo = info;
+  PRIVATE(state)->blockinfo = info;
 }
 
 void
 sc_raypick_post_cb(void * closure, ss_render_block_cb_info * info)
 {
   assert(closure);
-  RenderState * renderstate = (RenderState *) closure;
-  renderstate->blockinfo = NULL;
+  RenderState * state = (RenderState *) closure;
+  PRIVATE(state)->blockinfo = NULL;
 }
 
 #define ELEVATION(x, y) elev[(y)*W+(x)]
 
 #define GEN_VERTEX(state, x, y, z) \
   second = third; \
-  third.setValue((float) ((x)*renderstate->vspacing[0] + renderstate->voffset[0]), \
-                 (float) ((y)*renderstate->vspacing[1] + renderstate->voffset[1]), (z)); \
+  third.setValue((float) ((x)*state->vspacing[0] + state->voffset[0]), \
+                 (float) ((y)*state->vspacing[1] + state->voffset[1]), (z)); \
   if ( ++vertices >= 3 ) { \
-    intersect(renderstate, first, second, third); \
+    intersect(state, first, second, third); \
   }
 
 /*!
@@ -2455,36 +2427,36 @@ sc_raypick_cb(void * closure, const int x, const int y,
                const int len, const unsigned int bitmask)
 {
   assert(closure);
-  RenderState * renderstate = (RenderState *) closure;
+  RenderState * state = (RenderState *) closure;
 
-  const signed char * normals = renderstate->normaldata;
-  const float * elev = renderstate->elevdata;
-  const int W = (int) renderstate->blocksize + 1;
+  const signed char * normals = state->normaldata;
+  const float * elev = state->elevdata;
+  const int W = (int) state->blocksize + 1;
 
   int vertices = 1;
   SbVec3<float> second(0.0f, 0.0f, 0.0f), third(0.0f, 0.0f, 0.0f);
 
-  const SbVec3<float> first((float) (x*renderstate->vspacing[0] + renderstate->voffset[0]),
-                            (float) (y*renderstate->vspacing[1] + renderstate->voffset[1]),
+  const SbVec3<float> first((float) (x*state->vspacing[0] + state->voffset[0]),
+                            (float) (y*state->vspacing[1] + state->voffset[1]),
                             ELEVATION(x, y));
 
-  GEN_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
+  GEN_VERTEX(state, x-len, y-len, ELEVATION(x-len, y-len));
   if (!(bitmask & SS_RENDER_BIT_SOUTH)) {
-    GEN_VERTEX(renderstate, x, y-len, ELEVATION(x, y-len));
+    GEN_VERTEX(state, x, y-len, ELEVATION(x, y-len));
   }
-  GEN_VERTEX(renderstate, x+len, y-len, ELEVATION(x+len, y-len));
+  GEN_VERTEX(state, x+len, y-len, ELEVATION(x+len, y-len));
   if (!(bitmask & SS_RENDER_BIT_EAST)) {
-    GEN_VERTEX(renderstate, x+len, y, ELEVATION(x+len, y));
+    GEN_VERTEX(state, x+len, y, ELEVATION(x+len, y));
   }
-  GEN_VERTEX(renderstate, x+len, y+len, ELEVATION(x+len, y+len));
+  GEN_VERTEX(state, x+len, y+len, ELEVATION(x+len, y+len));
   if (!(bitmask & SS_RENDER_BIT_NORTH)) {
-    GEN_VERTEX(renderstate, x, y+len, ELEVATION(x, y+len));
+    GEN_VERTEX(state, x, y+len, ELEVATION(x, y+len));
   }
-  GEN_VERTEX(renderstate, x-len, y+len, ELEVATION(x-len, y+len));
+  GEN_VERTEX(state, x-len, y+len, ELEVATION(x-len, y+len));
   if (!(bitmask & SS_RENDER_BIT_WEST)) {
-    GEN_VERTEX(renderstate, x-len, y, ELEVATION(x-len, y));
+    GEN_VERTEX(state, x-len, y, ELEVATION(x-len, y));
   }
-  GEN_VERTEX(renderstate, x-len, y-len, ELEVATION(x-len, y-len));
+  GEN_VERTEX(state, x-len, y-len, ELEVATION(x-len, y-len));
 }
 
 #undef ELEVATION
@@ -2509,11 +2481,11 @@ sc_undefraypick_cb(void * closure, const int x, const int y,
                     const int len, const unsigned int bitmask_org)
 {
   assert(closure);
-  RenderState * renderstate = (RenderState *) closure;
+  RenderState * state = (RenderState *) closure;
 
-  const signed char * normals = renderstate->normaldata;
-  const float * elev = renderstate->elevdata;
-  const int W = (int) renderstate->blocksize + 1;
+  const signed char * normals = state->normaldata;
+  const float * elev = state->elevdata;
+  const int W = (int) state->blocksize + 1;
 
   SbVec3<float> first(0.0f, 0.0f, 0.0f), second(0.0f, 0.0f, 0.0f), third(0.0f, 0.0f, 0.0f);
 
@@ -2526,7 +2498,7 @@ sc_undefraypick_cb(void * closure, const int x, const int y,
     while ( numv ) {
       tx = x + *ptr++ * len;
       ty = y + *ptr++ * len;
-      GEN_VERTEX(renderstate, tx, ty, ELEVATION(tx, ty));
+      GEN_VERTEX(state, tx, ty, ELEVATION(tx, ty));
       numv--;
     }
     numv = *ptr++;
