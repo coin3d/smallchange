@@ -104,6 +104,8 @@
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
+#include <float.h>
 
 static const unsigned int NOT_AVAILABLE = UINT_MAX;
 
@@ -724,7 +726,13 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   mat.multVecMatrix(nilpoint, nilpoint);
 
   const SbViewVolume &vv = SoViewVolumeElement::get(state);
-
+  // get distance from nilpoint to camera plane
+  float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
+  
+  if (SbAbs(dist) < vv.getNearDist() * FLT_EPSILON) {
+    nilpoint += vv.getProjectionDirection() * vv.getNearDist() * FLT_EPSILON;
+  }
+  
   SbVec3f screenpoint;
   vv.projectToScreen(nilpoint, screenpoint);
 
@@ -767,9 +775,6 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
     break;
   }
   
-  // get distance from nilpoint to camera plane
-  float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
-
   // find the four image points in the plane
   v0 = vv.getPlanePoint(dist, n0);
   v1 = vv.getPlanePoint(dist, n1);
