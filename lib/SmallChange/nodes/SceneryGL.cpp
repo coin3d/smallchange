@@ -138,6 +138,18 @@ typedef void (APIENTRY * glDrawElements_f)(GLenum mode, GLsizei count, GLenum ty
 typedef void (APIENTRY * glDrawRangeElements_f)( GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices );
 
 
+// FIXME: there is only a single, global instance of the following
+// structure. This is bogus, as different GL contexts can be used
+// concurrently, and they very well could have different capabilities
+// (an offscreen-context may have a different renderer than a
+// hardware-assisted on-screen context, for instance).
+//
+// Suggested fix: separate out the GL glue part of Coin into a
+// sub-library which can be used from any project, then use that
+// instead of this duplicated effort.
+//
+// 20040426 mortene.
+
 // state container definition
 struct sc_GL {
   // polygon offset (for 
