@@ -161,7 +161,7 @@ public:
   SbBool shouldBuildGlyphCache(SoState * state);
   void dumpGlyphCache();
   void dumpBuffer(unsigned char * buffer, SbVec2s size, SbVec2s pos);
-  SbVec2s findBitmapBBox(unsigned char * buf, SbVec2s & size);
+
 };
 
 // *************************************************************************
@@ -299,6 +299,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           ypos -= THIS->stringheight[i]/2.0f;
           break;
         }
+
         for (int i2 = 0; i2 < charcnt; i2++) {
           buffer = THIS->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
           ix = thissize[0];
@@ -306,7 +307,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           position = THIS->positions[i][i2];
           fx = (float)position[0];
           fy = (float)position[1];
-          
+
           rasterx = xpos + fx;
           rpx = rasterx >= 0 ? rasterx : 0;
           offvp = rasterx < 0 ? 1 : 0;
@@ -318,9 +319,8 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           offsety = rastery >= 0 ? 0 : rastery;
          
           glRasterPos3f(rpx, rpy, -nilpoint[2]);
-          if (offvp)
-            glBitmap(0,0,0,0,offsetx,offsety,NULL);
-          glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer);
+          if (offvp) glBitmap(0,0,0,0,offsetx,offsety,NULL);
+          if (buffer) glBitmap(ix,iy,0,0,0,0,(const GLubyte *)buffer);
         }
       }
       
@@ -545,6 +545,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   this->buildGlyphCache(state);
   
   SbVec3f nilpoint = this->textnode->position[posindex];
+
   const SbMatrix & mat = SoModelMatrixElement::get(state);
   mat.multVecMatrix(nilpoint, nilpoint);
 
@@ -552,7 +553,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
 
   SbVec3f screenpoint;
   vv.projectToScreen(nilpoint, screenpoint);
-  
+
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   SbVec2s vpsize = vp.getViewportSizePixels();
   
@@ -560,16 +561,18 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   short xmin, ymin, xmax, ymax;
   float minx, miny, maxx, maxy;
   this->bboxes[stringidx].getBounds(xmin, ymin, xmax, ymax);
-  center = SbVec2f( (float)(xmin+xmax)/(float)2.0, (float)(ymin+ymax)/(float)2.0);
-  minx = (xmin - center[0]) / vpsize[0];
-  miny = (ymin - center[1]) / vpsize[1];
-  maxx = (xmax - center[0]) / vpsize[0];
-  maxy = (ymax - center[1]) / vpsize[1];
-  n0 = SbVec2f(screenpoint[0] + minx, screenpoint[1] + miny);
-  n1 = SbVec2f(screenpoint[0] + maxx, screenpoint[1] + miny);
-  n2 = SbVec2f(screenpoint[0] + maxx, screenpoint[1] + maxy);
-  n3 = SbVec2f(screenpoint[0] + minx, screenpoint[1] + maxy);
+  center = SbVec2f((float)(-xmin+xmax) / 2.0f, (float)(-ymin+ymax) / 2.0f);
   
+  minx = ((float) xmin) / vpsize[0];
+  miny = ((float) ymin) / vpsize[1];
+  maxx = ((float) xmax) / vpsize[0];
+  maxy = ((float) ymax) / vpsize[1];
+ 
+  n0 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + minx, (screenpoint[1] - (center[1]/vpsize[1])) + miny);
+  n1 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + maxx, (screenpoint[1] - (center[1]/vpsize[1])) + miny);
+  n2 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + maxx, (screenpoint[1] - (center[1]/vpsize[1])) + maxy);
+  n3 = SbVec2f((screenpoint[0] - (center[0]/vpsize[0])) + minx, (screenpoint[1] - (center[1]/vpsize[1])) + maxy);
+
   float halfw = (maxx - minx) / (float)2.0;
   float halfh = (maxy - miny) / (float)2.0;
 
@@ -662,32 +665,6 @@ SoText2SetP::shouldBuildGlyphCache(SoState * state)
   return SbBool(FALSE);
 }
 
-SbVec2s
-SoText2SetP::findBitmapBBox(unsigned char * buf, SbVec2s & size)
-{
-  short maxx = 0;
-  short maxy = 0;
-  int idx;
-  int bytewidth = size[0] >> 3;
-  unsigned char mask;
-
-  for (int y=0; y<size[1]; y++) {
-    for (int byte=0; byte<bytewidth; byte++) {
-      for (int bit=0; bit<8; bit++) {
-        idx = y * bytewidth + byte;
-        mask = 0x80 >> bit;
-        if (buf[idx] & mask) {
-          if (byte*8 + bit > maxx)
-            maxx = byte*8 + bit;
-          if (y > maxy)
-            maxy = y;
-        }
-      }
-    }
-  }
-
-  return SbVec2s(maxx, maxy);
-}
 
 int
 SoText2SetP::buildGlyphCache(SoState * state)
@@ -705,9 +682,12 @@ SoText2SetP::buildGlyphCache(SoState * state)
     float rotation;
     SbBox2s stringbox;
     unsigned char * bmbuf;
+    float advancex, advancey;
     
-    // FIXME: This leads to incorrect support for the use of "<font>:Italic"
-    // or "<font>:Bold Italic" etc.(20031008 handegar)
+
+    // FIXME: Must add same support for font naming as for
+    // SoText2/3. I.e the use of "<font>:Italic" or "<font>:Bold
+    // Italic" etc. (20031008 handegar)
     curfontname = SoFontNameElement::get(state);
     curfontsize = SoFontSizeElement::get(state);
 
@@ -762,29 +742,30 @@ SoText2SetP::buildGlyphCache(SoState * state)
             return -1;
           }
 
-          bmbuf = this->glyphs[i][j]->getBitmap(thissize, thispos, SbBool(FALSE));
-          this->charbboxes[i][j] = this->findBitmapBBox( bmbuf, thissize);
-          
-          if (j > 0) {
-            kerning = this->glyphs[i][j-1]->getKerning((const SoGlyph &)*this->glyphs[i][j]);
-            advance = this->glyphs[i][j-1]->getAdvance();
-          } else {
+          this->glyphs[i][j]->getBitmap(thissize, thispos, FALSE);
+          advance = this->glyphs[i][j]->getAdvance();
+
+          if (j > 0) 
+            kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
+          else 
             kerning = SbVec2s(0,0);
-            advance = SbVec2s(0,0);
-          }
+          
+          this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
+    
+          SbVec2s pos = penpos + SbVec2s((short) thispos[0], (short) thispos[1]) + SbVec2s(0, (short) -thissize[1]);
+          stringbox.extendBy(pos);
+          stringbox.extendBy(pos + SbVec2s(advance[0] + kerning[0] + thissize[0], thissize[1]));
+          this->positions[i][j] = pos;
 
-          penpos = penpos + advance + kerning;
-          this->positions[i][j] = penpos + thispos + SbVec2s(0, -thissize[1]);
-          stringbox.extendBy(this->positions[i][j]);
-          stringbox.extendBy(this->positions[i][j] + thissize);
+          penpos += advance + kerning;
+	  
         }
-
-        // FIXME: incorrect for rotated texts, use stringbox width and height instead!
-        this->stringwidth[i] = this->positions[i][len-1][0] + thissize[0];
-        this->stringheight[i] = this->positions[i][len-1][1] + thissize[1];
+	
+	this->stringwidth[i] = stringbox.getMax()[0] - stringbox.getMin()[0];
+        this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];       
         this->bboxes.append(stringbox);
-        penpos = SbVec2s(0, 0);
-
+        penpos = SbVec2s(0, penpos[1] - (short)(SoFontSizeElement::get(state)));
+	
         // FIXME: Incorrect bbox for glyphs like 'g' and 'q'
         // etc. Should use the same techniques as SoText2 instead to
         // solve all these problems. (20031008 handegar)
