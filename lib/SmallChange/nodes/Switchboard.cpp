@@ -31,6 +31,8 @@
   \ingroup nodes
 */
 
+// FIXME: implement proper searching / SearchAction handling  2002-02-07 larsa
+// FIXME: implement proper writing / WriteAction handling  2002-02-07 larsa
 
 #include <SmallChange/nodes/Switchboard.h>
 #include <Inventor/nodes/SoSubNode.h>
