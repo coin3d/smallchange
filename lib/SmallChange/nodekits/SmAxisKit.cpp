@@ -31,9 +31,9 @@
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/nodes/SoCoordinate3.h>
-#include <Inventor/nodes/SoScale.h>
 #include <Inventor/nodes/SoDrawStyle.h>
 #include <Inventor/nodes/SoCube.h>
+#include <Inventor/errors/SoDebugError.h>
 
 #include "SmAxisKit.h"
 
@@ -256,46 +256,58 @@ SmAxisKitP::generateAxis(int LODlevel) const
   float pos = 0.0f;
   int counter = 0;
 
-  while (pos <= range) {    
-    
-    skip = FALSE;
-    switch (LODlevel) {      
-    case 0:
-      break;
-    case 1:
-      if (lodskipper & 1) 
-        skip = TRUE;      
-      break;
-    case 2:
-      if ((lodskipper & 1) || (lodskipper & 2))
-        skip = TRUE;      
-      break;
-    case 3:
-    default:
-      skip = TRUE;
-      break;
-    }
 
-    if (counter == 5) {
-      if (!skip) {
-        sep3->addChild(markerCoords2);
-        sep3->addChild(marker2);
-      }
-      counter = 0;
-    } 
-    else {
-      if (!skip) {
-        sep3->addChild(markerCoords1);
-        sep3->addChild(marker1);
-      }
-    }
+  // Interval == 0 will skip all markers.
+  if (PUBLIC(this)->markerInterval.getValue() < 0.0f) {
+    SoDebugError::postWarning("generateAxis", 
+                              "Illegal marker interval value (%f < 0).", 
+                              PUBLIC(this)->markerInterval.getValue());
+  } 
+  else if (PUBLIC(this)->markerInterval.getValue() > 0.0f) {
 
-    sep3->addChild(mtrans1);
-    pos += PUBLIC(this)->markerInterval.getValue();
-    ++counter;
-    ++lodskipper;
+    while (pos <= range) {    
+      
+      skip = FALSE;
+      switch (LODlevel) {      
+      case 0:
+        break;
+      case 1:
+        if (lodskipper & 1) 
+          skip = TRUE;      
+        break;
+      case 2:
+        if ((lodskipper & 1) || (lodskipper & 2))
+          skip = TRUE;      
+        break;
+      case 3:
+      default:
+        skip = TRUE;
+        break;
+      }
+      
+      if (counter == 5) {
+        if (!skip) {
+          sep3->addChild(markerCoords2);
+          sep3->addChild(marker2);
+        }
+        counter = 0;
+      } 
+      else {
+        if (!skip) {
+          sep3->addChild(markerCoords1);
+          sep3->addChild(marker1);
+        }
+      }
+      
+      sep3->addChild(mtrans1);
+      pos += PUBLIC(this)->markerInterval.getValue();
+      ++counter;
+      ++lodskipper;
+    }
+    root->addChild(sep3);
+
   }
-  root->addChild(sep3);
+
 
   // Text
   SoSeparator * textsep = new SoSeparator;
@@ -317,56 +329,61 @@ SmAxisKitP::generateAxis(int LODlevel) const
   lodskipper = 0;
   float markerValue = 0;
 
-
-  while (pos <= range) {
-
-    skip = FALSE;
-    switch (LODlevel) {      
-    case 0:
-      break;
-    case 1:
-      if (lodskipper & 1) 
-        skip = TRUE;      
-      break;
-    case 2:
-      if ((lodskipper & 1) || (lodskipper & 2))
-        skip = TRUE;      
-      break;
-    case 3:
-      if ((lodskipper & 1) || (lodskipper & 2) || (lodskipper & 4))
-        skip = TRUE;      
-      break;
-    case 4:
-      skip = TRUE;
-      break;
-    default:
-      break;
-    }
-    
-    SbString mtext;
-    SoText2 * markerText = new SoText2;
-    markerText->string.setValue(mtext.sprintf(tmptext, (markerValue + PUBLIC(this)->axisRange.getValue()[0])));
-
-    if (!skip) 
-      textsep->addChild(markerText);
-    textsep->addChild(ttrans1);
-
-    pos += PUBLIC(this)->textInterval.getValue();
-
-    if (rangeDecreasing)
-      markerValue -= PUBLIC(this)->textInterval.getValue();
-    else
-      markerValue += PUBLIC(this)->textInterval.getValue();
-
-
-    ++lodskipper;
+  // Interval == 0 will skip all text markers.
+  if (PUBLIC(this)->textInterval.getValue() < 0.0f) {
+    SoDebugError::postWarning("generateAxis", 
+                              "Illegal text interval value (%f < 0).", 
+                              PUBLIC(this)->textInterval.getValue());
+  } 
+  else if (PUBLIC(this)->textInterval.getValue() > 0.0f) {
+    while (pos <= range) {
+      
+      skip = FALSE;
+      switch (LODlevel) {      
+      case 0:
+        break;
+      case 1:
+        if (lodskipper & 1) 
+          skip = TRUE;      
+        break;
+      case 2:
+        if ((lodskipper & 1) || (lodskipper & 2))
+          skip = TRUE;      
+        break;
+      case 3:
+        if ((lodskipper & 1) || (lodskipper & 2) || (lodskipper & 4))
+          skip = TRUE;      
+        break;
+      case 4:
+        skip = TRUE;
+        break;
+      default:
+        break;
+      }
+      
+      SbString mtext;
+      SoText2 * markerText = new SoText2;
+      markerText->string.setValue(mtext.sprintf(tmptext, (markerValue + PUBLIC(this)->axisRange.getValue()[0])));
+      
+      if (!skip) 
+        textsep->addChild(markerText);
+      textsep->addChild(ttrans1);
+      
+      pos += PUBLIC(this)->textInterval.getValue();
+      
+      if (rangeDecreasing)
+        markerValue -= PUBLIC(this)->textInterval.getValue();
+      else
+        markerValue += PUBLIC(this)->textInterval.getValue();      
+      
+      ++lodskipper;
+      
+    }    
+    root->addChild(textsep);
 
   }
-
-  root->addChild(textsep);
-   
+    
   return root;
-
 }
 
 static void fieldsChangedCallback(void * classObject, SoSensor * sensor)
