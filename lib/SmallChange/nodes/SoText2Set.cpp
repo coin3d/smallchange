@@ -58,7 +58,7 @@
 
 
 
-#include "SoText2Set.h"
+#include <SmallChange/nodes/SoText2.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/elements/SoGLCoordinateElement.h>
@@ -151,6 +151,8 @@ const SbVec2f SoText2SetP::fontsize = SbVec2f(8.0f, 12.0f);
 SoText2Set::SoText2Set(void)
 {
   SO_NODE_CONSTRUCTOR(SoText2Set);
+  PRIVATE(this) = new SoTextSetP(this);
+
 
   SO_NODE_ADD_FIELD(strings, (""));
   SO_NODE_ADD_FIELD(justification, (SoText2Set::LEFT));
