@@ -915,7 +915,7 @@ SmScenery::evaluate(SoAction * action)
       //
       // ..fails with MSVC++ with an obscure error
       // message. Investigate. 20040206 mortene.
-      if (mapping == 0 /*SmColorGradientElement::RELATIVE*/ ) {
+      if (mapping == 1 /*SmColorGradientElement::RELATIVE*/ ) {
         const RenderState & rs = PRIVATE(this)->renderstate;
         minelev = (float) rs.bbmin[2];
         maxelev = (float) rs.bbmax[2];
