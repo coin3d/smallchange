@@ -83,19 +83,6 @@ AM_INIT_AUTOMAKE(SmallChange, $VERSION)
 #  Files to cram results from the configure tests into.
 AM_CONFIG_HEADER(config.h)
 
-#  Check for pthread 
-SIM_AC_CHECK_PTHREAD([
-  CPPFLAGS="$CPPFLAGS $sim_ac_pthread_cppflags"
-  LDFLAGS="$LDFLAGS $sim_ac_pthread_ldflags"
-  LIBS="$sim_ac_pthread_libs $LIBS"
-  AC_DEFINE(HAVE_PTHREAD, 1, [pthread extensions available])
-  SIM_AC_CONFIGURATION_SETTING([pthread support], [Yes])
-], 
-[
-  SIM_AC_CONFIGURATION_SETTING([pthread support], [No])
-]
-)
-
 #  Default to not building a shared library.
 #  Can be overridden by the user with --enable-shared.
 AM_DISABLE_SHARED
