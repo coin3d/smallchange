@@ -353,12 +353,22 @@ SmScenery::initClass(void)
 SO_NODE_SOURCE(SmScenery);
 
 SmScenery *
-SmScenery::createInstance(double * origo, double * spacing, int * elements, float * values, float undef)
+SmScenery::createInstance(double * origo, double * spacing, int * elements, float * values, const float undefval)
 {
   if ( !sc_scenery_available() ) { return NULL; }
-  ss_system * system = sc_ssglue_system_construct(1, origo, spacing, elements, values, undef);
+  ss_system * system = sc_ssglue_system_construct(1, origo, spacing, elements, values, undefval);
   if ( !system ) { return NULL; }
   return new SmScenery(system);
+}
+
+SmScenery *
+SmScenery::createInstance(const int cols, const int rows, double * xyzgrid, const float undefz = -1.0e30f)
+{
+  if ( !sc_scenery_available() ) { return NULL; }
+  // ss_system * system = sc_ssglue_system_construct_rotated(1, cols, rows, xyzgrid, undefz);
+  // if ( !system ) { return NULL; }
+  // return new SmScenery(system);
+  return NULL;
 }
 
 SmScenery::SmScenery(void)
@@ -460,9 +470,9 @@ SmScenery::SmScenery(ss_system * system)
 
   PRIVATE(this)->system = system;
 
-  sc_ssglue_system_get_object_box(PRIVATE(thisp)->system,
-                                  PRIVATE(thisp)->renderstate.bbmin,
-                                  PRIVATE(thisp)->renderstate.bbmax); 
+  sc_ssglue_system_get_object_box(PRIVATE(this)->system,
+                                  PRIVATE(this)->renderstate.bbmin,
+                                  PRIVATE(this)->renderstate.bbmax); 
 
   PRIVATE(this)->blocksize =
     sc_ssglue_system_get_blocksize(PRIVATE(this)->system);

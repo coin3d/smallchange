@@ -51,7 +51,9 @@ class SMALLCHANGE_DLL_API SmScenery : public SoShape {
 
 public:
   static void initClass(void);
-  static SmScenery * createInstance(double * origo, double * spacing, int * elements, float * values, float undef = -1.0e30f);
+  static SmScenery * createInstance(double * origo, double * spacing, int * elements, float * values, const float undefval = -1.0e30f);
+  static SmScenery * createInstance(const int cols, const int rows, double * xyzgrid, const float undefz = -1.0e30f);
+
   SmScenery(void);
 
   SoSFString filename;
