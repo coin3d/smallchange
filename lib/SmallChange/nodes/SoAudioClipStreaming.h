@@ -23,6 +23,7 @@ public:
   int getNumBuffers();
   void setUserCallback(int (*user_callback)(void *buffer, int length, void * userdataptr),
     void *userdata=NULL);
+  void setKeepAlive(SbBool alive=TRUE);
 
 protected:
 	virtual ~SoAudioClipStreaming();

@@ -26,6 +26,9 @@ SO_NODE_SOURCE(SoAudioClip);
 
 //ALuint SoAudioClip = {};
 
+SbStringList SoAudioClip::subdirectories = SbStringList();
+
+
 void SoAudioClip::initClass()
 {
   // SO_NODE_INIT_CLASS(SoAudioClip, SoNode, "Node");
@@ -50,7 +53,7 @@ SoAudioClip::SoAudioClip()
 //  THIS->size = 0;
   THIS->duration = 0.0;
   THIS->bufferId = 0; // no buffer (NULL), see alIsBuffer(...)
-  THIS->readstatus = 0; // buffer is OK
+  THIS->readstatus = 0; // buffer is not filled
 
   // use field sensor for url since we will load an image if
   // url changes. This is a time-consuming task which should
@@ -64,7 +67,7 @@ SoAudioClip::SoAudioClip()
 
 SoAudioClip::~SoAudioClip()
 {
-#ifndef NDEBUG
+#ifndef DEBUG_AUDIO
   fprintf(stderr, "~SoAudioClip()\n");
 #endif
   if (alIsBuffer(THIS->bufferId))
@@ -82,22 +85,26 @@ SbBool SoAudioClip::setBuffer(void *buffer, int length, int channels, int bitspe
 
   ALint	error;
 
+#if 0
+  // 20011130 thammer, not necessary. code kept for debugging
   // Delete previous buffer
-
   if (alIsBuffer(THIS->bufferId))
 	  alDeleteBuffers(1, &THIS->bufferId);
+#endif
 
   // Generate new buffer
 
-  alGenBuffers(1, &THIS->bufferId);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::setBuffer",
-                              "alGenBuffers failed. %s",
-                              GetALErrorString(errstr, error));
-		return FALSE;
-	}
+  if (!alIsBuffer(THIS->bufferId)) {
+    alGenBuffers(1, &THIS->bufferId);
+	  if ((error = alGetError()) != AL_NO_ERROR)
+	  {
+      char errstr[256];
+		  SoDebugError::postWarning("SoAudioClip::setBuffer",
+                                "alGenBuffers failed. %s",
+                                GetALErrorString(errstr, error));
+  		return FALSE;
+	  }
+  };
 
 	ALenum	alformat = 0;;
 
@@ -118,6 +125,7 @@ SbBool SoAudioClip::setBuffer(void *buffer, int length, int channels, int bitspe
 
   THIS->duration = (double)length/(double)samplerate;
   THIS->readstatus = 1; // buffer is OK
+  THIS->playedOnce = FALSE;
 
   return TRUE;
 };
@@ -134,11 +142,8 @@ SbBool SoAudioClip::loadUrl(void)
   if ( (str == NULL) || (strlen(str)==0) )
     return FALSE; // url is blank
 
-  SbStringList subdirectories;
-
-  subdirectories.append(new SbString("samples"));
-
-  SbString filename = SoInput::searchForFile(SbString(str), SoInput::getDirectories(), subdirectories);
+  SbString filename = SoInput::searchForFile(SbString(str), SoInput::getDirectories(), 
+    SoAudioClip::getSubdirectories());
 
   for (int i = 0; i < subdirectories.getLength(); i++) {
     delete subdirectories[i];
@@ -155,22 +160,34 @@ SbBool SoAudioClip::loadUrl(void)
 
   ALint	error;
 
+  // fixme: remove code below, just debugging
+#if 0
+  // 20011130 thammer, not necessary. code kept for debugging
   // Delete previous buffer
-
   if (alIsBuffer(THIS->bufferId))
 	  alDeleteBuffers(1, &THIS->bufferId);
+#endif
 
   // Generate new buffer
 
-  alGenBuffers(1, &THIS->bufferId);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
-                              "alGenBuffers failed. %s",
-                              GetALErrorString(errstr, error));
-		return FALSE;
-	}
+  if (!alIsBuffer(THIS->bufferId)) {
+    alGenBuffers(1, &THIS->bufferId);
+	  if ((error = alGetError()) != AL_NO_ERROR)
+	  {
+      char errstr[256];
+		  SoDebugError::postWarning("SoAudioClip::loadUrl",
+                                "alGenBuffers failed. %s",
+                                GetALErrorString(errstr, error));
+		  return FALSE;
+	  }
+  }
+
+/*  else
+  { // debugging
+    THIS->playedOnce = FALSE;
+    return TRUE;
+  }
+*/
 
   SbBool ret;
   char *buffer;
@@ -206,7 +223,6 @@ SbBool SoAudioClip::loadUrl(void)
   if (format == 1)
     alformat = getALSampleFormat(channels, bitspersample);
 
-
 	// Copy wav data into buffer
 	alBufferData(THIS->bufferId, alformat, aldata, alsize, alfreq);
 	if ((error = alGetError()) != AL_NO_ERROR)
@@ -214,65 +230,15 @@ SbBool SoAudioClip::loadUrl(void)
     char errstr[256];
 		SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "alBufferData failed for data read from file %s. %s",
-//                              text.getString(),
                               str,
                               GetALErrorString(errstr, error));
 		return FALSE;
 	}
-
-  THIS->duration = (double)((size/channels)/(bitspersample/8))/(double)samplerate;
 
   freeWaveDataBuffer(buffer);
 
-/*
-  ALsizei size,freq;
-	ALenum	format;
-	ALvoid	*data;
-	ALboolean loop;
-
-  // fixme: use filename.getString() instead of str
-
-	// Load .wav
-  alutLoadWAVFile(const_cast<ALbyte *>(str), &format, &data, &size, &freq, &loop);
-//	alutLoadWAV(str, &data, &format, &size, &bits, &freq);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
-                              "Couldn't load file %s. %s",
-//                              text.getString(), 
-                              str, 
-                              GetALErrorString(errstr, error));
-		return FALSE;
-	}
-
-	// Copy wav data into buffer
-	alBufferData(THIS->bufferId, format, data, size, freq);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClip::loadUrl",
-                              "alBufferData failed for data read from file %s. %s",
-//                              text.getString(),
-                              str,
-                              GetALErrorString(errstr, error));
-		return FALSE;
-	}
-
-	// Unload .wav
-	alutUnloadWAV(format,data,size,freq);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClipP::LoadUrl",
-                              "alutUnloadWAV failed for data read from file %s. %s",
-//                              text.getString(),
-                              str,
-                              GetALErrorString(errstr, error));
-		return FALSE;
-	}
-*/
-//  delete data; // 20010803 thh
+  THIS->duration = (double)((size/channels)/(bitspersample/8))/(double)samplerate;
+  THIS->playedOnce = FALSE;
 
   return TRUE;
 };
@@ -302,7 +268,8 @@ SoAudioClipP::urlSensorCB(SoSensor *)
   if (ITHIS->url.getNum()>0)
   {
     const char * str = ITHIS->url[0].getString();
-    if ( (str != NULL) && (strlen(str)>0) )
+//    if ( (str != NULL) && (strlen(str)>0) )
+    if (str != NULL)
     {
 
       if (ITHIS->loadUrl())
@@ -324,20 +291,6 @@ SoAudioClipP::urlSensorCB(SoSensor *)
 double SoAudioClip::getBufferDuration()
 {
   return THIS->duration * this->pitch.getValue();
-
-/*
-  ALfloat frequency;
-  ALi
-	alGetBufferi(this->sourceId,AL_LOOPING, looping);
-	if ((error = alGetError()) != AL_NO_ERROR)
-  {
-    char errstr[256];
-		SoDebugError::postWarning("SoSoundP::sourceSensorCB",
-                              "alSourcei(,AL_LOOPING,) failed. %s",
-                              GetALErrorString(errstr, error));
-    return;
-  }
-*/
 };
 
 SbBool SoAudioClip::getPlayedOnce()
@@ -353,6 +306,21 @@ void SoAudioClip::setPlayedOnce(SbBool played)
 SbBool SoAudioClip::isBufferOK()
 {
   return THIS->readstatus == 1 ? TRUE : FALSE;
+};
+
+void SoAudioClip::setSubdirectories(const SbList<SbString> &subdirectories)
+{
+  for (int i = 0; i < SoAudioClip::subdirectories.getLength(); i++) {
+    delete SoAudioClip::subdirectories[i];
+  }
+  for (i = 0; i < subdirectories.getLength(); i++) {
+    SoAudioClip::subdirectories.append(new SbString(subdirectories[i]));
+  }
+};
+
+const SbStringList & SoAudioClip::getSubdirectories()
+{
+  return SoAudioClip::subdirectories;
 };
 
 

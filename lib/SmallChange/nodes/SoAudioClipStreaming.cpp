@@ -3,6 +3,7 @@
 #endif
 
 #include <string.h>
+#include <assert.h>
 
 #if HAVE_OPENAL
 
@@ -21,6 +22,8 @@
 
 #undef ITHIS
 #define ITHIS this->ifacep
+
+#define SOAS_PAUSE_BETWEEN_TRACKS 5
 
 #ifndef _WIN32 // FIXME: hack to compile under Linux, pederb 2001-12-01
 #define strcmpi strcasecmp
@@ -44,7 +47,7 @@ SoAudioClipStreaming::SoAudioClipStreaming()
 //  THIS->asyncMode = FALSE;
   THIS->asyncMode = TRUE;
   THIS->alBuffers = NULL;
-  this->setBufferInfo(44100/40, 7);
+  this->setBufferInfo(44100/50, 9);
   THIS->usercallback = THIS->defaultCallbackWrapper;
   THIS->userdata = THIS;
 
@@ -59,7 +62,14 @@ SoAudioClipStreaming::SoAudioClipStreaming()
   this->setSampleFormat(1, 44100, 16);
   this->loop.setValue(FALSE); 
 
-  THIS->currentUrlIndex = 0;
+  THIS->currentPlaylistIndex = 0;
+  this->setKeepAlive(TRUE);
+
+#ifdef HAVE_PTHREAD
+  pthread_mutex_init(&THIS->syncmutex, NULL);
+#endif
+
+  THIS->playlistDirty = FALSE;
 };
 
 SoAudioClipStreaming::~SoAudioClipStreaming()
@@ -67,11 +77,15 @@ SoAudioClipStreaming::~SoAudioClipStreaming()
   // fixme: we cannot delete until the thread has stopped
   // which means the SoSound must be deleted first ...
 
-#ifndef NDEBUG
+#ifdef DEBUG_AUDIO
   fprintf(stderr, "~SoAudioClipStreaming()\n");
 #endif
 
   THIS->deleteAlBuffers();
+
+#ifdef HAVE_PTHREAD
+  pthread_mutex_destroy(&THIS->syncmutex);
+#endif
 
 // 20010821 thammer
 //  if (this->soaudioclip_impl->bufferId != 0)
@@ -147,16 +161,30 @@ void SoAudioClipStreaming::setUserCallback(SbBool (*usercallback)(void *buffer, 
 
 SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
 {
-  fillBufferDone = FALSE;
+  fillerPause = FALSE;
+  introPause = TRUE;
+  numBuffersLeftToClear = this->numBuffers * 2;
+  currentPlaylistIndex = 0;
+
+  /*
+  fixme 20011129 thammer. The use of intropause is just a temp solution to a problem
+  with "hickups" at the beginning of playing a streaming buffer. This needs to be investigated
+  further and fixed properly.
+  */
+
 	ALint	error;
   this->deleteAlBuffers();
-/*
+
+#if 0
+  // Kept for future reference until this code has been debugged properly
+  /*
   20010821 thammer
   if (this->alBuffers != NULL)
   {
     alDeleteBuffers(this->alBuffers)
   }
 */
+#endif
   // Create new buffers
   this->alBuffers = new ALuint[this->numBuffers];
   alGenBuffers(this->numBuffers, this->alBuffers);
@@ -176,12 +204,12 @@ SbBool SoAudioClipStreamingP::startPlaying(SbBool force)
 
   int loop;
   short int *buf = new short int[this->bufferSize * this->channels ];
+//  short int *buf = new short int[this->bufferSize ];
 	for (loop = 0; loop < this->numBuffers; loop++)
 	{
     this->fillBuffer(buf, this->bufferSize);
-//		alBufferData(this->alBuffers[loop], AL_FORMAT_MONO16, buf, this->bufferSize*sizeof(short int), 44100);
 
-		alBufferData(this->alBuffers[loop], alformat, buf, this->bufferSize*sizeof(short int), this->samplerate);
+		alBufferData(this->alBuffers[loop], alformat, buf, this->bufferSize*sizeof(short int)*this->channels, this->samplerate);
 	  if ((error = alGetError()) != AL_NO_ERROR)
     {
       char errstr[256];
@@ -237,8 +265,9 @@ SbBool SoAudioClipStreamingP::openOggFile(const char *filename)
   }
 
   vorbis_info *vi = ov_info(&this->ovOvFile, -1);
-  channels = vi->channels;
+  channels = filechannels = vi->channels;
   samplerate = vi->rate;
+  bitspersample = 16;
 /*
   {
     char **ptr=ov_comment(&vf,-1)->user_comments;
@@ -253,6 +282,7 @@ SbBool SoAudioClipStreamingP::openOggFile(const char *filename)
     fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);
   }
 */
+
   return TRUE;
 }
 
@@ -270,6 +300,7 @@ void SoAudioClipStreamingP::closeOggFile()
 SbBool SoAudioClipStreamingP::openWaveFile(const char *filename)
 {
   int size, format;
+//  this->riffFile = wave_open(filename, size, format, this->filechannels, this->samplerate, this->bitspersample);
   this->riffFile = wave_open(filename, size, format, this->channels, this->samplerate, this->bitspersample);
 
   if (this->riffFile == NULL)
@@ -280,9 +311,14 @@ SbBool SoAudioClipStreamingP::openWaveFile(const char *filename)
     return FALSE;
   }
   else
-    return TRUE; // OK
+  {
+    #ifdef DEBUG_AUDIO
+    printf("Wave file '%s' opened successfully\n", filename);
+    #endif
 
-  return TRUE;
+    return TRUE; // OK
+  };
+
 }
 
 void SoAudioClipStreamingP::closeWaveFile()
@@ -295,150 +331,86 @@ void SoAudioClipStreamingP::closeWaveFile()
 
 SbBool SoAudioClipStreaming::loadUrl(void)
 {
-  THIS->currentUrlIndex = 0;
-  return THIS->loadUrl(0);
-/*  // similar to SoTexture2::loadFilename()
-  // similar to SoAudioClip::loadUrl()
+#if HAVE_PTHREAD
+  SbAutoLock autoLock(&(THIS->syncmutex)); // synchronize with callback
+#endif
 
   this->unloadUrl();
 
-  if (this->url.getNum() <1)
-    return FALSE; // no url specified
-  const char * str = this->url[0].getString();
-  if ( (str == NULL) || (strlen(str)==0) )
-    return FALSE; // url is blank
+  SoAudioClipStreamingP::PlaylistItem item;
+  for (int i=0; i<this->url.getNum(); i++)
+  {
+    const char * str = this->url[i].getString();
+    if ( (str == NULL) || (strlen(str)==0) )
+      continue; // ignore empty url
 
-  SbStringList subdirectories;
+    SbString filename = SoInput::searchForFile(SbString(str), SoInput::getDirectories(), 
+      SoAudioClip::getSubdirectories());
 
-  subdirectories.append(new SbString("samples"));
+    if (filename.getLength() <= 0) {
+      char errstr[256];
+		  SoDebugError::postWarning("SoAudioClipStreaming::loadUrl(index)",
+                                "File not found: '%s'",
+                                filename.getString());
+      continue; // ignore invalid file
+    }
 
-  SbString filename = SoInput::searchForFile(SbString(str), SoInput::getDirectories(), subdirectories);
+    item.filename = filename;
 
-  for (int i = 0; i < subdirectories.getLength(); i++) {
-    delete subdirectories[i];
-  }
+    char ext[4];
+    SbBool ret = getFileExtension(ext, filename.getString(), 4);
 
-  if (filename.getLength() <= 0) {
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl",
-                              "File not found: '%s'",
-                              filename.getString());
-    return FALSE;
-  }
+    if (strcmpi(ext, "wav")==0) {
+      item.filetype = SoAudioClipStreamingP::AUDIO_WAVPCM;
+    }
+#if HAVE_OGGVORBIS
+    else if (strcmpi(ext, "ogg")==0) {
+      item.filetype = SoAudioClipStreamingP::AUDIO_OGGVORBIS;
+    }
+#endif // HAVE_OGGVORBIS
+    else {
+      item.filetype = SoAudioClipStreamingP::AUDIO_UNKNOWN;
+    };
 
-  char ext[4];
-  SbBool ret = getFileExtension(ext, filename.getString(), 4);
-
-  if (strcmpi(ext, "ogg")==0) {
-    THIS->urlFileType = SoAudioClipStreamingP::AUDIO_OGGVORBIS;
-  }
-  else if (strcmpi(ext, "wav")==0) {
-    THIS->urlFileType = SoAudioClipStreamingP::AUDIO_WAVPCM;
-  }
-  else {
-    THIS->urlFileType = SoAudioClipStreamingP::AUDIO_UNKNOWN;
+    THIS->playlist.append(item);
   };
 
-
-  if (THIS->urlFileType == SoAudioClipStreamingP::AUDIO_OGGVORBIS) {
-#if HAVE_OGGVORBIS
-    return THIS->openOggFile(filename.getString());
-#else
-		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl",
-                              "File is in the Ogg Vorbis file format, but Ogg Vorbis support is missing. '%s'",
-                              filename.getString());
-#endif // HAVE_OGGVORBIS
-  } else if (THIS->urlFileType == SoAudioClipStreamingP::AUDIO_WAVPCM) {
-    return THIS->openWaveFile(filename.getString());
-  }
-  else {
-		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl",
-                              "File has unknown format. '%s'",
-                              filename.getString());
-  }
-
-  return FALSE;
-  */
+/*  if (THIS->playlist.getLength() == 0)
+    return FALSE; // no urls loaded
+  else
+    return TRUE;  
+*/
+  return TRUE;
 };
 
 void SoAudioClipStreaming::unloadUrl()
 {
-#if HAVE_OGGVORBIS
-  if (THIS->urlFileType == SoAudioClipStreamingP::AUDIO_OGGVORBIS)
-    THIS->closeOggFile();
-#endif // HAVE_OGGVORBIS
-  if (THIS->urlFileType == SoAudioClipStreamingP::AUDIO_WAVPCM)
-    THIS->closeWaveFile();
+  THIS->playlistDirty = TRUE;
+  THIS->playlist.truncate(0);
+
+  THIS->closeFiles();
 };
 
-SbBool SoAudioClipStreamingP::loadUrl(int index)
+SbBool SoAudioClipStreamingP::openFile(int playlistIndex)
 {
-  // similar to SoTexture2::loadFilename()
-  // similar to SoAudioClip::loadUrl()
+  assert ( (playlistIndex<this->playlist.getLength()) && (playlistIndex>=0) );
 
-  ITHIS->unloadUrl();
-
-  if (ITHIS->url.getNum() <index)
-  {
-		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl(index)",
-                              "Invalid index %d. There are only %d urls in the url list",
-                              index, ITHIS->url.getNum());
+  if ( !((playlistIndex<this->playlist.getLength()) && (playlistIndex>=0)) )
     return FALSE; // invalid index
-  }
-  const char * str = ITHIS->url[index].getString();
-  if ( (str == NULL) || (strlen(str)==0) )
-    return FALSE; // url is blank
 
-  SbStringList subdirectories;
-
-  subdirectories.append(new SbString("samples"));
-
-  SbString filename = SoInput::searchForFile(SbString(str), SoInput::getDirectories(), subdirectories);
-
-  for (int i = 0; i < subdirectories.getLength(); i++) {
-    delete subdirectories[i];
-  }
-
-  if (filename.getLength() <= 0) {
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl(index)",
-                              "File not found: '%s'",
-                              filename.getString());
-    return FALSE;
-  }
-
-  char ext[4];
-  SbBool ret = getFileExtension(ext, filename.getString(), 4);
-
-  if (strcmpi(ext, "ogg")==0) {
-    this->urlFileType = SoAudioClipStreamingP::AUDIO_OGGVORBIS;
-  }
-  else if (strcmpi(ext, "wav")==0) {
-    this->urlFileType = SoAudioClipStreamingP::AUDIO_WAVPCM;
-  }
-  else {
-    this->urlFileType = SoAudioClipStreamingP::AUDIO_UNKNOWN;
-  };
-
-
-  if (this->urlFileType == SoAudioClipStreamingP::AUDIO_OGGVORBIS) {
+  if (this->playlist[playlistIndex].filetype == SoAudioClipStreamingP::AUDIO_OGGVORBIS) {
 #if HAVE_OGGVORBIS
-    return this->openOggFile(filename.getString());
-#else
-		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl(index)",
-                              "File is in the Ogg Vorbis file format, but Ogg Vorbis support is missing. '%s'",
-                              filename.getString());
+    return this->openOggFile(this->playlist[playlistIndex].filename.getString());
 #endif // HAVE_OGGVORBIS
-  } else if (this->urlFileType == SoAudioClipStreamingP::AUDIO_WAVPCM) {
-    return this->openWaveFile(filename.getString());
+  } else if (playlist[playlistIndex].filetype == SoAudioClipStreamingP::AUDIO_WAVPCM) {
+    return this->openWaveFile(this->playlist[playlistIndex].filename.getString());
   }
   else {
 		SoDebugError::postWarning("SoAudioClipStreaming::loadUrl(index)",
                               "File has unknown format. '%s'",
-                              filename.getString());
+                              this->playlist[playlistIndex].filename.getString());
+    return FALSE;
   }
-
-  return FALSE;
 };
 
 
@@ -446,80 +418,204 @@ SbBool SoAudioClipStreamingP::loadUrl(int index)
 
 SbBool SoAudioClipStreamingP::defaultCallback(void *buffer, int length)
 {
-  if (this->urlFileType == SoAudioClipStreamingP::AUDIO_OGGVORBIS) {
-#if HAVE_OGGVORBIS
-    if (this->ovFile == NULL)
-      return FALSE; // file not opened successfully
-    int numread = 0;
-    int ret;
-    char *ptr = (char *)buffer;
-    int size = length*2;
-    while (numread<size)
+#if HAVE_PTHREAD
+  SbAutoLock autoLock(&(this->syncmutex)); // synchronize with loadUrl
+#endif
+
+  int numread = 0;
+  int size=length*this->bitspersample/8 * this->channels;
+  SbBool ret;
+
+  // fixme 20011201 thammer. only 16 bits supported. handle other formats gracefully
+
+  if (introPause)
+  {
+    // deliver some empty buffers
+    for (int i=0; i<size; i++)
+      ((char *)buffer)[i] = 0;
+    if (numBuffersLeftToClear>0)
+      numBuffersLeftToClear--;
+    else 
+      introPause = FALSE;
+    return TRUE;
+  }
+
+  if (this->playlistDirty) {
+    this->playlistDirty = FALSE;
+    this->closeFiles();
+    this->currentPlaylistIndex = 0;
+
+    if (this->playlist.getLength() > 0)
     {
-      ret=ov_read(&this->ovOvFile, ptr+numread, size-numread, 0, 2, 1, &(this->ovCurrentSection));
-      numread+=ret;
-      if (ret == 0)
-        return FALSE;
-    };
-#else
-    return FALSE; // no ogg vorbis support
-#endif // HAVE_OGGVORBIS
-  } else if (this->urlFileType == SoAudioClipStreamingP::AUDIO_WAVPCM) {
-    if (this->riffFile == NULL)
-      return FALSE; // file not opened successfully
-    int numread = 0;
-    // fixme: read correct channels and bitspersample
-    int size=length*this->bitspersample/8;
-    // fixme: read wave buffer
-    if (fillBufferDone)
-    {
-      // fill 
-      for (int i=0; i<size; i++)
-        ((char *)buffer)[i] = 0;
-      if (numBuffersLeftToClear>0)
+      ret = openFile(this->currentPlaylistIndex);
+      if (!ret)
       {
-        numBuffersLeftToClear--;
+        if (!this->keepAlive)
+          return FALSE;
+        else
+          fillerPause = TRUE;
+      }
+      else
+        fillerPause = FALSE;
+    }
+    else
+      fillerPause = TRUE;
+  }
+
+  if (fillerPause)
+  {
+    // deliver some empty buffers
+    for (int i=0; i<size; i++)
+      ((char *)buffer)[i] = 0;
+
+    if (numBuffersLeftToClear>0)
+    {
+      numBuffersLeftToClear--;
+    }
+    else
+    {
+      // we've played the pause, now try loading next file (if any)
+      this->currentPlaylistIndex++;
+      if ( (this->currentPlaylistIndex >= this->playlist.getLength()) && (ITHIS->loop.getValue() == TRUE) )
+        this->currentPlaylistIndex = 0; 
+      if (this->currentPlaylistIndex < this->playlist.getLength()) {
+        ret = openFile(this->currentPlaylistIndex);
+        if (!ret)
+        {
+          if (!this->keepAlive)
+            return FALSE;
+        }
+        else
+          fillerPause = FALSE; // success, so start playing
       }
       else
       {
-        // try to load next url
-        SbBool ret;
-        this->currentUrlIndex++;
-        if ( (this->currentUrlIndex >= ITHIS->url.getNum()) && (ITHIS->loop.getValue() == TRUE) )
-          this->currentUrlIndex = 0; 
-        if (this->currentUrlIndex < ITHIS->url.getNum()) {
-          ret = loadUrl(this->currentUrlIndex);
-          if (!ret)
-            return FALSE;
-          fillBufferDone = FALSE;
-        }
-        else
-          return FALSE;
-
-        printf("nbltc == 0\n");
+        if (!this->keepAlive)
+          return FALSE; // all done ....
       }
+
+#ifdef DEBUG_AUDIO
+      // printf("nbltc == 0\n");
+#endif
     }
-
-    if (!fillBufferDone)
-    {
-      numread = wave_read(this->riffFile, buffer, size);
-
-      if (numread != size)
+    return TRUE;
+  }
+  else // fillerPause
+  {
+    if (this->playlist[this->currentPlaylistIndex].filetype == SoAudioClipStreamingP::AUDIO_OGGVORBIS) {
+#if HAVE_OGGVORBIS
+      if (this->ovFile == NULL)
       {
-        // fill rest of buffer with zeros
-        for (int i=numread; i<size; i++)
-          ((char *)buffer)[i] = 0;
-        this->fillBufferDone = TRUE;
-        this->numBuffersLeftToClear = this->numBuffers * 2;
-//        this->numBuffersLeftToClear = 20;
-        printf("SoAudioClipStreaming::defaultCallback() : fillbuffer done\n");
+        if (!this->keepAlive)
+          return FALSE; // file not opened successfully
+        else
+        {
+          // try next file...
+          // fixme 20011201 thammer, should really clear buffer too
+          this->fillerPause = TRUE;
+          this->numBuffersLeftToClear = 0;
+        }
       }
+      else
+      {
+        int ret;
+//        if (this->filechannels == 1)
+        {
+          char *ptr = (char *)buffer;
+          while (numread<size)
+          {
+            ret=ov_read(&this->ovOvFile, ptr+numread, size-numread, 0, 2, 1, &(this->ovCurrentSection));
+            numread+=ret;
+            if ( (ret == 0) ) // || (size-numread<4069))
+            {
+              break;
+            };
+          };
+        }
+/*        else
+        { // assuming filechannels == 2
+          short int *inbuf = new short int[size];
+          char *ptr = (char *)inbuf;
+          while (numread<size*2)
+          {
+            ret=ov_read(&this->ovOvFile, ptr+numread, size*2-numread, 0, 2, 1, &(this->ovCurrentSection));
+            numread+=ret;
+            if (ret == 0)
+            {
+              break;
+            };
+          };
+          short int *outbuf = (short int *) ( ((char *)buffer)+1 );
+          for (int i=0; i<size/2-4; i++)
+            outbuf[i] = inbuf[i];
+          delete[] inbuf;
+        }
+*/
+        /*
+        char *ptr = (char *)buffer;
+        if (this->filechannels==2)
+          ptr = new char[size*2];
+        while (numread<size*this->filechannels)
+        {
+          ret=ov_read(&this->ovOvFile, ptr+numread, size*this->filechannels-numread, 0, 2, 1, &(this->ovCurrentSection));
+          numread+=ret;
+          if (ret == 0)
+          {
+            break;
+          };
+        };
+        if (this->filechannels==2)
+        {
+          short int *org = (short int *)buffer;
+          short int *newbuf = (short int *)ptr;
+          for (int i=0; i<size; i++)
+
+//            org[i] = (newbuf[i*2] + newbuf[i*2+1])/2.0;
+          delete[] ptr;
+        };
+*/
+      };
+#endif // HAVE_OGGVORBIS
+    } 
+    else if (this->playlist[this->currentPlaylistIndex].filetype == SoAudioClipStreamingP::AUDIO_WAVPCM) {
+      // fixme 20011201 thammer, check for keepalive
+      if (this->riffFile == NULL)
+        return FALSE; // file not opened successfully
+
+      numread = wave_read(this->riffFile, buffer, size);
     }
-  } else
-    return FALSE; // unknown format
+    else
+      return FALSE; // unknown format
+
+    if (numread != size)
+    {
+      // fill rest of buffer with zeros
+      for (int i=numread; i<size; i++)
+        ((char *)buffer)[i] = 0;
+      this->fillerPause = TRUE;
+      this->numBuffersLeftToClear = this->numBuffers * SOAS_PAUSE_BETWEEN_TRACKS;
+#ifdef DEBUG_AUDIO
+      printf("SoAudioClipStreaming::defaultCallback() : fillerPause\n");
+#endif
+    }
+  };
 
   return TRUE;
 };
 
+void SoAudioClipStreaming::setKeepAlive(SbBool alive)
+{
+  THIS->keepAlive = alive;
+};
+
+void SoAudioClipStreamingP::closeFiles()
+{
+#if HAVE_OGGVORBIS
+  if (this->urlFileType == SoAudioClipStreamingP::AUDIO_OGGVORBIS)
+    this->closeOggFile();
+#endif // HAVE_OGGVORBIS
+  if (this->urlFileType == SoAudioClipStreamingP::AUDIO_WAVPCM)
+    this->closeWaveFile();
+}
 
 #endif // HAVE_OPENAL

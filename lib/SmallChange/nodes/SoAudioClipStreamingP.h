@@ -1,4 +1,5 @@
 
+#include "SmallChange/misc/SbAudioWorkerThread.h"
 
 #include <AL/altypes.h>
 #include <AL/al.h>
@@ -26,7 +27,7 @@ public:
 
   SbBool asyncMode;
   ALuint *alBuffers;
-  int bufferSize;
+  int bufferSize; // bytesize = buffersize*bits/8*channels
   int numBuffers;
 
   SbBool (*usercallback)(void *buffer, int length, void * userdataptr);
@@ -51,13 +52,37 @@ public:
   int channels;
   int samplerate;
   int bitspersample;
+  int filechannels;
 
   enum urlFileTypes { AUDIO_UNKNOWN = 0, AUDIO_WAVPCM, AUDIO_OGGVORBIS };
   urlFileTypes urlFileType;
 
-  SbBool fillBufferDone;
+  SbBool fillerPause;
   ALint numBuffersLeftToClear;
+  SbBool introPause;
 
-  int currentUrlIndex;
-  SbBool loadUrl(int index);
+  SbBool keepAlive;
+
+#ifdef HAVE_PTHREAD
+  pthread_mutex_t syncmutex;
+#endif
+
+  struct PlaylistItem
+  {
+    SbString filename;
+    urlFileTypes filetype;
+    PlaylistItem(const SbString &filename = SbString(""), urlFileTypes filetype = AUDIO_UNKNOWN)
+    { this->filename = filename; this->filetype = filetype; };
+    PlaylistItem(const PlaylistItem &c)
+    { operator=(c); };
+    const PlaylistItem & operator= (const PlaylistItem &c)
+    { filename = c.filename; filetype = c.filetype;  return *this; };
+  };
+
+  SbList<PlaylistItem> playlist;
+  SbBool playlistDirty;
+
+  int currentPlaylistIndex;
+  SbBool openFile(int playlistIndex);
+  void closeFiles();
 };

@@ -35,6 +35,8 @@ public:
   SbBool getPlayedOnce();
   void   setPlayedOnce(SbBool played=TRUE);
   SbBool isBufferOK();
+  static void  setSubdirectories(const SbList<SbString> &subdirectories);
+  static const SbStringList & getSubdirectories();
 
 protected:
 
@@ -43,7 +45,7 @@ protected:
   virtual SbBool loadUrl(void); 
   virtual void unloadUrl(void);
 
-
+  static SbStringList subdirectories;
 protected:
 	class SoAudioClipP *soaudioclip_impl;
 	friend class SoAudioClipP;
