@@ -49,13 +49,13 @@ class SMALLCHANGE_DLL_API SmAxisDisplayKit : public SoBaseKit
   SO_KIT_CATALOG_ENTRY_HEADER(matbinding);
   SO_KIT_CATALOG_ENTRY_HEADER(axessep);
 
+public:
   SoSFRotation orientation;
   SoMFVec3f axes;
   SoMFColor colors;
   SoMFBool enableArrows;
   SoMFString annotations;
 
-public:
   SmAxisDisplayKit(void);
 
   static void initClass(void);
