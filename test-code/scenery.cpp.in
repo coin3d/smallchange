@@ -114,6 +114,43 @@ public:
           info = TRUE;
           retval = TRUE;
         }
+        else if ( SO_KEY_PRESS_EVENT(ev, D) ) {
+          scenery->elevationLineThickness =
+            scenery->elevationLineThickness.getValue() + 0.5f;
+          info = TRUE;
+          retval = TRUE;
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, C) ) {
+          scenery->elevationLineThickness =
+            scenery->elevationLineThickness.getValue() - 0.5f;
+          if ( scenery->elevationLineThickness.getValue() < 0.5f ) {
+            scenery->elevationLineThickness = 0.5f;
+          }
+          info = TRUE;
+          retval = TRUE;
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, F) ) {
+          if ( scenery->elevationLineEmphasis.getValue() == 0 ) {
+            scenery->elevationLineEmphasis.setValue(2);
+          }
+          else {
+            scenery->elevationLineEmphasis =
+              scenery->elevationLineEmphasis.getValue() + 1;
+          }
+          info = TRUE;
+          retval = TRUE;
+        }
+        else if ( SO_KEY_PRESS_EVENT(ev, V) ) {
+          if ( scenery->elevationLineEmphasis.getValue() <= 2 ) {
+            scenery->elevationLineEmphasis = 0;
+          }
+          else {
+            scenery->elevationLineEmphasis =
+              scenery->elevationLineEmphasis.getValue() - 1;
+          }
+          info = TRUE;
+          retval = TRUE;
+        }
         if ( (info == TRUE) && !scenery->elevationLines.getValue() ) {
           info = FALSE;
           retval = TRUE;
@@ -123,11 +160,17 @@ public:
         else if ( SO_KEY_RELEASE_EVENT(ev, Z) ) { retval = TRUE; }
         else if ( SO_KEY_RELEASE_EVENT(ev, S) ) { retval = TRUE; }
         else if ( SO_KEY_RELEASE_EVENT(ev, X) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, D) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, C) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, F) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, V) ) { retval = TRUE; }
         if ( info ) {
-          printf("line distance : %g\n", scenery->elevationLineDistance.getValue());
-          printf("line offset   : %g\n", scenery->elevationLineOffset.getValue());
+          printf("---------------------------------------\n");
+          printf("line distance   : %g\n", scenery->elevationLineDistance.getValue());
+          printf("line offset     : %g\n", scenery->elevationLineOffset.getValue());
+          printf("line thickness  : %g\n", scenery->elevationLineThickness.getValue());
           if ( scenery->elevationLineEmphasis.getValue() > 1 ) {
-            printf("emphasis every %d. line\n", scenery->elevationLineEmphasis.getValue());
+            printf("emphasis on every %d. line\n", scenery->elevationLineEmphasis.getValue());
           }
         }
         if ( retval ) {
