@@ -310,6 +310,8 @@ SmCameraControlKit::setClippingPlanes(void)
   // rotated.
   const float SLACK = 0.001f;
 
+  SbBool oldnear = camera->nearDistance.enableNotify(FALSE);
+  SbBool oldfar = camera->farDistance.enableNotify(FALSE);
   // FrustumCamera can be found in the SmallChange CVS module. We
   // should not change the nearDistance for this camera, as this will
   // modify the frustum.
@@ -326,6 +328,9 @@ SmCameraControlKit::setClippingPlanes(void)
     camera->nearDistance = nearval * (1.0f - SLACK);
     camera->farDistance = farval * (1.0f + SLACK);
   }
+
+  if (oldnear) (void) camera->nearDistance.enableNotify(TRUE);
+  if (oldfar) (void) camera->farDistance.enableNotify(TRUE);
 
   // FIXME: there's a possible optimization to take advantage of here,
   // since we are able to sometimes know for sure that all geometry is
