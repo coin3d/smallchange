@@ -360,9 +360,7 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
         sub->isActive = TRUE;
       }
       else {
-//         fprintf(stderr,"picked item (%p): %d\n",
-//                 this, activeitem);
-        this->pickedItem = activeitem;
+        this->itemPicked(activeitem);
         if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
           activeitem = -1;
           this->isActive = FALSE;
@@ -442,6 +440,17 @@ SmPopupMenuKit::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   SoNode::getPrimitiveCount(action);
 }
+
+void 
+SmPopupMenuKit::itemPicked(const int idx)
+{
+  this->pickedItem = idx;
+//   fprintf(stderr,"picked item (%p): %d\n",
+//           this, idx);
+
+  // FIXME: implement some kind of callback system...
+}
+
 
 /*!  
   Sets the current viewport region. The viewport region will also

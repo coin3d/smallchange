@@ -110,6 +110,7 @@ private:
 
   void updateBackground(void);
   void updateActiveItem(void);
+  void itemPicked(const int idx);
 
   static void items_changed_cb(void * closure, SoSensor * s);
   static void oneshot_cb(void * closure, SoSensor * s);
