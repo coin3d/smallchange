@@ -329,6 +329,58 @@ ok_to_use_bytevalue_normals(void)
   return !okflag;
 }
 
+static
+void *
+sc_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
+{
+  SoGLImage::Wrap WrapS, WrapT;
+  switch ( wraps ) {
+  case GL_CLAMP:
+    WrapS = SoGLImage::CLAMP;
+    break;
+  case GL_CLAMP_TO_EDGE:
+    WrapS = SoGLImage::CLAMP_TO_EDGE;
+    break;
+  default:
+    WrapS = SoGLImage::CLAMP;
+    break;
+  }
+  switch ( wrapt ) {
+  case GL_CLAMP:
+    WrapT = SoGLImage::CLAMP;
+    break;
+  case GL_CLAMP_TO_EDGE:
+    WrapT = SoGLImage::CLAMP_TO_EDGE;
+    break;
+  default:
+    WrapT = SoGLImage::CLAMP;
+    break;
+  }
+  SoGLImage * image = new SoGLImage;
+  image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
+  image->setData(data, SbVec2s(texw, texh), nc, WrapS, WrapT, q, hey, NULL);
+  return (void *) image;
+}
+
+static
+void
+sc_texture_activate(RenderState * state, void * imagehandle)
+{
+  assert(imagehandle);
+  SoGLImage * image = (SoGLImage *) imagehandle;
+  assert(state->state);
+  image->getGLDisplayList(state->state)->call(state->state);
+}
+
+static
+void
+sc_texture_release(void * imagehandle)
+{
+  assert(imagehandle);
+  SoGLImage * image = (SoGLImage *) imagehandle;
+  image->unref(NULL);
+}
+
 #define PRIVATE(obj) ((obj)->pimpl)
 #define PUBLIC(obj) ((obj)->api)
 
@@ -346,6 +398,7 @@ SmScenery::initClass(void)
     else {
       sc_set_use_byte_normals(FALSE);
     }
+    sc_set_texture_functions(sc_texture_construct, sc_texture_activate, sc_texture_release);
   }
   SO_NODE_INIT_CLASS(SmScenery, SoShape, "Shape");
 }
@@ -1345,6 +1398,8 @@ SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double 
   SoState * state = action->getState();
   state->push();
 
+  // just checking existing cull-bits - which is why the state is
+  // pushed and popped all the time
   if (SoCullElement::completelyInside(state)) { return TRUE; }
 
   SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]);

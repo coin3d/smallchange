@@ -29,9 +29,15 @@ struct RenderState {
   double bbmax[3];
   int dotex;
 
+  // culling
+  float vvplanes[6][4];
+  float raypos[3], raydir[3];
+
   // elevation texture
   float etexscale;
   float etexoffset;
+
+  // internal state data
 
   // temporary
   unsigned int currtexid;
@@ -39,17 +45,17 @@ struct RenderState {
   int texw, texh, texnc;
   int texisenabled;
 
-  void * texhash; // SbHash<TexInfo *, unsigned int>
+  void * texhash;      // SbHash<TexInfo *, unsigned int>
   void * reusetexlist; // SbList<TexInfo *>
-  void * tmplist; // SbList<unsigned int>
+  void * tmplist;      // SbList<unsigned int>
 
-  // debugging
-  void * debuglist; // SbList<float>
-  int newtexcount;
-
-  // ugh
+  // ugh - remove
   SoState * state;
   SoAction * action;
+
+  // debugging
+  void * debuglist;    // SbList<float>
+  int newtexcount;
 
 };
 
@@ -64,8 +70,14 @@ void sc_set_glMultiTexCoord2f(void * fptr); // GL 1.3 feature
 /* ********************************************************************** */
 /* texture management */
 
+typedef void * sc_texture_construct_f(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey);
+typedef void sc_texture_activate_f(RenderState * state, void * handle);
+typedef void sc_texture_release_f(void * handle);
+
 void sc_renderstate_construct(RenderState * state);
 void sc_renderstate_destruct(RenderState * state);
+
+void sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release);
 
 void sc_mark_unused_textures(RenderState * state);
 void sc_delete_unused_textures(RenderState * state);

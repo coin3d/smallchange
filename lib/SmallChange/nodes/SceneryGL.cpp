@@ -27,22 +27,27 @@
 
 #include <assert.h>
 #include <stdlib.h> // atoi()
+#include <stdio.h>
 
 #include <GL/gl.h>
 
 #include "../misc/SbList.h"
 #include "../misc/SbHash.h"
 
-#include <Inventor/misc/SoGLImage.h>
-#include <Inventor/elements/SoGLCacheContextElement.h>
-
-#include <SmallChange/nodes/SceneryGL.h>
 #include <SmallChange/misc/SceneryGlue.h>
+#include <SmallChange/nodes/SceneryGL.h>
 
 /* ********************************************************************** */
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
+
+/* how to interface back to scenery library */
+#ifndef SS_SCENERY_H
+#define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
+#define ss_render_get_texture_measures sc_ssglue_render_get_texture_measures
+#define ss_render_get_texture_image sc_ssglue_render_get_texture_image
+#endif
 
 /* ********************************************************************** */
 
@@ -59,12 +64,7 @@
 #endif /* !GL_CLAMP_TO_EDGE */
 
 /* ********************************************************************** */
-
-#ifndef SS_SCENERY_H
-#define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
-#define ss_render_get_texture_measures sc_ssglue_render_get_texture_measures
-#define ss_render_get_texture_image sc_ssglue_render_get_texture_image
-#endif
+/* GL setup */
 
 typedef void glMultiTexCoord2f_f(GLint unit, float fx, float fy);
 
@@ -109,20 +109,81 @@ sc_set_use_byte_normals(int enable)
 /* ********************************************************************** */
 /* texture management */
 
+#if 0
+void *
+sc_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
+{
+  SoGLImage::Wrap WrapS, WrapT;
+  switch ( wraps ) {
+  case GL_CLAMP:
+    WrapS = SoGLImage::CLAMP;
+    break;
+  case GL_CLAMP_TO_EDGE:
+    WrapS = SoGLImage::CLAMP_TO_EDGE;
+    break;
+  default:
+    WrapS = SoGLImage::CLAMP;
+    break;
+  }
+  switch ( wrapt ) {
+  case GL_CLAMP:
+    WrapT = SoGLImage::CLAMP;
+    break;
+  case GL_CLAMP_TO_EDGE:
+    WrapT = SoGLImage::CLAMP_TO_EDGE;
+    break;
+  default:
+    WrapT = SoGLImage::CLAMP;
+    break;
+  }
+  SoGLImage * image = new SoGLImage;
+  image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
+  image->setData(data, SbVec2s(texw, texh), nc, WrapS, WrapT, q, hey, NULL);
+  return (void *) image;
+}
+
+void
+sc_texture_activate(RenderState * state, void * imagehandle)
+{
+  assert(imagehandle);
+  SoGLImage * image = (SoGLImage *) imagehandle;
+  image->getGLDisplayList(state->state)->call(state->state);
+}
+
+void
+sc_texture_release(void * imagehandle)
+{
+  assert(imagehandle);
+  SoGLImage * image = (SoGLImage *) imagehandle;
+  image->unref(NULL);
+}
+#endif
+
+static sc_texture_construct_f * texture_construct = NULL;
+static sc_texture_activate_f * texture_activate = NULL;
+static sc_texture_release_f * texture_release = NULL;
+
+void
+sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release)
+{
+  texture_construct = construct;
+  texture_activate = activate;
+  texture_release = release;
+}
+
+/* ********************************************************************** */
+
+typedef void * sc_texture_create(void);
+
 class TexInfo {
 public:
   TexInfo() {
     this->image = NULL;
   }
   unsigned int texid;
-  SoGLImage * image;
+  void * image;
   int unusedcount;
 };
-
-static void sc_texture_hash_check_unused(unsigned int key, TexInfo * val, void * closure);
-static void sc_texture_hash_clear(unsigned int key, TexInfo * val, void * closure);
-static void sc_texture_hash_inc_unused(unsigned int key, TexInfo * val, void * closure);
-static void sc_texture_hash_add_all(unsigned int key, TexInfo * val, void * closure);
 
 void
 sc_renderstate_construct(RenderState * state)
@@ -134,6 +195,7 @@ sc_renderstate_construct(RenderState * state)
   state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
 }
 
+static void sc_texture_hash_clear(unsigned int key, TexInfo * val, void * closure);
 
 void
 sc_renderstate_destruct(RenderState * state)
@@ -145,8 +207,11 @@ sc_renderstate_destruct(RenderState * state)
     state->debuglist = NULL;
   }
   if ( state->reusetexlist ) {
-    // FIXME: delete TexInfo objs as well?
     SbList<TexInfo *> * list = (SbList<TexInfo *> *) state->reusetexlist;
+    if ( list->getLength() ) {
+      // FIXME: 
+      printf("scenery: reusetexlist not empty\n");
+    }
     delete list;
     state->reusetexlist = NULL;
   }
@@ -161,7 +226,9 @@ sc_renderstate_destruct(RenderState * state)
   state->texhash = NULL;
 }
 
-SoGLImage *
+/* ********************************************************************** */
+
+void *
 sc_find_reuse_texture(RenderState * state)
 {
   TexInfo * tex = NULL;
@@ -174,8 +241,8 @@ sc_find_reuse_texture(RenderState * state)
   return NULL;
 }
 
-SoGLImage *
-sc_create_texture(RenderState * state)
+void *
+sc_create_texture(RenderState * state, void * image)
 {
   assert(state);
   assert(state->texhash);
@@ -184,12 +251,15 @@ sc_create_texture(RenderState * state)
   SbList<TexInfo *> * reusetexlist = (SbList<TexInfo *> *) state->reusetexlist;
   if ( reusetexlist->getLength() ) {
     tex = reusetexlist->pop();
+    // FIXME: optimize this
+    assert(texture_release);
+    texture_release(tex->image);
+    tex->image = NULL;
   }
   else {
     tex = new TexInfo;
-    tex->image = new SoGLImage;
-    tex->image->setFlags(SoGLImage::FORCE_ALPHA_TEST_TRUE|SoGLImage::INVINCIBLE|SoGLImage::USE_QUALITY_VALUE);
   }
+  tex->image = image;
   tex->texid = state->currtexid;
   tex->unusedcount = 0;
 
@@ -197,6 +267,10 @@ sc_create_texture(RenderState * state)
   texhash->put(state->texid, tex);
   return tex->image;
 }
+
+static void sc_texture_hash_check_unused(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_inc_unused(unsigned int key, TexInfo * val, void * closure);
+static void sc_texture_hash_add_all(unsigned int key, TexInfo * val, void * closure);
 
 void
 sc_delete_unused_textures(RenderState * state)
@@ -255,6 +329,8 @@ sc_mark_unused_textures(RenderState * state)
   texhash->apply(sc_texture_hash_inc_unused, NULL);
 }
 
+/* ********************************************************************** */
+
 void
 sc_texture_hash_check_unused(unsigned int key, TexInfo * tex, void * closure)
 {
@@ -271,7 +347,8 @@ sc_texture_hash_clear(unsigned int key, TexInfo * tex, void * closure)
   // safe to do this here since we'll never use this list again
   assert(tex);
   assert(tex->image);
-  tex->image->unref(NULL);
+  assert(texture_release);
+  texture_release(tex->image);
   delete tex;
 }
 
@@ -321,9 +398,9 @@ sc_generate_elevation_line_texture(float distance,
   if ( emphasis > 1 ) lines = (float) emphasis;
 
   // set elevation lines to black
-  float pixelsize = distance / (1024.0f / lines);
+  float pixelsize = distance / (float(texturesize) / lines);
   float pixelpos = 0.0f;
-  printf("lines: %g, pixelsize: %g, texturesize: %d\n", lines, pixelsize, texturesize);
+  // printf("lines: %g, pixelsize: %g, texturesize: %d\n", lines, pixelsize, texturesize);
   int bolds = 0;
   for ( i = 0; i < texturesize; i++ ) {
     float pixelpos = float(i) * pixelsize;
@@ -366,7 +443,9 @@ sc_init_debug_info(RenderState * state)
 void
 sc_display_debug_info(RenderState * state, float * campos, short * vpsize)
 {
+  assert(state);
   SbList<float> * list = (SbList<float> *) state->debuglist;
+  if ( !list ) return;
 
   int depthtest = glIsEnabled(GL_DEPTH_TEST);
   if ( depthtest ) glDisable(GL_DEPTH_TEST);
@@ -525,26 +604,25 @@ sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
   
   if (renderstate->dotex && renderstate->texid) {
     if (renderstate->texid != renderstate->currtexid) {
-      SoGLImage * image = sc_find_reuse_texture(renderstate);
-      if (!image) {
-        image = sc_create_texture(renderstate);
-        assert(image);      
+      void * imagehandle = sc_find_reuse_texture(renderstate);
+      if ( !imagehandle ) {
         ss_render_get_texture_image(info, renderstate->texid,
                                     &renderstate->texdata,
                                     &renderstate->texw,
                                     &renderstate->texh,
                                     &renderstate->texnc);
 
-        SoGLImage::Wrap clampmode = SoGLImage::CLAMP_TO_EDGE;
-        if ( GL.CLAMP_TO_EDGE == GL_CLAMP ) { clampmode = SoGLImage::CLAMP; }
+        int clampmode = GL.CLAMP_TO_EDGE;
+        assert(texture_construct);
+        imagehandle = texture_construct(renderstate->texdata, renderstate->texw, renderstate->texh, renderstate->texnc, clampmode, clampmode, 0.9, 0);
 
-        SbVec2s size(renderstate->texw, renderstate->texh);
-        image->setData(renderstate->texdata,
-                       size, renderstate->texnc, 
-                       clampmode, clampmode, 0.9, 0, NULL);
+        imagehandle = sc_create_texture(renderstate, imagehandle);
+        assert(imagehandle);
+
         renderstate->newtexcount++;
       }
-      image->getGLDisplayList(renderstate->state)->call(renderstate->state);
+      assert(texture_activate);
+      texture_activate(renderstate, imagehandle);
 
       renderstate->currtexid = renderstate->texid;
     }
