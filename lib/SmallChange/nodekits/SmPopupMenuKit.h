@@ -48,6 +48,7 @@ class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(resetTransform);
+  SO_KIT_CATALOG_ENTRY_HEADER(transparencyType);
   SO_KIT_CATALOG_ENTRY_HEADER(position);
   SO_KIT_CATALOG_ENTRY_HEADER(depthBuffer);
   SO_KIT_CATALOG_ENTRY_HEADER(lightModel);
@@ -56,7 +57,7 @@ class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(shapeHints);
   SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(materialBinding);
-  SO_KIT_CATALOG_ENTRY_HEADER(backgroundColor);
+  SO_KIT_CATALOG_ENTRY_HEADER(backgroundMaterial);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundTexture);
   SO_KIT_CATALOG_ENTRY_HEADER(justification);
   SO_KIT_CATALOG_ENTRY_HEADER(backgroundShape);
@@ -65,8 +66,8 @@ class SMALLCHANGE_DLL_API SmPopupMenuKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(textPickStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(textShape);
   SO_KIT_CATALOG_ENTRY_HEADER(activeMaterial);
-  SO_KIT_CATALOG_ENTRY_HEADER(activeTransparencyType);
   SO_KIT_CATALOG_ENTRY_HEADER(activeShape);
+  SO_KIT_CATALOG_ENTRY_HEADER(borderShape);
 
 public:
   SmPopupMenuKit(void);
@@ -85,6 +86,7 @@ public:
 
 protected:
   virtual ~SmPopupMenuKit();
+  virtual SbBool affectsState(void) const;
   
 public:
   
@@ -115,6 +117,8 @@ private:
   static void items_changed_cb(void * closure, SoSensor * s);
   static void oneshot_cb(void * closure, SoSensor * s);
   static void activeitemchanged_cb(void * closure, SoSensor * s);
+  static void opensub_cb(void * closure, SoSensor * s);
+  static void isactive_cb(void * closure, SoSensor * s);
   friend class SmPopupMenuKitP;
   SmPopupMenuKitP * pimpl;
 };

@@ -74,6 +74,7 @@
 #include <Inventor/nodes/SoMaterialBinding.h>
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/nodes/SoFaceSet.h>
+#include <Inventor/nodes/SoIndexedFaceSet.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/SbViewportRegion.h>
 #include <Inventor/SoPickedPoint.h>
@@ -86,6 +87,13 @@
 #include <Inventor/elements/SoComplexityTypeElement.h>
 #include <Inventor/elements/SoComplexityElement.h>
 
+class SmOpenSubData {
+public:
+  SmPopupMenuKit * kit;
+  SmPopupMenuKit * sub;
+  SbVec3f np;
+};
+
 class SmPopupMenuKitP {
 public:
   SmPopupMenuKitP(SmPopupMenuKit * master) 
@@ -97,6 +105,7 @@ public:
   SmPopupMenuKit * parent;
 
   SoFieldSensor * itemssensor;
+  SoFieldSensor * isactivesensor;
   SoOneShotSensor * oneshot;
   SoOneShotSensor * activeitemchanged;
   SoSearchAction sa;
@@ -160,6 +169,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_FIELD(closeParent, (FALSE));
   
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(transparencyType, SoTransparencyType, TRUE, topSeparator, resetTransform, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, TRUE, topSeparator, lightModel, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topSeparator, camera, TRUE);
@@ -167,8 +177,8 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(texture, SoTexture2, FALSE, topSeparator, shapeHints, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, pickStyle, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, TRUE, topSeparator, materialBinding, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(materialBinding, SoMaterialBinding, TRUE, topSeparator, backgroundColor, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(backgroundColor, SoBaseColor, TRUE, topSeparator, backgroundTexture, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(materialBinding, SoMaterialBinding, TRUE, topSeparator, backgroundMaterial, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(backgroundMaterial, SoMaterial, TRUE, topSeparator, backgroundTexture, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(backgroundTexture, SoTexture2, TRUE, topSeparator, justification, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(justification, SoTranslation, TRUE, topSeparator, backgroundShape, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(backgroundShape, SoFaceSet, TRUE, topSeparator, textSeparator, FALSE);
@@ -177,10 +187,9 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(textColor, SoBaseColor, TRUE, textSeparator, textPickStyle, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(textPickStyle, SoPickStyle, TRUE, textSeparator, textShape, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(textShape, SoText2, TRUE, textSeparator, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(activeMaterial, SoMaterial, TRUE, topSeparator, activeTransparencyType, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(activeTransparencyType, SoTransparencyType, TRUE, topSeparator, activeShape, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(activeShape, SoFaceSet, TRUE, topSeparator, "", FALSE);
-
+  SO_KIT_ADD_CATALOG_ENTRY(activeMaterial, SoMaterial, TRUE, topSeparator, activeShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(activeShape, SoFaceSet, TRUE, topSeparator, borderShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(borderShape, SoIndexedFaceSet, TRUE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
 
@@ -211,15 +220,14 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SoBaseColor * col = (SoBaseColor*) this->getAnyPart("textColor", TRUE);
   col->rgb = SbColor(0.0f, 0.0f, 0.0f);
 
-  col = (SoBaseColor*) this->getAnyPart("backgroundColor", TRUE);
-  col->rgb = SbColor(0.8f, 0.8f, 0.8f);
-
   SoMaterial * amat = (SoMaterial*) this->getAnyPart("activeMaterial", TRUE);
-  amat->diffuseColor = SbColor(0.0f, 0.0f, 0.0f);
+  amat->diffuseColor.setNum(2);
+  amat->diffuseColor.set1Value(0, SbColor(0.0f, 0.0f, 0.0f));
+  amat->diffuseColor.set1Value(1, SbColor(1.0f, 1.0f, 1.0f));
   amat->transparency = 0.5f;
 
   SoTransparencyType * tt = (SoTransparencyType*) 
-    this->getAnyPart("activeTransparencyType", TRUE);
+    this->getAnyPart("transparencyType", TRUE);
   tt->value = SoTransparencyType::BLEND;
   
   PRIVATE(this)->itemssensor = new SoFieldSensor(items_changed_cb, this);
@@ -239,6 +247,9 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   PRIVATE(this)->oneshot->setPriority(1);
 
   PRIVATE(this)->activeitemchanged = new SoOneShotSensor(activeitemchanged_cb, this);  
+
+  PRIVATE(this)->isactivesensor = new SoFieldSensor(isactive_cb, this);
+  PRIVATE(this)->isactivesensor->attach(&this->isActive);
 }
 
 /*!
@@ -246,6 +257,8 @@ SmPopupMenuKit::SmPopupMenuKit(void)
 */
 SmPopupMenuKit::~SmPopupMenuKit(void)
 {
+  this->setParent(NULL);
+  delete PRIVATE(this)->isactivesensor;
   delete PRIVATE(this)->activeitemchanged;
   delete PRIVATE(this)->itemssensor;
   delete PRIVATE(this)->oneshot;
@@ -291,6 +304,14 @@ SmPopupMenuKit::initClass(void)
     SO_KIT_INIT_CLASS(SmPopupMenuKit, SoBaseKit, "BaseKit");
   }
 }
+
+SbBool 
+SmPopupMenuKit::affectsState(void) const
+{
+  // important for delayed paths to work correctly
+  return FALSE;
+}
+
 
 // Documented in superclass
 void 
@@ -353,11 +374,13 @@ SmPopupMenuKit::handleEvent(SoHandleEventAction * action)
         
         np[0] = event->getPosition()[0] / float (PRIVATE(this)->vp.getViewportSizePixels()[0]);
         np[1] = event->getPosition()[1] / float (PRIVATE(this)->vp.getViewportSizePixels()[1]);
-        sub->setViewportRegion(PRIVATE(this)->vp);
-        sub->setNormalizedPoint(np);
-        sub->setParent(this);
-        sub->visible = TRUE;
-        sub->isActive = TRUE;
+
+        SmOpenSubData * data = new SmOpenSubData;
+        SoOneShotSensor * sensor = new SoOneShotSensor(opensub_cb, data);
+        data->kit = this;
+        data->sub = sub;
+        data->np = np;
+        sensor->schedule();
       }
       else {
         this->itemPicked(activeitem);
@@ -607,6 +630,42 @@ SmPopupMenuKit::oneshot_cb(void * closure, SoSensor * s)
 }
 
 void 
+SmPopupMenuKit::isactive_cb(void * closure, SoSensor * s)
+{
+  SmPopupMenuKit * thisp = (SmPopupMenuKit*) closure;
+  SoMaterial * mat = (SoMaterial*) thisp->getAnyPart("backgroundMaterial", TRUE);
+  
+  if (thisp->isActive.getValue()) {
+    mat->transparency = 0.0f;
+    mat->diffuseColor = SbColor(0.8f, 0.8f, 0.8f);
+  }
+  else {
+    mat->transparency = 0.3f;
+    mat->diffuseColor = SbColor(0.5f, 0.5f, 0.5f);
+  }
+}
+
+void
+SmPopupMenuKit::opensub_cb(void * closure, SoSensor * s)
+{
+  SmOpenSubData * data = (SmOpenSubData*) closure;
+  SmPopupMenuKit * thisp = data->kit;
+  SmPopupMenuKit * sub = data->sub;
+
+  fprintf(stderr,"open sub: %p %p\n", thisp, sub);
+  
+  sub->setNormalizedPoint(data->np);
+//   sub->setAnyPart("activeShape", NULL);
+//   sub->setAnyPart("borderShape", NULL);
+  sub->setParent(thisp);
+  sub->visible = TRUE;
+  sub->isActive = TRUE;
+
+  delete s;
+  delete data;
+}
+
+void 
 SmPopupMenuKit::activeitemchanged_cb(void * closure, SoSensor * s)
 {
   SmPopupMenuKit * thisp = (SmPopupMenuKit*) closure;
@@ -712,12 +771,43 @@ SmPopupMenuKit::updateBackground(void)
   PRIVATE(this)->bbw = bmax[0] - bmin[0];
   PRIVATE(this)->bbh = bmax[1] - bmin[1];
 
-  SbVec3f varray[4];
+  SbVec3f varray[8];
   varray[0] = SbVec3f(bmin[0], bmin[1], 0.0f);
   varray[1] = SbVec3f(bmax[0], bmin[1], 0.0f);
   varray[2] = SbVec3f(bmax[0], bmax[1], 0.0f);
   varray[3] = SbVec3f(bmin[0], bmax[1], 0.0f);
   vp->vertex.setValues(0, 4, varray);
+
+  // update border as well
+  float bw = 2.0f / float(PRIVATE(this)->vp.getViewportSizePixels()[0]);
+  float bh = 2.0f / float(PRIVATE(this)->vp.getViewportSizePixels()[1]);
+  SoIndexedFaceSet * ifs = (SoIndexedFaceSet*) this->getAnyPart("borderShape", TRUE);
+  vp = (SoVertexProperty*) ifs->vertexProperty.getValue();
+  if (vp == NULL) {
+    vp = new SoVertexProperty;
+    vp->materialBinding = SoVertexProperty::PER_FACE_INDEXED;
+    ifs->vertexProperty = vp;
+    vp->orderedRGBA.setNum(2);
+    vp->orderedRGBA.set1Value(0, 0x00000088);
+    vp->orderedRGBA.set1Value(1, 0xffffff88);
+  }
+  varray[4] = SbVec3f(bmin[0]+bw, bmin[1]+bh, 0.0f);
+  varray[5] = SbVec3f(bmax[0]-bw, bmin[1]+bh, 0.0f);
+  varray[6] = SbVec3f(bmax[0]-bw, bmax[1]-bh, 0.0f);
+  varray[7] = SbVec3f(bmin[0]+bw, bmax[1]-bh, 0.0f);
+  
+  vp->vertex.setValues(0,8,varray);
+
+  const int32_t cidx[] = 
+    {0,1,5,4,-1,
+     1,2,6,5,-1,
+     7,6,2,3,-1,
+     0,4,7,3,-1 };
+
+  const int32_t midx[] = {0,0,1,1};
+
+  ifs->coordIndex.setValues(0,20, cidx);
+  ifs->materialIndex.setValues(0,4,midx);
 }
 
 #undef PRIVATE
