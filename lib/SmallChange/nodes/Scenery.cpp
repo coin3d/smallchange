@@ -909,7 +909,13 @@ SmScenery::evaluate(SoAction * action)
     else {
       float minelev = 0.0f;
       float maxelev = 1.0f;
-      if (mapping == SmColorGradientElement::RELATIVE) {
+      // FIXME: doing
+      //
+      // mapping == SmColorGradientElement::RELATIVE
+      //
+      // ..fails with MSVC++ with an obscure error
+      // message. Investigate. 20040206 mortene.
+      if (mapping == 0 /*SmColorGradientElement::RELATIVE*/ ) {
         const RenderState & rs = PRIVATE(this)->renderstate;
         minelev = (float) rs.bbmin[2];
         maxelev = (float) rs.bbmax[2];
