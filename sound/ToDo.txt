@@ -28,3 +28,4 @@ bash-2.04$ ../SmallChange/configure --prefix=/cygdrive/c/users/thammer/Code/Inst
 Code/checkout/openal --with-oggvorbis=/cygdrive/c/sdk/oggvorbis
 
 
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL_DEBUG_W)\lib\SmallChange1.lib $(SDK_PTHREAD_W)\lib\pthread.lib $(SDK_OGGVORBIS_W)\lib\vorbisfile.lib $(SDK_OGGVORBIS_W)\lib\vorbis.lib $(SDK_OGGVORBIS_W)\lib\ogg.lib $(CODE_INSTALL_DEBUG_W)\lib\Coin1.lib $(CODE_INSTALL_DEBUG_W)\lib\SoWin0.lib winmm.lib $(CODE_CHECKOUT_W)\openal\win\Alut\Debug\ALut.lib

@@ -10,7 +10,6 @@
 
 #include <AL/altypes.h>
 #include <AL/al.h>
-#include <AL/alut.h>
 
 #include <string.h>
 
@@ -115,36 +114,43 @@ SbBool SoAudioClip::loadUrl(void)
 		return FALSE;
 	}
 
-/*
-#ifdef SOAL_SUB
+  SbBool ret;
+  char *buffer;
+  int size;
+  int format;
+  int channels;
+  int samplerate;
+  int bitspersample;
+    
+  ret = readWaveFile(filename.getString(), buffer, size, format, 
+                    channels, samplerate, bitspersample);
+  if (!ret) {
+		SoDebugError::postWarning("SoAudioClip::loadUrl",
+                              "Couldn't load file %s.",
+                              filename.getString());
+    return FALSE;
+  }
 
-  ALsizei format;
-  ALsizei size;
-  ALsizei bits;
-  ALsizei freq;
+  ALsizei alsize = size;
+  ALsizei alfreq = samplerate;
+	ALvoid	*aldata = (ALvoid	*)buffer;
+	ALenum	alformat = 0;;
 
-  void *data; //  = (void *) new char[44100*10*2];
-
-	// Load .wav
-//  alutLoadWAVFile(const_cast<ALbyte *>(str), &format, &data, &size, &freq, &loop);
-	alutLoadWAV(str, &data, &format, &size, &bits, &freq);
-	if ((error = alGetError()) != AL_NO_ERROR)
-	{
-    char errstr[256];
-		SoDebugError::postWarning("SoAudioClipP::loadUrl",
-                              "Couldn't load file %s. %s",
-//                              text.getString(), 
-                              str, 
-                              GetALErrorString(errstr, error));
-		return FALSE;
-	}
+  if ( (format==1) && (channels==1) && (bitspersample==8) )
+    alformat = AL_FORMAT_MONO8;
+  else if ( (format==1) && (channels==1) && (bitspersample==16) )
+    alformat = AL_FORMAT_MONO16;
+  else if ( (format==1) && (channels==2) && (bitspersample==8) )
+    alformat = AL_FORMAT_STEREO8;
+  else if ( (format==1) && (channels==2) && (bitspersample==16) )
+    alformat = AL_FORMAT_STEREO16;
 
 	// Copy wav data into buffer
-	alBufferData(this->bufferId, format, data, size, freq);
+	alBufferData(THIS->bufferId, alformat, aldata, alsize, alfreq);
 	if ((error = alGetError()) != AL_NO_ERROR)
 	{
     char errstr[256];
-		SoDebugError::postWarning("SoAudioClipP::loadUrl",
+		SoDebugError::postWarning("SoAudioClip::loadUrl",
                               "alBufferData failed for data read from file %s. %s",
 //                              text.getString(),
                               str,
@@ -152,9 +158,9 @@ SbBool SoAudioClip::loadUrl(void)
 		return FALSE;
 	}
 
-#else
-*/
+  freeWaveDataBuffer(buffer);
 
+/*
   ALsizei size,freq;
 	ALenum	format;
 	ALvoid	*data;
@@ -201,7 +207,7 @@ SbBool SoAudioClip::loadUrl(void)
                               GetALErrorString(errstr, error));
 		return FALSE;
 	}
-
+*/
 //  delete data; // 20010803 thh
 
   return TRUE;

@@ -2,7 +2,6 @@
 
 #include <AL/altypes.h>
 #include <AL/al.h>
-#include <AL/alut.h>
 
 #if HAVE_OGGVORBIS
 

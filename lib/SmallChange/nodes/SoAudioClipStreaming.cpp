@@ -42,7 +42,7 @@ SoAudioClipStreaming::SoAudioClipStreaming()
   THIS->numBuffers = 0;
   this->setBufferInfo(0, 0);
   THIS->usercallback = THIS->defaultCallbackWrapper;
-  THIS->userdata = NULL;
+  THIS->userdata = THIS;
 
   THIS->ovFile = NULL;
   THIS->ovCurrentSection = 0;

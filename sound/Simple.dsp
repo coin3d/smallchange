@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "." /I "../lib" /I "$(CODE_INSTALL)\include" /I "$(SDK_PTHREADS)\include" /I "$(CODE_CHECKOUT)\openal\include" /I "$(SDK_OGGVORBIS)\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /D "SOAL_SUB" /D "HAVE_CONFIG_H" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "." /I "../lib" /I "$(CODE_INSTALL_DEBUG_W)\include" /I "$(SDK_PTHREAD_W)\include" /I "$(CODE_CHECKOUT_W)\openal\include" /I "$(SDK_OGGVORBIS_W)\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /D "SOAL_SUB" /D "HAVE_CONFIG_H" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
 # ADD RSC /l 0x414 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -73,7 +73,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL)\lib\Coin0.lib $(CODE_INSTALL)\lib\SoWin0.lib $(CODE_CHECKOUT)\openal\win\Alut\Debug\ALut.lib $(CODE_CHECKOUT)\openal\win\OpenAL32\Debug\OpenAL32.lib winmm.lib $(SDK_PTHREADS)\lib\pthread.lib $(SDK_OGGVORBIS)\lib\vorbisfile.lib $(SDK_OGGVORBIS)\lib\vorbis.lib $(SDK_OGGVORBIS)\lib\ogg.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL_DEBUG_W)\lib\Coin1.lib $(CODE_INSTALL_DEBUG_W)\lib\SoWin0.lib $(CODE_CHECKOUT_W)\openal\win\OpenAL32\Debug\OpenAL32.lib winmm.lib $(SDK_PTHREAD_W)\lib\pthread.lib $(SDK_OGGVORBIS_W)\lib\vorbisfile.lib $(SDK_OGGVORBIS_W)\lib\vorbis.lib $(SDK_OGGVORBIS_W)\lib\ogg.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 
 !ENDIF 
 
@@ -122,7 +122,7 @@ SOURCE=..\lib\SmallChange\nodes\SoSound.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\tariff.c
+SOURCE=..\lib\SmallChange\misc\tariff.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -178,7 +178,7 @@ SOURCE=..\lib\SmallChange\nodes\SoSoundP.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\tariff.h
+SOURCE=..\lib\SmallChange\misc\tariff.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

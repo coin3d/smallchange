@@ -68,7 +68,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "$(CODE_INSTALL)\include" /I "$(SDK_OGGVORBIS)\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /D "SOAL_SUB" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "$(CODE_INSTALL_DEBUG_W)\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "COIN_DLL" /D "SIMAGE_DLL" /D "SOWIN_DLL" /D "HAVE_PTHREAD" /D "SOAL_SUB" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
@@ -78,7 +78,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL)\lib\SmallChange1.lib $(SDK_PTHREADS)\lib\pthread.lib $(SDK_OGGVORBIS)\lib\vorbisfile_static_d.lib $(SDK_OGGVORBIS)\lib\vorbis_static_d.lib $(SDK_OGGVORBIS)\lib\ogg_static_d.lib $(CODE_INSTALL)\lib\Coin0.lib $(CODE_INSTALL)\lib\SoWin0.lib winmm.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(CODE_INSTALL_DEBUG_W)\lib\SmallChange1.lib $(CODE_INSTALL_DEBUG_W)\lib\Coin1.lib $(CODE_INSTALL_DEBUG_W)\lib\SoWin0.lib winmm.lib $(CODE_CHECKOUT_W)\openal\win\Alut\Debug\ALut.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

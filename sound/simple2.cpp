@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <conio.h>
 
+#include "tariff.h"
 /*
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -52,26 +53,32 @@
 #include <SmallChange/misc/SbAudioWorkerThread.h>
 
 
+/*
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
-
+*/
 
 SoSeparator * root;
 SoPerspectiveCamera * camera;
 SoTransform *xf;
+SoTransform *xf2;
 
 
 static void timerSensorCallback(void *data, SoSensor *)
 {
 
   float x, y, z;
-  static counter=0;
+  static int counter=0;
+  counter++;
+
   SbVec3f cpos;
   cpos=xf->translation.getValue();
   cpos.getValue(x, y, z);
 //  x=x+0.3;
-  x=x+0.03;
+  x=x+0.003;
   xf->translation.setValue(x, y, z);
+  x=2.0*sin((double)counter/20.0*2.0*3.1415);
+  xf2->translation.setValue(-x, y, z);
 }
 
 int user_callback(void *userdata)
@@ -80,6 +87,7 @@ int user_callback(void *userdata)
   return 1;
 }
 
+/*
 FILE *oggfile;
 OggVorbis_File vf;
 int current_section;
@@ -103,8 +111,6 @@ void openoggfile(char *filename)
       exit(1);
   }
 
-  /* Throw the comments plus a few lines about the bitstream we're
-     decoding */
   {
     char **ptr=ov_comment(&vf,-1)->user_comments;
     vorbis_info *vi=ov_info(&vf,-1);
@@ -142,7 +148,7 @@ static SbBool fill_from_ogg_callback(void *buffer, int length, void *userdata)
 
   return TRUE;
 };
-
+*/
 
 static SbBool fill_callback(void *buffer, int length, void *userdata)
 {
@@ -194,6 +200,74 @@ main(
   int argc,
   char ** argv )
 {
+/*
+  // open a wave file
+  riff_t * file;
+  file = riff_file_open( "lyd1.wav");
+  if ( file == NULL ) {
+    printf("Couldn't open file\n");
+  }
+
+  if ( riff_file_is_type( file, "WAVE" ) == 1 )
+  {
+    printf("We have a WAV file\n");
+  }
+  else
+  {
+    printf("We don't have a WAV file\n");
+  }
+
+  void *chunk;
+  chunk = NULL;
+
+  while (!file->at_eof) {
+    if (riff_next_chunk_is_type(file, "fmt ")) {
+      printf("'fmt '\n");
+      int size;
+      size = riff_next_chunk_size( file );
+      chunk = riff_chunk_read(file);
+            
+      short int format;
+      format = riff_chunk_shortword(chunk , 0);
+      printf("    Format: %d\n", format);
+
+      short int channels;
+      channels = riff_chunk_shortword(chunk , 1);
+      printf("    Channels: %d\n", channels);
+
+      long int samplerate;
+      samplerate = riff_chunk_longword(chunk , 2);
+      printf("    Samplerate: %d\n", samplerate);
+
+      // (void) riff_chunk_longword(chunk , 4); // ignore bpsec (longword)
+      // (void) riff_chunk_shortword(chunk , 6); // ignore blockallign (shortword)
+
+      short int bitsPerSample;
+      bitsPerSample = riff_chunk_shortword(chunk , 7);
+      printf("    bitsPerSample: %d\n", bitsPerSample);
+
+
+      riff_chunk_free(chunk);
+    }
+    else if (riff_next_chunk_is_type(file, "data")) {
+      printf("'data'\n");
+      int size;
+      size = riff_next_chunk_size( file );
+      printf("    Size=%d\n", size);
+//      chunk = riff_chunk_read(file);
+//      riff_chunk_free(chunk);
+
+      char *buf = new char[size];
+      riff_chunk_read_data(file, buf, 0);
+    }
+    else {
+       riff_chunk_skip(file);
+    }
+
+  };
+
+  riff_file_close( file );
+*/
 
   HWND window = SoWin::init( argv[0] );
 
@@ -214,6 +288,8 @@ main(
   SoSound *sourcenode;
 //  SoAudioClip *buffernode;
   SoAudioClipStreaming *buffernode;
+  SoAudioClip *clip2;
+  SoSound *source2;
 
   root = new SoSeparator;
 
@@ -244,11 +320,8 @@ main(
   sep->addChild(xf);
   sep->addChild(node=new SoCone);
   sep->addChild(sourcenode = new SoSound);
-//  sep->addChild(listener = new SoListener);
   
-//  root->addChild(buffernode = new SoAudioClip);
   root->addChild(buffernode = new SoAudioClipStreaming);
-//  buffernode->setAsyncMode(FALSE);
   buffernode->setAsyncMode(TRUE);
 //  buffernode->setBufferInfo(4410, 3);
 //  buffernode->setBufferInfo(44100/100*3, 10); 
@@ -257,27 +330,47 @@ main(
   // or "very round values) (0.1 sec, 0.2 sec, 
   // I have no idea why this happens !!!
 //  buffernode->url.setValue("lyd1.wav");
+  buffernode->url.setValue("allways.ogg");
 //  buffernode->loop.setValue(TRUE);
   buffernode->loop.setValue(FALSE); 
   buffernode->startTime.setValue(SbTime::getTimeOfDay() + SbTime(2));
   buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
 
-  openoggfile("allways.ogg");
+  sourcenode->source.setValue(buffernode);
+  root->addChild(sep);
+
+//  openoggfile("allways.ogg");
 
 //    buffernode->setUserCallback(fill_callback, NULL);
 //  buffernode->setUserCallback(fill_from_ogg_callback, NULL);
 //  buffernode->pitch.setValue(2.0f);
 
-  sourcenode->source.setValue(buffernode);
-
 //  root->addChild( node=new SoCone );
 //  add separator and add several nodes
 //  root->addChild( node=new SoListener );
 
+
+  SoSeparator *sep2 = new SoSeparator;
+  xf2 = new SoTransform;
+  xf2->translation.setValue(1.3, 0, 0);
+  sep2->addChild(xf2);
+  SoSphere *ball = new SoSphere();
+//  sep2->addChild(node=new SoSphere);
+  ball->radius = 0.3f;
+  sep2->addChild(ball);
+  sep2->addChild(source2 = new SoSound);
+  root->addChild(clip2 = new SoAudioClip);
+  clip2->url.setValue("lyd1.wav");
+  clip2->loop.setValue(TRUE);
+  clip2->startTime.setValue(SbTime::getTimeOfDay() + SbTime(1));
+  clip2->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
+  source2->source.setValue(clip2);
+  root->addChild(sep2);
+
+
   listener->orientation.connectFrom(&camera->orientation);
   listener->position.connectFrom(&camera->position);
 
-  root->addChild(sep);
 
 	SbViewportRegion vp;
 	vp.setWindowSize(SbVec2s(400, 400));
@@ -292,12 +385,11 @@ main(
 	SoTimerSensor *timerSensor;
 	timerSensor = new SoTimerSensor(timerSensorCallback, NULL);
 //	timerSensor->setInterval(1);
-	timerSensor->setInterval(SbTime(0, 1000*500));
+	timerSensor->setInterval(SbTime(0, 1000*50));
 	timerSensor->schedule();
 
   audioDevice.setSceneGraph(root);
   audioDevice.setGLRenderAction(viewer->getGLRenderAction());
-
   audioDevice.enable();
 
 //  SbAudioWorkerThread mt(user_callback);
@@ -317,7 +409,7 @@ main(
 
   audioDevice.disable();
 
-  closeoggfile();
+//  closeoggfile();
 
 // fixme: do the deletion - but wait for mbm to fix sowin-bug
 //  delete viewer;
