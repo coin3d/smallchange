@@ -48,6 +48,7 @@ public:
   virtual void getMatrix(SoGetMatrixAction * action);
   virtual void handleEvent(SoHandleEventAction * action);
   virtual void pick(SoPickAction * action);
+  virtual void callback(SoCallbackAction * action);
 
 protected:
   virtual ~ViewportRegion();

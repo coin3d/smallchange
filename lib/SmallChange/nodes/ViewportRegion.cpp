@@ -21,6 +21,10 @@
 
 #include <GL/gl.h>
 
+#if COIN_DEBUG
+#include <Inventor/errors/SoDebugError.h>
+#endif // COIN_DEBUG
+
 /*!
   \class ViewportRegion ViewportRegion.h Inventor/nodes/ViewportRegion.h
   \brief The ViewportRegion class is used to specify a sub-viewport.
@@ -208,14 +212,14 @@ ViewportRegion::doAction(SoAction * action)
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
     GLenum mask = 0;
     if (this->clearDepthBuffer.getValue()) mask |= GL_DEPTH_BUFFER_BIT;
-    if (this->clearColorBuffer.getValue()) {
-      mask |= GL_COLOR_BUFFER_BIT;
+    if (this->clearColorBuffer.getValue()) mask |= GL_COLOR_BUFFER_BIT;
+    if (mask) {
+#if 0
       glClearColor(this->clearColor.getValue()[0],
                    this->clearColor.getValue()[1],
                    this->clearColor.getValue()[2],
                    0.0f);
-    }
-    if (mask) {
+#endif
       glScissor(vp.getViewportOriginPixels()[0],
                 vp.getViewportOriginPixels()[1],
                 vp.getViewportSizePixels()[0],
@@ -242,7 +246,7 @@ ViewportRegion::GLRender(SoGLRenderAction * action)
 void
 ViewportRegion::getMatrix(SoGetMatrixAction * action)
 {
-  ViewportRegion::doAction((SoAction*)action);
+  // do nothing
 }
 
 /*!
@@ -259,6 +263,12 @@ ViewportRegion::handleEvent(SoHandleEventAction * action)
 */
 void
 ViewportRegion::pick(SoPickAction * action)
+{
+  ViewportRegion::doAction((SoAction*)action);
+}
+
+void 
+ViewportRegion::callback(SoCallbackAction * action)
 {
   ViewportRegion::doAction((SoAction*)action);
 }
