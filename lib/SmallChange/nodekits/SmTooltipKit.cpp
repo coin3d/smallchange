@@ -89,6 +89,7 @@
 #include <Inventor/SoFullPath.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoDrawStyleElement.h>
 #include <Inventor/events/SoLocation2Event.h>
 #include <SmallChange/nodes/SmTooltip.h>
 
@@ -214,7 +215,11 @@ SmTooltipKit::GLRender(SoGLRenderAction * action)
     action->addDelayedPath(action->getCurPath()->copy());
     return;
   }
+  SoState *state = action->getState();
+  state->push();
+  SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
   inherited::GLRender(action);
+  state->pop();
 }
 
 void 
