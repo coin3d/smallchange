@@ -36,6 +36,7 @@ struct RenderState {
   double bbmin[3];
   double bbmax[3];
   int dotex;
+  int renderpass;
 
   // culling
   float * clipplanes;
@@ -86,6 +87,17 @@ void sc_set_have_clamp_to_edge(int enable); // GL 1.x feature
 void sc_probe_gl(int verbose); // automatic setup of the below features
 
 /* don't use the following methods unless completely necessary */
+
+void sc_set_glPolygonOffset(void * fptr);
+
+void sc_set_glGenTextures(void * fptr);
+void sc_set_glBindTexture(void * fptr);
+void sc_set_glTexImage2D(void * fptr);
+void sc_set_glDeleteTextures(void * fptr);
+
+void sc_set_glMultiTexCoord2f(void * fptr);      // GL 1.3 feature
+void sc_set_glClientActiveTexture(void * fptr);  // GL 1.3 feature?
+
 void sc_set_glEnableClientState(void * fptr);    // GL 1.1 feature
 void sc_set_glDisableClientState(void * fptr);   // GL 1.1 feature
 void sc_set_glVertexPointer(void * fptr);        // GL 1.1 feature
@@ -94,13 +106,15 @@ void sc_set_glTexCoordPointer(void * fptr);      // GL 1.1 feature
 void sc_set_glDrawElements(void * fptr);         // GL 1.1 feature
 void sc_set_glDrawArrays(void * fptr);           // GL 1.1 feature
 
-void sc_set_glMultiTexCoord2f(void * fptr);      // GL 1.3 feature
-void sc_set_glClientActiveTexture(void * fptr);  // GL 1.3 feature?
-
 int sc_found_multitexturing(void);
 int sc_found_vertexarrays(void);
 int sc_suggest_vertexarrays(void);
 int sc_suggest_bytenormals(void);
+
+/* ********************************************************************** */
+
+void sc_renderstate_construct(RenderState * state);
+void sc_renderstate_destruct(RenderState * state);
 
 /* ********************************************************************** */
 /* texture management */
@@ -109,10 +123,11 @@ typedef void * sc_texture_construct_f(unsigned char * data, int texw, int texh, 
 typedef void sc_texture_activate_f(RenderState * state, void * handle);
 typedef void sc_texture_release_f(void * handle);
 
-void sc_renderstate_construct(RenderState * state);
-void sc_renderstate_destruct(RenderState * state);
-
 void sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release);
+
+void * sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey);
+void sc_default_texture_activate(RenderState * state, void * handle);
+void sc_default_texture_release(void * handle);
 
 void sc_mark_unused_textures(RenderState * state);
 void sc_delete_unused_textures(RenderState * state);

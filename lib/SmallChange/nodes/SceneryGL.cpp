@@ -27,48 +27,50 @@
 
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
-#endif /* HAVE_WINDOWS_H */
+#else /* !HAVE_WINDOWS_H */
+#define APIENTRY
+#endif /* !HAVE_WINDOWS_H */
 
 #include <assert.h>
 #include <stdlib.h> // atoi()
 #include <stdio.h>
 #include <math.h> // fmod()
 
-#include <GL/gl.h>
-
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
-#define APIENTRY
 #endif // HAVE_DLFCN_H
 
-#include "SceneryGL.h"
+#include <GL/gl.h>
 
 /* this source file is shared between SIM Scenery and SmallChange, hence the
  * strange conditional includes below */
 #ifdef SS_MAJOR_VERSION
+/* we are building in the SIM Scenery source repository */
 #include "SbList.h"
 #include "SbHash.h"
 #include "SbVec3.h"
 #include "SbBox3.h"
 #include "SbPlane.h"
 
-#define SS_DLL
 #include <sim/scenery/scenery.h>
-#else
+#include <sim/scenery/SceneryGL.h>
+#else /* !SS_MAJOR_VERSION */
+/* we are building in the SmallChange source repository */
 #include "../misc/SbList.h"
 #include "../misc/SbHash.h"
 #include "../misc/SbVec3.h"
 #include "../misc/SbBox3.h"
 #include "../misc/SbPlane.h"
 #include <SmallChange/misc/SceneryGlue.h>
-#endif
+#include <SmallChange/nodes/SceneryGL.h>
+#endif /* !SS_MAJOR_VERSION */
+
 
 /* ********************************************************************** */
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
 
-/* how to interface back to scenery library */
 #ifndef SS_SCENERY_H
 /* scenery.h has not been included directly */
 #define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
@@ -91,10 +93,27 @@
 #define GL_CLAMP_TO_EDGE                  0x812F
 #endif /* !GL_CLAMP_TO_EDGE */
 
+#ifndef GL_OCCLUSION_TEST_HP
+#define GL_OCCLUSION_TEST_HP              0x8165
+#endif /* !GL_OCCLUSION_TEST_HP */
+
+#ifndef GL_OCCLUSION_TEST_RESULT_HP
+#define GL_OCCLUSION_TEST_RESULT_HP       0x8166
+#endif /* !GL_OCCLUSION_TEST_RESULT_HP */
+
 /* ********************************************************************** */
 /* GL setup */
 
+// prototypes
+typedef void (APIENTRY * glPolygonOffset_f)(GLfloat factor, GLfloat units);
+
+typedef void (APIENTRY * glGenTextures_f)(GLsizei n, GLuint * textures);
+typedef void (APIENTRY * glBindTexture_f)(GLenum target, GLuint texture);
+typedef void (APIENTRY * glTexImage2D_f)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * pixels);
+typedef void (APIENTRY * glDeleteTextures_f)(GLsizei n, const GLuint * textures);
+
 typedef void (APIENTRY * glMultiTexCoord2f_f)(GLenum target, GLfloat x, GLfloat y);
+typedef void (APIENTRY * glClientActiveTexture_f)(GLenum texture);
 
 typedef void (APIENTRY * glEnableClientState_f)(GLenum cap);
 typedef void (APIENTRY * glDisableClientState_f)(GLenum cap);
@@ -103,10 +122,24 @@ typedef void (APIENTRY * glNormalPointer_f)(GLenum type, GLsizei stride, const G
 typedef void (APIENTRY * glTexCoordPointer_f)(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void (APIENTRY * glDrawElements_f)(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
 typedef void (APIENTRY * glDrawArrays_f)(GLenum mode, GLint first, GLsizei count);
-typedef void (APIENTRY * glClientActiveTexture_f)(GLenum texture);
 
+// state container definition
 struct sc_GL {
+  // polygon offset (for 
+  // glPolygonOffsetEnable_f glPolygonOffsetEnable(TRUE, styles);
+  glPolygonOffset_f glPolygonOffset;
+
+  // texturing
+  glGenTextures_f glGenTextures;
+  glBindTexture_f glBindTexture;
+  glTexImage2D_f glTexImage2D;
+  glDeleteTextures_f glDeleteTextures;
+
+  // mutitexturing
   glMultiTexCoord2f_f glMultiTexCoord2f;
+  glClientActiveTexture_f glClientActiveTexture;
+
+  // vertexarrays
   glEnableClientState_f glEnableClientState;
   glDisableClientState_f glDisableClientState;
   glVertexPointer_f glVertexPointer;
@@ -114,7 +147,10 @@ struct sc_GL {
   glTexCoordPointer_f glTexCoordPointer;
   glDrawElements_f glDrawElements;
   glDrawArrays_f glDrawArrays;
-  glClientActiveTexture_f glClientActiveTexture;
+
+  // normalmaps
+
+  // occlusion
 
   GLenum CLAMP_TO_EDGE;
 
@@ -129,10 +165,20 @@ struct sc_GL {
   int HAVE_OCCLUSIONTEST;
 };
 
+// static state container
 static
 struct sc_GL GL =
 {
+  NULL,     // glPolygonOffset
+
+  NULL,     // glGenTextures
+  NULL,     // glBindTexture
+  NULL,     // glTexImage2D
+  NULL,     // glDeleteTextures
+
   NULL,     // glMultiTexCoord2f
+  NULL,     // glClientActiveTexture
+
   NULL,     // glEnableClientState
   NULL,     // glDisableClientState
   NULL,     // glVertexPointer
@@ -140,7 +186,6 @@ struct sc_GL GL =
   NULL,     // glTexCoordPointer
   NULL,     // glDrawElements
   NULL,     // glDrawArrays
-  NULL,     // glClientActiveTexture
 
   GL_CLAMP, // clamp_to_edge
   TRUE,     // USE_BYTENORMALS
@@ -153,68 +198,30 @@ struct sc_GL GL =
   FALSE     // HAVE_OCCLUSIONTEST
 };
 
-void
-sc_set_glEnableClientState(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glEnableClientState = (glEnableClientState_f) fptr;
+#define GL_FUNCTION_SETTER(func) \
+void                             \
+sc_set_##func(void * fptr)       \
+{                                \
+  assert(fptr != NULL);          \
+  GL.func = (func##_f) fptr;     \
 }
 
-void
-sc_set_glDisableClientState(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glDisableClientState = (glDisableClientState_f) fptr;
-}
+GL_FUNCTION_SETTER(glPolygonOffset)
+GL_FUNCTION_SETTER(glGenTextures)
+GL_FUNCTION_SETTER(glBindTexture)
+GL_FUNCTION_SETTER(glTexImage2D)
+GL_FUNCTION_SETTER(glDeleteTextures)
+GL_FUNCTION_SETTER(glMultiTexCoord2f)
+GL_FUNCTION_SETTER(glClientActiveTexture)
+GL_FUNCTION_SETTER(glEnableClientState)
+GL_FUNCTION_SETTER(glDisableClientState)
+GL_FUNCTION_SETTER(glVertexPointer)
+GL_FUNCTION_SETTER(glNormalPointer)
+GL_FUNCTION_SETTER(glTexCoordPointer)
+GL_FUNCTION_SETTER(glDrawElements)
+GL_FUNCTION_SETTER(glDrawArrays)
 
-void
-sc_set_glVertexPointer(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glVertexPointer = (glVertexPointer_f) fptr;
-}
-
-void
-sc_set_glNormalPointer(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glNormalPointer = (glNormalPointer_f) fptr;
-}
-
-void
-sc_set_glTexCoordPointer(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glTexCoordPointer = (glTexCoordPointer_f) fptr;
-}
-
-void
-sc_set_glDrawElements(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glDrawElements = (glDrawElements_f) fptr;
-}
-
-void
-sc_set_glDrawArrays(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glDrawArrays = (glDrawArrays_f) fptr;
-}
-
-void
-sc_set_glMultiTexCoord2f(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glMultiTexCoord2f = (glMultiTexCoord2f_f) fptr;
-}
-
-void
-sc_set_glClientActiveTexture(void * fptr)
-{
-  assert(fptr != NULL);
-  GL.glClientActiveTexture = (glClientActiveTexture_f) fptr;
-}
+#undef GL_FUNCTION_SETTER
 
 void
 sc_set_have_clamp_to_edge(int enable)
@@ -294,12 +301,29 @@ sc_suggest_bytenormals(void)
 void
 sc_probe_gl(int verbose)
 {
+  // should assert on having a current GL context here...
+
   APP_HANDLE_TYPE handle = APP_HANDLE();
   void * ptr = NULL;
 
   // probe GL for extensions
   const char * vendor = (const char *) glGetString(GL_VENDOR);
   const char * version = (const char *) glGetString(GL_VERSION);
+
+  // VERTEX ARRAYS:
+  // The rendering loop that uses direct GL calls does not behave very well
+  // on ATI cards, giving randomly garbage normals and texture coordinates.
+  // This is a driver bug, which was present for both v3.8 and 3.9 of the
+  // driver.  The rendering loop using vertex arrays behaves though, so for
+  // the ATI case, the vertex array rendering loop is suggested.  It does not
+  // perform as well as the direct rendering loop though.
+  //
+  // On Mac OS X, you have the issue of C-call overhead, which is a lot higher
+  // than for other platforms.  Using vertex arrays means less calls to GL,
+  // making the vertex array approach potentially a lot faster (that's what we
+  // hear, this hasn't been tested yet though) than direct GL calls, so we
+  // suggest using the vertex array rendering approach for that platform as
+  // well.
 
   if ( strcmp(vendor, "ATI Technologies Inc.") == 0 ) {
     // vertex arrays are less buggy than other rendering techniques
@@ -308,6 +332,12 @@ sc_probe_gl(int verbose)
 #ifdef __APPLE__
   GL.SUGGEST_VERTEXARRAYS = TRUE;
 #endif
+
+
+  // BYTE NORMALS:
+  // The 3Dlabs driver has problems with normals given with glNormal3bv(), but
+  // not with normals given with glNormal3f().  We therefore suggest doing
+  // conversion to floats before sending to GL for 3Dlabs graphics cards.
 
   if ( strcmp(vendor, "3Dlabs") == 0 ) {
     // float normals doesn't bug where byte normals does
@@ -334,12 +364,59 @@ sc_probe_gl(int verbose)
     GL.SUGGEST_VERTEXARRAYS = FALSE;
   }
 
+
+  // normal maps will make rendering with normals instead of textures
+  // much nicer (no popping), and will combine better with non-lighted
+  // textures.  (to be implemented)
   if ( (minor >= 10) || strstr(exts, "GL_whatever_normal_maps ") ) {
     GL.HAVE_NORMALMAPS = TRUE;
   }
 
-  if ( (minor >= 10) || strstr(exts, "GL_HP_occlusion_test ") ) {
+  // occlusion testing can probably optimize rendering quite a bit
+  // (to be implemented)
+  if ( strstr(exts, "GL_HP_occlusion_test ") ) {
     GL.HAVE_OCCLUSIONTEST = TRUE;
+    if ( verbose ) printf("PROBE: installed hardware occlusion test support\n");
+  } else {
+    if ( verbose ) printf("PROBE: hardware occlusion test not supported\n");
+  }
+
+  if ( (minor >= 2) ||
+       strstr(exts, "GL_EXT_texture_edge_clamp ") ||
+       strstr(exts, "GL_SGIS_texture_edge_clamp ") ) {
+    GL.CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
+  }
+  else {
+    GL.CLAMP_TO_EDGE = GL_CLAMP;
+  }
+
+  if ( minor >= 1 ) {
+    GL_PROC_SEARCH(ptr, glPolygonOffset);
+    if ( verbose ) printf("PROBE: glPolygonOffset = %p\n", ptr);
+    assert(ptr);
+    sc_set_glPolygonOffset(ptr);
+  }
+
+  if ( minor >= 1 ) {
+    GL_PROC_SEARCH(ptr, glGenTextures);
+    if ( verbose ) printf("PROBE: glGenTextures = %p\n", ptr);
+    assert(ptr);
+    sc_set_glGenTextures(ptr);
+
+    GL_PROC_SEARCH(ptr, glBindTexture);
+    if ( verbose ) printf("PROBE: glBindTexture = %p\n", ptr);
+    assert(ptr);
+    sc_set_glBindTexture(ptr);
+
+    GL_PROC_SEARCH(ptr, glTexImage2D);
+    if ( verbose ) printf("PROBE: glTexImage2D = %p\n", ptr);
+    assert(ptr);
+    sc_set_glTexImage2D(ptr);
+
+    GL_PROC_SEARCH(ptr, glDeleteTextures);
+    if ( verbose ) printf("PROBE: glDeleteTextures = %p\n", ptr);
+    assert(ptr);
+    sc_set_glDeleteTextures(ptr);
   }
 
   if ( GL.HAVE_MULTITEXTURES ) {
@@ -353,10 +430,10 @@ sc_probe_gl(int verbose)
     if ( verbose ) printf("PROBE: glClientActiveTexture = %p\n", ptr);
     assert(ptr);
     sc_set_glClientActiveTexture(ptr);
-    if ( verbose ) printf("multi-texturing installed\n");
+    if ( verbose ) printf("PROBE: installed multi-texturing support\n");
   }
   else {
-    if ( verbose ) printf("no multi-texturing\n");
+    if ( verbose ) printf("PROBE: multi-texturing not supported\n");
   }
 
   if ( GL.HAVE_VERTEXARRAYS ) {
@@ -395,10 +472,10 @@ sc_probe_gl(int verbose)
     assert(ptr);
     sc_set_glDrawArrays(ptr);
 
-    if ( verbose ) printf("vertex-arrays installed\n");
+    if ( verbose ) printf("PROBE: installed vertex-arrays support\n");
   }
   else {
-    if ( verbose ) printf("no vertex-arrays\n");
+    if ( verbose ) printf("PROBE: vertex-arrays not supported\n");
   }
     
   APP_HANDLE_CLOSE(handle);
@@ -414,9 +491,86 @@ sc_probe_gl(int verbose)
 /* ********************************************************************** */
 /* texture management */
 
-static sc_texture_construct_f * texture_construct = NULL;
-static sc_texture_activate_f * texture_activate = NULL;
-static sc_texture_release_f * texture_release = NULL;
+struct texture_info {
+  GLuint id;
+  unsigned char * data;
+  int texwidth;
+  int texheight;
+  int components;
+  int wraps;
+  int wrapt;
+  float quality;
+};
+
+void *
+sc_default_texture_construct(unsigned char * data, int texw, int texh, int nc, int wraps, int wrapt, float q, int hey)
+{
+  texture_info * info = new texture_info;
+  assert(info != NULL);
+
+  info->id = 0;
+  info->data = data;
+  info->texwidth = texw;
+  info->texheight = texw;
+  info->components = nc;
+  info->wraps = wraps;
+  info->wrapt = wrapt;
+  info->quality = q;
+
+  assert(GL.glBindTexture);
+
+  GL.glGenTextures(1, &info->id);
+  GL.glBindTexture(GL_TEXTURE_2D, info->id);
+
+  return info;
+}
+
+void
+sc_default_texture_activate(RenderState * state, void * handle)
+{
+  texture_info * info = (texture_info *) handle;
+  assert(info != NULL);
+  
+  assert(GL.glTexImage2D);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, info->wraps);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, info->wrapt);
+#if 1
+  // FIXME:  Consider mipmapping.  I'm not sure it's needed for
+  // anything but the top block, since the texture is LODed along
+  // with the terrain blocks already.  However, for sattelite view
+  // of the top block, it would definitely be a good idea.
+  // 20031123 larsa
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#else
+  // for non bi-linear filtering (for hard texel-edges)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+#endif
+
+  // void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * pixels);
+
+  GL.glTexImage2D(GL_TEXTURE_2D, 0, info->components,
+                  info->texwidth, info->texheight, 0,
+                  GL_RGBA, GL_UNSIGNED_BYTE, info->data);
+
+  // glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+}
+
+void
+sc_default_texture_release(void * handle)
+{
+  texture_info * info = (texture_info *) handle;
+  assert(info);
+  assert(GL.glDeleteTextures);
+  GL.glDeleteTextures(1, &info->id);
+  delete info;
+}
+
+static sc_texture_construct_f * texture_construct = sc_default_texture_construct;
+static sc_texture_activate_f * texture_activate = sc_default_texture_activate;
+static sc_texture_release_f * texture_release = sc_default_texture_release;
 
 void
 sc_set_texture_functions(sc_texture_construct_f * construct, sc_texture_activate_f * activate, sc_texture_release_f * release)
@@ -450,6 +604,7 @@ sc_renderstate_construct(RenderState * state)
   state->tmplist = (void *) new SbList<unsigned int>;
   state->debuglist = (void *) new SbList<float>;
   state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
+  state->dotex = TRUE;
   state->state = NULL;
   state->action = NULL;
 
@@ -459,6 +614,7 @@ sc_renderstate_construct(RenderState * state)
   state->t1array = NULL;
   state->t2array = NULL;
   state->idxarray = NULL;
+  state->renderpass = FALSE;
 }
 
 static void sc_texture_hash_clear(unsigned int key, TexInfo * val, void * closure);
@@ -470,7 +626,6 @@ sc_renderstate_destruct(RenderState * state)
   if ( state->reusetexlist ) {
     SbList<TexInfo *> * list = (SbList<TexInfo *> *) state->reusetexlist;
     if ( list->getLength() ) {
-      // printf("scenery: reusetexlist not empty (%d)\n", list->getLength());
       int i;
       assert(texture_release);
       for ( i = 0; i < list->getLength(); i++ ) {
@@ -569,9 +724,6 @@ sc_delete_unused_textures(RenderState * state)
     ((SbList<TexInfo *> *) state->reusetexlist)->push(tex);
     texhash->remove((*tmplist)[i]);
   }
-
-//   fprintf(stderr,"SmScenery now has %d active textures, %d reusable textures (removed %d)\n",
-//           cc_hash_get_num_elements(this->renderstate.texhash), this->reusetexlist.getLength(), this->tmplist.getLength());
 
   tmplist->truncate(0);
 }
@@ -678,7 +830,6 @@ sc_generate_elevation_line_texture(float distance,
   // set elevation lines to black
   float pixelsize = distance / (float(texturesize) / lines);
   float pixelpos = 0.0f;
-  // printf("lines: %g, pixelsize: %g, texturesize: %d\n", lines, pixelsize, texturesize);
   int bolds = 0;
   for ( i = 0; i < texturesize; i++ ) {
     float pixelpos = float(i) * pixelsize;
@@ -815,8 +966,11 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
 
   int mask = 0;
   if ( cullstate->getLength() > 0 ) {
-    // FIXME: the masking does not seem to work - disables a lot of culling
-    // mask = cullstate->getLast();
+    // This optimizes culling by telling which planes we do not need to cull against.
+    // It can only be enabled as long as we recurse the quadtree.  If random
+    // order is implemented to render from front to back, this will have to be
+    // disabled.
+    mask = cullstate->getLast();
   }
 
   // set up bbox corner points
@@ -828,24 +982,74 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
                       (float) ((i & 4) ? bmin[2] : bmax[2]));
   }
   int j, bits = 0;
-  for ( i = 0; i < state->numclipplanes; i++ ) { // foreach plane
-    if ( (mask & (1 << i)) != 0 ) continue; // uncullable plane - all corners will be inside
-    SbPlane<float> plane(SbVec3<float>(state->clipplanes[i*4+0], state->clipplanes[i*4+1], state->clipplanes[i*4+2]),
-                         state->clipplanes[i*4+3]);
-    int outside = 0, inside = 0;
-    for ( j = 0; j < 8; j++ ) { // foreach bbox corner point
-      if ( !plane.isInHalfSpace(point[j]) ) { outside++; }
-      else { inside++; }
-    }
-    if ( inside == 8 ) { // mark this plane as uncullable
-      bits = bits | (1 << i);
-    }
-    if ( outside == 8 ) {
-      cullstate->push(0); // push state since post_cb pops it
-      return FALSE; // culled
+  if ( state->numclipplanes > 0 ) {
+    assert(state->clipplanes);
+    for ( i = 0; i < state->numclipplanes; i++ ) { // foreach plane
+      if ( (mask & (1 << i)) != 0 ) continue; // uncullable plane - all corners will be inside
+      SbVec3<float> normal(state->clipplanes[i*4+0], state->clipplanes[i*4+1], state->clipplanes[i*4+2]);
+      float distance = state->clipplanes[i*4+3];
+      SbPlane<float> plane(normal, distance);
+      int outside = 0, inside = 0;
+      for ( j = 0; j < 8; j++ ) { // foreach bbox corner point
+        if ( !plane.isInHalfSpace(point[j]) ) { outside++; }
+        else { inside++; }
+      }
+      if ( inside == 8 ) { // mark this plane as uncullable
+        bits = bits | (1 << i);
+      }
+      if ( outside == 8 ) {
+        cullstate->push(0); // push state since post_cb pops it
+        return FALSE; // culled
+      }
     }
   }
   cullstate->push(mask | bits); // push culling state for next iteration
+
+  // Use the GL_HP_occlusion_test extension to check if bounding box will
+  // be totally occluded.  If it is not occluded, better bounding box granularity
+  // can be achieved by checking against the bounding box of each child sub-block,
+  // and potentially recursively so.  It might not be such a good idea to exhaust
+  // this technique by doing full recursion all the way down though...  One or two
+  // levels on the other hand...
+
+  if ( state->renderpass && GL.HAVE_OCCLUSIONTEST ) {
+    // disable updates to color and depth buffer (optional)
+    glDepthMask(GL_FALSE);
+    glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+    // enable occlusion test
+    glEnable(GL_OCCLUSION_TEST_HP);
+    // render bounding geometry
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f((float) bmin[0], (float) bmin[1], (float) bmin[2]); // center
+    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]); // start
+    glVertex3f((float) bmax[0], (float) bmax[1], (float) bmin[2]);
+    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmin[2]);
+    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]);
+    glVertex3f((float) bmin[0], (float) bmin[1], (float) bmax[2]);
+    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmax[2]);
+    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]); // finish = start
+    glEnd();
+    // and the other side
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f((float) bmax[0], (float) bmax[1], (float) bmax[2]); // center
+    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]); // start
+    glVertex3f((float) bmin[0], (float) bmin[1], (float) bmax[2]);
+    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmax[2]);
+    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]);
+    glVertex3f((float) bmax[0], (float) bmax[1], (float) bmin[2]);
+    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmin[2]);
+    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]); // finish = start
+    glEnd();
+    // disable occlusion test
+    glDisable(GL_OCCLUSION_TEST_HP);
+    // enable updates to color and depth buffer
+    glDepthMask(GL_TRUE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    // read occlusion test result
+    GLboolean result;
+    glGetBooleanv(GL_OCCLUSION_TEST_RESULT_HP, &result);
+    if ( !result ) { return FALSE; } // culled
+  }
   return TRUE; // not culled
 }
 
@@ -1114,6 +1318,10 @@ sc_render_pre_cb_common(void * closure, ss_render_block_cb_info * info)
     ((SbList<float> *) renderstate->debuglist)->append(oy+sy);
   }
 
+  renderstate->toffset[0] = 0.0f;
+  renderstate->toffset[1] = 0.0f;
+  renderstate->tscale[0] = 1.0f;
+  renderstate->tscale[1] = 1.0f;
   ss_render_get_texture_measures(info, &renderstate->texid,
                                  renderstate->toffset, renderstate->tscale);
   // for optimizing texture coordinate calculations
@@ -1663,6 +1871,41 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
     GL.glClientActiveTexture(GL_TEXTURE0);
     GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
+
+#if 0
+  // DEBUG CODE:  Render fences between terrain blocks.
+  if ( TRUE ) { // outline blocks
+    int tex = glIsEnabled(GL_TEXTURE_2D);
+    if ( tex ) { glDisable(GL_TEXTURE_2D); }
+
+    const float height = (renderstate->vspacing[0] + renderstate->vspacing[1]);
+    int i;
+
+    // FIXME:  Sort vertices along axis.  Find out why normal doesn't work.
+    // Figure out how to detect undef-areas.
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glBegin(GL_TRIANGLE_STRIP);
+    for ( i = 0; i < vertices; i++ ) {
+      if ( vertexarrayptr[i*3] == renderstate->voffset[0] ) {
+        glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2]);
+        glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2] + height);
+      }
+    }
+    glEnd(); // GL_TRIANGLE_STRIP
+
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glBegin(GL_TRIANGLE_STRIP);
+    for ( i = 0; i < vertices; i++ ) {
+      if ( vertexarrayptr[i*3+1] == renderstate->voffset[1] ) {
+        glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2]);
+        glVertex3f(vertexarrayptr[i*3+0], vertexarrayptr[i*3+1], vertexarrayptr[i*3+2] + height);
+      }
+    }
+    glEnd(); // GL_TRIANGLE_STRIP
+
+    if ( tex ) { glEnable(GL_TEXTURE_2D); }
+  }
+#endif
 }
 
 /* ********************************************************************** */
