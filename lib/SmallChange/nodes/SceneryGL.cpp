@@ -28,14 +28,23 @@
 #include <assert.h>
 #include <stdlib.h> // atoi()
 #include <stdio.h>
+#include <math.h> // fmod()
 
 #include <GL/gl.h>
 
+#include "SceneryGL.h"
+
+/* this source file is shared between SIM Scenery and SmallChange, hence the
+ * strange conditional includes below */
+#ifdef SS_MAJOR_VERSION
+#include "SbList.h"
+#include "SbHash.h"
+#include <sim/scenery/scenery.h>
+#else
 #include "../misc/SbList.h"
 #include "../misc/SbHash.h"
-
 #include <SmallChange/misc/SceneryGlue.h>
-#include <SmallChange/nodes/SceneryGL.h>
+#endif
 
 /* ********************************************************************** */
 
@@ -47,6 +56,7 @@
 #define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
 #define ss_render_get_texture_measures sc_ssglue_render_get_texture_measures
 #define ss_render_get_texture_image sc_ssglue_render_get_texture_image
+#define ss_render_get_undef_array sc_ssglue_render_get_undef_array
 #endif
 
 /* ********************************************************************** */
@@ -528,7 +538,9 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
 int 
 sc_render_pre_cb(void * closure, ss_render_pre_cb_info * info)
 {
+#ifndef SS_SCENERY_H
   assert(sc_scenery_available());
+#endif
   assert(closure);
   RenderState * renderstate = (RenderState *) closure;
 
@@ -702,7 +714,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
   const float * elev = renderstate->elevdata;
   const int W = ((int) renderstate->blocksize) + 1;
 
-  const signed char * ptr = sc_ssglue_render_get_undef_array(bitmask_org);
+  const signed char * ptr = ss_render_get_undef_array(bitmask_org);
 
   int numv = *ptr++;
   int tx, ty;
