@@ -44,23 +44,26 @@ AC_DEFUN([SIM_AC_SETUP_MSVCPP_IFELSE],
 [
 AC_REQUIRE([SIM_AC_MSVC_DISABLE_OPTION])
 
-BUILD_WITH_MSVC=false
+: ${BUILD_WITH_MSVC=false}
 if $sim_ac_try_msvc; then
-  sim_ac_wrapmsvc=`cd $srcdir; pwd`/cfg/wrapmsvc.exe
-  if test -z "$CC" -a -z "$CXX" && $sim_ac_wrapmsvc >/dev/null 2>&1; then
-    m4_ifdef([$0_VISITED],
-      [AC_FATAL([Macro $0 invoked multiple times])])
-    m4_define([$0_VISITED], 1)
-    CC=$sim_ac_wrapmsvc
-    CXX=$sim_ac_wrapmsvc
-    export CC CXX
-    BUILD_WITH_MSVC=true
-  else
-    case $host in
-    *-cygwin) SIM_AC_ERROR([no-msvc++]) ;;
-    esac
+  sim_ac_wrapmsvc=`cd $ac_aux_dir; pwd`/wrapmsvc.exe
+  if test -z "$CC" -a -z "$CXX"; then
+    if $sim_ac_wrapmsvc >/dev/null 2>&1; then
+      m4_ifdef([$0_VISITED],
+        [AC_FATAL([Macro $0 invoked multiple times])])
+      m4_define([$0_VISITED], 1)
+      CC=$sim_ac_wrapmsvc
+      CXX=$sim_ac_wrapmsvc
+      export CC CXX
+      BUILD_WITH_MSVC=true
+    else
+      case $host in
+      *-cygwin) SIM_AC_ERROR([no-msvc++]) ;;
+      esac
+    fi
   fi
 fi
+export BUILD_WITH_MSVC
 AC_SUBST(BUILD_WITH_MSVC)
 
 if $BUILD_WITH_MSVC; then
@@ -1348,7 +1351,7 @@ else
   lt_save_ifs="$IFS"; IFS=$PATH_SEPARATOR
   for dir in $PATH /usr/ucb; do
     IFS="$lt_save_ifs"
-    if (test -f $dir/echo || test -f $dir/echo$ac_exeext) &&
+    if (test -f "$dir/echo" || test -f "$dir/echo$ac_exeext") &&
        test "X`($dir/echo '\t') 2>/dev/null`" = 'X\t' &&
        echo_testing_string=`($dir/echo "$echo_test_string") 2>/dev/null` &&
        test "X$echo_testing_string" = "X$echo_test_string"; then
@@ -2618,7 +2621,7 @@ if test -f "$ltmain" && test -n "$tagnames"; then
 
   # Extract list of available tagged configurations in $ofile.
   # Note that this assumes the entire list is on one line.
-  available_tags=`grep "^available_tags=" "${ofile}" | $SED -e 's/available_tags=\(.*$\)/\1/' -e 's/\"//g'`
+  available_tags=`grep "^available_tags=" "${ofile}" | $SED -e 's/\"//g' -e 's/^available_tags= *//'`
 
   lt_save_ifs="$IFS"; IFS="${IFS}$PATH_SEPARATOR,"
   for tagname in $tagnames; do
@@ -7872,9 +7875,9 @@ AC_HELP_STRING([--with-coin=DIR], [give prefix location of Coin]),
 if $sim_ac_coin_desired; then
   sim_ac_path=$PATH
   test -z "$sim_ac_coin_extrapath" || ## search in --with-coin path
-    sim_ac_path=$sim_ac_coin_extrapath/bin:$sim_ac_path
+    sim_ac_path="$sim_ac_coin_extrapath/bin${PATH_SEPARATOR}$sim_ac_path"
   test x"$prefix" = xNONE ||          ## search in --prefix path
-    sim_ac_path=$sim_ac_path:$prefix/bin
+    sim_ac_path="$sim_ac_path${PATH_SEPARATOR}$prefix/bin"
 
   AC_PATH_PROG(sim_ac_coin_configcmd, coin-config, false, $sim_ac_path)
 
@@ -7919,7 +7922,7 @@ if $sim_ac_coin_desired; then
     ])
     sim_ac_coin_avail=$sim_cv_coin_avail
   else
-    locations=`IFS=:; for p in $sim_ac_path; do echo " -> $p/coin-config"; done`
+    locations=`IFS="${PATH_SEPATATOR}"; for p in $sim_ac_path; do echo " -> $p/coin-config"; done`
     AC_MSG_WARN([cannot find 'coin-config' at any of these locations:
 $locations])
   fi
