@@ -193,7 +193,8 @@ SOURCES = \
 	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
-	SmHeadlight.cpp SmHeadlight.h
+	SmHeadlight.cpp SmHeadlight.h \
+	VertexArrayShape.cpp SmVertexArrayShape.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -225,7 +226,8 @@ libnodesinc_HEADERS = \
 	SmScenery.h \
 	SmHQSphere.h \
 	SmBillboardClipPlane.h \
-	SmHeadlight.h
+	SmHeadlight.h \
+	SmVertexArrayShape.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -247,7 +249,8 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
 	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
 	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
-	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT)
+	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT) \
+	VertexArrayShape.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -260,7 +263,8 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
 	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
-	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo
+	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo \
+	VertexArrayShape.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -307,6 +311,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/UTMCoordinate.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/UTMPosition.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/UTMPosition.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/VertexArrayShape.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/VertexArrayShape.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ViewportRegion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ViewportRegion.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -353,7 +359,8 @@ SOURCES = \
 	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
-	SmHeadlight.cpp SmHeadlight.h
+	SmHeadlight.cpp SmHeadlight.h \
+	VertexArrayShape.cpp SmVertexArrayShape.h
 
 
 all: all-am
@@ -434,6 +441,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UTMCoordinate.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UTMPosition.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UTMPosition.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexArrayShape.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VertexArrayShape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ViewportRegion.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ViewportRegion.Po@am__quote@
 

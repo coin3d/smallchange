@@ -31,7 +31,8 @@ SOURCES = \
 	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
-	SmHeadlight.cpp SmHeadlight.h
+	SmHeadlight.cpp SmHeadlight.h \
+	VertexArrayShape.cpp SmVertexArrayShape.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
@@ -62,7 +63,8 @@ libnodesinc_HEADERS = \
 	SmScenery.h \
 	SmHQSphere.h \
 	SmBillboardClipPlane.h \
-	SmHeadlight.h
+	SmHeadlight.h \
+	SmVertexArrayShape.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
