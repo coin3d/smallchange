@@ -44,8 +44,6 @@ public:
     this->master = master;
   }
 
-  SmAxisKit * master;
-
   SoFieldSensor * axisRangeSensor;
   SoFieldSensor * markerIntervalSensor;
   SoFieldSensor * markerWidthSensor;
@@ -54,21 +52,21 @@ public:
   SoFieldSensor * axisNameSensor;
   SoFieldSensor * arrowColorSensor;
 
-  SoSeparator * masterAxis;
   SoText2 * axisName;
 
   SoSeparator * axisRoot;
-  SoSeparator * generateAxis(int LODlevel);
-  void generateLOD();
-  void setupMasterNodes();
+  SoSeparator * generateAxis(int LODlevel) const;
+  SoLevelOfDetail * generateLOD(void) const;
+  SoSeparator * setupMasterNodes(void) const;
 
-
+private:
+  SmAxisKit * master;
 };
 
 static void fieldsChangedCallback(void * classObject, SoSensor * sensor);
 
-#define PRIVATE(p) (p->pimpl)
-#define PUBLIC(p) (p->master)
+#define PRIVATE(p) ((p)->pimpl)
+#define PUBLIC(p) ((p)->master)
 
 SmAxisKit::SmAxisKit()
 {
@@ -98,8 +96,7 @@ SmAxisKit::SmAxisKit()
   PRIVATE(this)->axisRoot = new SoSeparator;
   PRIVATE(this)->axisRoot->ref();
 
-  PRIVATE(this)->setupMasterNodes();
-  PRIVATE(this)->generateLOD();
+  PRIVATE(this)->axisRoot->addChild(PRIVATE(this)->generateLOD());
 
   setPart("topSeparator", PRIVATE(this)->axisRoot);
 
@@ -141,7 +138,7 @@ SmAxisKit::~SmAxisKit()
   delete PRIVATE(this)->digitsSensor;
   delete PRIVATE(this)->axisNameSensor;
   delete PRIVATE(this)->arrowColorSensor;
-  PRIVATE(this)->axisRoot->removeAllChildren();
+
   PRIVATE(this)->axisRoot->unref();
 }
 
@@ -157,10 +154,9 @@ SmAxisKit::affectsState(void) const
   return FALSE;
 }
 
-void 
-SmAxisKitP::generateLOD()
+SoLevelOfDetail *
+SmAxisKitP::generateLOD(void) const
 {
-   
   SoLevelOfDetail * LODnode = new SoLevelOfDetail; 
   LODnode->screenArea.set1Value(0, 15000);
   LODnode->screenArea.set1Value(1, 8000);
@@ -169,21 +165,19 @@ SmAxisKitP::generateLOD()
   
   for (int i=0;i<4;++i) 
     LODnode->addChild(this->generateAxis(i));
-   
-  this->axisRoot->addChild(LODnode);
 
+  return LODnode;
 }
 
-void
-SmAxisKitP::setupMasterNodes()
+SoSeparator *
+SmAxisKitP::setupMasterNodes(void) const
 {
-
   // Setting up the nodes which are used for every LOD 
   
-  float range = (this->master->axisRange.getValue()[1] - this->master->axisRange.getValue()[0]);
+  float range = (PUBLIC(this)->axisRange.getValue()[1] - PUBLIC(this)->axisRange.getValue()[0]);
 
   // Axis
-  masterAxis = new SoSeparator;
+  SoSeparator * masterAxis = new SoSeparator;
   SoSeparator * sep1 = new SoSeparator;
   SoCylinder * axisCylinder = new SoCylinder;
   SoTranslation * trans1 = new SoTranslation;
@@ -202,7 +196,7 @@ SmAxisKitP::setupMasterNodes()
   trans1->translation.setValue(0.0f, range/2, 0.0f);
   trans2->translation.setValue(0.0f, 1.75f, 0.0f);
   complexity1->value.setValue(0.2f);
-  arrowColor->rgb.setValue(this->master->arrowColor.getValue());
+  arrowColor->rgb.setValue(PUBLIC(this)->arrowColor.getValue());
 
   sep1->addChild(complexity1);
   sep1->addChild(axisColor);
@@ -218,7 +212,7 @@ SmAxisKitP::setupMasterNodes()
   trans3->translation.setValue(0.0f, 2.0f, 0.0f);
 
   SoText2 * newaxisname = new SoText2;  
-  newaxisname->string.setValue(this->master->axisName.getValue());
+  newaxisname->string.setValue(PUBLIC(this)->axisName.getValue());
     
   axisnamesep->addChild(axisColor);
   axisnamesep->addChild(trans1);
@@ -229,17 +223,17 @@ SmAxisKitP::setupMasterNodes()
 
   masterAxis->addChild(sep1);
   masterAxis->addChild(axisnamesep);
-
+  return masterAxis;
 }
 
 SoSeparator * 
-SmAxisKitP::generateAxis(int LODlevel)
+SmAxisKitP::generateAxis(int LODlevel) const
 {
 
   SoSeparator * root = new SoSeparator;
-  float range = (this->master->axisRange.getValue()[1] - this->master->axisRange.getValue()[0]);
+  float range = (PUBLIC(this)->axisRange.getValue()[1] - PUBLIC(this)->axisRange.getValue()[0]);
  
-  root->addChild(this->masterAxis);
+  root->addChild(this->setupMasterNodes());
 
   // Markers
   SoSeparator * sep3 = new SoSeparator;
@@ -249,15 +243,15 @@ SmAxisKitP::generateAxis(int LODlevel)
   SoTranslation * mtrans2 = new SoTranslation;
   SoBaseColor * markerColor = new SoBaseColor;
 
-  marker1->height.setValue(this->master->markerWidth.getValue());
+  marker1->height.setValue(PUBLIC(this)->markerWidth.getValue());
   marker1->width.setValue(0.1f);
   marker1->depth.setValue(0.7f);
   
-  marker2->height.setValue(this->master->markerWidth.getValue());
+  marker2->height.setValue(PUBLIC(this)->markerWidth.getValue());
   marker2->width.setValue(0.1f);
   marker2->depth.setValue(1.2f);
 
-  mtrans1->translation.setValue(0.0f, this->master->markerInterval.getValue(), 0.0f);
+  mtrans1->translation.setValue(0.0f, PUBLIC(this)->markerInterval.getValue(), 0.0f);
   mtrans2->translation.setValue(0.0f, 0.0f, 0.7f);
 
   markerColor->rgb.setValue(1.0f, 1.0f, 0.7f);
@@ -298,7 +292,7 @@ SmAxisKitP::generateAxis(int LODlevel)
     }
 
     sep3->addChild(mtrans1);
-    pos += this->master->markerInterval.getValue();
+    pos += PUBLIC(this)->markerInterval.getValue();
     ++counter;
     ++lodskipper;
   }
@@ -309,12 +303,12 @@ SmAxisKitP::generateAxis(int LODlevel)
   SoTranslation * ttrans1 = new SoTranslation;
   SoTranslation * ttrans2 = new SoTranslation;
 
-  ttrans1->translation.setValue(0.0f, this->master->textInterval.getValue(), 0.0f);
+  ttrans1->translation.setValue(0.0f, PUBLIC(this)->textInterval.getValue(), 0.0f);
   ttrans2->translation.setValue(0.0f, 0.0f, 1.4f);  
   textsep->addChild(ttrans2);
 
   SbString tmpstr;
-  const char * tmptext = (tmpstr.sprintf("%%.%df", this->master->digits.getValue())).getString();  
+  const char * tmptext = (tmpstr.sprintf("%%.%df", PUBLIC(this)->digits.getValue())).getString();  
   pos = 0.0f;
   lodskipper = 0;
   
@@ -341,13 +335,13 @@ SmAxisKitP::generateAxis(int LODlevel)
     
     SbString mtext;
     SoText2 * markerText = new SoText2;
-    markerText->string.setValue(mtext.sprintf(tmptext, (pos + this->master->axisRange.getValue()[0])));
+    markerText->string.setValue(mtext.sprintf(tmptext, (pos + PUBLIC(this)->axisRange.getValue()[0])));
 
     if (!skip) 
       textsep->addChild(markerText);
     textsep->addChild(ttrans1);
 
-    pos += this->master->textInterval.getValue();
+    pos += PUBLIC(this)->textInterval.getValue();
     ++lodskipper;
 
   }
@@ -362,12 +356,6 @@ static void fieldsChangedCallback(void * classObject, SoSensor * sensor)
 {
   SmAxisKitP * thisp = (SmAxisKitP *) classObject;  // Fetch caller object
 
-  if (sensor == thisp->axisRangeSensor) {
-    // Special case. Must regenerate axis.
-    thisp->masterAxis->removeAllChildren();
-    thisp->setupMasterNodes();
-  }
-
   thisp->axisRoot->removeAllChildren();
-  thisp->generateLOD();
+  thisp->axisRoot->addChild(thisp->generateLOD());
 }
