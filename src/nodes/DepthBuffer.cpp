@@ -130,8 +130,13 @@ DepthBuffer::~DepthBuffer()
 void
 DepthBuffer::initClass(void)
 {
-  SO_NODE_INIT_CLASS(DepthBuffer, SoNode, "Node");
-  SO_ENABLE(SoGLRenderAction, GLDepthBufferElement);
+  static int first = 1;
+  if (first) {
+    first = 0;
+    GLDepthBufferElement::initClass();
+    SO_NODE_INIT_CLASS(DepthBuffer, SoNode, "Node");
+    SO_ENABLE(SoGLRenderAction, GLDepthBufferElement);
+  }
 }
 
 /*!

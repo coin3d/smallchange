@@ -117,7 +117,11 @@ ViewportRegion::~ViewportRegion()
 void
 ViewportRegion::initClass()
 {
-  SO_NODE_INIT_CLASS(ViewportRegion, SoNode, "Node");
+  static int first = 1;
+  if (first) {
+    first = 0;
+    SO_NODE_INIT_CLASS(ViewportRegion, SoNode, "Node");
+  }
 }
 
 /*!

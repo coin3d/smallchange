@@ -10,10 +10,10 @@
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
 #include <assert.h>
-#include <SmallChange/LegendKit.h>
-#include <SmallChange/GLDepthBufferElement.h>
-#include <SmallChange/ViewportRegion.h>
-#include <SmallChange/DepthBuffer.h>
+#include <nodekits/LegendKit.h>
+#include <elements/GLDepthBufferElement.h>
+#include <nodes/ViewportRegion.h>
+#include <nodes/DepthBuffer.h>
 #include <Inventor/actions/SoSearchAction.h>
 
 
@@ -50,9 +50,6 @@ main(
   assert(argc >= 2);
   QWidget * window = SoQt::init( argv[0] );
 
-  GLDepthBufferElement::initClass();
-  ViewportRegion::initClass();
-  DepthBuffer::initClass();
   LegendKit::initClass();
 
   SoInput input;
