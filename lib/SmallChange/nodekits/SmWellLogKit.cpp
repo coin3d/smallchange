@@ -1071,7 +1071,7 @@ SmWellLogKitP::updateList(void)
     SbVec3d t = SbVec3d(welldata[i][0],
                         welldata[i][1],
                         welldata[i][2]);
-    if (t[0] == undefval || t[1] == undefval || t[2] == undefval) continue;
+    if (t[0] == undefval || t[1] == undefval) continue;
     pos.tvdepth = -t[2];
     t -= origin;
 
