@@ -95,7 +95,7 @@ main(
       }
     }
     //    kit->setDiscreteMode(TRUE);
-    kit->enableBackground(FALSE);
+    //    kit->enableBackground(FALSE);
   }
 
   SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer( window );
