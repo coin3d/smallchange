@@ -857,17 +857,19 @@ LegendKit::renderLines(SoGLRenderAction * action)
 
   // render lines around description
   int numtext = this->description.getNum();
-  float border = this->space.getValue();
-  float ypos = this->descriptionOnTop.getValue() ? 
-    PRIVATE(this)->size[1] - border :
-    numtext*(FONT_HEIGHT+FONT_SPACE) + border * 2.0f;
-  float ysize = float(numtext) * float(FONT_HEIGHT+FONT_SPACE) + FONT_SPACE;
-  glBegin(GL_LINE_LOOP);
-  glVertex3f(border, ypos, 0.0f);
-  glVertex3f(PRIVATE(this)->size[0] - border, ypos, 0.0f);
-  glVertex3f(PRIVATE(this)->size[0] - border, ypos - ysize, 0.0f);
-  glVertex3f(border, ypos - ysize, 0.0f);
-  glEnd();
+  if (numtext > 0) {
+    float border = this->space.getValue();
+    float ypos = this->descriptionOnTop.getValue() ? 
+      PRIVATE(this)->size[1] - border :
+      numtext*(FONT_HEIGHT+FONT_SPACE) + border * 2.0f;
+    float ysize = float(numtext) * float(FONT_HEIGHT+FONT_SPACE) + FONT_SPACE;
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(border, ypos, 0.0f);
+    glVertex3f(PRIVATE(this)->size[0] - border, ypos, 0.0f);
+    glVertex3f(PRIVATE(this)->size[0] - border, ypos - ysize, 0.0f);
+    glVertex3f(border, ypos - ysize, 0.0f);
+    glEnd();
+  }
 }
 
 /*!
