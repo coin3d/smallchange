@@ -1,0 +1,31 @@
+#Inventor V2.1 ascii
+############################################################################
+# Simple scene to demonstrate the Switchboard / SwitchboardOperator
+# group nodes in the SmallChange library...
+#
+# Open with a smallchange-enabled examiner viewer, go to viewing mode
+# (press "Esc") and play around with the keys A-F.  For further details,
+# contact Lars J. Aas <larsa@sim.no>.
+#
+# - Lars J
+
+SwitchboardOperator {
+  # The default is FALSE.  the length of the enable field wraps around the
+  # child nodes as far as it goes.
+  enable [
+    TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE,
+    TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE
+  ]
+  # Use SoKeyboardEvent keywords.  Default is "UNDEFINED".
+  key [
+    A, UNDEFINED, B, UNDEFINED, C, UNDEFINED, D, UNDEFINED,
+    E, UNDEFINED, F, UNDEFINED, E, UNDEFINED, F
+  ]
+  # The default is NONE.  TOGGLE, HOLD and INVERSE_HOLD are the other options.
+  behavior [
+    TOGGLE, NONE, HOLD, NONE, INVERSE_HOLD
+  ]
+  Cube {}
+  Translation { translation 3 0 0 }
+}
+

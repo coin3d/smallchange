@@ -106,6 +106,8 @@ libnodes_la_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
+	Switchboard.cpp Switchboard.h \
+	SwitchboardOperator.cpp SwitchboardOperator.h \
 	SoAudioClip.cpp \
 	SoAudioClip.h \
 	SoAudioClipP.h \
@@ -123,6 +125,8 @@ nodes_lst_SOURCES = \
 	DepthBuffer.cpp DepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
+	Switchboard.cpp Switchboard.h \
+	SwitchboardOperator.cpp SwitchboardOperator.h \
 	SoAudioClip.cpp \
 	SoAudioClip.h \
 	SoAudioClipP.h \
@@ -141,6 +145,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/ViewportRegion.h \
 	$(top_srcdir)/lib/SmallChange/nodes/DepthBuffer.h \
 	$(top_srcdir)/lib/SmallChange/nodes/Coinboard.h \
+	$(top_srcdir)/lib/SmallChange/nodes/Switchboard.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SwitchboardOperator.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClip.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoAudioClipStreaming.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SoListener.h \
@@ -155,7 +161,8 @@ LIBRARIES = $(noinst_LIBRARIES)
 nodes_lst_AR = $(AR) cru
 nodes_lst_LIBADD =
 am_nodes_lst_OBJECTS = DepthBuffer.$(OBJEXT) ViewportRegion.$(OBJEXT) \
-	Coinboard.$(OBJEXT) SoAudioClip.$(OBJEXT) \
+	Coinboard.$(OBJEXT) Switchboard.$(OBJEXT) \
+	SwitchboardOperator.$(OBJEXT) SoAudioClip.$(OBJEXT) \
 	SoAudioClipStreaming.$(OBJEXT) SoListener.$(OBJEXT) \
 	SoSound.$(OBJEXT)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
@@ -164,7 +171,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libnodes_la_LDFLAGS =
 libnodes_la_LIBADD =
 am_libnodes_la_OBJECTS = DepthBuffer.lo ViewportRegion.lo Coinboard.lo \
-	SoAudioClip.lo SoAudioClipStreaming.lo SoListener.lo SoSound.lo
+	Switchboard.lo SwitchboardOperator.lo SoAudioClip.lo \
+	SoAudioClipStreaming.lo SoListener.lo SoSound.lo
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -180,6 +188,9 @@ depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/SoAudioClipStreaming.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoListener.Plo $(DEPDIR)/SoListener.Po \
 @AMDEP_TRUE@	$(DEPDIR)/SoSound.Plo $(DEPDIR)/SoSound.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Switchboard.Plo $(DEPDIR)/Switchboard.Po \
+@AMDEP_TRUE@	$(DEPDIR)/SwitchboardOperator.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/SwitchboardOperator.Po \
 @AMDEP_TRUE@	$(DEPDIR)/ViewportRegion.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/ViewportRegion.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -254,6 +265,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoListener.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoSound.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SoSound.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Switchboard.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Switchboard.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SwitchboardOperator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/SwitchboardOperator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ViewportRegion.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ViewportRegion.Po@am__quote@
 
