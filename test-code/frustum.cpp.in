@@ -42,24 +42,13 @@ main(int argc, char ** argv )
   sa.setInterest(SoSearchAction::FIRST);
   sa.apply(root);
   
-  SoCamera * cam = NULL;
-
   if (sa.getPath() == NULL) {
     FrustumCamera * camera = new FrustumCamera;
     camera->ref();
     camera->viewAll(root, ex1->getViewportRegion());
     root->insertChild(camera, 0);
     camera->unrefNoDelete();
-    cam = camera;
   }
-  else {
-    cam = (SoCamera*) sa.getPath()->getTail();
-  }
-  // Set auto-clipping-strategy to CONSTANT_NEAR_PLANE, since changing
-  // the nearDistance for a FrustumCamera will also modify the view
-  // volume.
-  ex1->setAutoClippingStrategy(So@Gui@Viewer::CONSTANT_NEAR_PLANE,
-                               cam->nearDistance.getValue());
   ex1->setSceneGraph(root);
   ex1->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   ex1->show();
