@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <SmallChange/actions/SmToVertexArrayShapeAction.h>
+#include <Inventor/nodekits/SoBaseKit.h>
 
 static void strip_node(SoType type, SoNode * root)
 {
@@ -55,6 +56,7 @@ main(int argc, char ** argv )
 
   SoDB::init();
   SoInteraction::init();
+  SoBaseKit::setSearchingChildren(TRUE);
   smallchange_init();
     
   SoInput input;
