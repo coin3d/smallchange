@@ -131,6 +131,9 @@ UTMPosition::doAction(SoAction * action)
   SoState * state = action->getState();
 
   SbVec3d utm = this->utmposition.getValue();
+  SbVec3d utmadjust = utm;
+  utm[2] = 0.0;
+  utmadjust -= utm;
 
 // disabled the oldm code. Only UTMCamera::moveTransform is supported for now
 //   SbMatrix oldm = SoModelMatrixElement::get(state);
@@ -161,6 +164,12 @@ UTMPosition::doAction(SoAction * action)
   if (gtransform != SbMatrix::identity()) {
     SoModelMatrixElement::mult(action->getState(), this, gtransform);
   }
+  if (utmadjust != SbVec3d(0.0, 0.0, 0.0)) {
+    SbVec3f tmp;
+    tmp.setValue(utmadjust);
+    SoModelMatrixElement::translateBy(state, this, tmp);
+  }
+
 //   if (oldm != SbMatrix::identity()) {
 //     SoModelMatrixElement::mult(action->getState(), this, oldm); 
 //   }
