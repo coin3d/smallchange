@@ -985,7 +985,9 @@ SmScenery::getLoadRottger(void) const
 SbVec3f
 SmScenery::getRenderCoordinateOffset(void) const
 {
-  return SbVec3f(PRIVATE(this)->renderstate.bbmin[0], PRIVATE(this)->renderstate.bbmin[1], 0.0f);
+  double origo[3] = { 0.0, 0.0, 0.0 };
+  sc_ssglue_system_get_origo_world_position(PRIVATE(this)->system, origo);
+  return SbVec3f(origo[0], origo[1], origo[2]);
 }
 
 void 
