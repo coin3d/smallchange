@@ -11,8 +11,7 @@ SOURCES = \
 	SoFEMKit.cpp SoFEMKit.h \
 	SmTooltipKit.cpp SmTooltipKit.h \
 	SmWellLogKit.cpp SmWellLogKit.h \
-	SmCameraControlKit.cpp SmCameraControlKit.h \
-	SmHQSphere.cpp SmHQSphere.h
+	SmCameraControlKit.cpp SmCameraControlKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 

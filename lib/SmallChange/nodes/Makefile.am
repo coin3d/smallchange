@@ -27,7 +27,8 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	SmScenery.cpp SmScenery.h
+	SmScenery.cpp SmScenery.h \
+	SmHQSphere.cpp SmHQSphere.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
@@ -55,7 +56,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmScenery.h
+	$(top_srcdir)/lib/SmallChange/nodes/SmScenery.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmHQSphere.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
