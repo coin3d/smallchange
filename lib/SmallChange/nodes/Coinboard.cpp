@@ -33,6 +33,7 @@
 #include <Inventor/actions/SoGetMatrixAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoGLTextureEnabledElement.h>
@@ -284,6 +285,7 @@ Coinboard::GLRender(SoGLRenderAction * action)
   SbVec3f rotaxis = this->axisOfRotation.getValue();
 
   if (rotaxis == SbVec3f(0.0f, 0.0f, 0.0f)) {
+
     SbMatrix viewmat = SoViewingMatrixElement::get(state).inverse();
 
     SbMatrix mymat = mm;
@@ -301,8 +303,12 @@ Coinboard::GLRender(SoGLRenderAction * action)
     mymat[3][2] = 0.0f;
 
     state->push();
+#if 0
+    SoModelMatrixElement::mult(state, this, mm.inverse());
+    SoModelMatrixElement::mult(state, this, mymat);
+#else
     SoModelMatrixElement::set(state, this, mymat);
-
+#endif
     mymat = SoViewingMatrixElement::get(state);
     mymat[3][0] = 0.0f;
     mymat[3][1] = 0.0f;
@@ -345,6 +351,7 @@ Coinboard::GLRender(SoGLRenderAction * action)
     state->pop();
   }
   else {
+
     int axisnum = this->frontAxis.getValue();
     SbVec3f zaxis(0.0f, 0.0f, 0.0f);
     zaxis[axisnum] = 1.0f;
@@ -413,6 +420,8 @@ Coinboard::generatePrimitives(SoAction * action)
   int numcoords = this->coord.getNum();
   if (num == 0 || numcoords < 3) return;
 
+  SoState * state = action->getState();
+
   const int32_t * verts = this->numVertices.getValues(0);
   int numv = this->numVertices.getNum();
   if (numv == 1 && verts[0] == -1) numv = 0;
@@ -434,8 +443,6 @@ Coinboard::generatePrimitives(SoAction * action)
     break;
   }
   
-  SoState * state = action->getState();
-
   SbBool doTextures = SoTextureEnabledElement::get(state);
   if (doTextures) {
     texcoords = this->texCoord.getValues(0);
@@ -479,6 +486,10 @@ Coinboard::generatePrimitives(SoAction * action)
 
     state->push();
     SoModelMatrixElement::set(state, this, mymat);
+
+    if (action->isOfType(SoRayPickAction::getClassTypeId())) {
+      ((SoRayPickAction*)action)->setObjectSpace();
+    }
 
     mymat = SoViewingMatrixElement::get(state);
     mymat[3][0] = 0.0f;
@@ -594,23 +605,38 @@ Coinboard::generatePrimitives(SoAction * action)
 void
 Coinboard::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
+  //  fprintf(stderr,"bbox\n");
   int num = this->position.getNum();
   int numcoords = this->coord.getNum();
 
   const SbVec3f * pos = this->position.getValues(0);
   const SbVec3f * coords = this->coord.getValues(0);
+  
+  float maxval = SbAbs(coords[0][0]);
+  for (int j = 0; j < numcoords; j++) {
+    for (int k = 0; k < 3; k++) {
+      float v = SbAbs(coords[j][k]);
+      if (v > maxval) maxval = v;
+    }
+  }
 
   box.makeEmpty();
   for (int i = 0; i < num; i++) {
-    for (int j = 0; j < numcoords; j++) {
-      box.extendBy(coords[j]+pos[i]);
-    }
+    SbVec3f p = pos[i];
+    SbBox3f b(p[0]-maxval,
+              p[1]-maxval,
+              p[2]-maxval,
+              p[0]+maxval,
+              p[1]+maxval,
+              p[2]+maxval);
+    box.extendBy(b);
   }
   center = box.getCenter();
 }
 
 /*!
   This is a Coin method. It should return the number of primitives,
+    float maxval = coords[0][0];
   but is currently not implemented.
 */
 void
