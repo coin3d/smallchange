@@ -543,6 +543,7 @@ Coinboard::generatePrimitives(SoAction * action)
     if (type == SoShape::TRIANGLES || type == SoShape::QUADS) {
       this->beginShape(action, type, &faceDetail);
       for (int i = 0; i < num; i++) {
+        faceDetail.setFaceIndex(0);
         SbMatrix mat, tmp;
         mat.setTranslate(pos[i]);
         tmp.setRotate(rot);
@@ -555,11 +556,13 @@ Coinboard::generatePrimitives(SoAction * action)
         else {
           this->generate(&v, mat, coords, numcoords, texcoords);
         }
+        faceDetail.incPartIndex();
       }
       this->endShape();
     }
     else {
       for (int i = 0; i < num; i++) {
+        faceDetail.setFaceIndex(0);
         SbMatrix mat, tmp;
         mat.setTranslate(pos[i]);
         tmp.setRotate(rot);
@@ -575,6 +578,7 @@ Coinboard::generatePrimitives(SoAction * action)
           this->generate(&v, mat, coords, numcoords, texcoords);
         }
         this->endShape();
+        faceDetail.incPartIndex();
       }
     }
   }
