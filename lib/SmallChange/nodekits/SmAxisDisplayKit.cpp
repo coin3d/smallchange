@@ -23,13 +23,64 @@
 
 /*!
   \class SmAxisDisplayKit SmAxisDisplayKit.h
-  \brief ...
+  \brief The SmAxisDisplayKit is used to draw colored and annotated axes
+  in the lower right corner of the display.
   \ingroup nodekits
 
+  This class is organized as a nodekit, but should be used as a normal
+  node (i.e. use public fields).
+*/
+
+/*!
+  \var SoSFRotation SmAxisDisplayKit::orientation
+
+  Specifies the orientation of the axes. This field should normally
+  be connected to the current camera's orientation field.
+
+  Default value is as for SoCamera::orientation.
+*/
+
+/*!
+  \var SoMFVec3f SmAxisDisplayKit::axes
+
+  Specifies which axes to display. The given axes are displayed as
+  vectors originating in origo.
+
+  Default value is empty.
+*/
+
+/*!
+  \var SoMFColor SmAxisDisplayKit::colors
+
+  Specifies which colors the axes should be drawn with.
+  If not enough values are given, the last value will be reused for 
+  the remaining axes.
+
+  Default value is white - SbColor(1.0f, 1.0f, 1.0f).
+*/
+
+/*!
+  \var SoMFBool SmAxisDisplayKit::enableArrows
+
+  Specifies whether arrows should be displayed at the end of each axis.
+  If not enough values are given, the last value will be reused for 
+  the remaining axes.
+
+  Default value is TRUE.
+*/
+
+/*!
+  \var SoMFString SmAxisDisplayKit::annotations
+
+  Specifies annotation for each axis. The annotation will be rendered
+  as a SoText2 node.
+  If not enough values are given, no annotations will be displayed for 
+  the remaining axes.
+
+  Default value is empty.
 */
 
 #include "SmAxisDisplayKit.h"
-
 
 #include <Inventor/SbRotation.h>
 #include <Inventor/SbViewVolume.h>
@@ -52,7 +103,6 @@
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <SmallChange/nodes/ViewportRegion.h>
 
-// used to store private (hidden) data members
 class SmAxisDisplayKitP {
 public:
   SmAxisDisplayKitP(SmAxisDisplayKit * master) : master(master) { }
@@ -140,6 +190,9 @@ SmAxisDisplayKit::initClass(void)
   }
 }
 
+/*!
+  Overloaded to perform delayed rendering and to force solid rendering mode.
+*/
 void 
 SmAxisDisplayKit::GLRender(SoGLRenderAction *action)
 {
@@ -211,7 +264,10 @@ SmAxisDisplayKit::getPrimitiveCount(SoGetPrimitiveCountAction * action)
   SoNode::getPrimitiveCount(action);
 }
 
-// overloader to test when stuff changes in the API fields
+/*!
+ Overloaded to detect when fields changes in order to correctly
+ regenerate the private scene graph.
+*/
 void 
 SmAxisDisplayKit::notify(SoNotList * l)
 {
@@ -250,8 +306,10 @@ SmAxisDisplayKit::setDefaultOnNonWritingFields(void)
 #undef PRIVATE
 #define PUBLIC(obj) (obj)->master
 
-// called when something has changed and the internal list needs to be
-// regenerated.
+/*!
+  Called when something has changed and the private scenegraph 
+  under the "axessep" part needs to be regenerated.
+*/
 void 
 SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
 {
@@ -267,18 +325,20 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
   SoSeparator *linesep = NULL;
   SoSeparator *conesep = NULL;
   for (int i=0;i<PUBLIC(thisp)->axes.getNum();i++) {
-    SoSeparator *axissep = new SoSeparator;
+    SoSeparator *axissep = new SoSeparator; // One separator per axis
     SoBaseColor *axiscol = new SoBaseColor;
     if (PUBLIC(thisp)->colors.getNum() <= i)
       axiscol->rgb.setValue(PUBLIC(thisp)->colors[PUBLIC(thisp)->colors.getNum()-1]);
     else
       axiscol->rgb.setValue(PUBLIC(thisp)->colors[i]);
 
+    // Rotate to correct orientation
     SbRotation rot(SbVec3f(0.0f, 1.0f, 0.0f), PUBLIC(thisp)->axes[i]);
     SoRotation *axistrans = new SoRotation;
     axistrans->rotation = rot;
 
-    if (!linesep) {
+    // Vector
+    if (!linesep) { // Reuse linesep for all axes
       linesep = new SoSeparator;
       SoCoordinate3 *coord = new SoCoordinate3;
       SoLineSet *ls = new SoLineSet;
@@ -299,8 +359,9 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
     else
       enableAxis = PUBLIC(thisp)->enableArrows[i];
 
+    // Arrow
     if (enableAxis) {
-      if (!conesep) {
+      if (!conesep) { // Reuse conesep for all axes
         conesep = new SoSeparator;
         SoTranslation *trans = new SoTranslation;
         SoCone *cone = new SoCone;
@@ -315,6 +376,7 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
       axissep->addChild(conesep);
     }
 
+    // Annotation
     SbString annot;
     if (PUBLIC(thisp)->annotations.getNum() > i)
       annot = PUBLIC(thisp)->annotations[i];
@@ -334,12 +396,13 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
     axessep->addChild(axissep);
   }
 
+  // Camera settings
   SoPerspectiveCamera *camera = 
     (SoPerspectiveCamera *)PUBLIC(thisp)->getAnyPart("camera", TRUE);
   camera->orientation.connectFrom(&PUBLIC(thisp)->orientation);
   camera->nearDistance = 0.01f;
   camera->farDistance = 10.0f;
-  camera->heightAngle = 22.5*M_PI/180; // Reduce perspective
+  camera->heightAngle = 22.5*M_PI/180; // Reduce perspective effect
 
   // FIXME: hack to avoid continuous redraws. Use engine-connections
   // instead, pederb, 2003-10-21
@@ -349,6 +412,10 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
   thisp->processingoneshot = FALSE;;
 }
 
+/*!
+  Callback to be able to sync our camera position with movements of the
+  main camera.
+*/
 void 
 SmAxisDisplayKitP::callback_cb(void * userdata, SoAction * action)
 {
@@ -363,3 +430,4 @@ SmAxisDisplayKitP::callback_cb(void * userdata, SoAction * action)
     camera->position.setValue(7.0f*dir); // Just a good guess
   }
 }
+
