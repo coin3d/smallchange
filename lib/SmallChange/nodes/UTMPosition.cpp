@@ -131,11 +131,14 @@ UTMPosition::doAction(SoAction * action)
   SoState * state = action->getState();
 
   SbVec3d utm = this->utmposition.getValue();
-  SbMatrix oldm = SoModelMatrixElement::get(state);
-  // eliminate translation
-  oldm[3][0] = 0.0f;
-  oldm[3][1] = 0.0f;
-  oldm[3][2] = 0.0f;
+
+// disabled the oldm code. Only UTMCamera::moveTransform is supported for now
+//   SbMatrix oldm = SoModelMatrixElement::get(state);
+//   // eliminate translation
+//   oldm[3][0] = 0.0f;
+//   oldm[3][1] = 0.0f;
+//   oldm[3][2] = 0.0f;
+
   SbVec3f trans = UTMElement::setPosition(action->getState(),
                                           utm[0], utm[1], utm[2]);
   
@@ -147,7 +150,9 @@ UTMPosition::doAction(SoAction * action)
                                  SoModelMatrixElement::get(state).inverse());
     }
     else {
-      SoModelMatrixElement::makeIdentity(action->getState(), this);
+      SoModelMatrixElement::mult(state, 
+                                 this, 
+                                 SoModelMatrixElement::get(state).inverse());
     }
   }
   SoModelMatrixElement::translateBy(action->getState(), this, trans);
@@ -156,9 +161,9 @@ UTMPosition::doAction(SoAction * action)
   if (gtransform != SbMatrix::identity()) {
     SoModelMatrixElement::mult(action->getState(), this, gtransform);
   }
-  if (oldm != SbMatrix::identity()) {
-    SoModelMatrixElement::mult(action->getState(), this, oldm); 
-  }
+//   if (oldm != SbMatrix::identity()) {
+//     SoModelMatrixElement::mult(action->getState(), this, oldm); 
+//   }
 }
 
 /*!
