@@ -13,6 +13,11 @@
   \ingroup nodekits
 */
 
+/*!
+  \var SoSFBool SoFEMKit::ccw
+  Set to FALSE if you use a left handed coordinate system (or a coordinate system
+  where the model matrix determinant is negative).
+*/
 
 #include "SoFEMKit.h"
 
@@ -28,6 +33,7 @@
 #include <Inventor/SbColor.h>
 #include <Inventor/SbPlane.h>
 #include <Inventor/SbBSPTree.h>
+#include <Inventor/sensors/SoFieldSensor.h>
 
 #include <string.h>
 
@@ -69,6 +75,8 @@ public:
 
   SbBool needupdate;
   SbBool removehidden;
+
+  SoFieldSensor * ccwsensor;
 };
 
 #endif // DOXYGEN_SKIP_THIS
@@ -90,6 +98,8 @@ SoFEMKit::SoFEMKit(void)
 
   SO_KIT_CONSTRUCTOR(SoFEMKit);
 
+  SO_KIT_ADD_FIELD(ccw, (TRUE));
+
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shapehints, SoShapeHints, FALSE, topSeparator, mbind, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(mbind, SoMaterialBinding, FALSE, topSeparator, nbind, FALSE);
@@ -107,11 +117,23 @@ SoFEMKit::SoFEMKit(void)
   SoNormalBinding * nb = (SoNormalBinding*) this->getAnyPart("nbind", TRUE);
   nb->value = SoNormalBinding::PER_VERTEX_INDEXED;
 
-  SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapehints", TRUE);
-  sh->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
+  THIS->ccwsensor = new SoFieldSensor(ccw_cb, this);
+  THIS->ccwsensor->setPriority(0);
+  THIS->ccwsensor->attach(&this->ccw);
+  
+  // set up shape hints
+  SoFEMKit::ccw_cb(this, THIS->ccwsensor);
+}
+
+void
+SoFEMKit::ccw_cb(void * closure, SoSensor *)
+{
+  SoFEMKit * thisp = (SoFEMKit*) closure;
+  SoShapeHints * sh = (SoShapeHints*) thisp->getAnyPart("shapehints", TRUE);
+  sh->vertexOrdering = thisp->ccw.getValue() ? SoShapeHints::COUNTERCLOCKWISE : SoShapeHints::CLOCKWISE;
   sh->creaseAngle = 0.0f;
   sh->faceType = SoShapeHints::CONVEX;
-  sh->shapeType = SoShapeHints::SOLID;
+  sh->shapeType = SoShapeHints::SOLID;  
 }
 
 /*!
@@ -119,6 +141,8 @@ SoFEMKit::SoFEMKit(void)
 */
 SoFEMKit::~SoFEMKit()
 {
+  THIS->ccwsensor->detach();
+  delete THIS->ccwsensor;
   delete THIS;
 }
 

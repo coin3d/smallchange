@@ -12,6 +12,7 @@
 
 #include <Inventor/nodekits/SoSubKit.h>
 #include <Inventor/nodekits/SoBaseKit.h>
+#include <Inventor/fields/SoSFBool.h>
 
 class SoFEMKitP;
 class SbColor;
@@ -34,10 +35,13 @@ class SoFEMKit : public SoBaseKit {
 public:
   SoFEMKit(void);
   
+  SoSFBool ccw;
+
   static void initClass(void);
 
 protected:
   virtual ~SoFEMKit();
+
 public:
   
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
@@ -65,7 +69,8 @@ public:
 private:
 
   void updateScene(void);
-  
+
+  static void ccw_cb(void * data, SoSensor * sensor);
   SoFEMKitP * pimpl;
 
 };
