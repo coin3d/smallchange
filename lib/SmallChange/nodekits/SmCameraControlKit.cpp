@@ -257,7 +257,9 @@ SmCameraControlKit::viewAll(const SbViewportRegion & vp,
     // move from position to utmposition and set position to (0,0,0)
     UTMCamera * utm = (UTMCamera*) cam;
     SbVec3d utmpos = utm->utmposition.getValue();
-    utmpos += SbVec3d(utm->position.getValue());
+    SbVec3d tmp;
+    tmp.setValue(utm->position.getValue());
+    utmpos += tmp;
     utm->position = SbVec3f(0.0f, 0.0f, 0.0f);
     utm->utmposition = utmpos;
   }
@@ -542,7 +544,8 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   if (!picked) return FALSE;
   
   
-  SbVec3d hitpoint = SbVec3d(picked->getPoint());
+  SbVec3d hitpoint;
+  hitpoint.setValue(picked->getPoint());
   
   if (utmcamera) {
     hitpoint += utmcamera->utmposition.getValue();
@@ -552,7 +555,7 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
     PRIVATE(this)->seek.camerastartposition = utmcamera->utmposition.getValue();
   }
   else {
-    PRIVATE(this)->seek.camerastartposition = SbVec3d(camera->position.getValue());
+    PRIVATE(this)->seek.camerastartposition.setValue(camera->position.getValue());
   }
   PRIVATE(this)->seek.camerastartorient = camera->orientation.getValue();
   
@@ -560,7 +563,8 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   fd *= (float) ((hitpoint - PRIVATE(this)->seek.camerastartposition).length());
   camera->focalDistance = fd;
 
-  SbVec3f dir = SbVec3f(hitpoint - PRIVATE(this)->seek.camerastartposition);
+  SbVec3f dir;
+  dir.setValue(hitpoint - PRIVATE(this)->seek.camerastartposition);
   dir.normalize();
   
   // find a rotation that rotates current camera direction into new
@@ -568,7 +572,9 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   SbVec3f olddir;
   camera->orientation.getValue().multVec(SbVec3f(0, 0, -1), olddir);
   SbRotation diffrot(olddir, dir);
-  PRIVATE(this)->seek.cameraendposition = hitpoint - SbVec3d(fd * dir);
+  SbVec3d tmp;
+  tmp.setValue(fd * dir);
+  PRIVATE(this)->seek.cameraendposition = hitpoint - tmp;
   PRIVATE(this)->seek.cameraendorient = camera->orientation.getValue() * diffrot;
 
   if (PRIVATE(this)->seek.sensor->isScheduled()) {
@@ -642,7 +648,7 @@ SmCameraControlKit::resetCameraFocalDistance(const SbViewportRegion & vpr)
   SbVec3f cameraposition;
   if (camera->isOfType(UTMCamera::getClassTypeId())) {
     utmcamera = (UTMCamera *)camera;
-    cameraposition = utmcamera->utmposition.getValue();
+    cameraposition.setValue(utmcamera->utmposition.getValue());
   }
   else {
     cameraposition = camera->position.getValue();
@@ -685,7 +691,11 @@ SmCameraControlKit::resetCameraFocalDistance(const SbViewportRegion & vpr)
     const SoPickedPoint * pp = raypick.getPickedPoint();
     if (pp) {
       SbVec3f hitpoint = pp->getPoint();
-      if (utmcamera) { hitpoint += SbVec3f(utmcamera->utmposition.getValue()); }
+      if (utmcamera) { 
+        SbVec3f tmp;
+        tmp.setValue(utmcamera->utmposition.getValue());
+        hitpoint += tmp; 
+      }
 
       camera->focalDistance = (cameraposition - hitpoint).length();
 
@@ -765,7 +775,11 @@ SmCameraControlKitP::seeksensorCB(void * closure, SoSensor * s)
     (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t;
 
   if (utmcamera) { utmcamera->utmposition = newpos; }
-  else { camera->position = SbVec3f(newpos); }
+  else { 
+    SbVec3f tmp;
+    tmp.setValue(newpos);
+    camera->position = tmp; 
+  }
 
   if (end) {
     thisp->seek.seeking = FALSE;
