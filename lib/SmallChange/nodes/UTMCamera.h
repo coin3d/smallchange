@@ -65,7 +65,6 @@ private:
   SoSFString northing;
   SoSFString elevation;
 
-  void updateCameraElement(SoState * state);
   void setReferencePosition(SoState * state);
 };
 

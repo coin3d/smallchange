@@ -52,8 +52,7 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/misc/SoState.h>
-#include "UTMElement.h"
-#include "CameraElement.h"
+#include <SmallChange/elements/UTMElement.h>
 
 /*!
   \var SoSFString UTMCamera::easting
@@ -88,7 +87,10 @@ UTMCamera::UTMCamera()
   SO_NODE_ADD_FIELD(easting, ("0.0"));
   SO_NODE_ADD_FIELD(northing, ("0.0"));
   SO_NODE_ADD_FIELD(elevation, ("0.0"));
-  SO_NODE_ADD_FIELD(moveTransform, (FALSE));
+
+  // hackish field to move transform in front of the camera to after
+  // an UTMPosition node.
+  SO_NODE_ADD_FIELD(moveTransform, (FALSE)); 
 }
 
 /*!
@@ -105,16 +107,6 @@ void
 UTMCamera::initClass(void)
 {
   SO_NODE_INIT_CLASS(UTMCamera, SoPerspectiveCamera, "PerspectiveCamera");
-
-  SO_ENABLE(SoHandleEventAction, UTMElement);
-  SO_ENABLE(SoAudioRenderAction, UTMElement);
-  SO_ENABLE(SoGLRenderAction, CameraElement);
-  SO_ENABLE(SoCallbackAction, CameraElement);
-  SO_ENABLE(SoHandleEventAction, CameraElement);
-  SO_ENABLE(SoRayPickAction, CameraElement);
-  SO_ENABLE(SoGetPrimitiveCountAction, CameraElement);
-  SO_ENABLE(SoGetBoundingBoxAction, CameraElement);
-  SO_ENABLE(SoGetMatrixAction, CameraElement);
 }
 
 /*!
@@ -124,7 +116,6 @@ void
 UTMCamera::callback(SoCallbackAction * action)
 {
   this->setReferencePosition(action->getState());
-  this->updateCameraElement(action->getState());
   SoCamera::callback(action);
 }
 
@@ -136,7 +127,6 @@ UTMCamera::GLRender(SoGLRenderAction * action)
 {
   SoCacheElement::invalidate(action->getState());
   this->setReferencePosition(action->getState());
-  this->updateCameraElement(action->getState());
   SoCamera::GLRender(action);
 }
 
@@ -157,7 +147,6 @@ void
 UTMCamera::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   this->setReferencePosition(action->getState());
-  this->updateCameraElement(action->getState());
   SoCamera::getBoundingBox(action);
 }
 
@@ -167,8 +156,6 @@ UTMCamera::getBoundingBox(SoGetBoundingBoxAction * action)
 void 
 UTMCamera::handleEvent(SoHandleEventAction * action)
 {
-  // this->setReferencePosition(action->getState());
-  this->updateCameraElement(action->getState());
   SoCamera::handleEvent(action);
 }
 
@@ -179,7 +166,6 @@ void
 UTMCamera::rayPick(SoRayPickAction * action)
 {
   this->setReferencePosition(action->getState());
-  this->updateCameraElement(action->getState());
   SoCamera::rayPick(action);
 }
 
@@ -190,7 +176,6 @@ void
 UTMCamera::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   this->setReferencePosition(action->getState());
-  this->updateCameraElement(action->getState());
   SoCamera::getPrimitiveCount(action);
 }
 
@@ -225,9 +210,6 @@ UTMCamera::setReferencePosition(SoState * state)
   }
 }
 
-#include "mydebug.h"
-
-
 void 
 UTMCamera::getMatrix(SoGetMatrixAction * action)
 {
@@ -238,15 +220,7 @@ UTMCamera::getMatrix(SoGetMatrixAction * action)
     action->getInverse() = SbMatrix::identity();
     UTMElement::setGlobalTransform(action->getState(), m);
   }
-  this->updateCameraElement(action->getState());
 }
-
-void 
-UTMCamera::updateCameraElement(SoState * state)
-{
-  CameraElement::set(state, this);
-}
-
 
 /*!
   Overloaded to recalculate cached values when something change.
@@ -272,8 +246,8 @@ UTMCamera::notify(SoNotList * nl)
   else if (f == &this->position) {
     SbVec3f v = this->position.getValue();
     if (v != SbVec3f(0.0f, 0.0f, 0.0f)) {
-      myfprintf(stderr,"Warning: don't use camera position, but utmposition (%g %g %g)\n",
-                v[0], v[1], v[2]);
+//       myfprintf(stderr,"Warning: don't use camera position, but utmposition (%g %g %g)\n",
+//                 v[0], v[1], v[2]);
     }
   }
   if (update) {

@@ -68,7 +68,7 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/SbMatrix.h>
 #include <Inventor/misc/SoState.h>
-#include "UTMElement.h"
+#include <SmallChange/elements/UTMElement.h>
 #include <stdlib.h>
 
 /*!

@@ -52,7 +52,7 @@
 #include <Inventor/actions/SoPickAction.h>
 #include <Inventor/elements/SoGLCoordinateElement.h>
 #include <Inventor/misc/SoState.h>
-#include "UTMElement.h"
+#include <SmallChange/elements/UTMElement.h>
 
 /*!
   \var SoMFVec3f UTMCoordinate::point
