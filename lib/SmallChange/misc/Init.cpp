@@ -77,6 +77,7 @@
 #include <SmallChange/nodekits/SmAxisKit.h>
 #include <SmallChange/nodes/SmHeadlight.h>
 #include <SmallChange/draggers/SmRangeTranslate1Dragger.h>
+#include <SmallChange/nodes/SmMarkerSet.h>
 
 #ifdef HAVE_SOUND
 
@@ -150,10 +151,13 @@ smallchange_init(void)
   SmAxisKit::initClass();
   SmHeadlight::initClass();
   SmRangeTranslate1Dragger::initClass();
+  SmMarkerSet::initClass();
 
   SmVertexArrayShape::initClass();
   SmToVertexArrayShapeAction::initClass();
 
   SmColorGradientElement::initClass();
   SmColorGradient::initClass();
+
+
 }
