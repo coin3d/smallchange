@@ -12,6 +12,7 @@
 #include <Inventor/nodes/SoEventCallback.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/SoPickedPoint.h>
+#include <Inventor/details/SoFaceDetail.h>
 
 typedef struct {
   So@Gui@ExaminerViewer * viewer;
@@ -28,13 +29,19 @@ mousebutton_cb(void * closure, SoEventCallback * node)
 
   const SoPickedPoint * pp = node->getPickedPoint();
   if (pp) {
+    
     SbVec3f p = pp->getObjectPoint();
     SbVec3f n = pp->getObjectNormal();
     SbVec4f tc = pp->getObjectTextureCoords();
     int midx = pp->getMaterialIndex();
-    
+
+    SoFaceDetail * facedetail = NULL;
+    const SoDetail * detail = pp->getDetail();
+    if (detail->isOfType(SoFaceDetail::getClassTypeId())) {
+      facedetail = (SoFaceDetail*) detail;
+    }
     SbString tmp;
-    tooltip->description.setNum(5);
+    tooltip->description.setNum(facedetail ? 6 : 5);
     tooltip->description.set1Value(0, "Picked point info:");
     tmp.sprintf("Point: %.2g %.2g %.2g", p[0], p[1], p[2]);
     tooltip->description.set1Value(1, tmp.getString());
@@ -44,6 +51,11 @@ mousebutton_cb(void * closure, SoEventCallback * node)
     tooltip->description.set1Value(3, tmp.getString());
     tmp.sprintf("Mat. idx.: %d", midx);
     tooltip->description.set1Value(4, tmp.getString());
+
+    if (facedetail) {
+      tmp.sprintf("Face idx.: %d", facedetail->getFaceIndex());
+      tooltip->description.set1Value(5, tmp.getString());
+    }
 
     tooltip->setPickedPoint(node->getPickedPoint(), 
                             data->viewer->getViewportRegion());
