@@ -87,8 +87,8 @@ public:
   virtual void GLRender(SoGLRenderAction * action);
   virtual void rayPick(SoRayPickAction * action);
 
-  void preFrame(void);
-  int postFrame(void);
+  void preFrame(uint32_t glcontextid);
+  int postFrame(uint32_t glcontextid);
 
   void setBlockRottger(const float c);
   float getBlockRottger(void) const;

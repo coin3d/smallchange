@@ -678,14 +678,14 @@ SmScenery::GLRender(SoGLRenderAction * action)
   }
 #else
   /* note: this is matched with an unset call at the end of the function */
-  sc_set_current_context_id(&PRIVATE(this)->renderstate, action->getCacheContext());
+  uint32_t glcontextid = action->getCacheContext();
+  sc_set_current_context_id(&PRIVATE(this)->renderstate, glcontextid);
 #endif
-
 
   SbBool needpostframe = FALSE;
 
   if (!PRIVATE(this)->didevaluate) {
-    this->preFrame();
+    this->preFrame(glcontextid);
     this->evaluate(action);
     needpostframe = TRUE;
   }
@@ -899,7 +899,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK|SoLazyElement::GLIMAGE_MASK);
 
   if (needpostframe) {
-    if (this->postFrame()) {
+    if (this->postFrame(glcontextid)) {
       action->getCurPath()->getHead()->touch();
     }
   }
@@ -1273,17 +1273,19 @@ SmScenery::set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closu
 }
 
 void 
-SmScenery::preFrame(void)
+SmScenery::preFrame(uint32_t glcontextid)
 {
   if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
+  sc_set_current_context_id(&PRIVATE(this)->renderstate, glcontextid);
   sc_ssglue_view_pre_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
   sc_mark_unused_textures(&PRIVATE(this)->renderstate);
 }
 
 int 
-SmScenery::postFrame(void)
+SmScenery::postFrame(uint32_t glcontextid)
 {
   if (!sc_scenery_available() || !PRIVATE(this)->system) { return 0; }
+  sc_set_current_context_id(&PRIVATE(this)->renderstate, glcontextid);
   sc_delete_unused_textures(&PRIVATE(this)->renderstate);
   return sc_ssglue_view_post_frame(PRIVATE(this)->system, PRIVATE(this)->viewid);
 }
