@@ -105,23 +105,17 @@ AC_CHECK_HEADERS([windows.h])
 if test x"${with_inventor+set}" = x"set" &&
    test x"${with_inventor}" != x"no"; then
 
-  SIM_AC_HAVE_INVENTOR_IFELSE(
-    [CPPFLAGS="$sim_ac_inventor_cppflags $CPPFLAGS"
-     LDFLAGS="$sim_ac_inventor_ldflags $LDFLAGS"
-     LIBS="$sim_ac_inventor_libs $LIBS"
-     CPPFLAGS="$sim_ac_inventor_cppflags $CPPFLAGS"
-     LDFLAGS="$sim_ac_inventor_ldflags $LDFLAGS"
-     LIBS="$sim_ac_inventor_libs $LIBS"],
-    AC_MSG_ERROR(couldn't compile and link against Open Inventor))
+  SIM_AC_HAVE_INVENTOR_IFELSE([
+    CPPFLAGS="$sim_ac_inventor_cppflags $CPPFLAGS"
+    LDFLAGS="$sim_ac_inventor_ldflags $LDFLAGS"
+    LIBS="$sim_ac_inventor_libs $LIBS"
+  ], AC_MSG_ERROR(couldn't compile and link against Open Inventor))
 
 else
 
   SIM_AC_HAVE_COIN_IFELSE([
     CPPFLAGS="$CPPFLAGS $sim_ac_coin_cppflags"
     LDFLAGS="$LDFLAGS $sim_ac_coin_ldflags"
-    LIBS="$sim_ac_coin_libs $LIBS"
-    CPPFLAGS="$CPPFLAGS $sim_ac_coin_cppflags"
-    LDFLAGS="$DFLAGS $sim_ac_coin_ldflags"
     LIBS="$sim_ac_coin_libs $LIBS"
   ], AC_MSG_ERROR(couldn't compile and link against Coin))
 
