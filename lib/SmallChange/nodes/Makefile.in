@@ -187,7 +187,7 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	SmScenery.cpp SmScenery.h \
+	Scenery.cpp SmScenery.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
 
@@ -240,7 +240,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
 	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
-	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) SmScenery.$(OBJEXT) \
+	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
 	SmHQSphere.$(OBJEXT) SmBillboardClipPlane.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
@@ -253,7 +253,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
-	UTMCoordinate.lo SmTooltip.lo SmScenery.lo SmHQSphere.lo \
+	UTMCoordinate.lo SmTooltip.lo Scenery.lo SmHQSphere.lo \
 	SmBillboardClipPlane.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
@@ -272,15 +272,14 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po ./$(DEPDIR)/Scenery.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Scenery.Po ./$(DEPDIR)/ShapeScale.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Po ./$(DEPDIR)/SkyDome.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po ./$(DEPDIR)/SmScenery.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SmScenery.Po ./$(DEPDIR)/SmTooltip.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po ./$(DEPDIR)/SmTooltip.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Po \
@@ -341,7 +340,7 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	SmScenery.cpp SmScenery.h \
+	Scenery.cpp SmScenery.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
 
@@ -390,6 +389,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Plo@am__quote@
@@ -398,8 +399,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmBillboardClipPlane.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmScenery.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmScenery.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Plo@am__quote@

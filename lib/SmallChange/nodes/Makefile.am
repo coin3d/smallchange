@@ -27,7 +27,7 @@ SOURCES = \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
 	SmTooltip.cpp SmTooltip.h \
-	SmScenery.cpp SmScenery.h \
+	Scenery.cpp SmScenery.h \
 	SmHQSphere.cpp SmHQSphere.h \
 	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
 
