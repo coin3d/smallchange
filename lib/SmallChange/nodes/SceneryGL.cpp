@@ -30,6 +30,10 @@
 #include <stdio.h>
 #include <math.h> // fmod()
 
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif /* HAVE_WINDOWS_H */
+
 #include <GL/gl.h>
 
 #include "SceneryGL.h"
