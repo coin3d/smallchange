@@ -40,11 +40,7 @@
 #include <dlfcn.h>
 #endif // HAVE_DLFCN_H
 
-#ifdef HAVE_OPENGL_GL_H
-#include <OpenGL/gl.h>
-#else
 #include <GL/gl.h>
-#endif
 
 /* this source file is shared between SIM Scenery and SmallChange, hence the
  * strange conditional includes below */
@@ -58,6 +54,7 @@
 
 #include <sim/scenery/scenery.h>
 #include <sim/scenery/SceneryGL.h>
+#include <sim/cbase/debugerror.h>
 #else /* !SS_MAJOR_VERSION */
 /* we are building in the SmallChange source repository */
 #include "../misc/SbList.h"
@@ -67,6 +64,7 @@
 #include "../misc/SbPlane.h"
 #include <SmallChange/misc/SceneryGlue.h>
 #include <SmallChange/nodes/SceneryGL.h>
+#include <Inventor/errors/SoDebugError.h>
 #endif /* !SS_MAJOR_VERSION */
 
 /* ********************************************************************** */
@@ -76,8 +74,11 @@
 
 #define VA_INTERLEAVED 1
 
-#ifndef SS_SCENERY_H
+#ifdef SS_SCENERY_H
+#define debugerror sc_debugerror_post
+#else
 /* scenery.h has not been included directly */
+#define debugerror SoDebugError::post
 #define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
 #define ss_render_get_texture_measures sc_ssglue_render_get_texture_measures
 #define ss_render_get_texture_image sc_ssglue_render_get_texture_image
@@ -173,6 +174,7 @@ struct sc_GL {
   int SUGGEST_VERTEXARRAYS;
   int HAVE_NORMALMAPS;
   int HAVE_OCCLUSIONTEST;
+  int USE_OCCLUSIONTEST;
 };
 
 // static state container
@@ -206,7 +208,8 @@ struct sc_GL GL =
   FALSE,    // HAVE_VERTEXARRAYS
   FALSE,    // SUGGEST_VERTEXARRAYS
   FALSE,    // HAVE_NORMALMAPS
-  FALSE     // HAVE_OCCLUSIONTEST
+  FALSE,    // HAVE_OCCLUSIONTEST
+  FALSE     // USE_OCCLUSIONTEST
 };
 
 #define GL_FUNCTION_SETTER(func) \
@@ -247,15 +250,36 @@ sc_set_have_clamp_to_edge(int enable)
   }
 }
 
+int
+sc_get_have_clamp_to_edge(void)
+{
+  return GL.CLAMP_TO_EDGE;
+}
+
 void
 sc_set_use_bytenormals(int enable)
 {
-  if ( enable ) {
-    GL.USE_BYTENORMALS = TRUE;
-  } else {
-    GL.USE_BYTENORMALS = FALSE;
-  }
+  GL.USE_BYTENORMALS = (enable != FALSE) ? TRUE : FALSE;
 }
+
+int
+sc_get_use_bytenormals(void)
+{
+  return GL.USE_BYTENORMALS;
+}
+ 
+void
+sc_set_use_occlusion_test(int enable)
+{
+  GL.USE_OCCLUSIONTEST = (enable != FALSE) ? TRUE : FALSE;
+}
+
+int
+sc_get_use_occlusion_test(void)
+{
+  return GL.USE_OCCLUSIONTEST;
+}
+
 
 int
 sc_found_multitexturing(void)
@@ -313,9 +337,15 @@ sc_suggest_bytenormals(void)
   if ( !ptr ) ptr = GL_PROC_ADDRESS3(name##ARB)
 
 void
-sc_probe_gl(int verbose)
+sc_probe_gl(sc_msghandler_fp msghandler)
 {
   // should assert on having a current GL context here...
+
+  // Note that this function can be called multiple times, each time
+  // for new contexts, so old state information must be scrapped.
+
+  const int bufsize = 1024*16;
+  char * buf = (char *) malloc(bufsize); /* *this* should be long enough */
 
   APP_HANDLE_TYPE handle = APP_HANDLE();
   void * ptr = NULL;
@@ -324,47 +354,86 @@ sc_probe_gl(int verbose)
   const char * vendor = (const char *) glGetString(GL_VENDOR);
   const char * version = (const char *) glGetString(GL_VERSION);
 
+  if ( version == NULL ) {
+    // no current context
+    if ( msghandler )
+      msghandler("PROBE: no current GL context - glGetString(GL_VERSION) returned NULL");
+    else {
+      debugerror("sc_probe_gl", "no current GL context - glGetString(GL_VERSION) returned NULL");
+    }
+    return;
+  }
+
   // BYTE NORMALS:
   // The 3Dlabs driver has problems with normals given with glNormal3bv(), but
   // not with normals given with glNormal3f().  We therefore suggest doing
   // conversion to floats before sending to GL for 3Dlabs graphics cards.
 
+  GL.SUGGEST_BYTENORMALS = TRUE;
   if ( strcmp(vendor, "3Dlabs") == 0 ) {
     // float normals doesn't bug where byte normals does
     GL.SUGGEST_BYTENORMALS = FALSE;
+    if ( msghandler ) {
+      msghandler("PROBE: detected 3Dlabs card - disabling bytepacked normals\n");
+    }
   }
 
   int major = 0, minor = 0;
   sscanf(version, "%d.%d", &major, &minor);
   assert(major >= 1); // forget about major
-  if ( verbose ) printf("PROBE: GL version %d.%d\n", major, minor);
+  if ( msghandler ) {
+    sprintf(buf, "PROBE: GL version %d.%d\n", major, minor);
+    msghandler(buf);
+  }
 
   const char * exts = (const char *) glGetString(GL_EXTENSIONS);
-  // if ( verbose ) printf("PROBE: extensions: \"%s\"\n", exts);
+  if ( exts != NULL && msghandler != NULL ) {
+    assert(strlen(exts) < (bufsize - 32));
+    sprintf(buf, "PROBE: extensions: \"%s\"\n", exts);
+    msghandler(buf);
+  } else if ( msghandler ) {
+    msghandler("PROBE: no GL_EXTENSIONS string\n");
+  }
 
-  if ( (minor >= 3) || strstr(exts, "GL_ARB_multitexture ") ) {
+  GL.HAVE_MULTITEXTURES = FALSE;
+  if ( (minor >= 3) || (exts && strstr(exts, "GL_ARB_multitexture ")) ) {
     // multi-texturing is available frmo OpenGL 1.3 and up
     GL.HAVE_MULTITEXTURES = TRUE;
+    if ( msghandler ) {
+      msghandler("PROBE: detected multitexturing support\n");
+    }
   }
 
   // normal maps will make rendering with normals instead of textures
   // much nicer (no popping), and will combine better with non-lighted
   // textures.  (to be implemented)
-  if ( (minor >= 10) || strstr(exts, "GL_whatever_normal_maps ") ) {
+  GL.HAVE_NORMALMAPS = FALSE;
+  if ( (minor >= 10) || (exts && strstr(exts, "GL_whatever_normal_maps ")) ) {
     GL.HAVE_NORMALMAPS = TRUE;
   }
 
   // occlusion testing can probably optimize rendering quite a bit
   // (to be implemented)
-  if ( strstr(exts, "GL_HP_occlusion_test ") ) {
+  GL.HAVE_OCCLUSIONTEST = FALSE;
+  GL.USE_OCCLUSIONTEST = FALSE;
+  if ( exts && strstr(exts, "GL_HP_occlusion_test ") ) {
     GL.HAVE_OCCLUSIONTEST = TRUE;
-    if ( verbose ) printf("PROBE: installed hardware occlusion test support\n");
+    GL.USE_OCCLUSIONTEST = TRUE;
+    if ( msghandler ) {
+      msghandler("PROBE: installed hardware occlusion test support\n");
+    }
   } else {
-    if ( verbose ) printf("PROBE: hardware occlusion test not supported\n");
+    if ( msghandler ) {
+      msghandler("PROBE: hardware occlusion test not supported\n");
+    }
   }
 
+  assert(vendor);
   if ( strcmp(vendor, "ATI Technologies Inc.") == 0 ) {
-    GL.HAVE_OCCLUSIONTEST = FALSE;
+    GL.USE_OCCLUSIONTEST = FALSE;
+    if ( GL.HAVE_OCCLUSIONTEST && msghandler ) {
+      msghandler("PROBE: we don't trust ATI's occlusion test - disabling\n");
+    }
     // A case with false positive results for the GL_HP_occlusion_test,
     // causing nothing to be rendered, was found on an ATI graphics board
     // (Windows laptop), so we disable occlusion testing for ATI cards
@@ -373,127 +442,209 @@ sc_probe_gl(int verbose)
     // case.
   }
 
+  GL.CLAMP_TO_EDGE = GL_CLAMP;
   if ( (minor >= 2) ||
-       strstr(exts, "GL_EXT_texture_edge_clamp ") ||
-       strstr(exts, "GL_SGIS_texture_edge_clamp ") ) {
+       (exts &&
+        (strstr(exts, "GL_EXT_texture_edge_clamp ") ||
+         strstr(exts, "GL_SGIS_texture_edge_clamp "))) ) {
     GL.CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE;
-  }
-  else {
-    GL.CLAMP_TO_EDGE = GL_CLAMP;
+    if ( msghandler ) {
+      msghandler("PROBE: detected texture_edge_clamp\n");
+    }
   }
 
+  sc_set_glPolygonOffset(NULL);
   if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glPolygonOffset);
-    if ( verbose ) printf("PROBE: glPolygonOffset = %p\n", ptr);
-    assert(ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glPolygonOffset = %p\n", ptr);
+      msghandler(buf);
+    }
     sc_set_glPolygonOffset(ptr);
   }
 
+  sc_set_glGenTextures(NULL);
+  sc_set_glBindTexture(NULL);
+  sc_set_glTexImage2D(NULL);
+  sc_set_glDeleteTextures(NULL);
   if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glGenTextures);
-    if ( verbose ) printf("PROBE: glGenTextures = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glGenTextures = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glGenTextures(ptr);
 
     GL_PROC_SEARCH(ptr, glBindTexture);
-    if ( verbose ) printf("PROBE: glBindTexture = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glBindTexture = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glBindTexture(ptr);
 
     GL_PROC_SEARCH(ptr, glTexImage2D);
-    if ( verbose ) printf("PROBE: glTexImage2D = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glTexImage2D = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glTexImage2D(ptr);
 
     GL_PROC_SEARCH(ptr, glDeleteTextures);
-    if ( verbose ) printf("PROBE: glDeleteTextures = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glDeleteTextures = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glDeleteTextures(ptr);
   }
 
+  sc_set_glMultiTexCoord2f(NULL);
+  sc_set_glClientActiveTexture(NULL);
   if ( GL.HAVE_MULTITEXTURES ) {
     GL_PROC_SEARCH(ptr, glMultiTexCoord2f);
-    if ( verbose ) printf("PROBE: glMultiTexCoord2f = %p\n", ptr);
-    assert(ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glMultiTexCoord2f = %p\n", ptr);
+      msghandler(buf);
+    }
     sc_set_glMultiTexCoord2f(ptr);
-
-    // multi-texturing + vertex-arrays
-    GL_PROC_SEARCH(ptr, glClientActiveTexture);
-    if ( verbose ) printf("PROBE: glClientActiveTexture = %p\n", ptr);
-    // assert(ptr);
-    sc_set_glClientActiveTexture(ptr);
-    if ( verbose ) printf("PROBE: installed multi-texturing support\n");
+    if ( ptr ) {
+      // multi-texturing + vertex-arrays
+      GL_PROC_SEARCH(ptr, glClientActiveTexture);
+      if ( msghandler ) {
+        sprintf(buf, "PROBE: glClientActiveTexture = %p\n", ptr);
+        msghandler(buf);
+      }
+      sc_set_glClientActiveTexture(ptr);
+      if ( msghandler ) {
+        msghandler("PROBE: installed multi-texturing support\n");
+      }
+    } else {
+      // Apparently, Windows software rendering can report TRUE on
+      // multitexturing, withough having glMultiTexCoord2f available
+      GL.HAVE_MULTITEXTURES = FALSE;
+      sc_set_glClientActiveTexture(NULL);
+      if ( msghandler ) {
+        msghandler("PROBE: disabled multi-texturing support\n");
+      }
+    }
   }
   else {
-    if ( verbose ) printf("PROBE: multi-texturing not supported\n");
+    if ( msghandler ) {
+      msghandler("PROBE: multi-texturing not supported\n");
+    }
   }
 
+  sc_set_glEnableClientState(NULL);
+  sc_set_glDisableClientState(NULL);
+  sc_set_glVertexPointer(NULL);
+  sc_set_glNormalPointer(NULL);
+  sc_set_glTexCoordPointer(NULL);
+  sc_set_glDrawArrays(NULL);
+  sc_set_glDrawElements(NULL);
+  sc_set_glDrawRangeElements(NULL);
   if ( minor >= 1 ) {
     GL_PROC_SEARCH(ptr, glEnableClientState);
-    if ( verbose ) printf("PROBE: glEnableClientState = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glEnableClientState = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glEnableClientState(ptr);
 
     GL_PROC_SEARCH(ptr, glDisableClientState);
-    if ( verbose ) printf("PROBE: glDisableClientState = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glDisableClientState = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glDisableClientState(ptr);
 
     GL_PROC_SEARCH(ptr, glVertexPointer);
-    if ( verbose ) printf("PROBE: glVertexPointer = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glVertexPointer = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glVertexPointer(ptr);
 
     GL_PROC_SEARCH(ptr, glNormalPointer);
-    if ( verbose ) printf("PROBE: glNormalPointer = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glNormalPointer = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glNormalPointer(ptr);
 
     GL_PROC_SEARCH(ptr, glTexCoordPointer);
-    if ( verbose ) printf("PROBE: glTexCoordPointer = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glTexCoordPointer = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glTexCoordPointer(ptr);
 
     GL_PROC_SEARCH(ptr, glDrawArrays);
-    if ( verbose ) printf("PROBE: glDrawArrays = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glDrawArrays = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glDrawArrays(ptr);
 
     GL_PROC_SEARCH(ptr, glDrawElements);
-    if ( verbose ) printf("PROBE: glDrawElements = %p\n", ptr);
+    if ( msghandler ) {
+      sprintf(buf, "PROBE: glDrawElements = %p\n", ptr);
+      msghandler(buf);
+    }
     assert(ptr);
     sc_set_glDrawElements(ptr);
 
     if ( minor >= 2 ) {
       GL_PROC_SEARCH(ptr, glDrawRangeElements);
-      if ( verbose ) printf("PROBE: glDrawRangeElements = %p\n", ptr);
+      if ( msghandler ) {
+        sprintf(buf, "PROBE: glDrawRangeElements = %p\n", ptr);
+        msghandler(buf);
+      }
       assert(ptr);
       sc_set_glDrawRangeElements(ptr);
     } else {
       GL_PROC_SEARCH(ptr, glDrawRangeElements);
-      if ( verbose ) printf("PROBE: glDrawRangeElements = %p\n", ptr);
+      if ( msghandler ) {
+        sprintf(buf, "PROBE: glDrawRangeElements = %p\n", ptr);
+        msghandler(buf);
+      }
       sc_set_glDrawRangeElements(ptr);
     }
 
     if ( GL.glVertexPointer != NULL ) {
       GL.HAVE_VERTEXARRAYS = TRUE;
-      if ( verbose ) printf("PROBE: installed vertex-arrays support\n");
+      if ( msghandler ) {
+        msghandler("PROBE: installed vertex-arrays support\n");
+      }
     } else {
       GL.HAVE_VERTEXARRAYS = FALSE;
-      if ( verbose ) printf("PROBE: vertex-arrays should have been supported\n");
+      if ( msghandler ) {
+        msghandler("PROBE: vertex-arrays should have been supported\n");
+      }
     }
   }
   else {
-    if ( verbose ) printf("PROBE: vertex-arrays not supported\n");
     GL.HAVE_VERTEXARRAYS = FALSE;
+    if ( msghandler ) {
+      msghandler("PROBE: vertex-arrays not supported\n");
+    }
   }
     
   // Vertex arrays are available in OpenGL 1.1 and up.
   // It is currently the preferred rendering loop.
   GL.SUGGEST_VERTEXARRAYS = GL.HAVE_VERTEXARRAYS;
 
-
   APP_HANDLE_CLOSE(handle);
+
+  free(buf);
 }
 
 #undef APP_HANDLE_TYPE
@@ -502,6 +653,18 @@ sc_probe_gl(int verbose)
 #undef GL_PROC_ADDRESS1
 #undef GL_PROC_ADDRESS2
 #undef GL_PROC_SEARCH
+
+void
+sc_set_max_defensive_settings(void)
+{
+  GL.HAVE_VERTEXARRAYS = FALSE;
+  GL.HAVE_MULTITEXTURES = FALSE;
+  GL.HAVE_OCCLUSIONTEST = FALSE;
+  GL.USE_OCCLUSIONTEST = FALSE;
+  GL.USE_BYTENORMALS = FALSE;
+  GL.SUGGEST_BYTENORMALS = FALSE;
+  GL.CLAMP_TO_EDGE = GL_CLAMP;
+}
 
 /* ********************************************************************** */
 /* texture management */
@@ -1001,10 +1164,14 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
                       (float) ((i & 4) ? bmin[2] : bmax[2]));
   }
   int j, bits = 0;
+  int total_inside = 0, total_outside = 0;
   if ( state->numclipplanes > 0 ) {
     assert(state->clipplanes);
     for ( i = 0; i < state->numclipplanes; i++ ) { // foreach plane
-      if ( (mask & (1 << i)) != 0 ) continue; // uncullable plane - all corners will be inside
+      if ( (mask & (1 << i)) != 0 ) {
+        total_inside += 8;
+        continue; // uncullable plane - all corners will be inside
+      }
       SbVec3<float> normal(state->clipplanes[i*4+0], state->clipplanes[i*4+1], state->clipplanes[i*4+2]);
       float distance = state->clipplanes[i*4+3];
       SbPlane<float> plane(normal, distance);
@@ -1013,6 +1180,8 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
         if ( !plane.isInHalfSpace(point[j]) ) { outside++; }
         else { inside++; }
       }
+      total_inside += inside;
+      total_outside += outside;
       if ( inside == 8 ) { // mark this plane as uncullable
         bits = bits | (1 << i);
       }
@@ -1027,53 +1196,60 @@ sc_plane_culling_pre_cb(void * closure, const double * bmin, const double * bmax
   // Use the GL_HP_occlusion_test extension to check if bounding box will
   // be totally occluded.
 
-  // FIXME: If it is not occluded, better bounding box granularity
-  // can be achieved by checking against the bounding box of each child
-  // sub-block, and potentially recursively so.  It might not be such a
-  // good idea to exhaust this technique by doing full recursion all the
-  // way down though...  One or two levels on the other hand...  But for
-  // this to be possible, the sdm_block needs to be made available.
+  // Some ATI card returned false positives for the occlusion test.
+  // When trying to figure out if there was a problem with my code, I
+  // thought of the case where the closest faces of the bounding box will
+  // be closer to the camera than the near plane, and therefore not
+  // rendered.  This could cause the Z-buffer to be unaffected by
+  // rendering the bounding box, causing result to be false and the
+  // bounding box to be culled.  I've therefore added the restriction
+  // that the bounding box must be totally inside the view volume for
+  // this occlusion test to be tried at all.
+  // PROLOGUE: The occlusion test is still not enabled for ATI cards
+  // again though.
 
-  if ( state->renderpass && GL.HAVE_OCCLUSIONTEST ) {
-    // save GL state
-    glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
-    // disable backface culling
-    glDisable(GL_CULL_FACE);
-    // disable updates to color and depth buffer
-    glDepthMask(GL_FALSE);
-    glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-    // enable occlusion test
-    glEnable(GL_OCCLUSION_TEST_HP);
-    // render bounding geometry
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f((float) bmin[0], (float) bmin[1], (float) bmin[2]); // center
-    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]); // start
-    glVertex3f((float) bmax[0], (float) bmax[1], (float) bmin[2]);
-    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmin[2]);
-    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]);
-    glVertex3f((float) bmin[0], (float) bmin[1], (float) bmax[2]);
-    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmax[2]);
-    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]); // finish = start
-    glEnd();
-    // and the other side
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f((float) bmax[0], (float) bmax[1], (float) bmax[2]); // center
-    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]); // start
-    glVertex3f((float) bmin[0], (float) bmin[1], (float) bmax[2]);
-    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmax[2]);
-    glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]);
-    glVertex3f((float) bmax[0], (float) bmax[1], (float) bmin[2]);
-    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmin[2]);
-    glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]); // finish = start
-    glEnd();
-    // disable occlusion test
-    glDisable(GL_OCCLUSION_TEST_HP);
-    // restore state
-    glPopAttrib();
-    // read occlusion test result
-    GLboolean result;
-    glGetBooleanv(GL_OCCLUSION_TEST_RESULT_HP, &result);
-    if ( !result ) { return FALSE; } // culled
+  if ( state->renderpass && GL.USE_OCCLUSIONTEST ) {
+    if ( (state->numclipplanes > 0) && (total_inside == (state->numclipplanes * 8)) ) {
+      // save GL state
+      glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
+      // disable backface culling
+      glDisable(GL_CULL_FACE);
+      // disable updates to color and depth buffer
+      glDepthMask(GL_FALSE);
+      glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+      // enable occlusion test
+      glEnable(GL_OCCLUSION_TEST_HP);
+      // render bounding geometry
+      glBegin(GL_TRIANGLE_FAN);
+      glVertex3f((float) bmin[0], (float) bmin[1], (float) bmin[2]); // center
+      glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]); // start
+      glVertex3f((float) bmax[0], (float) bmax[1], (float) bmin[2]);
+      glVertex3f((float) bmin[0], (float) bmax[1], (float) bmin[2]);
+      glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]);
+      glVertex3f((float) bmin[0], (float) bmin[1], (float) bmax[2]);
+      glVertex3f((float) bmax[0], (float) bmin[1], (float) bmax[2]);
+      glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]); // finish = start
+      glEnd();
+      // and the other side
+      glBegin(GL_TRIANGLE_FAN);
+      glVertex3f((float) bmax[0], (float) bmax[1], (float) bmax[2]); // center
+      glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]); // start
+      glVertex3f((float) bmin[0], (float) bmin[1], (float) bmax[2]);
+      glVertex3f((float) bmax[0], (float) bmin[1], (float) bmax[2]);
+      glVertex3f((float) bmax[0], (float) bmin[1], (float) bmin[2]);
+      glVertex3f((float) bmax[0], (float) bmax[1], (float) bmin[2]);
+      glVertex3f((float) bmin[0], (float) bmax[1], (float) bmin[2]);
+      glVertex3f((float) bmin[0], (float) bmax[1], (float) bmax[2]); // finish = start
+      glEnd();
+      // disable occlusion test
+      glDisable(GL_OCCLUSION_TEST_HP);
+      // restore state
+      glPopAttrib();
+      // read occlusion test result
+      GLboolean result;
+      glGetBooleanv(GL_OCCLUSION_TEST_RESULT_HP, &result);
+      if ( !result ) { return FALSE; } // culled
+    }
   }
   return TRUE; // not culled
 }
@@ -1737,7 +1913,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
     GL_VERTEX_N(state, x, y, elev[idx], normals+3*idx);
 
     while (numv) {
-      glBegin(GL_TRIANGLES);
+      glBegin(GL_TRIANGLE_FAN);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
@@ -1770,7 +1946,7 @@ sc_undefrender_cb(void * closure, const int x, const int y, const int len,
   }  
   else {    
     while (numv) {
-      glBegin(GL_TRIANGLES);
+      glBegin(GL_TRIANGLE_FAN);
       while (numv) { 
         tx = x + *ptr++ * len;
         ty = y + *ptr++ * len;
