@@ -120,6 +120,7 @@
 #include <Inventor/elements/SoGLTextureEnabledElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/SbTesselator.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
@@ -251,10 +252,10 @@ void
 SoLODExtrusion::GLRender(SoGLRenderAction * action)
 {
   if (!this->shouldGLRender(action)) return;
+  SoState * state = action->getState();
 
   this->updateCache();
 
-  SoState * state = action->getState();
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
@@ -340,6 +341,10 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
       break;
     }
   } 
+  // don't auto cache SoText2 nodes.
+  SoGLCacheContextElement::shouldAutoCache(action->getState(),
+                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
+
 }
 
 void
