@@ -691,7 +691,14 @@ SmScenery::GLRender(SoGLRenderAction * action)
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
     if ( cc_glglue_has_multitexture(gl) ) {
-      sc_set_glMultiTexCoord2f(cc_glglue_getprocaddress("glMultiTexCoord2f"));
+      void * ptr;
+      ptr = cc_glglue_getprocaddress("glMultiTexCoord2f");
+      if ( !ptr ) { ptr = cc_glglue_getprocaddress("glMultiTexCoord2fARB"); }
+      sc_set_glMultiTexCoord2f(ptr);
+
+      ptr = cc_glglue_getprocaddress("glClientActiveTexture");
+      if ( !ptr ) { ptr = cc_glglue_getprocaddress("glClientActiveTextureARB"); }
+      sc_set_glClientActiveTexture(ptr);
     }
     if ( cc_glglue_has_vertex_array(gl) ) {
       sc_set_glEnableClientState(cc_glglue_getprocaddress("glEnableClientState"));
@@ -745,14 +752,14 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   // callback to initialize for each block
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
-					 PRIVATE(this)->viewid,
+                                         PRIVATE(this)->viewid,
                                          sc_render_pre_cb,
-					 &PRIVATE(this)->renderstate);
+                                         &PRIVATE(this)->renderstate);
 
   sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
-					  PRIVATE(this)->viewid,
-					  sc_render_post_cb,
-					  &PRIVATE(this)->renderstate);
+                                          PRIVATE(this)->viewid,
+                                          sc_render_post_cb,
+                                          &PRIVATE(this)->renderstate);
 
   // set up rendering callbacks
   sc_ssglue_view_set_render_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
@@ -902,11 +909,11 @@ SmScenery::evaluate(SoAction * action)
   sc_ssglue_view_set_culling_post_callback(PRIVATE(this)->system, PRIVATE(this)->viewid,
                                            SmScenery::box_culling_post_cb, &PRIVATE(this)->renderstate);
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
-					 PRIVATE(this)->viewid,
+                                         PRIVATE(this)->viewid,
                                          NULL, NULL);
   sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
-					  PRIVATE(this)->viewid,
-					  NULL, NULL);
+                                          PRIVATE(this)->viewid,
+                                          NULL, NULL);
   double hotspot[3];
   hotspot[0] = campos[0];
   hotspot[1] = campos[1];
@@ -932,11 +939,11 @@ SmScenery::generatePrimitives(SoAction * action)
                                            SceneryP::undefgen_cb, this);
 
   sc_ssglue_view_set_render_pre_callback(PRIVATE(this)->system,
-					 PRIVATE(this)->viewid,
+                                         PRIVATE(this)->viewid,
                                          SceneryP::gen_pre_cb, this);
   sc_ssglue_view_set_render_post_callback(PRIVATE(this)->system,
-					  PRIVATE(this)->viewid,
-					  NULL, NULL);
+                                          PRIVATE(this)->viewid,
+                                          NULL, NULL);
 
   SoPointDetail pointDetail;
   PRIVATE(this)->pvertex->setDetail(&pointDetail);
@@ -1107,7 +1114,7 @@ SbVec2f
 SmScenery::getElevationRange(void) const
 {
   return SbVec2f((float) PRIVATE(this)->renderstate.bbmin[2],
-		 (float) PRIVATE(this)->renderstate.bbmax[2]);
+                 (float) PRIVATE(this)->renderstate.bbmax[2]);
 }
 
 void 
@@ -1429,7 +1436,7 @@ SmScenery::box_culling_pre_cb(void * closure, const double * bmin, const double 
   if ( SoCullElement::completelyInside(state) ) { return TRUE; }
 
   SbBox3f box((float) bmin[0], (float) bmin[1], (float) bmin[2],
-	      (float) bmax[0], (float) bmax[1], (float) bmax[2]);
+              (float) bmax[0], (float) bmax[1], (float) bmax[2]);
   if ( !SoCullElement::cullBox(state, box, TRUE) ) { return TRUE; }
 
   return FALSE;
@@ -1464,7 +1471,7 @@ SmScenery::ray_culling_pre_cb(void * closure, const double * bmin, const double 
   state->push();
 
   SbBox3f box((float) bmin[0], (float) bmin[1], (float) bmin[2],
-	      (float) bmax[0], (float) bmax[1], (float) bmax[2]); 
+              (float) bmax[0], (float) bmax[1], (float) bmax[2]); 
   if (box.isEmpty()) return FALSE;
   rpaction->setObjectSpace();
   return rpaction->intersect(box, TRUE);
@@ -1501,7 +1508,7 @@ SmScenery::colortexture_cb(void * closure, double * pos, float elevation, double
     if (thisp->colorElevation.getNum() == 0) {
       // interpolate color table evenly over elevation range
       float fac = (float) ((elevation - rs.bbmin[2]) /
-			   (rs.bbmax[2] - rs.bbmin[2]));
+                           (rs.bbmax[2] - rs.bbmin[2]));
       int steps = ((thisp->colorMap.getNum() / 4) - 1); // four components
       if (steps == 0) { // only one color given
         int nr = (int) (SbClamp(thisp->colorMap[0], 0.0f, 1.0f) * 255.0f);

@@ -107,6 +107,7 @@ typedef void glNormalPointer_f(GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void glTexCoordPointer_f(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void glDrawElements_f(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
 typedef void glDrawArrays_f(GLenum mode, GLint first, GLsizei count);
+typedef void glClientActiveTexture_f(GLenum texture);
 
 struct sc_GL {
   glMultiTexCoord2f_f * glMultiTexCoord2f;
@@ -117,6 +118,7 @@ struct sc_GL {
   glTexCoordPointer_f * glTexCoordPointer;
   glDrawElements_f * glDrawElements;
   glDrawArrays_f * glDrawArrays;
+  glClientActiveTexture_f * glClientActiveTexture;
 
   GLenum CLAMP_TO_EDGE;
   int use_byte_normals;
@@ -131,6 +133,7 @@ static struct sc_GL GL = {
   NULL, // glTexCoordPointer
   NULL, // glDrawElements
   NULL, // glDrawArrays
+  NULL, // glClientActiveTexture
 
   GL_CLAMP, // clamp_to_edge
   TRUE  // use_byte_normals
@@ -190,6 +193,13 @@ sc_set_glMultiTexCoord2f(void * fptr)
 {
   assert(fptr != NULL);
   GL.glMultiTexCoord2f = (glMultiTexCoord2f_f *) fptr;
+}
+
+void
+sc_set_glClientActiveTexture(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glClientActiveTexture = (glClientActiveTexture_f *) fptr;
 }
 
 void
@@ -1006,6 +1016,7 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   RenderState * renderstate = (RenderState *) closure;
 
   assert(info);
+  assert(GL.glClientActiveTexture != NULL);
   assert(GL.glEnableClientState != NULL);
   assert(GL.glDisableClientState != NULL);
   assert(GL.glVertexPointer != NULL);
@@ -1046,16 +1057,16 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // }
   // const uint32_t * indexarrayptr = indexarray->getArrayPtr();
 
-#if 1
-  // Coin GL-glue version
+  const int vertices = vertexarray->getLength() / 3;
+  const int triangles = vertices / 3;
+
+#if 0 // Coin GL-glue version
   assert(renderstate->action);
   assert(renderstate->state);
   const cc_glglue * gl = cc_glglue_instance(SoGLCacheContextElement::get(renderstate->state));
   assert(gl);
 
   assert(cc_glglue_has_vertex_array(gl));
-
-  int triangles = vertexarray->getLength() / 3;
 
   cc_glglue_glEnableClientState(gl, GL_VERTEX_ARRAY);
   cc_glglue_glVertexPointer(gl, 3, GL_FLOAT, 0, vertexarrayptr);
@@ -1071,7 +1082,7 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   cc_glglue_glEnableClientState(gl, GL_TEXTURE_COORD_ARRAY);
   cc_glglue_glTexCoordPointer(gl, 2, GL_FLOAT, 0, texcoordarrayptr);
 
-  cc_glglue_glDrawArrays(gl, GL_TRIANGLES, 0, triangles); // vertexarray->getLength() / 9);
+  cc_glglue_glDrawArrays(gl, GL_TRIANGLES, 0, vertices);
 
   cc_glglue_glDisableClientState(gl, GL_VERTEX_ARRAY);
   cc_glglue_glDisableClientState(gl, GL_NORMAL_ARRAY);
@@ -1087,23 +1098,30 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   GL.glEnableClientState(GL_VERTEX_ARRAY);
   GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
   GL.glEnableClientState(GL_NORMAL_ARRAY);
-  GL.glNormalPointer(GL_FLOAT, 0, normalarrayptr);
+  GL.glNormalPointer(GL_BYTE, 0, normalarrayptr);
+  if ( renderstate->etexscale != 0.0f ) {
+    GL.glClientActiveTexture(GL_TEXTURE1);
+    GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoord2arrayptr);
+  }
+  GL.glClientActiveTexture(GL_TEXTURE0);
   GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoordarrayptr);
 
   // GL.glDrawElements(GL_TRIANGLES,
   //                   indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
-  int triangles = vertexarray->getLength() / 3;
-  // if ( triangles > 60 ) triangles = 3;
 
-  GL.glDrawArrays(GL_TRIANGLES, 0, triangles); // vertexarray->getLength() / 9);
-
-  printf("vertex arrays sent to GL\n");
+  GL.glDrawArrays(GL_TRIANGLES, 0, vertices);
 
   // truncate arrays here?
 
   GL.glDisableClientState(GL_VERTEX_ARRAY);
   GL.glDisableClientState(GL_NORMAL_ARRAY);
+  if ( renderstate->etexscale != 0.0f ) {
+    GL.glClientActiveTexture(GL_TEXTURE1);
+    GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  }
+  GL.glClientActiveTexture(GL_TEXTURE0);
   GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
 
