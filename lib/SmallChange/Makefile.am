@@ -49,7 +49,7 @@ libSmallChange@SUFFIX@inc_HEADERS = basic.h
 if BUILD_WITH_MSVC
 install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
 	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
-	for ext in dll pdb lib; do \
+	for ext in dll pdb; do \
 	  file="$$basename.$$ext"; \
 	  if test -s "$$file"; then \
 	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
