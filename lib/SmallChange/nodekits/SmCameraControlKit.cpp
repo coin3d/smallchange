@@ -447,11 +447,13 @@ SmCameraControlKitP::camera_update(void * closure, SoSensor * sensor)
 {
   SmCameraControlKitP * thisp = (SmCameraControlKitP*) closure;
   
-  SoCamera * cam = (SoCamera*) PUBLIC(thisp)->getAnyPart("camera", TRUE);
-  SoDirectionalLight * l = (SoDirectionalLight*) PUBLIC(thisp)->getAnyPart("headlightNode", TRUE);
-  SbVec3f dir(0.0f, 0.0f, -1.0f);
-  cam->orientation.getValue().multVec(dir, dir);
-  l->direction = dir;
+  if (PUBLIC(thisp)->headlight.getValue()) {
+    SoCamera * cam = (SoCamera*) PUBLIC(thisp)->getAnyPart("camera", TRUE);
+    SoDirectionalLight * l = (SoDirectionalLight*) PUBLIC(thisp)->getAnyPart("headlightNode", TRUE);
+    SbVec3f dir(0.0f, 0.0f, -1.0f);
+    cam->orientation.getValue().multVec(dir, dir);
+    l->direction = dir;
+  }
 }
 
 void 
