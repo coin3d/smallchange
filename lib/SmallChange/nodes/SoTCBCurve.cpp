@@ -216,8 +216,8 @@ SoTCBCurve::GLRender(SoGLRenderAction *action)
     // and just distribute timevalues uniformly. 20030108 mortene.
     assert(segment + 1 < this->timestamp.getNum());
 
-    float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
-    float time = this->timestamp[segment].getValue() + timestep;
+    float timestep = (float) (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+    float time = (float) this->timestamp[segment].getValue() + timestep;
     SbVec3f vec;
 
     // FIXME: investigate what happens if linesPerSegment==1. 20030109 mortene.
@@ -275,8 +275,8 @@ SoTCBCurve::generatePrimitives(SoAction * action)
       // case. 20030108 mortene.
       assert(segment + 1 < this->timestamp.getNum());
 
-      float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
-      float time = this->timestamp[segment].getValue() + timestep;
+      float timestep = (float) (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+      float time = (float) this->timestamp[segment].getValue() + timestep;
       SbVec3f vec;
 
       for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
@@ -329,8 +329,8 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   box.extendBy(coords[0]);
 
   for (int segment = 0; segment < this->numControlpoints.getValue() - 1; segment++) {
-    float timestep = (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
-    float time = this->timestamp[segment].getValue() + timestep;
+    float timestep = (float) (this->timestamp[segment + 1] - this->timestamp[segment]).getValue()/PRIVATE(this)->linesPerSegment;
+    float time = (float) this->timestamp[segment].getValue() + timestep;
     SbVec3f vec;
 
     for (int i = 0; i < PRIVATE(this)->linesPerSegment - 1; i++) {
@@ -378,7 +378,7 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
   }
 
   //---- Calculating t = (T - T0)/(T1 - T0)
-  float t = (time - timestamp[k])/(timestamp[k + 1] - timestamp[k]);
+  float t = (float) ((time - timestamp[k])/(timestamp[k + 1] - timestamp[k]));
 
   //---- Calculating curve-location.
 
@@ -389,8 +389,8 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
     dd0 = d10;
   }
   else {
-    const float adj =
-      (timestamp[k + 1] - timestamp[k]) / (timestamp[k + 1] - timestamp[k - 1]);
+    const float adj = (float)
+      ((timestamp[k + 1] - timestamp[k]) / (timestamp[k + 1] - timestamp[k - 1]));
 
     dd0 = adj * (vec[k] - vec[k - 1] + d10);
   }
@@ -399,8 +399,8 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
     ds1 = d10;
   }
   else {
-    const float adj =
-      (timestamp[k + 1] - timestamp[k]) / (timestamp[k + 2] - timestamp[k]);
+    const float adj = (float)
+      ((timestamp[k + 1] - timestamp[k]) / (timestamp[k + 2] - timestamp[k]));
 
     ds1 = adj * (vec[k + 2] - vec[k + 1] + d10);
   }
@@ -408,7 +408,7 @@ SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
   //---- Parametrization constants.
   const float t2 = t*t;
   const float t3 = t2*t;
-  const float h1 = 1.0 - (3*t2 - 2*t3);
+  const float h1 = 1.0f - (3*t2 - 2*t3);
   const float h2 = 3*t2 - 2*t3;
   const float h3 = t3 - 2*t2 + t;
   const float h4 = t3 - t2;
