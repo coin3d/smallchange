@@ -78,6 +78,7 @@
 #include <SmallChange/nodes/SmHeadlight.h>
 #include <SmallChange/draggers/SmRangeTranslate1Dragger.h>
 #include <SmallChange/nodes/SmMarkerSet.h>
+#include <SmallChange/nodes/SmCoordinateSystem.h>
 
 #ifdef HAVE_SOUND
 
@@ -159,5 +160,5 @@ smallchange_init(void)
   SmColorGradientElement::initClass();
   SmColorGradient::initClass();
 
-
+  SmCoordinateSystem::initClass();
 }
