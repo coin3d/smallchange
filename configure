@@ -20799,7 +20799,7 @@ if $BUILD_WITH_MSVC; then
     CPPFLAGS="-DSMALLCHANGE_MAKE_DLL $CPPFLAGS"
     SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS -DSMALLCHANGE_DLL"
   fi
-  debugfile="`pwd`/lib/SmallChange/SmallChange${SMALLCHANGE_MAJOR_VERSION}.pdb"
+  debugfile="`pwd`/lib/SmallChange/SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
   debugfile=`cygpath -w "$debugfile" | sed 's,\\\\,\\\\\\\\,g'`
   if $SMALLCHANGE_STATIC; then
 
@@ -20810,7 +20810,7 @@ else
 fi
 
     LIBFLAGS="-LIB $LIBFLAGS"
-    LIBFLAGS="$LIBFLAGS /OUT:SmallChange$SMALLCHANGE_MAJOR_VERSION.lib"
+    LIBFLAGS="$LIBFLAGS /OUT:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.lib"
   else
     LIBFLAGS="-DLL /INCREMENTAL:NO $LIBFLAGS"
     case $enable_symbols in
@@ -20834,11 +20834,11 @@ fi
 
       CFLAGS="/Fd$debugfile $CFLAGS"
       CXXFLAGS="/Fd$debugfile $CXXFLAGS"
-      LIBFLAGS="$LIBFLAGS /DEBUG /PDB:SmallChange$SMALLCHANGE_MAJOR_VERSION.pdb"
+      LIBFLAGS="$LIBFLAGS /DEBUG /PDB:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
       ;;
     esac
 
-    LIBFLAGS="$LIBFLAGS /OUT:SmallChange$SMALLCHANGE_MAJOR_VERSION.dll"
+    LIBFLAGS="$LIBFLAGS /OUT:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.dll"
   fi
 
 if test x"${sim_ac_configuration_settings+set}" = x"set"; then
@@ -20848,7 +20848,7 @@ else
 fi
 
 
-  SMALLCHANGE_EXTRA_LIBS="-lSmallChange$SMALLCHANGE_MAJOR_VERSION $SMALLCHANGE_EXTRA_LIBS"
+  SMALLCHANGE_EXTRA_LIBS="-lSmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX} $SMALLCHANGE_EXTRA_LIBS"
 else
   SMALLCHANGE_EXTRA_LIBS="-lSmallChange $SMALLCHANGE_EXTRA_LIBS"
 fi

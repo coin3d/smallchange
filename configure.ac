@@ -263,12 +263,12 @@ if $BUILD_WITH_MSVC; then
     CPPFLAGS="-DSMALLCHANGE_MAKE_DLL $CPPFLAGS"
     SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS -DSMALLCHANGE_DLL"
   fi
-  debugfile="`pwd`/lib/SmallChange/SmallChange${SMALLCHANGE_MAJOR_VERSION}.pdb"
+  debugfile="`pwd`/lib/SmallChange/SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
   debugfile=`cygpath -w "$debugfile" | sed 's,\\\\,\\\\\\\\,g'`
   if $SMALLCHANGE_STATIC; then
     SIM_AC_CONFIGURATION_SETTING([SmallChange build type], [static .lib])
     LIBFLAGS="-LIB $LIBFLAGS"
-    LIBFLAGS="$LIBFLAGS /OUT:SmallChange$SMALLCHANGE_MAJOR_VERSION.lib"
+    LIBFLAGS="$LIBFLAGS /OUT:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.lib"
   else
     LIBFLAGS="-DLL /INCREMENTAL:NO $LIBFLAGS"
     case $enable_symbols in
@@ -282,15 +282,15 @@ if $BUILD_WITH_MSVC; then
                                    [dynamic .dll + .pdb])
       CFLAGS="/Fd$debugfile $CFLAGS"
       CXXFLAGS="/Fd$debugfile $CXXFLAGS"
-      LIBFLAGS="$LIBFLAGS /DEBUG /PDB:SmallChange$SMALLCHANGE_MAJOR_VERSION.pdb"
+      LIBFLAGS="$LIBFLAGS /DEBUG /PDB:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
       ;;
     esac
 
-    LIBFLAGS="$LIBFLAGS /OUT:SmallChange$SMALLCHANGE_MAJOR_VERSION.dll"
+    LIBFLAGS="$LIBFLAGS /OUT:SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.dll"
   fi
   SIM_AC_CONFIGURATION_SETTING([C library type], [$sim_ac_msvcrt])
 
-  SMALLCHANGE_EXTRA_LIBS="-lSmallChange$SMALLCHANGE_MAJOR_VERSION $SMALLCHANGE_EXTRA_LIBS"
+  SMALLCHANGE_EXTRA_LIBS="-lSmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX} $SMALLCHANGE_EXTRA_LIBS"
 else
   SMALLCHANGE_EXTRA_LIBS="-lSmallChange $SMALLCHANGE_EXTRA_LIBS"
 fi

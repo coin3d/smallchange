@@ -4,51 +4,51 @@ INCLUDES = -I$(top_srcdir)/lib
 SUBDIRS = nodekits nodes elements engines actions misc draggers eventhandlers .
 
 if BUILD_WITH_MSVC
-lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
+lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
 else
-lib_LTLIBRARIES = libSmallChange.la
+lib_LTLIBRARIES = libSmallChange@SUFFIX@.la
 endif
 
-libSmallChange_la_SOURCES =
+libSmallChange@SUFFIX@_la_SOURCES =
 
-libSmallChange_la_LIBADD = \
+libSmallChange@SUFFIX@_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
 	engines/libengines.la actions/libactions.la misc/libmisc.la \
 	draggers/libdraggers.la eventhandlers/libeventhandlers.la
 
-libSmallChange_la_LDFLAGS = \
+libSmallChange@SUFFIX@_la_LDFLAGS = \
 	-no-undefined \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES =
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES =
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
 	draggers/draggers.lst eventhandlers/eventhandlers.lst
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
-  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
-  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES)
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
+  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS) \
+  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_DEPENDENCIES)
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
 	echo "Linking $$basename.lib..."; \
 	echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS); \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD) $(LIBS); \
 	$(CC) $(LDFLAGS) $(LIBFLAGS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS);
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD) $(LIBS);
 
 # **************************************************************************
 
-libSmallChangeincdir = $(includedir)/SmallChange
-libSmallChangeinc_HEADERS = basic.h
+libSmallChange@SUFFIX@incdir = $(includedir)/SmallChange
+libSmallChange@SUFFIX@inc_HEADERS = basic.h
 
 # **************************************************************************
 
 if BUILD_WITH_MSVC
-install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	for ext in dll pdb lib; do \
 	  file="$$basename.$$ext"; \
 	  if test -s "$$file"; then \
@@ -62,7 +62,7 @@ install-exec-local:
 endif
 
 install-data-local:
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	for ext in lib; do \
 	  file="$$basename.$$ext"; \
 	  if test -s "$$file"; then \
@@ -73,7 +73,7 @@ install-data-local:
 	done
 
 uninstall-local:
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	for file in \
 	  "$(DESTDIR)$(bindir)/$$basename.dll" \
 	  "$(DESTDIR)$(bindir)/$$basename.pdb" \

@@ -166,24 +166,24 @@ INCLUDES = -I$(top_srcdir)/lib
 
 SUBDIRS = nodekits nodes elements engines actions misc draggers eventhandlers .
 
-@BUILD_WITH_MSVC_TRUE@lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
-@BUILD_WITH_MSVC_FALSE@lib_LTLIBRARIES = libSmallChange.la
+@BUILD_WITH_MSVC_TRUE@lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
+@BUILD_WITH_MSVC_FALSE@lib_LTLIBRARIES = libSmallChange@SUFFIX@.la
 
-libSmallChange_la_SOURCES = 
+libSmallChange@SUFFIX@_la_SOURCES = 
 
-libSmallChange_la_LIBADD = \
+libSmallChange@SUFFIX@_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
 	engines/libengines.la actions/libactions.la misc/libmisc.la \
 	draggers/libdraggers.la eventhandlers/libeventhandlers.la
 
 
-libSmallChange_la_LDFLAGS = \
+libSmallChange@SUFFIX@_la_LDFLAGS = \
 	-no-undefined \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES = 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES = 
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
 	draggers/draggers.lst eventhandlers/eventhandlers.lst
@@ -191,8 +191,8 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD = \
 
 
 # **************************************************************************
-libSmallChangeincdir = $(includedir)/SmallChange
-libSmallChangeinc_HEADERS = basic.h
+libSmallChange@SUFFIX@incdir = $(includedir)/SmallChange
+libSmallChange@SUFFIX@inc_HEADERS = basic.h
 subdir = lib/SmallChange
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
@@ -200,22 +200,23 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = basic.h
 LIBRARIES = $(lib_LIBRARIES)
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_AR = $(AR) cru
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES = \
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_AR = $(AR) cru
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_DEPENDENCIES = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
 	draggers/draggers.lst eventhandlers/eventhandlers.lst
-am_SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS =
-SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS = \
-	$(am_SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS)
+am_SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS =
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS = \
+	$(am_SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
-libSmallChange_la_DEPENDENCIES = nodekits/libnodekits.la \
+libSmallChange@SUFFIX@_la_DEPENDENCIES = nodekits/libnodekits.la \
 	nodes/libnodes.la elements/libelements.la engines/libengines.la \
 	actions/libactions.la misc/libmisc.la draggers/libdraggers.la \
 	eventhandlers/libeventhandlers.la
-am_libSmallChange_la_OBJECTS =
-libSmallChange_la_OBJECTS = $(am_libSmallChange_la_OBJECTS)
+am_libSmallChange@SUFFIX@_la_OBJECTS =
+libSmallChange@SUFFIX@_la_OBJECTS = \
+	$(am_libSmallChange@SUFFIX@_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -225,9 +226,10 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES) \
-	$(libSmallChange_la_SOURCES)
-HEADERS = $(libSmallChangeinc_HEADERS)
+DIST_SOURCES = \
+	$(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES) \
+	$(libSmallChange@SUFFIX@_la_SOURCES)
+HEADERS = $(libSmallChange@SUFFIX@inc_HEADERS)
 
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
@@ -235,10 +237,10 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	all-recursive install-data-recursive install-exec-recursive \
 	installdirs-recursive install-recursive uninstall-recursive \
 	check-recursive installcheck-recursive
-DIST_COMMON = $(libSmallChangeinc_HEADERS) Makefile.am Makefile.in \
-	basic.h.in
+DIST_COMMON = $(libSmallChange@SUFFIX@inc_HEADERS) Makefile.am \
+	Makefile.in basic.h.in
 DIST_SUBDIRS = $(SUBDIRS)
-SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_SOURCES) $(libSmallChange_la_SOURCES)
+SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES) $(libSmallChange@SUFFIX@_la_SOURCES)
 
 all: all-recursive
 
@@ -308,8 +310,8 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libSmallChange.la: $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libSmallChange_la_LDFLAGS) $(libSmallChange_la_OBJECTS) $(libSmallChange_la_LIBADD) $(LIBS)
+libSmallChange@SUFFIX@.la: $(libSmallChange@SUFFIX@_la_OBJECTS) $(libSmallChange@SUFFIX@_la_DEPENDENCIES) 
+	$(LINK) -rpath $(libdir) $(libSmallChange@SUFFIX@_la_LDFLAGS) $(libSmallChange@SUFFIX@_la_OBJECTS) $(libSmallChange@SUFFIX@_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -326,23 +328,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-libSmallChangeincHEADERS_INSTALL = $(INSTALL_HEADER)
-install-libSmallChangeincHEADERS: $(libSmallChangeinc_HEADERS)
+libSmallChange@SUFFIX@incHEADERS_INSTALL = $(INSTALL_HEADER)
+install-libSmallChange@SUFFIX@incHEADERS: $(libSmallChange@SUFFIX@inc_HEADERS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(libSmallChangeincdir)
-	@list='$(libSmallChangeinc_HEADERS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(libSmallChange@SUFFIX@incdir)
+	@list='$(libSmallChange@SUFFIX@inc_HEADERS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(libSmallChangeincHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libSmallChangeincdir)/$$f"; \
-	  $(libSmallChangeincHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libSmallChangeincdir)/$$f; \
+	  echo " $(libSmallChange@SUFFIX@incHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f"; \
+	  $(libSmallChange@SUFFIX@incHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f; \
 	done
 
-uninstall-libSmallChangeincHEADERS:
+uninstall-libSmallChange@SUFFIX@incHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(libSmallChangeinc_HEADERS)'; for p in $$list; do \
+	@list='$(libSmallChange@SUFFIX@inc_HEADERS)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(libSmallChangeincdir)/$$f"; \
-	  rm -f $(DESTDIR)$(libSmallChangeincdir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f"; \
+	  rm -f $(DESTDIR)$(libSmallChange@SUFFIX@incdir)/$$f; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -518,7 +520,7 @@ check: check-recursive
 all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(libdir) $(DESTDIR)$(libSmallChangeincdir)
+	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(libdir) $(DESTDIR)$(libSmallChange@SUFFIX@incdir)
 
 install: install-recursive
 install-exec: install-exec-recursive
@@ -562,7 +564,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-data-local install-libSmallChangeincHEADERS
+install-data-am: install-data-local \
+	install-libSmallChange@SUFFIX@incHEADERS
 
 install-exec-am: install-exec-local install-libLIBRARIES \
 	install-libLTLIBRARIES
@@ -591,8 +594,8 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-info-am uninstall-libLIBRARIES \
-	uninstall-libLTLIBRARIES uninstall-libSmallChangeincHEADERS \
-	uninstall-local
+	uninstall-libLTLIBRARIES \
+	uninstall-libSmallChange@SUFFIX@incHEADERS uninstall-local
 
 uninstall-info: uninstall-info-recursive
 
@@ -606,7 +609,7 @@ uninstall-info: uninstall-info-recursive
 	install-data-recursive install-exec install-exec-am \
 	install-exec-local install-exec-recursive install-info \
 	install-info-am install-info-recursive install-libLIBRARIES \
-	install-libLTLIBRARIES install-libSmallChangeincHEADERS \
+	install-libLTLIBRARIES install-libSmallChange@SUFFIX@incHEADERS \
 	install-man install-recursive install-strip installcheck \
 	installcheck-am installdirs installdirs-am \
 	installdirs-recursive maintainer-clean maintainer-clean-generic \
@@ -615,27 +618,28 @@ uninstall-info: uninstall-info-recursive
 	pdf pdf-am pdf-recursive ps ps-am ps-recursive tags \
 	tags-recursive uninstall uninstall-am uninstall-info-am \
 	uninstall-info-recursive uninstall-libLIBRARIES \
-	uninstall-libLTLIBRARIES uninstall-libSmallChangeincHEADERS \
-	uninstall-local uninstall-recursive
+	uninstall-libLTLIBRARIES \
+	uninstall-libSmallChange@SUFFIX@incHEADERS uninstall-local \
+	uninstall-recursive
 
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
-  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
-  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_DEPENDENCIES)
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
+  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS) \
+  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_DEPENDENCIES)
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	rm -f "$$basename.dll" "$$basename.lib"; \
 	echo "Linking $$basename.lib..."; \
 	echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS); \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD) $(LIBS); \
 	$(CC) $(LDFLAGS) $(LIBFLAGS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_OBJECTS) \
-	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@_lib_LIBADD) $(LIBS);
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS) \
+	  $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD) $(LIBS);
 
 # **************************************************************************
 
-@BUILD_WITH_MSVC_TRUE@install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
-@BUILD_WITH_MSVC_TRUE@	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+@BUILD_WITH_MSVC_TRUE@install-exec-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
+@BUILD_WITH_MSVC_TRUE@	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 @BUILD_WITH_MSVC_TRUE@	for ext in dll pdb lib; do \
 @BUILD_WITH_MSVC_TRUE@	  file="$$basename.$$ext"; \
 @BUILD_WITH_MSVC_TRUE@	  if test -s "$$file"; then \
@@ -647,7 +651,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile \
 @BUILD_WITH_MSVC_FALSE@install-exec-local:
 
 install-data-local:
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	for ext in lib; do \
 	  file="$$basename.$$ext"; \
 	  if test -s "$$file"; then \
@@ -658,7 +662,7 @@ install-data-local:
 	done
 
 uninstall-local:
-	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@"; \
 	for file in \
 	  "$(DESTDIR)$(bindir)/$$basename.dll" \
 	  "$(DESTDIR)$(bindir)/$$basename.pdb" \
