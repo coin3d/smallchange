@@ -84,6 +84,8 @@ public:
   virtual void audioRender(SoAudioRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
 
+  
+
 protected:
   virtual ~SmPopupMenuKit();
   virtual SbBool affectsState(void) const;
@@ -97,6 +99,7 @@ public:
 
   SoMFString itemList;
   SoMFNode itemData;
+  SoMFString itemSchemeScript;
   
   SoSFBool visible;
   SoSFBool isActive;

@@ -174,6 +174,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_FIELD(isActive, (FALSE));
   SO_KIT_ADD_FIELD(visible, (FALSE));
   SO_KIT_ADD_FIELD(itemList, (""));
+  SO_KIT_ADD_FIELD(itemSchemeScript, (""));
   SO_KIT_ADD_FIELD(itemData, (NULL));
   SO_KIT_ADD_FIELD(frameSize, (4));
   SO_KIT_ADD_FIELD(offset, (0, 0));
