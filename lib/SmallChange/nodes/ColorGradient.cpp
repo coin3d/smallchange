@@ -222,14 +222,6 @@ SmColorGradient::loadFilename(void)
     fclose(fp);
     return FALSE;
   }
-
-  union colorgrad_endiantest {
-    uint8_t bytes[2];
-    uint16_t test;
-  };
-  colorgrad_endiantest test;
-  test.test = 1;
-  SbBool bigendian = test.bytes[0] == 0;
   
   SbList <SbColor> cols;
   SbColor c;
@@ -240,10 +232,10 @@ SmColorGradient::loadFilename(void)
       fclose(fp);
       return FALSE;
     }
-    if (!bigendian) {
-      v = (v>>24) | ((v>>8)&0xff00) | (v<<24) | ((v<<8)&0xff0000);
-    }
-    c.setPackedValue(v, t);
+    c[0] = float((v>>16)&0xff)/255.0f;
+    c[1] = float((v>>8)&0xff)/255.0f;
+    c[2] = float(v&0xff)/255.0f;
+    
     cols.append(c);
     num--;
   }
