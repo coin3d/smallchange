@@ -37,7 +37,11 @@ SO_ELEMENT_SOURCE(SmColorGradientElement);
 void
 SmColorGradientElement::initClass()
 {
-  SO_ELEMENT_INIT_CLASS(SmColorGradientElement, inherited);
+  static int initialized = 0;
+  if (!initialized) {
+    SO_ELEMENT_INIT_CLASS(SmColorGradientElement, inherited);
+    initialized = 1;
+  }
 }
 
 // doc from parent
@@ -45,6 +49,7 @@ void
 SmColorGradientElement::init(SoState *state)
 {
   inherited::init(state);
+  
 }
 
 void 
@@ -66,14 +71,16 @@ SmColorGradientElement::~SmColorGradientElement()
 */
 void 
 SmColorGradientElement::set(SoState * state,
-                          SoNode * node,
-                          const Mapping & mapping,
-                          const int numparams,
-                          const float * params,
-                          const SbColor * colors)
+                            SoNode * node,
+                            const Mapping & mapping,
+                            const int numparams,
+                            const float * params,
+                            const SbColor * colors)
 {
   SmColorGradientElement * elem = (SmColorGradientElement*)
     SoReplacedElement::getElement(state, classStackIndex, node);
+
+  //  elem->mapping = mapping;
 }
   
 void 
