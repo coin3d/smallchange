@@ -54,7 +54,7 @@ setup_fem(SoFEMKit * fem)
 
   fem->enableAllElements(FALSE);
 
-#if 1 // just enable elements on random
+#if 0 // just enable elements on random
 
   for (z = 0; z < ZSIZE-1; z++) {
     for (y = 0; y < YSIZE-1; y++) {

@@ -1,0 +1,72 @@
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
+#include <Inventor/SoDB.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <assert.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/SoOutput.h>
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/nodes/FrustumCamera.h>
+#include <Inventor/actions/SoGetBoundingBoxAction.h>
+#include <Inventor/actions/SoSearchAction.h>
+
+int
+main(int argc, char ** argv )
+{
+  assert(argc >= 2);
+
+  @WIDGET@ window = So@Gui@::init( argv[0] );
+  smallchange_init();
+  
+  SoDB::setRealTimeInterval(SbTime(1.0/50.0));
+  
+  So@Gui@ExaminerViewer * ex1 = new So@Gui@ExaminerViewer( window );
+  ex1->setBackgroundColor(SbColor(0.1f, 0.3f, 0.5f));
+  
+  SoInput input;
+  SbBool ok = input.openFile(argv[1]);
+  if (!ok) {
+    fprintf(stderr,"Unable to open file.\n");
+    return -1;
+  }
+
+  SoSeparator *root = SoDB::readAll(&input); 
+  if (!root) {
+    fprintf(stderr,"Unable to read file.\n");
+    return -1;
+  }
+  root->ref();
+
+  SoSearchAction sa;
+  sa.setType(SoCamera::getClassTypeId());
+  sa.setInterest(SoSearchAction::FIRST);
+  sa.apply(root);
+  
+  SoCamera * cam = NULL;
+
+  if (sa.getPath() == NULL) {
+    FrustumCamera * camera = new FrustumCamera;
+    camera->ref();
+    camera->viewAll(root, ex1->getViewportRegion());
+    root->insertChild(camera, 0);
+    camera->unrefNoDelete();
+    cam = camera;
+  }
+  else {
+    cam = (SoCamera*) sa.getPath()->getTail();
+  }
+  // Set auto-clipping-strategy to CONSTANT_NEAR_PLANE, since changing
+  // the nearDistance for a FrustumCamera will also modify the view
+  // volume.
+  ex1->setAutoClippingStrategy(So@Gui@Viewer::CONSTANT_NEAR_PLANE,
+                               cam->nearDistance.getValue());
+  ex1->setSceneGraph(root);
+  ex1->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
+  ex1->show();
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
+  delete ex1;
+  root->unref();
+  return 0;
+} // main()
+
