@@ -232,7 +232,10 @@ SmCameraControlKit::setClippingPlanes(void)
   SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();  
   if (eh) vp = eh->getViewportRegion();
   
-  SoNode * sceneroot = this->getPart("scene", TRUE);
+  // important to apply on "topSeparator" (and not "scene"), since
+  // SoGetBoundingBoxAction needs the UTMCamera to calculate the
+  // bounding box correctly
+  SoNode * sceneroot = this->getAnyPart("topSeparator", TRUE);
   
   PRIVATE(this)->autoclipbboxaction->setViewportRegion(vp);
   PRIVATE(this)->autoclipbboxaction->apply(sceneroot);
