@@ -69,6 +69,8 @@ smallchange_src_dir=`cd $srcdir; pwd`
 AC_SUBST(smallchange_build_dir)
 AC_SUBST(smallchange_src_dir)
 
+SIM_AC_RELATIVE_SRC_DIR
+
 # **************************************************************************
 #  Locate C++ compiler and set C++ as the default language to use
 #  in tests. The configure script will automatically terminate if
@@ -388,6 +390,7 @@ AC_CONFIG_FILES([
         lib/SmallChange/draggers/Makefile
         lib/SmallChange/eventhandlers/Makefile
         lib/SmallChange/basic.h
+        cfg/gendsp.sh
 ])
 
 # MKS will have "\c" as $ECHO_C, but that string in the config.status
@@ -403,6 +406,10 @@ esac
 AC_OUTPUT
 
 ECHO_C=$sim_ac_ECHO_C
+
+if test -f cfg/gendsp.sh; then
+  chmod +x cfg/gendsp.sh
+fi
 
 # **************************************************************************
 
