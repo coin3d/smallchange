@@ -30,7 +30,8 @@ SOURCES = \
 	Scenery.cpp SmScenery.h \
 	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
-	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
+	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
+	SmHeadlight.cpp SmHeadlight.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
@@ -60,7 +61,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmScenery.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmHQSphere.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmBillboardClipPlane.h
+	$(top_srcdir)/lib/SmallChange/nodes/SmBillboardClipPlane.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmHeadlight.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

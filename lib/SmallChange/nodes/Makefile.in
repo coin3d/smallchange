@@ -155,6 +155,8 @@ program_transform_name = @program_transform_name@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sim_ac_coin_configcmd = @sim_ac_coin_configcmd@
+smallchange_build_dir = @smallchange_build_dir@
+smallchange_src_dir = @smallchange_src_dir@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -190,7 +192,8 @@ SOURCES = \
 	Scenery.cpp SmScenery.h \
 	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
-	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
+	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
+	SmHeadlight.cpp SmHeadlight.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -221,7 +224,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmScenery.h \
 	$(top_srcdir)/lib/SmallChange/nodes/SmHQSphere.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmBillboardClipPlane.h
+	$(top_srcdir)/lib/SmallChange/nodes/SmBillboardClipPlane.h \
+	$(top_srcdir)/lib/SmallChange/nodes/SmHeadlight.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -243,7 +247,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
 	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT) \
 	SceneryGL.$(OBJEXT) SmHQSphere.$(OBJEXT) \
-	SmBillboardClipPlane.$(OBJEXT)
+	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -256,7 +260,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
 	UTMCoordinate.lo SmTooltip.lo Scenery.lo SceneryGL.lo \
-	SmHQSphere.lo SmBillboardClipPlane.lo
+	SmHQSphere.lo SmBillboardClipPlane.lo SmHeadlight.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -282,8 +286,10 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po ./$(DEPDIR)/SmTooltip.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Plo ./$(DEPDIR)/SmTooltip.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoPointCloud.Plo \
@@ -346,7 +352,8 @@ SOURCES = \
 	Scenery.cpp SmScenery.h \
 	SceneryGL.cpp SceneryGL.h \
 	SmHQSphere.cpp SmHQSphere.h \
-	SmBillboardClipPlane.cpp SmBillboardClipPlane.h
+	SmBillboardClipPlane.cpp SmBillboardClipPlane.h \
+	SmHeadlight.cpp SmHeadlight.h
 
 
 all: all-am
@@ -405,6 +412,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmBillboardClipPlane.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Plo@am__quote@
