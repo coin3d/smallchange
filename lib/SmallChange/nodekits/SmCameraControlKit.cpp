@@ -35,6 +35,7 @@
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoGetMatrixAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoPerspectiveCamera.h>
 #include <Inventor/nodes/SoOrthographicCamera.h>
@@ -45,8 +46,11 @@
 #include <Inventor/SbViewVolume.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/errors/SoDebugError.h>
+#include <Inventor/sensors/SoTimerSensor.h>
+#include <Inventor/events/SoEvent.h>
 #include <Inventor/SbVec2s.h>
 #include <Inventor/SbVec2f.h>
+#include <Inventor/SoPickedPoint.h>
 #include <Inventor/system/gl.h>
 #include <float.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
@@ -69,6 +73,20 @@ public:
   SoSearchAction * searchaction;
   SoGetMatrixAction * matrixaction;
   SoGetBoundingBoxAction * autoclipbboxaction;
+
+  struct SeekData {
+    SbVec3d camerastartposition;
+    SbRotation camerastartorient;
+    SbVec3d cameraendposition;
+    SbRotation cameraendorient;
+
+    float distance;
+    float period;
+    SoTimerSensor * sensor;
+    SbBool seeking;
+  } seek;
+
+  static void seeksensorCB(void * userdata, SoSensor * sensor);
 };
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -81,6 +99,12 @@ SO_KIT_SOURCE(SmCameraControlKit);
 SmCameraControlKit::SmCameraControlKit(void)
 {
   PRIVATE(this) = new SmCameraControlKitP(this);
+
+  PRIVATE(this)->seek.seeking = FALSE;
+  PRIVATE(this)->seek.distance = 50.0f;
+  PRIVATE(this)->seek.period = 2.0f;
+  PRIVATE(this)->seek.sensor = new SoTimerSensor(SmCameraControlKitP::seeksensorCB, PRIVATE(this));
+
   PRIVATE(this)->autoclipbboxaction = new SoGetBoundingBoxAction(SbViewportRegion(100,100));
   PRIVATE(this)->searchaction = new SoSearchAction;
   PRIVATE(this)->matrixaction = new SoGetMatrixAction(SbViewportRegion(100,100));
@@ -128,6 +152,7 @@ SmCameraControlKit::SmCameraControlKit(void)
 */
 SmCameraControlKit::~SmCameraControlKit(void)
 {
+  delete PRIVATE(this)->seek.sensor;
   delete PRIVATE(this)->autoclipbboxaction;
   delete PRIVATE(this)->searchaction;
   delete PRIVATE(this)->matrixaction;
@@ -439,6 +464,71 @@ SmCameraControlKit::getCameraCoordinateSystem(SoCamera * camera,
   PRIVATE(this)->searchaction->reset();
 }
 
+SbBool 
+SmCameraControlKit::isBusy(void) const
+{
+  return PRIVATE(this)->seek.seeking;
+}
+
+SbBool 
+SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
+{
+  SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
+  if (!camera) return FALSE;
+
+  UTMCamera * utmcamera = NULL;
+  if (camera->isOfType(UTMCamera::getClassTypeId())) {
+    utmcamera = (UTMCamera*) camera;
+  }
+  SoRayPickAction rpaction(vp);
+  rpaction.setPoint(event->getPosition());
+  rpaction.setRadius(2);
+  rpaction.apply(this->getAnyPart("topSeparator", TRUE));
+                 
+  SoPickedPoint * picked = rpaction.getPickedPoint();
+  if (!picked) return FALSE;
+  
+  
+  SbVec3d hitpoint = SbVec3d(picked->getPoint());
+  
+  if (utmcamera) {
+    hitpoint += utmcamera->utmposition.getValue();
+  }
+  
+  if (utmcamera) {
+    PRIVATE(this)->seek.camerastartposition = utmcamera->utmposition.getValue();
+  }
+  else {
+    PRIVATE(this)->seek.camerastartposition = SbVec3d(camera->position.getValue());
+  }
+  PRIVATE(this)->seek.camerastartorient = camera->orientation.getValue();
+  
+  float fd = PRIVATE(this)->seek.distance;
+  fd *= (float) ((hitpoint - PRIVATE(this)->seek.camerastartposition).length()/100.0);
+  camera->focalDistance = fd;
+
+  SbVec3f dir = SbVec3f(hitpoint - PRIVATE(this)->seek.camerastartposition);
+  dir.normalize();
+  
+  // find a rotation that rotates current camera direction into new
+  // camera direction.
+  SbVec3f olddir;
+  camera->orientation.getValue().multVec(SbVec3f(0, 0, -1), olddir);
+  SbRotation diffrot(olddir, dir);
+  PRIVATE(this)->seek.cameraendposition = hitpoint - SbVec3d(fd * dir);
+  PRIVATE(this)->seek.cameraendorient = camera->orientation.getValue() * diffrot;
+
+  if (PRIVATE(this)->seek.sensor->isScheduled()) {
+    PRIVATE(this)->seek.sensor->unschedule();
+  }
+
+  PRIVATE(this)->seek.seeking = TRUE;
+  PRIVATE(this)->seek.sensor->setBaseTime(SbTime::getTimeOfDay());
+  PRIVATE(this)->seek.sensor->schedule();
+
+  return TRUE;
+}
+
 #undef PRIVATE
 #define PUBLIC(obj) (obj)->master
 
@@ -462,6 +552,42 @@ SmCameraControlKitP::autoclip_update(void * closure, SoSensor * sensor)
   SmCameraControlKitP * thisp = (SmCameraControlKitP*) closure;
   
   thisp->master->setClippingPlanes();
+}
+
+void 
+SmCameraControlKitP::seeksensorCB(void * closure, SoSensor * s)
+{
+  SmCameraControlKitP * thisp = (SmCameraControlKitP*) closure;
+  SbTime currenttime = SbTime::getTimeOfDay();
+  SoTimerSensor * sensor = (SoTimerSensor *)s;
+
+  double t =
+    double((currenttime - sensor->getBaseTime()).getValue()) / thisp->seek.period;
+  if ((t > 1.0f) || (t + sensor->getInterval().getValue() > 1.0f)) t = 1.0f;
+  SbBool end = (t == 1.0f);
+  
+  t = (1.0 - cos(M_PI*t)) * 0.5;
+  
+  SoCamera * camera = (SoCamera*) PUBLIC(thisp)->getPart("camera", TRUE);
+  camera->orientation = 
+    SbRotation::slerp(thisp->seek.camerastartorient,
+                      thisp->seek.cameraendorient, 
+                      t);
+  UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
+    (UTMCamera*) camera : NULL;
+  
+  if (utmcamera) {
+    utmcamera->utmposition = thisp->seek.camerastartposition +
+      (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t;
+  }
+  else {
+    camera->position = SbVec3f(thisp->seek.camerastartposition +
+                               (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t);
+  }
+  if (end) {
+    thisp->seek.seeking = FALSE;
+    thisp->seek.sensor->unschedule();
+  }
 }
 
 #undef PUBLIC

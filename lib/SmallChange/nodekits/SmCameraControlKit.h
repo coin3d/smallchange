@@ -36,6 +36,7 @@ class SmCameraControlKitP;
 class SoCamera;
 class SbMatrix;
 class SbViewportRegion;
+class SoEvent;
 
 class SMALLCHANGE_DLL_API SmCameraControlKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -60,7 +61,9 @@ public:
     VARIABLE_NEAR_PLANE,
     CONSTANT_NEAR_PLANE
   };
-
+  
+  SbBool isBusy(void) const;
+  SbBool seek(const SoEvent * event, const SbViewportRegion & vp);
   void viewAll(const SbViewportRegion & vp,
                const float slack = 1.0f);
 
