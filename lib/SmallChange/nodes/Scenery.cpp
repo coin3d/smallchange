@@ -1001,7 +1001,7 @@ SmScenery::getElevationRange(void) const
 void 
 SmScenery::refreshTextures(const int id)
 {
-  if ( sc_scenery_available() || !PRIVATE(this)->system ) { return; }
+  if ( !sc_scenery_available() || !PRIVATE(this)->system ) { return; }
 
   sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
 
@@ -1151,7 +1151,7 @@ SceneryP::elevationlinessensor_cb(void * closure, SoSensor * sensor)
 void
 SceneryP::colormaptexchange(void)
 {
-    if ( this->colormaptexid != -1 ) {
+  if ( this->colormaptexid != -1 ) {
     PUBLIC(this)->refreshTextures(this->colormaptexid);
   }
 }
