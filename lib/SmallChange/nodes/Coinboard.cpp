@@ -66,6 +66,10 @@
   at different positions. Very useful for rendering particles or a
   forest of trees etc.
 
+  When picking, each triangle in each billboard will have an 
+  SoFaceDetail. The face index will (for now) always be 0, while
+  the part index will the position index used for the billboard.
+
 */
 
 /*!
@@ -485,6 +489,7 @@ Coinboard::generatePrimitives(SoAction * action)
     if (type == SoShape::TRIANGLES || type == SoShape::QUADS) {
       this->beginShape(action, type, &faceDetail);
       for (int i = 0; i < num; i++) {
+        faceDetail.setFaceIndex(0);
         mymat.multVecMatrix(pos[i], tmp);
         if (numv) {
           this->generate(&v, tmp, coords, verts[i], texcoords);
@@ -494,6 +499,7 @@ Coinboard::generatePrimitives(SoAction * action)
         else {
           this->generate(&v, tmp, coords, numcoords, texcoords);
         }
+        faceDetail.incPartIndex();
       }
       this->endShape();
     }
@@ -501,6 +507,7 @@ Coinboard::generatePrimitives(SoAction * action)
       for (int i = 0; i < num; i++) {
         mymat.multVecMatrix(pos[i], tmp);
         this->beginShape(action, type, &faceDetail);
+        faceDetail.setFaceIndex(0);
         if (numv) {
           this->generate(&v, tmp, coords, verts[i], texcoords);
           coords += verts[i];
@@ -510,6 +517,7 @@ Coinboard::generatePrimitives(SoAction * action)
           this->generate(&v, tmp, coords, numcoords, texcoords);
         }
         this->endShape();
+        faceDetail.incPartIndex();
       }
     }
     state->pop();
