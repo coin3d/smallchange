@@ -80,29 +80,9 @@
 #include <SmallChange/nodes/SmMarkerSet.h>
 #include <SmallChange/nodes/SmCoordinateSystem.h>
 
-#ifdef HAVE_SOUND
-
-#include <SmallChange/nodes/SoListener.h>
-#include <SmallChange/nodes/SoSound.h>
-#include <SmallChange/nodes/SoAudioClip.h>
-#include <SmallChange/nodes/SoAudioClipStreaming.h>
-#include <SmallChange/actions/SoAudioRenderAction.h>
-
-#endif // HAVE_SOUND
-
-
 void
 smallchange_init(void)
 {
-#ifdef HAVE_SOUND
-  // doesn't look like this is working
-  //  SoListener::initClass();
-  //SoSound::initClass();
-  //SoAudioClip::initClass();
-  //SoAudioClipStreaming::initClass();
-  //SoAudioRenderAction::initClass();
-#endif // HAVE_SOUND
-
   AutoFile::initClass();
   GLDepthBufferElement::initClass();
   Coinboard::initClass();
