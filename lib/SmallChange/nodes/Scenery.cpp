@@ -693,25 +693,9 @@ SmScenery::GLRender(SoGLRenderAction * action)
     if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && (PRIVATE(this)->colormaptexid != -1)) {
       this->refreshTextures(PRIVATE(this)->colormaptexid);
     }
-    if ( cc_glglue_has_multitexture(gl) ) {
-      void * ptr;
-      ptr = cc_glglue_getprocaddress("glMultiTexCoord2f");
-      if ( !ptr ) { ptr = cc_glglue_getprocaddress("glMultiTexCoord2fARB"); }
-      sc_set_glMultiTexCoord2f(ptr);
 
-      ptr = cc_glglue_getprocaddress("glClientActiveTexture");
-      if ( !ptr ) { ptr = cc_glglue_getprocaddress("glClientActiveTextureARB"); }
-      sc_set_glClientActiveTexture(ptr);
-    }
-    if ( cc_glglue_has_vertex_array(gl) ) {
-      sc_set_glEnableClientState(cc_glglue_getprocaddress("glEnableClientState"));
-      sc_set_glDisableClientState(cc_glglue_getprocaddress("glDisableClientState"));
-      sc_set_glVertexPointer(cc_glglue_getprocaddress("glVertexPointer"));
-      sc_set_glNormalPointer(cc_glglue_getprocaddress("glNormalPointer"));
-      sc_set_glTexCoordPointer(cc_glglue_getprocaddress("glTexCoordPointer"));
-      sc_set_glDrawElements(cc_glglue_getprocaddress("glDrawElements"));
-      sc_set_glDrawArrays(cc_glglue_getprocaddress("glDrawArrays"));
-    }
+    sc_probe_gl(FALSE);
+
     if ( cc_glglue_has_texture_edge_clamp(gl) ) {
       sc_set_have_clamp_to_edge(TRUE);
     }

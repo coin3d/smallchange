@@ -25,18 +25,20 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif /* HAVE_WINDOWS_H */
+
 #include <assert.h>
 #include <stdlib.h> // atoi()
 #include <stdio.h>
 #include <math.h> // fmod()
 
-#ifdef HAVE_WINDOWS_H
-#include <windows.h>
-#endif /* HAVE_WINDOWS_H */
-
 #include <GL/gl.h>
 
-#define SS_DLL
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif // HAVE_DLFCN_H
 
 #include "SceneryGL.h"
 
@@ -49,6 +51,7 @@
 #include "SbBox3.h"
 #include "SbPlane.h"
 
+#define SS_DLL
 #include <sim/scenery/scenery.h>
 #else
 #include "../misc/SbList.h"
@@ -66,6 +69,7 @@
 
 /* how to interface back to scenery library */
 #ifndef SS_SCENERY_H
+/* scenery.h has not been included directly */
 #define ss_render_get_elevation_measures sc_ssglue_render_get_elevation_measures
 #define ss_render_get_texture_measures sc_ssglue_render_get_texture_measures
 #define ss_render_get_texture_image sc_ssglue_render_get_texture_image
@@ -212,6 +216,88 @@ sc_set_use_byte_normals(int enable)
     GL.use_byte_normals = FALSE;
   }
 }
+
+/* ********************************************************************** */
+
+#ifdef HAVE_WINDOWS_H
+#define GL_PROC_ADDRESS(proc) (void *) GetProcAddress(handle, #proc)
+#define APP_HANDLE() NULL
+#define APP_HANDLE_CLOSE() /* nada */
+#else
+#ifdef HAVE_DLFCN_H
+#define GL_PROC_ADDRESS(proc) dlsym(handle, #proc)
+#define APP_HANDLE() dlopen(NULL, RTLD_NOW)
+#define APP_HANDLE_CLOSE(handle) dlclose(handle)
+#else
+#error system not supported (for probing dynamic symbols)
+#endif
+#endif
+
+void
+sc_probe_gl(int verbose)
+{
+  void * handle = APP_HANDLE();
+  void * ptr = NULL;
+
+  // FIXME: probe GL for extensions
+
+  // multi-texturing
+  ptr = GL_PROC_ADDRESS(glMultiTexCoord2f);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glMultiTexCoord2fARB);
+  assert(ptr);
+  sc_set_glMultiTexCoord2f(ptr);
+
+  // multi-texturing + vertex-arrays
+  ptr = GL_PROC_ADDRESS(glClientActiveTexture);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glClientActiveTextureARB);
+  assert(ptr);
+  sc_set_glClientActiveTexture(ptr);
+
+  if ( verbose ) printf("multi-texturing installed\n");
+
+  // vertex arrays
+  ptr = GL_PROC_ADDRESS(glEnableClientState);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glEnableClientStateARB);
+  assert(ptr);
+  sc_set_glEnableClientState(ptr);
+
+  ptr = GL_PROC_ADDRESS(glDisableClientState);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glDisableClientStateARB);
+  assert(ptr);
+  sc_set_glDisableClientState(ptr);
+
+  ptr = GL_PROC_ADDRESS(glVertexPointer);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glVertexPointerARB);
+  assert(ptr);
+  sc_set_glVertexPointer(ptr);
+
+  ptr = GL_PROC_ADDRESS(glNormalPointer);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glNormalPointerARB);
+  assert(ptr);
+  sc_set_glNormalPointer(ptr);
+
+  ptr = GL_PROC_ADDRESS(glTexCoordPointer);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glTexCoordPointerARB);
+  assert(ptr);
+  sc_set_glTexCoordPointer(ptr);
+
+  ptr = GL_PROC_ADDRESS(glDrawElements);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glDrawElementsARB);
+  assert(ptr);
+  sc_set_glDrawElements(ptr);
+
+  ptr = GL_PROC_ADDRESS(glDrawArrays);
+  if ( !ptr ) ptr = GL_PROC_ADDRESS(glDrawArraysARB);
+  assert(ptr);
+  sc_set_glDrawArrays(ptr);
+
+  if ( verbose ) printf("vertex-arrays installed\n");
+    
+  APP_HANDLE_CLOSE(handle);
+}
+
+#undef GL_PROC_ADDRESS
+#undef GL_EXTENSION
 
 /* ********************************************************************** */
 /* texture management */

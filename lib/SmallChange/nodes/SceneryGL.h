@@ -95,6 +95,8 @@ void sc_set_glDrawArrays(void * fptr);           // GL 1.2 feature
 void sc_set_glMultiTexCoord2f(void * fptr);      // GL 1.3 feature
 void sc_set_glClientActiveTexture(void * fptr);  // GL 1.3 feature?
 
+void sc_probe_gl(int verbose); // automatic setup of the above features
+
 /* ********************************************************************** */
 /* texture management */
 
