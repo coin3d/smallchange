@@ -47,6 +47,11 @@ Separator {
 **   vertices.
 ** + optimize how coordinates are accumulated in the scene traversal (lots
 **   of array expansions - probably slow for large scenes).
+**
+** Problems:
+** + SoComplexity node settings might change tessellation dynamically without
+**   triggering any form of notification - normals will stay static, while
+**   the geometry will change.
 */
 
 class NormalsKitP {
@@ -158,13 +163,21 @@ NormalsKitP::pointCB(void * closure, SoCallbackAction * action, const SoPrimitiv
 {
   assert(closure);
   NormalsKitP * thisp = (NormalsKitP *) closure;
+  const float len = thisp->api->length.getValue();
+  // find points
+  SbVec3f p1 = v->getPoint();
+  SbVec3f p2 = v->getPoint() + v->getNormal() * len;
+  // adjust coordinates to local objectspace
+  const SbMatrix & modelmatrix = action->getModelMatrix();
+  modelmatrix.multVecMatrix(p1, p1);
+  modelmatrix.multVecMatrix(p2, p2);
   // add coordinates
   int idx = thisp->coords->point.getNum();
-  thisp->coords->point.set1Value(idx, v->getPoint());
-  thisp->coords->point.set1Value(idx+1, v->getPoint() + v->getNormal());
+  thisp->coords->point.set1Value(idx+0, p1);
+  thisp->coords->point.set1Value(idx+1, p2);
   // set up line
   int num = thisp->lines->coordIndex.getNum();
-  thisp->lines->coordIndex.set1Value(num, idx);
+  thisp->lines->coordIndex.set1Value(num+0, idx+0);
   thisp->lines->coordIndex.set1Value(num+1, idx+1);
   thisp->lines->coordIndex.set1Value(num+2, -1);
 }
@@ -199,7 +212,7 @@ NormalsKitP::triangleCB(void * closure, SoCallbackAction * action, const SoPrimi
   thisp->coords->point.set1Value(idx+3, p4);
   thisp->coords->point.set1Value(idx+4, p5);
   thisp->coords->point.set1Value(idx+5, p6);
-  // set up line
+  // set up lines
   const int num = thisp->lines->coordIndex.getNum();
   thisp->lines->coordIndex.setNum(num + 9); // expand array
   thisp->lines->coordIndex.set1Value(num+0, idx+0);
