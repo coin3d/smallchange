@@ -33,6 +33,19 @@
 #include <SmallChange/basic.h>
 #include <SmallChange/elements/SmColorGradientElement.h>
 
+// Avoid problem with Microsoft Visual C++ Win32 API headers (they
+// #define RELATIVE/ABSOLUTE in their header files
+#ifdef RELATIVE
+#define SMCOLORGRADIENT_RELATIVE_DEFINED RELATIVE
+#undef RELATIVE
+#endif // RELATIVE
+
+#ifdef ABSOLUTE
+#define SMCOLORGRADIENT_ABSOLUTE_DEFINED ABSOLUTE
+#undef ABSOLUTE
+#endif // ABSOLUTE
+
+
 class SoFieldSensor;
 class SoSensor;
 
@@ -72,5 +85,16 @@ private:
   static void filenameSensorCB(void * data, SoSensor *);
 
 };
+
+// fix for Windows header files (see above)
+#ifdef SMCOLORGRADIENT_RELATIVE_DEFINED
+#define RELATIVE SMCOLORGRADIENT_RELATIVE_DEFINED
+#undef SMCOLORGRADIENT_RELATIVE_DEFINED
+#endif // SMCOLORGRADIENT_RELATIVE_DEFINED
+
+#ifdef SMCOLORGRADIENT_ABSOLUTE_DEFINED
+#define ABSOLUTE SMCOLORGRADIENT_ABSOLUTE_DEFINED
+#undef SMCOLORGRADIENT_ABSOLUTE_DEFINED
+#endif // SMCOLORGRADIENT_ABSOLUTE_DEFINED
 
 #endif // !SMALLCHANGE_COLORGRADIENT_H

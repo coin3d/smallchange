@@ -38,6 +38,11 @@
 #include <Inventor/lists/SbStringList.h>
 #include <stdio.h>
 
+// avoid problems with Microsoft Win32 API headers (they define
+// RELATIVE and ABSOLUTE in their header files).
+#undef RELATIVE
+#undef ABSOLUTE
+
 SO_NODE_SOURCE(SmColorGradient);
 
 /*!
