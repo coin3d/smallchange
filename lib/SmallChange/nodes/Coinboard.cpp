@@ -41,6 +41,9 @@
 #include <Inventor/SbXfBox3f.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/details/SoPointDetail.h>
+#include <Inventor/details/SoFaceDetail.h>
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -398,6 +401,175 @@ Coinboard::GLRender(SoGLRenderAction * action)
 void
 Coinboard::generatePrimitives(SoAction * action)
 {
+  // FIXME: quick'n'dirty copy from GLRender(). Consider sharing code.
+  int num = this->position.getNum();
+  int numcoords = this->coord.getNum();
+  if (num == 0 || numcoords < 3) return;
+
+  const int32_t * verts = this->numVertices.getValues(0);
+  int numv = this->numVertices.getNum();
+  if (numv == 1 && verts[0] == -1) numv = 0;
+  else if (numv && numv != num) return;
+
+  const SbVec3f * pos = this->position.getValues(0);
+  const SbVec3f * coords = this->coord.getValues(0);
+  const SbVec4f * texcoords = NULL;
+
+  TriangleShape type;
+  switch ((ShapeType) this->shapeType.getValue()) {
+  case TRIANGLES: type = SoShape::TRIANGLES; break;
+  case QUADS: type = SoShape::QUADS; break;
+  case TRIANGLE_STRIP: type = SoShape::TRIANGLE_STRIP; break;
+  case TRIANGLE_FAN: type = SoShape::TRIANGLE_FAN; break;
+  default:
+    assert(0 && "unknown Shape Type");
+    type = SoShape::TRIANGLES;
+    break;
+  }
+  
+  SoState * state = action->getState();
+
+  SbBool doTextures = SoTextureEnabledElement::get(state);
+  if (doTextures) {
+    texcoords = this->texCoord.getValues(0);
+  }
+
+  SbBool neednormal = SoLightModelElement::get(state) != SoLightModelElement::BASE_COLOR;
+  SbVec3f normal = this->normal.getValue();
+
+  const SbMatrix & mm = SoModelMatrixElement::get(state);
+
+  SbVec3f toviewer;
+  SbVec3f cameray(0.0f, 1.0f, 0.0f);
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
+  toviewer = - vv.getProjectionDirection();
+  mm.inverse().multDirMatrix(toviewer, toviewer);
+  toviewer.normalize();
+
+  SbVec3f rotaxis = this->axisOfRotation.getValue();
+
+  SoPrimitiveVertex v;
+  SoFaceDetail faceDetail;
+  SoPointDetail pointDetail;
+  v.setDetail(&pointDetail);
+
+  if (rotaxis == SbVec3f(0.0f, 0.0f, 0.0f)) {
+    SbMatrix viewmat = SoViewingMatrixElement::get(state).inverse();
+
+    SbMatrix mymat = mm;
+    mymat[0][0] = viewmat[0][0];
+    mymat[0][1] = viewmat[0][1];
+    mymat[0][2] = viewmat[0][2];
+    mymat[1][0] = viewmat[1][0];
+    mymat[1][1] = viewmat[1][1];
+    mymat[1][2] = viewmat[1][2];
+    mymat[2][0] = viewmat[2][0];
+    mymat[2][1] = viewmat[2][1];
+    mymat[2][2] = viewmat[2][2];
+    mymat[3][0] = 0.0f;
+    mymat[3][1] = 0.0f;
+    mymat[3][2] = 0.0f;
+
+    state->push();
+    SoModelMatrixElement::set(state, this, mymat);
+
+    mymat = SoViewingMatrixElement::get(state);
+    mymat[3][0] = 0.0f;
+    mymat[3][1] = 0.0f;
+    mymat[3][2] = 0.0f;
+    mymat.multLeft(mm);
+    SbVec3f tmp;
+
+    if (neednormal) v.setNormal(normal);
+
+    if (type == SoShape::TRIANGLES || type == SoShape::QUADS) {
+      this->beginShape(action, type, &faceDetail);
+      for (int i = 0; i < num; i++) {
+        mymat.multVecMatrix(pos[i], tmp);
+        if (numv) {
+          this->generate(&v, tmp, coords, verts[i], texcoords);
+          coords += verts[i];
+          if (texcoords) texcoords += verts[i];
+        }
+        else {
+          this->generate(&v, tmp, coords, numcoords, texcoords);
+        }
+      }
+      this->endShape();
+    }
+    else {
+      for (int i = 0; i < num; i++) {
+        mymat.multVecMatrix(pos[i], tmp);
+        this->beginShape(action, type, &faceDetail);
+        if (numv) {
+          this->generate(&v, tmp, coords, verts[i], texcoords);
+          coords += verts[i];
+          if (texcoords) texcoords += verts[i];
+        }
+        else {
+          this->generate(&v, tmp, coords, numcoords, texcoords);
+        }
+        this->endShape();
+      }
+    }
+    state->pop();
+  }
+  else {
+    int axisnum = this->frontAxis.getValue();
+    SbVec3f zaxis(0.0f, 0.0f, 0.0f);
+    zaxis[axisnum] = 1.0f;
+    SbPlane plane(rotaxis.cross(toviewer), 0.0f);
+    const SbVec3f n = plane.getNormal();
+    SbVec3f vecinplane = zaxis - n * n[axisnum];
+    vecinplane.normalize();
+    if (vecinplane.dot(toviewer) < 0.0f) vecinplane = - vecinplane;
+    float angle = acos(SbClamp(vecinplane.dot(zaxis), -1.0f, 1.0f));
+    if (n[axisnum] > 0.0f) angle = -angle;
+    SbRotation rot(rotaxis, angle);
+
+    if (neednormal) {
+      rot.multVec(normal, normal);
+      v.setNormal(normal);
+    }
+
+    if (type == SoShape::TRIANGLES || type == SoShape::QUADS) {
+      this->beginShape(action, type, &faceDetail);
+      for (int i = 0; i < num; i++) {
+        SbMatrix mat, tmp;
+        mat.setTranslate(pos[i]);
+        tmp.setRotate(rot);
+        mat.multLeft(tmp);
+        if (numv) {
+          this->generate(&v, mat, coords, verts[i], texcoords);
+          coords += verts[i];
+          if (texcoords) texcoords += verts[i];
+        }
+        else {
+          this->generate(&v, mat, coords, numcoords, texcoords);
+        }
+      }
+      this->endShape();
+    }
+    else {
+      for (int i = 0; i < num; i++) {
+        SbMatrix mat, tmp;
+        mat.setTranslate(pos[i]);
+        tmp.setRotate(rot);
+        mat.multLeft(tmp);
+
+        this->beginShape(action, type, &faceDetail);
+        if (numv) {
+          this->generate(&v, mat, coords, verts[i], texcoords);
+          coords += verts[i];
+          if (texcoords) texcoords += verts[i];
+        }
+        else {
+          this->generate(&v, mat, coords, numcoords, texcoords);
+        }
+        this->endShape();
+      }
+    }
+  }
 }
 
 /*!
@@ -431,17 +603,48 @@ Coinboard::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
 }
 
-void
-Coinboard::generate(const SbMatrix & matrix,
+void 
+Coinboard::generate(SoPrimitiveVertex * v,
+                    const SbVec3f & offset,
                     const SbVec3f * coords, const int n,
                     const SbVec4f * texcoords)
 {
+  if (texcoords) {
+    for (int i = 0; i < n; i++) {
+      v->setTextureCoords(texcoords[i]);
+      v->setPoint(coords[i]+offset);
+      this->shapeVertex(v);
+    }
+  }
+  else {
+    for (int i = 0; i < n; i++) {
+      v->setPoint(coords[i]+offset);
+      this->shapeVertex(v);
+    }
+  }
 }
 
-
-void
-Coinboard::generate(const SbVec3f & offset,
+  
+void 
+Coinboard::generate(SoPrimitiveVertex * v,
+                    const SbMatrix & transform,
                     const SbVec3f * coords, const int n,
                     const SbVec4f * texcoords)
 {
+  SbVec3f tmp;
+  if (texcoords) {
+    for (int i = 0; i < n; i++) {
+      v->setTextureCoords(texcoords[i]);
+      transform.multVecMatrix(coords[i], tmp);
+      v->setPoint(tmp);
+      this->shapeVertex(v);
+    }
+  }
+  else {
+    for (int i = 0; i < n; i++) {
+      transform.multVecMatrix(coords[i], tmp);
+      v->setPoint(tmp);
+      this->shapeVertex(v);
+    }
+  }
 }
