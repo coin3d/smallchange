@@ -36,43 +36,31 @@ class SoTCBCurve : public SoShape
   SO_NODE_HEADER(SoTCBCurve);
 
 public:
-
-  // Fields
-  SoMFTime  timestamp;
+  SoMFTime timestamp;
   SoSFInt32 numControlpoints;
+
 
   static void initClass(void);
   SoTCBCurve(void);
 
-  int getLinesPerSegment();
+  int getLinesPerSegment(void);
 
-  static void TCB(  const float coords[][3], 
-                    const float tStamps[], 
-                    int numControlPoints, 
-                    float time, 
-                    float &x, 
-                    float &y, 
-                    float &z);
+  static void TCB(const float coords[][3], const float tStamps[],
+                  int numControlPoints, float time,
+                  float &x, float &y, float &z);
 
-  static void TCB(  const SoMFVec3f &vec, 
-                    const SoMFTime &timestamp, 
-                    const SbTime &time, 
-                    SbVec3f &res);
+  static void TCB(const SoMFVec3f &vec, const SoMFTime &timestamp,
+                  const SbTime &time, SbVec3f &res);
 
-  static void TCB(  const SbVec3f * vec, 
-                    const SoMFTime &timestamp, 
-                    int numControlpoints,
-                    const SbTime &time, 
-                    SbVec3f &res);
-
+  static void TCB(const SbVec3f * vec, const SoMFTime &timestamp,
+                  int numControlpoints, const SbTime &time, SbVec3f &res);
 
 protected:
-
   virtual ~SoTCBCurve();
 
-  virtual void GLRender(SoGLRenderAction *action);
+  virtual void GLRender(SoGLRenderAction * action);
   virtual void generatePrimitives(SoAction * action);
-  virtual void computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center);
+  virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
 
 private:
   friend class SoTCBCurveP;
