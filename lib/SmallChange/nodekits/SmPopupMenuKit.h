@@ -84,8 +84,9 @@ public:
   virtual void audioRender(SoAudioRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
 
+  static void setSchemeEvalFunctions(int (*scriptcb)(const char *),
+                                     void (*filecb)(const char *));
   
-
 protected:
   virtual ~SmPopupMenuKit();
   virtual SbBool affectsState(void) const;
@@ -123,6 +124,7 @@ private:
 
   static void items_changed_cb(void * closure, SoSensor * s);
   static void oneshot_cb(void * closure, SoSensor * s);
+  static void trigger_cb(void * closure, SoSensor * s);
   static void activeitemchanged_cb(void * closure, SoSensor * s);
   static void opensub_cb(void * closure, SoSensor * s);
   static void isactive_cb(void * closure, SoSensor * s);

@@ -97,6 +97,9 @@
 #include <Inventor/elements/SoComplexityTypeElement.h>
 #include <Inventor/elements/SoComplexityElement.h>
 
+static int (*schemescriptcb)(const char *);
+static void (*schemefilecb)(const char *);
+
 class SmOpenSubData {
 public:
   SmPopupMenuKit * kit;
@@ -113,6 +116,9 @@ public:
   { }
   SmPopupMenuKit * master;
   SmPopupMenuKit * parent;
+
+  SoOneShotSensor * triggerscriptsensor;
+  int triggeritem;
 
   SoFieldSensor * itemssensor;
   SoFieldSensor * isactivesensor;
@@ -264,6 +270,8 @@ SmPopupMenuKit::SmPopupMenuKit(void)
 
   PRIVATE(this)->isactivesensor = new SoFieldSensor(isactive_cb, this);
   PRIVATE(this)->isactivesensor->attach(&this->isActive);
+
+  PRIVATE(this)->triggerscriptsensor = new SoOneShotSensor(trigger_cb, this);
 }
 
 /*!
@@ -272,6 +280,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
 SmPopupMenuKit::~SmPopupMenuKit(void)
 {
   this->setParent(NULL);
+  delete PRIVATE(this)->triggerscriptsensor;
   delete PRIVATE(this)->isactivesensor;
   delete PRIVATE(this)->activeitemchanged;
   delete PRIVATE(this)->itemssensor;
@@ -488,12 +497,14 @@ void
 SmPopupMenuKit::itemPicked(const int idx)
 {
   this->pickedItem = idx;
-//   fprintf(stderr,"picked item (%p): %d\n",
-//           this, idx);
 
-  // FIXME: implement some kind of callback system...
+  if (schemescriptcb && schemefilecb) {
+    if (!PRIVATE(this)->triggerscriptsensor->isScheduled()) {
+      PRIVATE(this)->triggeritem = idx;
+      PRIVATE(this)->triggerscriptsensor->schedule();
+    }
+  }
 }
-
 
 /*!  
   Sets the current viewport region. The viewport region will also
@@ -661,6 +672,26 @@ SmPopupMenuKit::oneshot_cb(void * closure, SoSensor * s)
 {
   SmPopupMenuKit * thisp = (SmPopupMenuKit*) closure;
   thisp->updateBackground();
+}
+
+void 
+SmPopupMenuKit::trigger_cb(void * closure, SoSensor * s)
+{
+  SmPopupMenuKit * thisp = (SmPopupMenuKit*) closure;
+
+  int idx = PRIVATE(thisp)->triggeritem;
+  
+  if (idx >= 0 && idx < thisp->itemSchemeScript.getNum()) {
+    SbString s = thisp->itemSchemeScript[idx];
+    if (s.getLength()) {        
+      if (s[0] == '(' || s[0] == ';') {
+        schemescriptcb(s.getString());
+      }
+      else {
+        schemefilecb(s.getString());
+      }
+    }
+  }
 }
 
 void 
@@ -840,6 +871,14 @@ SmPopupMenuKit::updateBackground(void)
 
   ifs->coordIndex.setValues(0,20, cidx);
   ifs->materialIndex.setValues(0,4,midx);
+}
+
+void 
+SmPopupMenuKit::setSchemeEvalFunctions(int (*scriptcb)(const char *),
+                                       void (*filecb)(const char *))
+{
+  schemescriptcb = scriptcb;
+  schemefilecb = filecb;
 }
 
 #undef PRIVATE
