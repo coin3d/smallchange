@@ -16,8 +16,8 @@
 #include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 
-#include <SoGenerateSceneGraphAction.h>
-#include <SoTweakAction.h>
+#include <SmallChange/actions/SoGenerateSceneGraphAction.h>
+#include <SmallChange/actions/SoTweakAction.h>
 
 /*
  * --inventor-out
