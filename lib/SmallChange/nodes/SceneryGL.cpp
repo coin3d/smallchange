@@ -68,7 +68,7 @@
 #define DRAW_AS_TRIANGLES 1
 
 #define GL_SHAPE_FLUSH() /* glFlush() */
-#define GL_BLOCK_FLUSH() glFlush()
+#define GL_BLOCK_FLUSH() /* glFlush() */
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
@@ -865,10 +865,11 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     for ( int v = 0; v < 3; v++ ) {
       texcoordarray->append(texture1[v][0]);
       texcoordarray->append(texture1[v][1]);
-      if (state->etexscale != 0.0f) {
+      // if (state->etexscale != 0.0f) {
         texcoord2array->append(texture2[v][0]);
         texcoord2array->append(texture2[v][1]);
-      }
+      //   printf("texture2 coord: %g %g\n", texture2[v][0], texture2[v][1]);
+      // }
       static const float factor = 1.0f/127.0f;
       normalarray->append(normal[v][0]/* * factor*/);
       normalarray->append(normal[v][1]/* * factor*/);
@@ -1061,25 +1062,25 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   cc_glglue_glEnableClientState(gl, GL_NORMAL_ARRAY);
   cc_glglue_glNormalPointer(gl, GL_BYTE, 0, normalarrayptr);
 
-  cc_glglue_glEnableClientState(gl, GL_TEXTURE_COORD_ARRAY);
-  cc_glglue_glTexCoordPointer(gl, 2, GL_FLOAT, 0, texcoordarrayptr);
   if ( renderstate->etexscale != 0.0f ) {
-    cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
+    cc_glglue_glClientActiveTexture(gl, GL_TEXTURE1);
     cc_glglue_glEnableClientState(gl, GL_TEXTURE_COORD_ARRAY);
     cc_glglue_glTexCoordPointer(gl, 2, GL_FLOAT, 0, texcoord2arrayptr);
-    cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
   }
+  cc_glglue_glClientActiveTexture(gl, GL_TEXTURE0);
+  cc_glglue_glEnableClientState(gl, GL_TEXTURE_COORD_ARRAY);
+  cc_glglue_glTexCoordPointer(gl, 2, GL_FLOAT, 0, texcoordarrayptr);
 
   cc_glglue_glDrawArrays(gl, GL_TRIANGLES, 0, triangles); // vertexarray->getLength() / 9);
 
   cc_glglue_glDisableClientState(gl, GL_VERTEX_ARRAY);
   cc_glglue_glDisableClientState(gl, GL_NORMAL_ARRAY);
-  cc_glglue_glDisableClientState(gl, GL_TEXTURE_COORD_ARRAY);
   if ( renderstate->etexscale != 0.0f ) {
-    cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
+    cc_glglue_glClientActiveTexture(gl, GL_TEXTURE1);
     cc_glglue_glDisableClientState(gl, GL_TEXTURE_COORD_ARRAY);
-    cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
   }
+  cc_glglue_glClientActiveTexture(gl, GL_TEXTURE0);
+  cc_glglue_glDisableClientState(gl, GL_TEXTURE_COORD_ARRAY);
 
 #else
   // push vertex arrays
@@ -1106,7 +1107,7 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
   GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
 
-  // GL_BLOCK_FLUSH();
+  GL_BLOCK_FLUSH();
 }
 
 /* ********************************************************************** */
