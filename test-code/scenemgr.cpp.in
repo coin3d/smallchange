@@ -49,6 +49,11 @@ event_cb(void * userdata, SoEventCallback * node)
       scenemgr->setStereoMode(SmSceneManager::RED_CYAN);
     }
   }
+  else if (SO_KEY_PRESS_EVENT(e, T)) {
+    scenemgr->setTexturesEnabled(!scenemgr->isTexturesEnabled());
+  }
+
+  scenemgr->scheduleRedraw();
 }
 
 // *************************************************************************
@@ -64,7 +69,8 @@ main(int argc, char ** argv )
   if (window == NULL) return -1;
 
   smallchange_init();
-
+  SoDB::setRealTimeInterval(SbTime(1.0/50.0));
+  
   SoInput * input = new SoInput;
   SbBool ok = input->openFile(argv[1]);
   if (!ok) {
@@ -132,7 +138,6 @@ main(int argc, char ** argv )
   renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   renderarea->setSceneGraph(ck);
   scenemgr->setCamera(scenemgr->getCamera()); // cache camera
-
   renderarea->setBackgroundColor( SbColor( 0.0f, 0.2f, 0.3f )  );
   renderarea->show();
   So@Gui@::show( window );
