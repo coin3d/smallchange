@@ -30,6 +30,7 @@ typedef int ss_system_get_blocksize_f(ss_system * system);
 typedef void ss_system_get_origo_world_position_f(ss_system * system, double * coordinates);
 typedef void ss_system_get_object_box_f(ss_system * system, double * bbmin, double * bbmax);
 typedef void ss_system_get_elevation_data_box_f(ss_system * system, int id, double * bbmin, double * bbmax);
+typedef void ss_system_get_elevation_range_f(ss_system * system, int num, int * datasets, float * minval, float * maxval);
 typedef void ss_system_refresh_runtime_texture2d_f(ss_system * system, int id);
 typedef int ss_view_allocate_f(ss_system * system);
 typedef void ss_view_deallocate_f(ss_system * system, int viewid);
@@ -55,6 +56,7 @@ typedef int ss_system_get_num_datasets_f(ss_system * system);
 typedef int ss_system_get_datasetid_f(ss_system * system, int datasetindex);
 typedef int ss_system_has_dataset_f(ss_system * system, int datasetid);
 typedef int ss_system_get_dataset_type_f(ss_system * system, int datasetid);
+typedef void ss_system_set_dataset_name_f(ss_system * system, int datasetid, const char * name);
 typedef int ss_system_get_dataset_name_f(ss_system * system, int datasetid, int maxchars, char * name);
 typedef int ss_system_add_dataset_f(ss_system * system, int type, const char * name, int flags);
 typedef int ss_system_delete_dataset_f(ss_system * system, int datasetid);
@@ -101,6 +103,7 @@ typedef struct sc_scenery_api {
   ss_system_get_origo_world_position_f * system_get_origo_world_position;
   ss_system_get_object_box_f * system_get_object_box;
   ss_system_get_elevation_data_box_f * system_get_elevation_data_box;
+  ss_system_get_elevation_range_f * system_get_elevation_range;
   ss_system_refresh_runtime_texture2d_f * system_refresh_runtime_texture2d;
   ss_view_allocate_f * view_allocate;
   ss_view_deallocate_f * view_deallocate;
@@ -125,6 +128,7 @@ typedef struct sc_scenery_api {
   ss_system_get_datasetid_f * system_get_datasetid;
   ss_system_has_dataset_f * system_has_dataset;
   ss_system_get_dataset_type_f * system_get_dataset_type;
+  ss_system_set_dataset_name_f * system_set_dataset_name;
   ss_system_get_dataset_name_f * system_get_dataset_name;
   ss_system_add_dataset_f * system_add_dataset;
   ss_system_delete_dataset_f * system_delete_dataset;
@@ -214,6 +218,7 @@ sc_scenery(void)
     SC_SCENERY_API_REGISTER(system_get_origo_world_position);
     SC_SCENERY_API_REGISTER(system_get_object_box);
     SC_SCENERY_API_REGISTER(system_get_elevation_data_box);
+    SC_SCENERY_API_REGISTER(system_get_elevation_range);
     SC_SCENERY_API_REGISTER(system_refresh_runtime_texture2d);
     SC_SCENERY_API_REGISTER(view_allocate);
     SC_SCENERY_API_REGISTER(view_deallocate);
@@ -238,6 +243,7 @@ sc_scenery(void)
     SC_SCENERY_API_REGISTER(system_get_datasetid);
     SC_SCENERY_API_REGISTER(system_has_dataset);
     SC_SCENERY_API_REGISTER(system_get_dataset_type);
+    SC_SCENERY_API_REGISTER(system_set_dataset_name);
     SC_SCENERY_API_REGISTER(system_get_dataset_name);
     SC_SCENERY_API_REGISTER(system_add_dataset);
     SC_SCENERY_API_REGISTER(system_delete_dataset);
@@ -420,6 +426,15 @@ sc_ssglue_system_get_elevation_data_box(ss_system * system, int id, double * bbm
   assert(sc_scenery_available());
   const sc_scenery_api * ss = sc_scenery();
   ss->system_get_elevation_data_box(system, id, bbmin, bbmax);
+}
+
+void
+sc_ssglue_system_get_elevation_range(ss_system * system, int num, int * datasetids, float * minval, float * maxval)
+{
+  assert(sc_scenery_available());
+  const sc_scenery_api * ss = sc_scenery();
+  if ( !ss->system_get_elevation_range ) { sc_stub("ss_system_get_elevation_range"); return; }
+  ss->system_get_elevation_range(system, num, datasetids, minval, maxval);
 }
 
 void
@@ -618,6 +633,15 @@ sc_ssglue_system_get_dataset_type(ss_system * system, int datasetid)
   const sc_scenery_api * ss = sc_scenery();
   if ( !ss->system_get_dataset_type ) { sc_stub("ss_system_get_dataset_type"); return -1; }
   return ss->system_get_dataset_type(system, datasetid);
+}
+
+void
+sc_ssglue_system_set_dataset_name(ss_system * system, int datasetid, const char * name)
+{
+  assert(sc_scenery_available());
+  const sc_scenery_api * ss = sc_scenery();
+  if ( !ss->system_set_dataset_name ) { sc_stub("ss_system_set_dataset_name"); return; }
+  ss->system_set_dataset_name(system, datasetid, name);
 }
 
 int

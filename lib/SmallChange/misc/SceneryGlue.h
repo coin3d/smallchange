@@ -107,6 +107,7 @@ int sc_ssglue_system_get_blocksize(ss_system * system);
 void sc_ssglue_system_get_origo_world_position(ss_system * system, double * coordinates);
 void sc_ssglue_system_get_object_box(ss_system * system, double * bbmin, double * bbmax);
 void sc_ssglue_system_get_elevation_data_box(ss_system * system, int id, double * bbmin, double * bbmax);
+void sc_ssglue_system_get_elevation_range(ss_system * system, int num, int * datasets, float * minval, float * maxval);
 void sc_ssglue_system_refresh_runtime_texture2d(ss_system * system, int id);
 
 int sc_ssglue_view_allocate(ss_system * system);
@@ -159,6 +160,7 @@ int sc_ssglue_system_get_num_datasets(ss_system * system);
 int sc_ssglue_system_get_datasetid(ss_system * system, int datasetindex);
 int sc_ssglue_system_has_dataset(ss_system * system, int datasetid);
 int sc_ssglue_system_get_dataset_type(ss_system * system, int datasetid);
+void sc_ssglue_system_set_dataset_name(ss_system * system, int datasetid, const char * name);
 int sc_ssglue_system_get_dataset_name(ss_system * system, int datasetid, int maxchars, char * name);
 int sc_ssglue_system_add_dataset(ss_system * system, int type, const char * name, int flags);
 int sc_ssglue_system_delete_dataset(ss_system * system, int datasetid);
