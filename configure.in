@@ -235,8 +235,6 @@ AC_OUTPUT([
 	lib/SmallChange/nodes/Makefile
 	lib/SmallChange/elements/Makefile
 	lib/SmallChange/engines/Makefile
-	lib/SmallChange/actions/Makefile
-	lib/SmallChange/misc/Makefile
 	lib/SmallChange/draggers/Makefile
 ])
 
