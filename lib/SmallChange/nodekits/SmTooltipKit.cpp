@@ -187,7 +187,7 @@ SmTooltipKit::SmTooltipKit(void)
 
   PRIVATE(this)->tooltipsensor = new SoFieldSensor(tooltip_changed_cb, this);
   PRIVATE(this)->tooltipsensor->attach(&this->description);
-  PRIVATE(this)->tooltipsensor->setPriority(0);
+  PRIVATE(this)->tooltipsensor->setPriority(1);
   PRIVATE(this)->alarm = new SoAlarmSensor(alarm_cb, this);
   PRIVATE(this)->alarm_root = NULL;
   PRIVATE(this)->flipleftright = FALSE;
