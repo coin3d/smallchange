@@ -8,18 +8,15 @@ endif
 
 libelements_la_SOURCES = \
 	GLDepthBufferElement.cpp GLDepthBufferElement.h \
-	SmSceneryViewElement.cpp SmSceneryViewElement.h \
 	UTMElement.cpp UTMElement.h
 
 elements_lst_SOURCES = \
 	GLDepthBufferElement.cpp GLDepthBufferElement.h \
-	SmSceneryViewElement.cpp SmSceneryViewElement.h \
 	UTMElement.cpp UTMElement.h
 
 libelementsincdir = $(includedir)/SmallChange/elements
 libelementsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/elements/UTMElement.h \
-	$(top_srcdir)/lib/SmallChange/elements/SmSceneryViewElement.h \
 	$(top_srcdir)/lib/SmallChange/elements/GLDepthBufferElement.h
 
 elements.lst: $(elements_lst_OBJECTS)
