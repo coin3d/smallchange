@@ -177,8 +177,10 @@ public:
 
 // *************************************************************************
 
-#undef THIS
-#define THIS this->pimpl
+#undef PRIVATE
+#define PRIVATE(obj) obj->pimpl
+#undef PUBLIC
+#define PUBLIC(obj) obj->textnode
 
 SO_NODE_SOURCE(SoText2Set);
 
@@ -187,20 +189,20 @@ SO_NODE_SOURCE(SoText2Set);
 */
 SoText2Set::SoText2Set(void)
 {
-  THIS = new SoText2SetP(this);
-  THIS->glyphs = NULL;
-  THIS->positions = NULL;
-  THIS->charbboxes = NULL;
-  THIS->linecnt = 0;
-  THIS->validarraydims = 0;
-  THIS->stringwidth = NULL;
-  THIS->stringheight = NULL;
-  THIS->bboxes.truncate(0);
-  THIS->prevfontname = SbName("");
-  THIS->prevfontsize = 0.0;
-  THIS->useglyphcache = TRUE;
-  THIS->hasbuiltglyphcache = FALSE;
-  THIS->dirty = TRUE;
+  PRIVATE(this) = new SoText2SetP(this);
+  PRIVATE(this)->glyphs = NULL;
+  PRIVATE(this)->positions = NULL;
+  PRIVATE(this)->charbboxes = NULL;
+  PRIVATE(this)->linecnt = 0;
+  PRIVATE(this)->validarraydims = 0;
+  PRIVATE(this)->stringwidth = NULL;
+  PRIVATE(this)->stringheight = NULL;
+  PRIVATE(this)->bboxes.truncate(0);
+  PRIVATE(this)->prevfontname = SbName("");
+  PRIVATE(this)->prevfontsize = 0.0;
+  PRIVATE(this)->useglyphcache = TRUE;
+  PRIVATE(this)->hasbuiltglyphcache = FALSE;
+  PRIVATE(this)->dirty = TRUE;
   
   SO_NODE_CONSTRUCTOR(SoText2Set);
   
@@ -221,8 +223,8 @@ SoText2Set::SoText2Set(void)
 */
 SoText2Set::~SoText2Set()
 {
-  THIS->flushGlyphCache(TRUE);
-  delete THIS;
+  PRIVATE(this)->flushGlyphCache(TRUE);
+  delete PRIVATE(this);
 }
 
 // doc in super
@@ -254,7 +256,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
   }
 
   // Render using SoGlyphs
-  if (THIS->buildGlyphCache(state) == 0) {
+  if (PRIVATE(this)->buildGlyphCache(state) == 0) {
     SbBox3f box;
     SbVec3f center;
     // FIXME: cull per string, not for the entire node. preng 2003-03-27.
@@ -309,21 +311,21 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           // No action
           break;
         case SoText2Set::RIGHT:
-          xpos -= THIS->stringwidth[i];
-          ypos -= THIS->positions[i][charcnt-1][1];
+          xpos -= PRIVATE(this)->stringwidth[i];
+          ypos -= PRIVATE(this)->positions[i][charcnt-1][1];
           break;
         case SoText2Set::CENTER:
-          xpos -= THIS->stringwidth[i]/2.0f;
-          ypos -= THIS->stringheight[i]/2.0f;
+          xpos -= PRIVATE(this)->stringwidth[i]/2.0f;
+          ypos -= PRIVATE(this)->stringheight[i]/2.0f;
           break;
         }
 
         for (int i2 = 0; i2 < charcnt; i2++) {
-          buffer = THIS->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
+          buffer = PRIVATE(this)->glyphs[i][i2]->getBitmap(thissize, thispos, SbBool(FALSE));
 
           ix = thissize[0];
           iy = thissize[1];
-          position = THIS->positions[i][i2];
+          position = PRIVATE(this)->positions[i][i2];
           fx = (float)position[0];
           fy = (float)position[1];
 
@@ -397,7 +399,7 @@ SoText2Set::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
   // model matrix and viewport.
   box.makeEmpty();
   for (int i=0; i<this->string.getNum(); i++) {
-    THIS->getQuad(action->getState(), v0, v1, v2, v3, i);
+    PRIVATE(this)->getQuad(action->getState(), v0, v1, v2, v3, i);
     box.extendBy(v0);
     box.extendBy(v1);
     box.extendBy(v2);
@@ -412,14 +414,14 @@ SoText2Set::rayPick(SoRayPickAction * action)
 {
   if (!this->shouldRayPick(action)) return;
   SoState * state = action->getState();
-  THIS->buildGlyphCache(state);
+  PRIVATE(this)->buildGlyphCache(state);
   
   state->push();
   action->setObjectSpace();
   SbVec3f v0, v1, v2, v3;
 
   for (int stringidx=0; stringidx < this->string.getNum(); stringidx++) {
-    THIS->getQuad(state, v0, v1, v2, v3, stringidx);
+    PRIVATE(this)->getQuad(state, v0, v1, v2, v3, stringidx);
 
     if (v0 == v1 || v0 == v3) 
       return; // empty
@@ -451,20 +453,20 @@ SoText2Set::rayPick(SoRayPickAction * action)
       int charidx = -1;
       int strlength = this->string[stringidx].getLength();
       short minx, miny, maxx, maxy;
-      THIS->bboxes[stringidx].getBounds(minx, miny, maxx, maxy);
+      PRIVATE(this)->bboxes[stringidx].getBounds(minx, miny, maxx, maxy);
       float bbwidth = (float)(maxx - minx);
       float bbheight = (float)(maxy - miny);
       float charleft, charright, charbottom, chartop;
       SbVec2s thissize, thispos;
 
       for (int i=0; i<strlength; i++) {
-        THIS->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
-        charleft = (THIS->positions[stringidx][i][0] - minx) / bbwidth;
-        charright = (THIS->positions[stringidx][i][0] + THIS->charbboxes[stringidx][i][0] - minx) / bbwidth;
+        PRIVATE(this)->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
+        charleft = (PRIVATE(this)->positions[stringidx][i][0] - minx) / bbwidth;
+        charright = (PRIVATE(this)->positions[stringidx][i][0] + PRIVATE(this)->charbboxes[stringidx][i][0] - minx) / bbwidth;
         
         if (hdist >= charleft && hdist <= charright) {
-          chartop = (maxy - THIS->positions[stringidx][i][1] - THIS->charbboxes[stringidx][i][1]) / bbheight;
-          charbottom = (maxy - THIS->positions[stringidx][i][1]) / bbheight;
+          chartop = (maxy - PRIVATE(this)->positions[stringidx][i][1] - PRIVATE(this)->charbboxes[stringidx][i][1]) / bbheight;
+          charbottom = (maxy - PRIVATE(this)->positions[stringidx][i][1]) / bbheight;
           
           if (vdist >= chartop && vdist <= charbottom) {
             charidx = i;
@@ -511,14 +513,12 @@ SoText2Set::generatePrimitives(SoAction * action)
 void
 SoText2Set::notify(SoNotList * list)
 {
-  THIS->dirty = TRUE;
+  PRIVATE(this)->dirty = TRUE;
   inherited::notify(list);
 }
 
-
-
 // SoText2SetP methods below
-#undef THIS
+#undef PRIVATE
 
 void
 SoText2SetP::flushGlyphCache(const SbBool unrefglyphs)
@@ -728,7 +728,8 @@ SoText2SetP::buildGlyphCache(SoState * state)
     SbBox2s stringbox;
     unsigned char * bmbuf;
     float advancex, advancey;
-    
+
+    SbBool outline = PUBLIC(this)->renderOutline.getValue();
 
     // FIXME: Must add same support for font naming as for
     // SoText2/3. I.e the use of "<font>:Italic" or "<font>:Bold
@@ -789,6 +790,7 @@ SoText2SetP::buildGlyphCache(SoState * state)
 
           this->glyphs[i][j]->getBitmap(thissize, thispos, FALSE);
           advance = this->glyphs[i][j]->getAdvance();
+          if (outline) advance[0] += 1;
 
           if (j > 0) 
             kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
@@ -822,3 +824,6 @@ SoText2SetP::buildGlyphCache(SoState * state)
   this->dirty = FALSE;
   return 0;
 }
+
+#undef PUBLIC
+
