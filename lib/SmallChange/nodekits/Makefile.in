@@ -171,7 +171,8 @@ SOURCES = \
 	SoFEMKit.cpp SoFEMKit.h \
 	SmTooltipKit.cpp SmTooltipKit.h \
 	SmWellLogKit.cpp SmWellLogKit.h \
-	SmCameraControlKit.cpp SmCameraControlKit.h
+	SmCameraControlKit.cpp SmCameraControlKit.h \
+	GeoMarkerKit.cpp SmGeoMarkerKit.h
 
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -180,11 +181,12 @@ nodekits_lst_SOURCES = $(SOURCES)
 
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
-	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmWellLogKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmCameraControlKit.h
+	$(srcdir)/LegendKit.h \
+	$(srcdir)/SoFEMKit.h \
+	$(srcdir)/SmTooltipKit.h \
+	$(srcdir)/SmWellLogKit.h \
+	$(srcdir)/SmCameraControlKit.h \
+	$(srcdir)/SmGeoMarkerKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -197,7 +199,7 @@ nodekits_lst_AR = $(AR) cru
 nodekits_lst_LIBADD =
 am__objects_1 = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT) \
 	SmTooltipKit.$(OBJEXT) SmWellLogKit.$(OBJEXT) \
-	SmCameraControlKit.$(OBJEXT)
+	SmCameraControlKit.$(OBJEXT) GeoMarkerKit.$(OBJEXT)
 am_nodekits_lst_OBJECTS = $(am__objects_1)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -205,15 +207,16 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libnodekits_la_LDFLAGS =
 libnodekits_la_LIBADD =
 am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo SmWellLogKit.lo \
-	SmCameraControlKit.lo
+	SmCameraControlKit.lo GeoMarkerKit.lo
 am_libnodekits_la_OBJECTS = $(am__objects_2)
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/LegendKit.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/LegendKit.Po \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/GeoMarkerKit.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/GeoMarkerKit.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/LegendKit.Plo ./$(DEPDIR)/LegendKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmCameraControlKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmCameraControlKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltipKit.Plo \
@@ -245,7 +248,8 @@ SOURCES = \
 	SoFEMKit.cpp SoFEMKit.h \
 	SmTooltipKit.cpp SmTooltipKit.h \
 	SmWellLogKit.cpp SmWellLogKit.h \
-	SmCameraControlKit.cpp SmCameraControlKit.h
+	SmCameraControlKit.cpp SmCameraControlKit.h \
+	GeoMarkerKit.cpp SmGeoMarkerKit.h
 
 
 all: all-am
@@ -278,6 +282,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GeoMarkerKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GeoMarkerKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LegendKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LegendKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCameraControlKit.Plo@am__quote@
@@ -412,7 +418,6 @@ top_distdir = ../../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/../../../lib/SmallChange/nodekits
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
