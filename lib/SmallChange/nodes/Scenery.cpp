@@ -1375,7 +1375,9 @@ void
 SmScenery::refreshTextures(const int id)
 {
   if (!sc_scenery_available() || !PRIVATE(this)->system) { return; }
-  sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
+  // FIXME: id = -1 (renderSequence) would cause a crash.
+  if (id >= 0)
+    sc_ssglue_system_refresh_runtime_texture2d(PRIVATE(this)->system, id);
   sc_delete_all_textures(&PRIVATE(this)->renderstate);
 }
 
@@ -2074,3 +2076,12 @@ SmScenery::stripHorizontals(int datasetid, float maxskew)
 }
 
 /* ********************************************************************** */
+
+void * 
+SmScenery::getScenerySystemHandle()
+{
+  return PRIVATE(this)->system;
+}
+
+/* ********************************************************************** */
+

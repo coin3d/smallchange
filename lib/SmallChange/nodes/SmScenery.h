@@ -131,6 +131,7 @@ public:
   void stripHorizontals(int datasetid, float maxskew);
 
   void refreshTextures(const int id);
+  void * getScenerySystemHandle();
 
 protected:
   virtual ~SmScenery(void);
