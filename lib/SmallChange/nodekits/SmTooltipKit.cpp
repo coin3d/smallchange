@@ -313,6 +313,10 @@ SmTooltipKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & 
     this->isActive = FALSE;
     return;
   }
+  
+  SbBool oldsearch = SoBaseKit::isSearchingChildren();
+  SoBaseKit::setSearchingChildren(TRUE);
+
   PRIVATE(this)->sa.setType(SoCamera::getClassTypeId());
   PRIVATE(this)->sa.setInterest(SoSearchAction::LAST);
   PRIVATE(this)->sa.setSearchingAll(FALSE);
@@ -355,6 +359,8 @@ SmTooltipKit::setPickedPoint(const SoPickedPoint * pp, const SbViewportRegion & 
     this->isActive = FALSE;
   }
   PRIVATE(this)->sa.reset();
+  SoBaseKit::setSearchingChildren(oldsearch);
+
 }
 
 void 
