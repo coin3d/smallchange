@@ -22468,7 +22468,7 @@ fi
 
   # -DHAVE_CONFIG_H is set up in $DEFS too late for us to use, and some
   # include directives are usually set up in the Makefile.am files
-  for arg in -DHAVE_CONFIG_H -I$smallchange_build_dir/lib -I$smallchange_src_dir/lib $CPPFLAGS $LDFLAGS $LIBS; do
+  for arg in -DHAVE_CONFIG_H -I$smallchange_build_dir/lib -I$smallchange_src_dir/lib -I$smallchange_build_dir $CPPFLAGS $LDFLAGS $LIBS; do
     case $arg in
     -L* )
       libdir=`echo $arg | cut -c3-`

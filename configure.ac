@@ -328,7 +328,7 @@ SIM_AC_UNIQIFY_OPTION_LIST(CPPFLAGS, $CPPFLAGS)
 SIM_AC_UNIQIFY_OPTION_LIST(LDFLAGS, $LDFLAGS)
 SIM_AC_UNIQIFY_OPTION_LIST(LIBS, $LIBS)
 
-SIM_AC_MSVC_DSP_SETUP([SMALLCHANGE], [SmallChange], [smallchange], [-I$smallchange_build_dir/lib -I$smallchange_src_dir/lib])
+SIM_AC_MSVC_DSP_SETUP([SMALLCHANGE], [SmallChange], [smallchange], [-I$smallchange_build_dir/lib -I$smallchange_src_dir/lib -I$smallchange_build_dir])
 
 # **************************************************************************
 
