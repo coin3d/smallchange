@@ -48,13 +48,25 @@
 #define SS_IMPORT_XYZ 1
 #define SS_RTTEXTURE2D_TEST 0
 
-// FIXME: not yet pimplified
-#define PRIVATE(obj) (obj)
+class SceneryP {
+public:
+  SmScenery * api;
+
+
+
+  SceneryP(void) : api(NULL) { }
+};
+
+
+#define PRIVATE(obj) ((obj)->pimpl)
 
 SO_NODE_SOURCE(SmScenery);
 
 SmScenery::SmScenery(void)
 {
+  PRIVATE(this) = new SceneryP;
+  PRIVATE(this)->api = this;
+
   SO_NODE_CONSTRUCTOR(SmScenery);
   
   SO_NODE_ADD_FIELD(filename, (""));
@@ -110,6 +122,8 @@ SmScenery::~SmScenery()
   delete this->facedetail;
   cc_hash_apply(this->texhash, hash_clear, NULL);
   cc_hash_destruct(this->texhash);
+
+  delete PRIVATE(this);
 }
 
 void
@@ -282,13 +296,13 @@ SmScenery::GLRender(SoGLRenderAction * action)
     this->renderSequence.enableNotify(TRUE);
   }
 
-  if ( PRIVATE(this)->firstGLRender ) {
+  if ( this->firstGLRender ) {
     // FIXME: this should not really be necessary, and should be
     // considered a work-around for a bug in the scenery SDK. 20031015 mortene.
     if ( this->colorTexture.getValue() && (this->colormaptexid != -1) ) {
       this->refreshTextures(this->colormaptexid);
     }
-    PRIVATE(this)->firstGLRender = FALSE;
+    this->firstGLRender = FALSE;
   }
 
   SoState * state = action->getState();

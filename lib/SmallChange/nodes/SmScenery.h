@@ -23,6 +23,8 @@ class SoGLImage;
 typedef struct ss_system ss_system;
 typedef struct ss_render_pre_cb_info ss_render_pre_cb_info;
 
+class SceneryP;
+
 class SMALLCHANGE_DLL_API SmScenery : public SoShape {
   typedef SoShape inherited;
 
@@ -155,6 +157,9 @@ private:
   
   double bboxmin[3];
   double bboxmax[3];
+
+  SceneryP * pimpl;
+
 };
 
 
