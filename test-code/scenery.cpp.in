@@ -38,6 +38,9 @@
 #include <Inventor/@Gui@/So@Gui@.h>
 #include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 
+static const char * appname = NULL;
+static const char * ivfile = NULL;
+
 class Examiner : public So@Gui@ExaminerViewer {
 public:
   SoSearchAction * saction;
@@ -152,6 +155,20 @@ public:
           info = TRUE;
           retval = TRUE;
         }
+        else if ( SO_KEY_PRESS_EVENT(ev, R) ) {
+          // R for reload scene graph - for memory leak checking
+          assert(appname && ivfile);
+          SoInput in;
+          SoSeparator * root = NULL;
+          if ( !in.openFile(ivfile) ) {
+            fprintf(stderr, "%s error: unable to open '%s'\n", appname, ivfile);
+          }
+          else {
+            root = SoDB::readAll(&in);
+          }
+          this->setSceneGraph(root);
+          retval = TRUE;
+        }
         if ( (info == TRUE) && !scenery->elevationLines.getValue() ) {
           info = FALSE;
           retval = TRUE;
@@ -165,6 +182,7 @@ public:
         else if ( SO_KEY_RELEASE_EVENT(ev, C) ) { retval = TRUE; }
         else if ( SO_KEY_RELEASE_EVENT(ev, F) ) { retval = TRUE; }
         else if ( SO_KEY_RELEASE_EVENT(ev, V) ) { retval = TRUE; }
+        else if ( SO_KEY_RELEASE_EVENT(ev, R) ) { retval = TRUE; }
         if ( info ) {
           printf("---------------------------------------\n");
           printf("line distance   : %g\n", scenery->elevationLineDistance.getValue());
@@ -207,6 +225,9 @@ main(
   SoSeparator * root = SoDB::readAll(&in);
   if ( !root )
     return -1;
+
+  appname = argv[0];
+  ivfile = argv[1];
 
   Examiner * viewer = new Examiner();
 
