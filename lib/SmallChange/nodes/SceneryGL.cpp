@@ -1,4 +1,4 @@
-</**************************************************************************\
+/**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
  *  Copyright (C) 1998-2003 by Systems in Motion.  All rights reserved.
@@ -807,19 +807,29 @@ struct RenderStateP {
     this->vertexcount = 0;
     this->dataset = -1;
     this->blockinfo = NULL;
-    this->contextidset = FALSE;
+
+    this->scenerytexid = 0;
+
+    this->glcontextid = UINT_MAX;
+    this->glcontextidset = FALSE;
+
+    this->activetexturecontext = UINT_MAX;
   }
 
   ~RenderStateP()
   {
-    assert(this->texhash.getNumElements() == 0);
+    // FIXME: should control that the hash is empty at this point, or
+    // there will be undestructed subhashes, with undestructed texture
+    // structs. 20040602 mortene.
   }
 
-  SbHash<TexInfo *, unsigned int> texhash;
+  SbHash<SbHash<TexInfo *, unsigned int> *, unsigned int> contexthashes;
   SbList<int> cullstate;
 
   unsigned int glcontextid;
-  int contextidset;
+  int glcontextidset;
+
+  unsigned int activetexturecontext;
 
   // local block info
   float tscale[2];
@@ -894,15 +904,39 @@ sc_renderstate_destruct(RenderState * state)
 void
 sc_set_current_context_id(RenderState * state, unsigned int context)
 {
+//   printf("sc_set_current_context_id(%p, %d)\n", state, context);
+
   PRIVATE(state)->glcontextid = context;
-  PRIVATE(state)->contextidset = TRUE;
+  PRIVATE(state)->glcontextidset = TRUE;
 }
 
 void
 sc_unset_current_context(RenderState * state)
 {
+//   printf("sc_unset_current_context(%p)\n", state);
+
   PRIVATE(state)->glcontextid = UINT_MAX;
-  PRIVATE(state)->contextidset = FALSE;
+  PRIVATE(state)->glcontextidset = FALSE;
+}
+
+static SbHash<TexInfo *, unsigned int> *
+sc_get_context_texhash(RenderState * state)
+{
+  assert(PRIVATE(state)->glcontextidset);
+  const unsigned int key = PRIVATE(state)->glcontextid;
+
+  SbHash<TexInfo *, unsigned int> * texhash = NULL;
+
+  const int found = PRIVATE(state)->contexthashes.get(key, texhash);
+
+  if (!found) {
+    // debug
+//     printf("making new hash on context %u (for RenderState %p)\n", key, state);
+    texhash = new SbHash<TexInfo *, unsigned int>;
+    PRIVATE(state)->contexthashes.put(key, texhash);
+  }
+
+  return texhash;
 }
 
 /* ********************************************************************** */
@@ -911,7 +945,7 @@ static TexInfo *
 sc_find_texture(RenderState * state, unsigned int key)
 {
   TexInfo * tex = NULL;
-  return PRIVATE(state)->texhash.get(key, tex) ? tex : NULL;
+  return sc_get_context_texhash(state)->get(key, tex) ? tex : NULL;
 }
 
 static TexInfo *
@@ -923,7 +957,7 @@ sc_place_texture_in_hash(RenderState * state, unsigned int key, void * clienttex
   tex->unusedcount = 0;
   tex->clienttexdata = clienttexdata;
 
-  PRIVATE(state)->texhash.put(key, tex);
+  sc_get_context_texhash(state)->put(key, tex);
   return tex;
 }
 
@@ -938,21 +972,30 @@ sc_delete_unused_textures(RenderState * state)
 {
   assert(state);
 
+  // FIXME: when called outside of a GL context, should just tag
+  // textures for destruction. 20040602 mortene.
+  if (!PRIVATE(state)->glcontextidset) { return; }
+
+  // FIXME: only the textures in the currently active context will be
+  // destructed as it is now. Should in addition place all non-current
+  // textures in a list for later destruction (when the correct
+  // context is made current again). 20040602 mortene.
+
   SbList<unsigned int> keylist;
-  PRIVATE(state)->texhash.makeKeyList(keylist);
+  SbHash<TexInfo *, unsigned int> * texhash = sc_get_context_texhash(state);
+
+  texhash->makeKeyList(keylist);
   
   for (int i = 0; i < keylist.getLength(); i++) {
     const unsigned int key = keylist[i];
     TexInfo * tex = NULL;
-    PRIVATE(state)->texhash.get(key, tex);
+    texhash->get(key, tex);
     assert(tex);
 
     if (tex->unusedcount > MAX_UNUSED_COUNT) {
-      // FIXME: must be done in original GL ctx, of which there is no
-      // guarantee with this. 20040512 mortene.
       texture_release(tex->clienttexdata);
       delete tex;
-      PRIVATE(state)->texhash.remove(key);
+      texhash->remove(key);
     }
   }
 }
@@ -962,18 +1005,28 @@ sc_delete_all_textures(RenderState * state)
 {
   assert(state);
 
+  // FIXME: when called outside of a GL context, should just tag
+  // textures for destruction. 20040602 mortene.
+  if (!PRIVATE(state)->glcontextidset) { return; }
+
+
+  // FIXME: only the textures in the currently active context will be
+  // destructed as it is now. Should in addition place all non-current
+  // textures in a list for later destruction (when the correct
+  // context is made current again). 20040602 mortene.
+
   SbList<unsigned int> keylist;
-  PRIVATE(state)->texhash.makeKeyList(keylist);
+  SbHash<TexInfo *, unsigned int> * texhash = sc_get_context_texhash(state);
+
+  texhash->makeKeyList(keylist);
 
   for (int i = 0; i < keylist.getLength(); i++ ) {
     const unsigned int key = keylist[i];
     TexInfo * tex = NULL;
-    PRIVATE(state)->texhash.get(key, tex);
+    texhash->get(key, tex);
     assert(tex);
-    PRIVATE(state)->texhash.remove(key);
+    texhash->remove(key);
 
-    // FIXME: must be done in original GL ctx, of which there is no
-    // guarantee with this. 20040512 mortene.
     texture_release(tex->clienttexdata);
     delete tex;
   }
@@ -982,7 +1035,11 @@ sc_delete_all_textures(RenderState * state)
 void
 sc_mark_unused_textures(RenderState * state)
 {
-  PRIVATE(state)->texhash.apply(sc_texture_hash_inc_unused, NULL);
+  // FIXME: only the textures in the currently active context will
+  // have their "unused" counter increased. Must be fixed -- all
+  // textures from all contexts should be marked. 20040602 mortene.
+
+  sc_get_context_texhash(state)->apply(sc_texture_hash_inc_unused, NULL);
 }
 
 /* ********************************************************************** */
@@ -1626,7 +1683,8 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
 
   // set up texture for block
   if (renderstate->dotex && PRIVATE(renderstate)->scenerytexid) {
-    if (PRIVATE(renderstate)->scenerytexid != renderstate->activescenerytexid) {
+    if ((PRIVATE(renderstate)->scenerytexid != renderstate->activescenerytexid) ||
+        (PRIVATE(renderstate)->activetexturecontext != PRIVATE(renderstate)->glcontextid)) {
       TexInfo * texinfo = sc_find_texture(renderstate, PRIVATE(renderstate)->scenerytexid);
       if ( !texinfo ) {
         ss_render_get_texture_image(info, PRIVATE(renderstate)->scenerytexid,
@@ -1648,6 +1706,7 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
       texinfo->unusedcount = 0;
 
       renderstate->activescenerytexid = PRIVATE(renderstate)->scenerytexid;
+      PRIVATE(renderstate)->activetexturecontext = PRIVATE(renderstate)->glcontextid;
     }
 
     glEnable(GL_TEXTURE_2D);
@@ -2155,7 +2214,8 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
   // textures, but will be tessellated to 0 triangles if the block is mostly
   // undefined.
   if (state->dotex && PRIVATE(state)->scenerytexid) {
-    if (PRIVATE(state)->scenerytexid != state->activescenerytexid) {
+    if ((PRIVATE(state)->scenerytexid != state->activescenerytexid) ||
+        (PRIVATE(state)->activetexturecontext != PRIVATE(state)->glcontextid)) {
       TexInfo * texinfo = sc_find_texture(state, PRIVATE(state)->scenerytexid);
       if ( !texinfo ) {
         ss_render_get_texture_image(info, PRIVATE(state)->scenerytexid,
@@ -2176,6 +2236,7 @@ sc_va_render_post_cb(void * closure, ss_render_block_cb_info * info)
       texinfo->unusedcount = 0;
 
       state->activescenerytexid = PRIVATE(state)->scenerytexid;
+      PRIVATE(state)->activetexturecontext = PRIVATE(state)->glcontextid;
     }
 
     glEnable(GL_TEXTURE_2D);

@@ -634,15 +634,6 @@ SmScenery::GLRender(SoGLRenderAction * action)
 
   // printf("SmScenery::GLRender\n");
 
-  SbBool needpostframe = FALSE;
-
-  if (!PRIVATE(this)->didevaluate) {
-    this->preFrame();
-    this->evaluate(action);
-    needpostframe = TRUE;
-  }
-  PRIVATE(this)->didevaluate = FALSE;
-
   // rendersequence start
   const int sequencelen = this->renderSequence.getNum();
   if ( sequencelen == 0 ) {
@@ -690,6 +681,15 @@ SmScenery::GLRender(SoGLRenderAction * action)
   sc_set_current_context_id(&PRIVATE(this)->renderstate, action->getCacheContext());
 #endif
 
+
+  SbBool needpostframe = FALSE;
+
+  if (!PRIVATE(this)->didevaluate) {
+    this->preFrame();
+    this->evaluate(action);
+    needpostframe = TRUE;
+  }
+  PRIVATE(this)->didevaluate = FALSE;
 
   if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
     // FIXME: add runtime colortexture
