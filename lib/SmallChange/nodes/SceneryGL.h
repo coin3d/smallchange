@@ -84,6 +84,7 @@ void sc_set_glVertexPointer(void * fptr);        // GL 1.2 feature
 void sc_set_glNormalPointer(void * fptr);        // GL 1.2 feature
 void sc_set_glTexCoordPointer(void * fptr);      // GL 1.2 feature
 void sc_set_glDrawElements(void * fptr);         // GL 1.2 feature
+void sc_set_glDrawArrays(void * fptr);           // GL 1.2 feature
 
 void sc_set_glMultiTexCoord2f(void * fptr);      // GL 1.3 feature
 

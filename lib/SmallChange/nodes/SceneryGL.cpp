@@ -59,12 +59,16 @@
 #include <SmallChange/misc/SceneryGlue.h>
 #endif
 
+#include <Inventor/C/glue/gl.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
+
 /* ********************************************************************** */
 
+// triangles == vertex arrays at the moment
 #define DRAW_AS_TRIANGLES 1
 
 #define GL_SHAPE_FLUSH() /* glFlush() */
-#define GL_BLOCK_FLUSH() /* glFlush() */
+#define GL_BLOCK_FLUSH() glFlush()
 
 // the number of frames a texture can be unused before being recycled
 #define MAX_UNUSED_COUNT 200
@@ -102,6 +106,7 @@ typedef void glVertexPointer_f(GLint size, GLenum type, GLsizei stride, const GL
 typedef void glNormalPointer_f(GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void glTexCoordPointer_f(GLint dims, GLenum type, GLsizei stride, const GLvoid * ptr);
 typedef void glDrawElements_f(GLenum mode, GLsizei count, GLenum type, const GLvoid * ptr);
+typedef void glDrawArrays_f(GLenum mode, GLint first, GLsizei count);
 
 struct sc_GL {
   glMultiTexCoord2f_f * glMultiTexCoord2f;
@@ -111,6 +116,7 @@ struct sc_GL {
   glNormalPointer_f * glNormalPointer;
   glTexCoordPointer_f * glTexCoordPointer;
   glDrawElements_f * glDrawElements;
+  glDrawArrays_f * glDrawArrays;
 
   GLenum CLAMP_TO_EDGE;
   int use_byte_normals;
@@ -124,6 +130,7 @@ static struct sc_GL GL = {
   NULL, // glNormalPointer
   NULL, // glTexCoordPointer
   NULL, // glDrawElements
+  NULL, // glDrawArrays
 
   GL_CLAMP, // clamp_to_edge
   TRUE  // use_byte_normals
@@ -169,6 +176,13 @@ sc_set_glDrawElements(void * fptr)
 {
   assert(fptr != NULL);
   GL.glDrawElements = (glDrawElements_f *) fptr;
+}
+
+void
+sc_set_glDrawArrays(void * fptr)
+{
+  assert(fptr != NULL);
+  GL.glDrawArrays = (glDrawArrays_f *) fptr;
 }
 
 void
@@ -238,6 +252,7 @@ sc_renderstate_construct(RenderState * state)
   state->debuglist = (void *) new SbList<float>;
   state->texhash = new SbHash<TexInfo *, unsigned int>(1024, 0.7f);
   state->state = NULL;
+  state->action = NULL;
 }
 
 static void sc_texture_hash_clear(unsigned int key, TexInfo * val, void * closure);
@@ -686,7 +701,7 @@ sc_ray_culling_post_cb(void * closure)
 static SbList<float> * vertexarray = NULL;
 static SbList<float> * texcoordarray = NULL;
 static SbList<float> * texcoord2array = NULL; // second texture unit
-static SbList<float> * normalarray = NULL;
+static SbList<signed char> * normalarray = NULL;
 
 static int flushcount = 0;
 static int vertices = 0;
@@ -850,14 +865,14 @@ GL_VERTEX_TN(RenderState * state, const int x, const int y, const float elev, co
     for ( int v = 0; v < 3; v++ ) {
       texcoordarray->append(texture1[v][0]);
       texcoordarray->append(texture1[v][1]);
-      if (state->etexscale != 0.0f && GL.glMultiTexCoord2f != NULL) {
+      if (state->etexscale != 0.0f) {
         texcoord2array->append(texture2[v][0]);
         texcoord2array->append(texture2[v][1]);
       }
       static const float factor = 1.0f/127.0f;
-      normalarray->append(normal[v][0] * factor);
-      normalarray->append(normal[v][1] * factor);
-      normalarray->append(normal[v][2] * factor);
+      normalarray->append(normal[v][0]/* * factor*/);
+      normalarray->append(normal[v][1]/* * factor*/);
+      normalarray->append(normal[v][2]/* * factor*/);
       vertexarray->append(vertex[v][0]);
       vertexarray->append(vertex[v][1]);
       vertexarray->append(vertex[v][2]);
@@ -898,7 +913,7 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
     vertexarray = new SbList<float>;
     texcoordarray = new SbList<float>;
     texcoord2array = new SbList<float>;
-    normalarray = new SbList<float>;
+    normalarray = new SbList<signed char>;
     assert(vertexarray);
     assert(texcoordarray);
     assert(texcoord2array);
@@ -908,6 +923,7 @@ sc_render_pre_cb(void * closure, ss_render_block_cb_info * info)
   // reset lists
   vertexarray->truncate(0);
   texcoordarray->truncate(0);
+  texcoord2array->truncate(0);
   normalarray->truncate(0);
 
   ss_render_get_elevation_measures(info, 
@@ -986,7 +1002,16 @@ void
 sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
 {
   assert(closure);
+  RenderState * renderstate = (RenderState *) closure;
+
   assert(info);
+  assert(GL.glEnableClientState != NULL);
+  assert(GL.glDisableClientState != NULL);
+  assert(GL.glVertexPointer != NULL);
+  assert(GL.glNormalPointer != NULL);
+  assert(GL.glTexCoordPointer != NULL);
+  assert(GL.glDrawElements != NULL);
+  assert(GL.glDrawArrays != NULL);
 
   if ( vertexarray->getLength() == 0 ) {
     // printf("yay - nothing rendered for this block - optimize!\n");
@@ -996,44 +1021,92 @@ sc_render_post_cb(void * closure, ss_render_block_cb_info * info)
     //        vertexarray->getLength() / 9);
   }
 
-  const float * vertexarrayptr = vertexarray->getArrayPtr();
-  const float * texcoordarrayptr = texcoordarray->getArrayPtr();
-  const float * normalarrayptr = normalarray->getArrayPtr();
-  static SbList<uint32_t> * indexarray = NULL;
-  if ( indexarray == NULL ) {
-    indexarray = new SbList<uint32_t>;
-    assert(indexarray);
+  assert((vertexarray->getLength() / 3) == (texcoordarray->getLength() / 2));
+  if ( renderstate->etexscale != 0.0f ) {
+    assert((vertexarray->getLength() / 3) == (texcoord2array->getLength() / 2));
   }
-  int i;
-  int num = vertexarray->getLength() / 3;
-  indexarray->truncate(0);
-  for ( i = 0; i < num; i++ ) {
-    indexarray->append((uint32_t) i);
-  }
-  const uint32_t * indexarrayptr = indexarray->getArrayPtr();
+  assert((vertexarray->getLength() / 3) == (normalarray->getLength() / 3));
 
+  const float * vertexarrayptr = vertexarray->getArrayPtr();
+  const signed char * normalarrayptr = normalarray->getArrayPtr();
+  const float * texcoordarrayptr = texcoordarray->getArrayPtr();
+  const float * texcoord2arrayptr = texcoord2array->getArrayPtr();
+
+  // static SbList<uint32_t> * indexarray = NULL;
+  // if ( indexarray == NULL ) {
+  //   indexarray = new SbList<uint32_t>;
+  //   assert(indexarray);
+  // }
+  // int i;
+  // int num = vertexarray->getLength() / 3;
+  // indexarray->truncate(0);
+  // for ( i = 0; i < num; i++ ) {
+  //   indexarray->append((uint32_t) i);
+  // }
+  // const uint32_t * indexarrayptr = indexarray->getArrayPtr();
+
+#if 1
+  // Coin GL-glue version
+  assert(renderstate->action);
+  assert(renderstate->state);
+  const cc_glglue * gl = cc_glglue_instance(SoGLCacheContextElement::get(renderstate->state));
+  assert(gl);
+
+  assert(cc_glglue_has_vertex_array(gl));
+
+  int triangles = vertexarray->getLength() / 3;
+
+  cc_glglue_glEnableClientState(gl, GL_VERTEX_ARRAY);
+  cc_glglue_glVertexPointer(gl, 3, GL_FLOAT, 0, vertexarrayptr);
+  cc_glglue_glEnableClientState(gl, GL_NORMAL_ARRAY);
+  cc_glglue_glNormalPointer(gl, GL_BYTE, 0, normalarrayptr);
+
+  cc_glglue_glEnableClientState(gl, GL_TEXTURE_COORD_ARRAY);
+  cc_glglue_glTexCoordPointer(gl, 2, GL_FLOAT, 0, texcoordarrayptr);
+  if ( renderstate->etexscale != 0.0f ) {
+    cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
+    cc_glglue_glEnableClientState(gl, GL_TEXTURE_COORD_ARRAY);
+    cc_glglue_glTexCoordPointer(gl, 2, GL_FLOAT, 0, texcoord2arrayptr);
+    cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
+  }
+
+  cc_glglue_glDrawArrays(gl, GL_TRIANGLES, 0, triangles); // vertexarray->getLength() / 9);
+
+  cc_glglue_glDisableClientState(gl, GL_VERTEX_ARRAY);
+  cc_glglue_glDisableClientState(gl, GL_NORMAL_ARRAY);
+  cc_glglue_glDisableClientState(gl, GL_TEXTURE_COORD_ARRAY);
+  if ( renderstate->etexscale != 0.0f ) {
+    cc_glglue_glActiveTexture(gl, GL_TEXTURE1);
+    cc_glglue_glDisableClientState(gl, GL_TEXTURE_COORD_ARRAY);
+    cc_glglue_glActiveTexture(gl, GL_TEXTURE0);
+  }
+
+#else
   // push vertex arrays
-  assert(GL.glEnableClientState);
-  assert(GL.glDisableClientState);
-  assert(GL.glVertexPointer);
-  assert(GL.glNormalPointer);
-  assert(GL.glTexCoordPointer);
-  assert(GL.glDrawElements);
   GL.glEnableClientState(GL_VERTEX_ARRAY);
-  GL.glEnableClientState(GL_NORMAL_ARRAY);
-  GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   GL.glVertexPointer(3, GL_FLOAT, 0, vertexarrayptr);
+  GL.glEnableClientState(GL_NORMAL_ARRAY);
   GL.glNormalPointer(GL_FLOAT, 0, normalarrayptr);
+  GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   GL.glTexCoordPointer(2, GL_FLOAT, 0, texcoordarrayptr);
-  GL.glDrawElements(GL_TRIANGLES,
-                    indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
-  GL.glDisableClientState(GL_VERTEX_ARRAY);
-  GL.glDisableClientState(GL_NORMAL_ARRAY);
-  GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+  // GL.glDrawElements(GL_TRIANGLES,
+  //                   indexarray->getLength(), GL_UNSIGNED_INT, indexarrayptr);
+  int triangles = vertexarray->getLength() / 3;
+  // if ( triangles > 60 ) triangles = 3;
+
+  GL.glDrawArrays(GL_TRIANGLES, 0, triangles); // vertexarray->getLength() / 9);
+
+  printf("vertex arrays sent to GL\n");
 
   // truncate arrays here?
 
-  GL_BLOCK_FLUSH();
+  GL.glDisableClientState(GL_VERTEX_ARRAY);
+  GL.glDisableClientState(GL_NORMAL_ARRAY);
+  GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
+
+  // GL_BLOCK_FLUSH();
 }
 
 /* ********************************************************************** */

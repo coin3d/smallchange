@@ -700,6 +700,7 @@ SmScenery::GLRender(SoGLRenderAction * action)
       sc_set_glNormalPointer(cc_glglue_getprocaddress("glNormalPointer"));
       sc_set_glTexCoordPointer(cc_glglue_getprocaddress("glTexCoordPointer"));
       sc_set_glDrawElements(cc_glglue_getprocaddress("glDrawElements"));
+      sc_set_glDrawArrays(cc_glglue_getprocaddress("glDrawArrays"));
     }
     if ( cc_glglue_has_texture_edge_clamp(gl) ) {
       sc_set_have_clamp_to_edge(TRUE);
@@ -1030,7 +1031,7 @@ readxyz(const char * filename)
   assert(spacing[0] > 0.0);
   assert(spacing[1] > 0.0);
 
-  fprintf(stderr, "xyz import - cols: %d rows: %d (%d points - %d)\n", dimension[0], dimension[1], points, (dimension[0]*dimension[1]));
+  // fprintf(stderr, "xyz import - cols: %d rows: %d (%d points - %d)\n", dimension[0], dimension[1], points, (dimension[0]*dimension[1]));
   ss_system * system = sc_ssglue_system_construct(1, origo, spacing, dimension, elevations, 999999.0f);
   free(elevations);
   return system;
