@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4c from Makefile.am
+# Makefile.in generated automatically by automake 1.4e from Makefile.am
 
 # Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 # Free Software Foundation, Inc.
@@ -74,6 +74,10 @@ CC = @CC@
 CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DSUFFIX = @DSUFFIX@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INSTALL_STRIP_PROGRAM_ENV = @INSTALL_STRIP_PROGRAM_ENV@
+LIBFLAGS = @LIBFLAGS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LT_AGE = @LT_AGE@
@@ -88,6 +92,7 @@ SMALLCHANGE_MAJOR_VERSION = @SMALLCHANGE_MAJOR_VERSION@
 SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
 SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
 SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
+STRIP = @STRIP@
 VERSION = @VERSION@
 _am_include = @_am_include@
 install_sh = @install_sh@
@@ -140,7 +145,7 @@ DIST_SUBDIRS =  $(SUBDIRS)
 SOURCES = $(libSmallChange_la_SOURCES)
 OBJECTS = $(am_libSmallChange_la_OBJECTS)
 
-all: all-redirect
+all: all-recursive
 .SUFFIXES:
 .SUFFIXES: .c .lo .o
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
@@ -322,21 +327,21 @@ check-am: all-am
 check: check-recursive
 installcheck-am:
 installcheck: installcheck-recursive
-install-exec-am: install-libLTLIBRARIES
+install-exec-am: install-libLTLIBRARIES install-exec-local
 install-exec: install-exec-recursive
 
-install-data-am:
+install-data-am: install-data-local
 install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am: uninstall-libLTLIBRARIES
+uninstall-am: uninstall-libLTLIBRARIES uninstall-local
 uninstall: uninstall-recursive
-all-am: Makefile $(LTLIBRARIES)
-all-redirect: all-recursive
+all-am: Makefile $(LTLIBRARIES) all-local
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
+	  INSTALL_PROGRAM_ENV='$(INSTALL_STRIP_PROGRAM_ENV)' install
 installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(libdir)
@@ -374,14 +379,15 @@ mostlyclean: mostlyclean-recursive
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libLTLIBRARIES mostlyclean-libtool
 
-.PHONY: all all-am all-recursive all-redirect check check-am \
+.PHONY: all all-am all-local all-recursive check check-am \
 	check-recursive clean clean-generic clean-libLTLIBRARIES \
 	clean-libtool clean-recursive distclean distclean-compile \
 	distclean-generic distclean-libLTLIBRARIES distclean-libtool \
 	distclean-recursive distclean-tags distdir dvi dvi-am \
 	dvi-recursive info info-am info-recursive install install-am \
-	install-data install-data-am install-data-recursive \
-	install-exec install-exec-am install-exec-recursive \
+	install-data install-data-am install-data-local \
+	install-data-recursive install-exec install-exec-am \
+	install-exec-local install-exec-recursive \
 	install-libLTLIBRARIES install-recursive install-strip \
 	installcheck installcheck-am installcheck-recursive installdirs \
 	installdirs-am installdirs-recursive maintainer-clean \
@@ -389,9 +395,73 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libLTLIBRARIES \
 	mostlyclean-libtool mostlyclean-recursive tags tags-recursive \
-	uninstall uninstall-am uninstall-libLTLIBRARIES \
+	uninstall uninstall-am uninstall-libLTLIBRARIES uninstall-local \
 	uninstall-recursive
 
+
+SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib: Makefile $(libSmallChange_la_OBJECTS) $(libSmallChange_la_DEPENDENCIES)
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	rm -f "$$basename.dll" "$$basename.lib"; \
+	if @BUILD_WITH_MSVC@; then \
+	  echo "Linking $$basename.lib..."; \
+	  echo $(CC) $(LDFLAGS) $(LIBFLAGS) \
+	    `echo $(libSmallChange_la_OBJECTS) | sed 's%\.lo%.obj%g'` \
+	    $(libSmallChange_la_LIBADD) $(LIBS); \
+	  $(CC) $(LDFLAGS) $(LIBFLAGS) \
+	    `echo $(libSmallChange_la_OBJECTS) | sed 's%\.lo%.obj%g'` \
+	    $(libSmallChange_la_LIBADD) $(LIBS); \
+	else \
+	  touch "$$basename.dll" "$$basename.lib"; \
+	fi
+
+# **************************************************************************
+
+all-local: SmallChange@SMALLCHANGE_MAJOR_VERSION@.lib
+
+install-exec-local:
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	for ext in dll pdb; do \
+	  file="$$basename.$$ext"; \
+	  if test -s "$$file"; then \
+	    $(mkinstalldirs) "$(DESTDIR)$(bindir)"; \
+	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
+	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(bindir)/$$file"; \
+	  fi \
+	done
+
+install-data-local:
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	for ext in lib; do \
+	  file="$$basename.$$ext"; \
+	  if test -s "$$file"; then \
+	    $(mkinstalldirs) "$(DESTDIR)$(libdir)"; \
+	    echo $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file"; \
+	    $(INSTALL_PROGRAM) "$$file" "$(DESTDIR)$(libdir)/$$file"; \
+	  fi \
+	done
+
+uninstall-local:
+	@basename="SmallChange@SMALLCHANGE_MAJOR_VERSION@"; \
+	for file in \
+	  "$(DESTDIR)$(bindir)/$$basename.dll" \
+	  "$(DESTDIR)$(bindir)/$$basename.pdb" \
+	  "$(DESTDIR)$(libdir)/$$basename.lib"; do \
+	  if test -f "$$file"; then \
+	    echo " rm -f" "$$file"; \
+	    rm -f "$$file"; \
+	  fi \
+	done \
+	incbasedir="$(DESTDIR)$(includedir)/SmallChange"; \
+	for dir in \
+	  "$$incbasedir/elements" \
+	  "$$incbasedir/nodekits" \
+	  "$$incbasedir/nodes" \
+	  "$#incbasedir"; do \
+	  if test -d "$$dir"; then \
+	    echo " rmdir" "$$dir"; \
+	    rmdir "$$dir"; \
+	  fi \
+	done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

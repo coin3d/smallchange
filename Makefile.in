@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4c from Makefile.am
+# Makefile.in generated automatically by automake 1.4e from Makefile.am
 
 # Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 # Free Software Foundation, Inc.
@@ -74,6 +74,10 @@ CC = @CC@
 CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DSUFFIX = @DSUFFIX@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INSTALL_STRIP_PROGRAM_ENV = @INSTALL_STRIP_PROGRAM_ENV@
+LIBFLAGS = @LIBFLAGS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LT_AGE = @LT_AGE@
@@ -88,6 +92,7 @@ SMALLCHANGE_MAJOR_VERSION = @SMALLCHANGE_MAJOR_VERSION@
 SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
 SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
 SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
+STRIP = @STRIP@
 VERSION = @VERSION@
 _am_include = @_am_include@
 install_sh = @install_sh@
@@ -332,7 +337,7 @@ check-am: all-am
 check: check-recursive
 installcheck-am:
 installcheck: installcheck-recursive
-all-recursive-am: config.h
+all-redirect: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 install-exec-am:
@@ -347,9 +352,9 @@ install: install-recursive
 uninstall-am:
 uninstall: uninstall-recursive
 all-am: Makefile config.h
-all-redirect: all-recursive-am
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
+	  INSTALL_PROGRAM_ENV='$(INSTALL_STRIP_PROGRAM_ENV)' install
 installdirs: installdirs-recursive
 installdirs-am:
 
@@ -384,9 +389,9 @@ mostlyclean: mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-generic
 
-.PHONY: all all-am all-recursive all-recursive-am all-redirect check \
-	check-am check-recursive clean clean-generic clean-recursive \
-	distclean distclean-generic distclean-hdr distclean-recursive \
+.PHONY: all all-am all-recursive all-redirect check check-am \
+	check-recursive clean clean-generic clean-recursive distclean \
+	distclean-generic distclean-hdr distclean-recursive \
 	distclean-tags distdir dvi dvi-am dvi-recursive info info-am \
 	info-recursive install install-am install-data install-data-am \
 	install-data-recursive install-exec install-exec-am \

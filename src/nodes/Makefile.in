@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4c from Makefile.am
+# Makefile.in generated automatically by automake 1.4e from Makefile.am
 
 # Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 # Free Software Foundation, Inc.
@@ -74,6 +74,10 @@ CC = @CC@
 CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DSUFFIX = @DSUFFIX@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INSTALL_STRIP_PROGRAM_ENV = @INSTALL_STRIP_PROGRAM_ENV@
+LIBFLAGS = @LIBFLAGS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LT_AGE = @LT_AGE@
@@ -88,6 +92,7 @@ SMALLCHANGE_MAJOR_VERSION = @SMALLCHANGE_MAJOR_VERSION@
 SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
 SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
 SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
+STRIP = @STRIP@
 VERSION = @VERSION@
 _am_include = @_am_include@
 install_sh = @install_sh@
@@ -149,7 +154,7 @@ GZIP_ENV = --best
 SOURCES = $(libnodes_la_SOURCES)
 OBJECTS = $(am_libnodes_la_OBJECTS)
 
-all: all-redirect
+all: all-am
 .SUFFIXES:
 .SUFFIXES: .c .cpp .h .lo .o
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
@@ -294,9 +299,9 @@ install: install-am
 uninstall-am: uninstall-libnodesincHEADERS
 uninstall: uninstall-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
-all-redirect: all-am
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
+	  INSTALL_PROGRAM_ENV='$(INSTALL_STRIP_PROGRAM_ENV)' install
 installdirs:
 	$(mkinstalldirs)  $(DESTDIR)$(libnodesincdir)
 
@@ -334,18 +339,18 @@ mostlyclean: mostlyclean-am
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool mostlyclean-noinstLTLIBRARIES
 
-.PHONY: all all-am all-redirect check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES distclean \
-	distclean-compile distclean-depend distclean-generic \
-	distclean-libtool distclean-noinstLTLIBRARIES distclean-tags \
-	distdir dvi dvi-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am \
-	install-libnodesincHEADERS install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic maintainer-clean-noinstLTLIBRARIES \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-noinstLTLIBRARIES tags \
-	uninstall uninstall-am uninstall-libnodesincHEADERS
+.PHONY: all all-am check check-am clean clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES distclean distclean-compile \
+	distclean-depend distclean-generic distclean-libtool \
+	distclean-noinstLTLIBRARIES distclean-tags distdir dvi dvi-am \
+	info info-am install install-am install-data install-data-am \
+	install-exec install-exec-am install-libnodesincHEADERS \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-noinstLTLIBRARIES mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	mostlyclean-noinstLTLIBRARIES tags uninstall uninstall-am \
+	uninstall-libnodesincHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

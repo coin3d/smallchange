@@ -1,4 +1,4 @@
-# aclocal.m4 generated automatically by aclocal 1.4c
+# aclocal.m4 generated automatically by aclocal 1.4e
 
 # Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000
 # Free Software Foundation, Inc.
@@ -121,6 +121,16 @@ ifelse([$3],,
 [AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])
 
+# Autoconf 2.50 wants to disallow AM_ names.  We explicitly allow
+# the ones we care about.
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_CFLAGS])])
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_CPPFLAGS])])
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_CXXFLAGS])])
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_OBJCFLAGS])])
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_FFLAGS])])
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_RFLAGS])])
+ifdef([m4_pattern_allow], [m4_pattern_allow([AM_GCJFLAGS])])
+
 # Some tools Automake needs.
 AC_REQUIRE([AM_SANITY_CHECK])dnl
 AC_REQUIRE([AC_ARG_PROGRAM])dnl
@@ -131,6 +141,7 @@ AM_MISSING_PROG(AUTOHEADER, autoheader)
 AM_MISSING_PROG(MAKEINFO, makeinfo)
 AM_MISSING_PROG(AMTAR, tar)
 AM_MISSING_INSTALL_SH
+AM_PROG_INSTALL_STRIP
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
 AC_REQUIRE([AC_PROG_AWK])dnl
@@ -240,6 +251,82 @@ else
   AC_MSG_WARN([${am_backtick}missing' script is too old or missing])
 fi
 ])
+
+# AM_AUX_DIR_EXPAND
+
+# For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
+# $ac_aux_dir to ${srcdir}/foo.  In other projects, it is set to `.'.
+# Of course, Automake must honor this variable whenever it call a tool
+# from the auxiliary directory.  The problem is that $srcdir (hence
+# $ac_aux_dir) can be either an absolute path or a path relative to
+# $top_srcdir or absolute, this depends on how configure is run.  This
+# is pretty anoying since it makes $ac_aux_dir quite unusable in
+# subdirectories: on the top source directory, any form will work
+# fine, but in subdirectories relative pat needs to be adapted.
+# - calling $top_srcidr/$ac_aux_dir/missing would success if $srcdir is
+#   relative, but fail if $srcdir is absolute
+# - conversly, calling $ax_aux_dir/missing would fail if $srcdir is
+#   absolute, and success on relative paths.
+#
+# Consequently, we define and use $am_aux_dir, the "always absolute"
+# version of $ac_aux_dir.
+
+AC_DEFUN([AM_AUX_DIR_EXPAND], [
+# expand $ac_aux_dir to an absolute path
+am_aux_dir=`CDPATH=:; cd $ac_aux_dir && pwd`
+])
+
+# One issue with vendor `install' (even GNU) is that you can't
+# specify the program used to strip binaries.  This is especially
+# annoying in cross=compiling environments, where the build's strip
+# is unlikely to handle the host's binaries.
+# Fortunately install-sh will honor a STRIPPROG variable, so if we ever
+# need to use a non standard strip, we just have to make sure we use
+# install-sh with the STRIPPROG variable set.
+AC_DEFUN([AM_PROG_INSTALL_STRIP],
+[AC_REQUIRE([AM_MISSING_INSTALL_SH])
+dnl Don't test for $cross_compiling = yes, it might be `maybe'...
+# We'd like to do this but we can't because it will unconditionally
+# require config.guess.  One way would be if autoconf had the capability
+# to let us compile in this code only when config.guess was already
+# a possibility.
+#if test "$cross_compiling" != no; then
+#  # since we are cross-compiling, we need to check for a suitable `strip'
+#  AM_PROG_STRIP
+#  if test -z "$STRIP"; then
+#    AC_MSG_WARN([strip missing, install-strip will not strip binaries])
+#  fi
+#fi
+
+# If $STRIP is defined (either by the user, or by AM_PROG_STRIP),
+# instruct install-strip to use install-sh and the given $STRIP program.
+# Otherwise, just use ${INSTALL}: the idea is to use the vendor install
+# as much as possible, because it's faster.
+if test -z "$STRIP"; then
+  # The top level make will set INSTALL_PROGRAM=$(INSTALL_STRIP_PROGRAM)
+  # and the double dolard below is there to make sure that ${INSTALL}
+  # is substitued in the sub-makes, not at the top-level; this is
+  # needed if ${INSTALL} is a relative path (ajusted in each subdirectory
+  # by config.status).
+  INSTALL_STRIP_PROGRAM='$${INSTALL} -s'
+  INSTALL_STRIP_PROGRAM_ENV=''
+else
+  _am_dirpart="`echo $install_sh | sed -e 's,//*[[^/]]*$,,'`"
+  INSTALL_STRIP_PROGRAM="\${SHELL} \`CDPATH=: && cd $_am_dirpart && pwd\`/install-sh -c -s"
+  INSTALL_STRIP_PROGRAM_ENV="STRIPPROG='\$(STRIP)'"
+fi
+AC_SUBST([STRIP])
+AC_SUBST([INSTALL_STRIP_PROGRAM])
+AC_SUBST([INSTALL_STRIP_PROGRAM_ENV])])
+
+#AC_DEFUN([AM_PROG_STRIP],
+#[# Check for `strip', unless the installer
+# has set the STRIP environment variable.
+# Note: don't explicitly check for -z "$STRIP" here because
+# that will cause problems if AC_CANONICAL_* is AC_REQUIREd after
+# this macro, and anyway it doesn't have an effect anyway.
+#AC_CHECK_TOOL([STRIP],[strip])
+#])
 
 # serial 3
 
@@ -930,6 +1017,39 @@ else
 fi])
 
 # Usage:
+#   SIM_AC_DEBUGSYMBOLS
+#
+# Description:
+#   Let the user decide if debug symbol information should be compiled
+#   in. The compiled libraries/executables will use a lot less space
+#   if stripped for their symbol information.
+# 
+#   Note: this macro must be placed after either AC_PROG_CC or AC_PROG_CXX
+#   in the configure.in script.
+# 
+# Author: Morten Eriksen, <mortene@sim.no>.
+# 
+
+AC_DEFUN([SIM_AC_DEBUGSYMBOLS], [
+AC_ARG_ENABLE(
+  [symbols],
+  AC_HELP_STRING([--enable-symbols],
+                 [include symbol debug information [[default=yes]]]),
+  [case "${enableval}" in
+    yes) enable_symbols=yes ;;
+    no)  enable_symbols=no ;;
+    *) AC_MSG_ERROR(bad value "${enableval}" for --enable-symbols) ;;
+  esac],
+  [enable_symbols=yes])
+
+if test x"$enable_symbols" = x"no"; then
+  CFLAGS="`echo $CFLAGS | sed 's/-g//'`"
+  CPPFLAGS="`echo $CPPFLAGS | sed 's/-g//'`"
+  CXXFLAGS="`echo $CXXFLAGS | sed 's/-g//'`"
+fi
+])
+
+# Usage:
 #   SIM_AC_RTTI_SUPPORT
 #
 # Description:
@@ -1065,6 +1185,183 @@ AC_MSG_CHECKING([whether $CXX accepts $1])
 SIM_AC_COMPILER_OPTION($1, $2, $3)
 AC_LANG_RESTORE
 ])
+
+# Usage:
+#   SIM_PROFILING_SUPPORT
+#
+# Description:
+#   Let the user decide if profiling code should be compiled
+#   in. The compiled libraries/executables will use a lot less space
+#   if they don't contain profiling code information, and they will also
+#   execute faster.
+#
+#   Note: this macro must be placed after either AC_PROG_CC or AC_PROG_CXX
+#   in the configure.in script.
+#
+# Author: Morten Eriksen, <mortene@sim.no>.
+#
+# TODO:
+#   * [mortene:19991114] make this work with compilers other than gcc/g++
+#
+
+AC_DEFUN([SIM_PROFILING_SUPPORT], [
+AC_PREREQ([2.13])
+AC_ARG_ENABLE(
+  [profile],
+  AC_HELP_STRING([--enable-profile],
+                 [(GCC only) turn on inclusion of profiling code [[default=no]]]),
+  [case "${enableval}" in
+    yes) enable_profile=yes ;;
+    no)  enable_profile=no ;;
+    *) AC_MSG_ERROR(bad value "${enableval}" for --enable-profile) ;;
+  esac],
+  [enable_profile=no])
+
+if test x"$enable_profile" = x"yes"; then
+  if test x"$GXX" = x"yes" || test x"$GCC" = x"yes"; then
+    CFLAGS="$CFLAGS -pg"
+    CXXFLAGS="$CXXFLAGS -pg"
+    LDFLAGS="$LDFLAGS -pg"
+  else
+    AC_MSG_WARN([--enable-profile only has effect when using GNU gcc or g++])
+  fi
+fi
+])
+
+
+# Usage:
+#   SIM_COMPILER_WARNINGS
+#
+# Description:
+#   Take care of making a sensible selection of warning messages
+#   to turn on or off.
+# 
+#   Note: this macro must be placed after either AC_PROG_CC or AC_PROG_CXX
+#   in the configure.in script.
+# 
+# Author: Morten Eriksen, <mortene@sim.no>.
+# 
+# TODO:
+#   * [mortene:19991114] find out how to get GCC's
+#     -Werror-implicit-function-declaration option to work as expected
+#
+#   * [mortene:20000606] there are a few assumptions here which doesn't
+#     necessarily hold water: both the C and C++ compiler doesn't have
+#     to be "compatible", i.e. the C compiler could be gcc, while the
+#     C++ compiler could be a native compiler, for instance. So some
+#     restructuring should be done.
+# 
+#   * [larsa:20000607] don't check all -woff options to SGI MIPSpro CC,
+#     just put all of them on the same line, to check if the syntax is ok.
+
+AC_DEFUN([SIM_COMPILER_WARNINGS], [
+AC_ARG_ENABLE(
+  [warnings],
+  AC_HELP_STRING([--enable-warnings],
+                 [turn on warnings when compiling [[default=yes]]]),
+  [case "${enableval}" in
+    yes) enable_warnings=yes ;;
+    no)  enable_warnings=no ;;
+    *) AC_MSG_ERROR(bad value "${enableval}" for --enable-warnings) ;;
+  esac],
+  [enable_warnings=yes])
+
+if test x"$enable_warnings" = x"yes"; then
+  if test x"$GXX" = x"yes" || test x"$GCC" = x"yes"; then
+    sim_ac_common_gcc_warnings="-W -Wall -Wno-unused"
+    # -fno-multichar can be different for gcc and egcs c++, for instance,
+    # so we need to do separate checks.
+    if test x"$CC" = x"$CXX"; then
+      CPPFLAGS="$CPPFLAGS $sim_ac_common_gcc_warnings"
+      SIM_AC_CXX_COMPILER_OPTION([-Wno-multichar], [CPPFLAGS="$CPPFLAGS -Wno-multichar"])
+    else
+      CFLAGS="$CFLAGS $sim_ac_common_gcc_warnings"
+      SIM_AC_CC_COMPILER_OPTION([-Wno-multichar], [CFLAGS="$CFLAGS -Wno-multichar"])
+      CXXFLAGS="$CXXFLAGS $sim_ac_common_gcc_warnings"
+      SIM_AC_CXX_COMPILER_OPTION([-Wno-multichar], [CXXFLAGS="$CXXFLAGS -Wno-multichar"])
+    fi
+  else
+    case $host in
+    *-*-irix*) 
+      if test x"$CC" = xcc || test x"$CXX" = xCC; then
+        _warn_flags=
+        _woffs=""
+        ### Turn on all warnings ######################################
+        SIM_AC_CC_COMPILER_OPTION(-fullwarn, CPPFLAGS="$CPPFLAGS -fullwarn")
+
+        ### Turn off specific (bogus) warnings ########################
+
+        ## SGI MipsPro v?.?? (our compiler on IRIX 6.2) ##############
+        # 3115: ``type qualifiers are meaningless in this declaration''.
+        # 3262: unused variables.
+        ## SGI MipsPro v7.30 #########################################
+	# 1174: "The function was declared but never referenced."
+        # 1209: "The controlling expression is constant." (kill warning on
+        #       if (0), assert(FALSE), etc).
+        # 1355: Kill warnings on extra semicolons (which happens with some
+        #       of the Coin macros).
+        # 1375: Non-virtual destructors in base classes.
+        # 3201: Unused argument to a function.
+        # 1110: "Statement is not reachable" (the Lex/Flex generated code in
+        #       Coin/src/engines has lots of shitty code which needs this).
+
+        sim_ac_bogus_warnings="-woff 3115,3262,1174,1209,1355,1375,3201,1110"
+        SIM_AC_CC_COMPILER_OPTION($sim_ac_bogus_warnings,
+                                  CPPFLAGS="$CPPFLAGS $sim_ac_bogus_warnings")
+      fi
+    ;;
+    esac
+  fi
+else
+  if test x"$GXX" != x"yes" && test x"$GCC" != x"yes"; then
+    AC_MSG_WARN([--enable-warnings only has effect when using GNU gcc or g++])
+  fi
+fi
+])
+
+
+# Usage:
+#   SIM_AC_COMPILE_DEBUG([ACTION-IF-DEBUG[, ACTION-IF-NOT-DEBUG]])
+#
+# Description:
+#   Let the user decide if compilation should be done in "debug mode".
+#   If compilation is not done in debug mode, all assert()'s in the code
+#   will be disabled.
+#
+#   Also sets enable_debug variable to either "yes" or "no", so the
+#   configure.in writer can add package-specific actions. Default is "yes".
+#   This was also extended to enable the developer to set up the two first
+#   macro arguments following the well-known ACTION-IF / ACTION-IF-NOT
+#   concept.
+#
+# Authors:
+#   Morten Eriksen, <mortene@sim.no>
+#   Lars J. Aas, <larsa@sim.no>
+#
+
+AC_DEFUN([SIM_AC_COMPILE_DEBUG], [
+AC_ARG_ENABLE(
+  [debug],
+  AC_HELP_STRING([--enable-debug], [compile in debug mode [[default=yes]]]),
+  [case "${enableval}" in
+    yes) enable_debug=true ;;
+    no)  enable_debug=false ;;
+    true | false) enable_debug=${enableval} ;;
+    *) AC_MSG_ERROR(bad value "${enableval}" for --enable-debug) ;;
+  esac],
+  [enable_debug=true])
+
+if $enable_debug; then
+  DSUFFIX=d
+  ifelse([$1], , :, [$1])
+else
+  DSUFFIX=
+  CPPFLAGS="$CPPFLAGS -DNDEBUG"
+  ifelse([$2], , :, [$2])
+fi
+AC_SUBST(DSUFFIX)
+])
+
 
 # Usage:
 #  SIM_CHECK_OIV_XT([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
@@ -1336,6 +1633,95 @@ eval "$1=\"`echo $2 | sed -e 's%\\/%\\\\\\\\\\\\\\\\%g'`\""
 ])
 
 
+# **************************************************************************
+# configuration_summary.m4
+#
+# This file contains some utility macros for making it easy to have a short
+# summary of the important configuration settings printed at the end of the
+# configure run.
+#
+# Authors:
+#   Lars J. Aas <larsa@sim.no>
+#
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_SETTING( DESCRIPTION, SETTING )
+#
+# This macro registers a configuration setting to be dumped by the
+# SIM_AC_CONFIGURATION_SUMMARY macro.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_SETTING],
+[if test x${sim_ac_configuration_settings+set} != xset; then
+  sim_ac_configuration_settings="$1:$2"
+else
+  sim_ac_configuration_settings="$sim_ac_configuration_settings|$1:$2"
+fi
+]) # SIM_AC_CONFIGURATION_SETTING
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_WARNING( WARNING )
+#
+# This macro registers a configuration warning to be dumped by the
+# SIM_AC_CONFIGURATION_SUMMARY macro.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_WARNING],
+[if test x${sim_ac_configuration_warnings+set} != xset; then
+  sim_ac_configuration_warnings="$1"
+else
+  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|$1"
+fi
+]) # SIM_AC_CONFIGURATION_WARNING
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_SUMMARY
+#
+# This macro dumps the settings and warnings summary.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_SUMMARY],
+[sim_ac_settings=$sim_ac_configuration_settings
+sim_ac_num_settings=`echo "$sim_ac_settings" | tr -d -c "|" | wc -c`
+sim_ac_maxlength=0
+while test $sim_ac_num_settings -ge 0; do
+  sim_ac_description=`echo "$sim_ac_settings" | cut -d: -f1`
+  sim_ac_length=`echo "$sim_ac_description" | wc -c`
+  if test $sim_ac_length -gt $sim_ac_maxlength; then
+    sim_ac_maxlength=`expr $sim_ac_length + 0`
+  fi
+  sim_ac_settings=`echo $sim_ac_settings | cut -d"|" -f2-`
+  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
+done
+
+sim_ac_maxlength=`expr $sim_ac_maxlength + 3`
+sim_ac_padding=`echo "                                             " |
+  cut -c1-$sim_ac_maxlength`
+
+sim_ac_num_settings=`echo "$sim_ac_configuration_settings" | tr -d -c "|" | wc -c`
+echo ""
+echo "$PACKAGE configuration settings:"
+while test $sim_ac_num_settings -ge 0; do
+  sim_ac_setting=`echo $sim_ac_configuration_settings | cut -d"|" -f1`
+  sim_ac_description=`echo "$sim_ac_setting" | cut -d: -f1`
+  sim_ac_status=`echo "$sim_ac_setting" | cut -d: -f2-`
+  # hopefully not too many terminals are too dumb for this
+  echo -e "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:"
+  sim_ac_configuration_settings=`echo $sim_ac_configuration_settings | cut -d"|" -f2-`
+  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
+done
+
+if test x${sim_ac_configuration_warnings+set} = xset; then
+sim_ac_num_warnings=`echo "$sim_ac_configuration_warnings" | tr -d -c "|" | wc -c`
+echo ""
+echo "$PACKAGE configuration warnings:"
+while test $sim_ac_num_warnings -ge 0; do
+  sim_ac_warning=`echo "$sim_ac_configuration_warnings" | cut -d"|" -f1`
+  echo "  * $sim_ac_warning"
+  sim_ac_configuration_warnings=`echo $sim_ac_configuration_warnings | cut -d"|" -f2-`
+  sim_ac_num_warnings=`expr $sim_ac_num_warnings - 1`
+done
+fi
+]) # SIM_AC_CONFIGURATION_SUMMARY
+
+
 # Usage:
 #   SIM_AC_HAVE_COIN_IFELSE( IF-FOUND, IF-NOT-FOUND )
 #
@@ -1398,9 +1784,9 @@ if $sim_ac_coin_desired; then
 
   AC_PATH_PROG(sim_ac_coin_configcmd, coin-config, false, $sim_ac_path)
   if $sim_ac_coin_configcmd; then
-# FIXME: use --alternate=$CONFIG or nothing (in case of old script)
-#    test -n "`echo -- $CPPFLAGS $CFLAGS $CXXFLAGS | grep -- '-g\\>'`" &&
-#      sim_ac_coin_configcmd="$sim_ac_coin_configcmd --debug"
+    test -n "$CONFIG" &&
+      $sim_ac_coin_configcmd --alternate=$CONFIG >/dev/null 2>/dev/null &&
+      sim_ac_coin_configcmd="$sim_ac_coin_configcmd --alternate=$CONFIG"
     sim_ac_coin_cppflags=`$sim_ac_coin_configcmd --cppflags`
     sim_ac_coin_ldflags=`$sim_ac_coin_configcmd --ldflags`
     sim_ac_coin_libs=`$sim_ac_coin_configcmd --libs`
