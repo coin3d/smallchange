@@ -30,7 +30,7 @@ SoListener::SoListener()
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 1.0f));
   SO_NODE_ADD_FIELD(orientation, (SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), 0.0f)));
   SO_NODE_ADD_FIELD(velocity, (0.0f, 0.0f, 0.0f));
-  SO_NODE_ADD_FIELD(gain, (0.0f));
+  SO_NODE_ADD_FIELD(gain, (1.0f));
 
 };
 
@@ -93,6 +93,19 @@ void SoListener::audioRender(SoAudioRenderAction *action)
     char errstr[256];
 		SoDebugError::postWarning("SoListener::audioRender",
                               "alListenerfv(AL_ORIENTATION,) failed. %s",
+                              GetALErrorString(errstr, error));
+    return;
+	}
+
+  // Gain
+  float gain = this->gain.getValue();
+  gain = gain<0.0f ? 0.0f : ( gain>1.0f ? 1.0f : gain );  // clamp to [0.0f, 1.0f];
+	alListenerf(AL_GAIN, gain);
+	if ((error = alGetError()) != AL_NO_ERROR)
+	{
+    char errstr[256];
+		SoDebugError::postWarning("SoListener::audioRender",
+                              "alListenerf(AL_GAIN,) failed. %s",
                               GetALErrorString(errstr, error));
     return;
 	}
