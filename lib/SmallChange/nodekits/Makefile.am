@@ -10,7 +10,8 @@ SOURCES = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \
 	SmTooltipKit.cpp SmTooltipKit.h \
-	SmWellLogKit.cpp SmWellLogKit.h
+	SmWellLogKit.cpp SmWellLogKit.h \
+	SmCameraControlKit.cpp SmCameraControlKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
@@ -21,7 +22,8 @@ libnodekitsinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodekits/LegendKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SoFEMKit.h \
 	$(top_srcdir)/lib/SmallChange/nodekits/SmTooltipKit.h \
-	$(top_srcdir)/lib/SmallChange/nodekits/SmWellLogKit.h
+	$(top_srcdir)/lib/SmallChange/nodekits/SmWellLogKit.h \
+	$(top_srcdir)/lib/SmallChange/nodekits/SmCameraControlKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \
