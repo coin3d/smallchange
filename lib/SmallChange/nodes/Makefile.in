@@ -178,24 +178,16 @@ SOURCES = \
 	ShapeScale.cpp ShapeScale.h \
 	PickSwitch.cpp PickSwitch.h \
 	PickCallback.cpp PickCallback.h \
-	SoTCBCurve.cpp \
-	SoTCBCurve.h \
-	SoText2Set.cpp \
-	SoText2Set.h \
-	SoPointCloud.cpp \
-	SoPointCloud.h \
-	SoLODExtrusion.cpp \
-	SoLODExtrusion.h \
-	FrustumCamera.cpp \
-	FrustumCamera.h \
-	UTMCamera.cpp \
-	UTMCamera.h \
-	UTMPosition.cpp \
-	UTMPosition.h \
-	UTMCoordinate.cpp \
-	UTMCoordinate.h \
-	SmTooltip.cpp \
-	SmTooltip.h
+	SoTCBCurve.cpp SoTCBCurve.h \
+	SoText2Set.cpp SoText2Set.h \
+	SoPointCloud.cpp SoPointCloud.h \
+	SoLODExtrusion.cpp SoLODExtrusion.h \
+	FrustumCamera.cpp FrustumCamera.h \
+	UTMCamera.cpp UTMCamera.h \
+	UTMPosition.cpp UTMPosition.h \
+	UTMCoordinate.cpp UTMCoordinate.h \
+	SmTooltip.cpp SmTooltip.h \
+	Scenery.cpp Scenery.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -223,7 +215,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCamera.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h
+	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
+	$(top_srcdir)/lib/SmallChange/nodes/Scenery.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -243,7 +236,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
 	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT) \
 	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
-	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT)
+	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) Scenery.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -255,7 +248,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
-	UTMCoordinate.lo SmTooltip.lo
+	UTMCoordinate.lo SmTooltip.lo Scenery.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -273,8 +266,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Po ./$(DEPDIR)/Scenery.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Scenery.Po ./$(DEPDIR)/ShapeScale.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/ShapeScale.Po ./$(DEPDIR)/SkyDome.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SkyDome.Po ./$(DEPDIR)/SmTooltip.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Po \
@@ -328,24 +321,16 @@ SOURCES = \
 	ShapeScale.cpp ShapeScale.h \
 	PickSwitch.cpp PickSwitch.h \
 	PickCallback.cpp PickCallback.h \
-	SoTCBCurve.cpp \
-	SoTCBCurve.h \
-	SoText2Set.cpp \
-	SoText2Set.h \
-	SoPointCloud.cpp \
-	SoPointCloud.h \
-	SoLODExtrusion.cpp \
-	SoLODExtrusion.h \
-	FrustumCamera.cpp \
-	FrustumCamera.h \
-	UTMCamera.cpp \
-	UTMCamera.h \
-	UTMPosition.cpp \
-	UTMPosition.h \
-	UTMCoordinate.cpp \
-	UTMCoordinate.h \
-	SmTooltip.cpp \
-	SmTooltip.h
+	SoTCBCurve.cpp SoTCBCurve.h \
+	SoText2Set.cpp SoText2Set.h \
+	SoPointCloud.cpp SoPointCloud.h \
+	SoLODExtrusion.cpp SoLODExtrusion.h \
+	FrustumCamera.cpp FrustumCamera.h \
+	UTMCamera.cpp UTMCamera.h \
+	UTMPosition.cpp UTMPosition.h \
+	UTMCoordinate.cpp UTMCoordinate.h \
+	SmTooltip.cpp SmTooltip.h \
+	Scenery.cpp Scenery.h
 
 
 all: all-am
@@ -392,6 +377,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ShapeScale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SkyDome.Plo@am__quote@

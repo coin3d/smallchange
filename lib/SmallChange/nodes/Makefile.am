@@ -18,24 +18,16 @@ SOURCES = \
 	ShapeScale.cpp ShapeScale.h \
 	PickSwitch.cpp PickSwitch.h \
 	PickCallback.cpp PickCallback.h \
-	SoTCBCurve.cpp \
-	SoTCBCurve.h \
-	SoText2Set.cpp \
-	SoText2Set.h \
-	SoPointCloud.cpp \
-	SoPointCloud.h \
-	SoLODExtrusion.cpp \
-	SoLODExtrusion.h \
-	FrustumCamera.cpp \
-	FrustumCamera.h \
-	UTMCamera.cpp \
-	UTMCamera.h \
-	UTMPosition.cpp \
-	UTMPosition.h \
-	UTMCoordinate.cpp \
-	UTMCoordinate.h \
-	SmTooltip.cpp \
-	SmTooltip.h
+	SoTCBCurve.cpp SoTCBCurve.h \
+	SoText2Set.cpp SoText2Set.h \
+	SoPointCloud.cpp SoPointCloud.h \
+	SoLODExtrusion.cpp SoLODExtrusion.h \
+	FrustumCamera.cpp FrustumCamera.h \
+	UTMCamera.cpp UTMCamera.h \
+	UTMPosition.cpp UTMPosition.h \
+	UTMCoordinate.cpp UTMCoordinate.h \
+	SmTooltip.cpp SmTooltip.h \
+	Scenery.cpp Scenery.h
 
 libnodes_la_SOURCES = $(SOURCES)
 
@@ -62,7 +54,8 @@ libnodesinc_HEADERS = \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCamera.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMPosition.h \
 	$(top_srcdir)/lib/SmallChange/nodes/UTMCoordinate.h \
-	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h
+	$(top_srcdir)/lib/SmallChange/nodes/SmTooltip.h \
+	$(top_srcdir)/lib/SmallChange/nodes/Scenery.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -137,7 +137,7 @@ $1
 #
 # SIM_AC_ERROR( ERROR [, ERROR ...] )
 #   Fetches the error messages from the error message file and displays
-#   them on stderr.
+#   them on stderr. The configure process will subsequently exit.
 #
 # SIM_AC_WITH_ERROR( WITHARG )
 #   Invokes AC_MSG_ERROR in a consistent way for problems with the --with-*
@@ -8024,30 +8024,52 @@ if $sim_ac_coin_desired; then
     sim_ac_coin_msvcrt=`$sim_ac_coin_configcmd --msvcrt 2>/dev/null`
     sim_ac_coin_cflags=`$sim_ac_coin_configcmd --cflags 2>/dev/null`
     AC_CACHE_CHECK(
-      [whether libCoin is available],
+      [if we can compile and link with the Coin library],
       sim_cv_coin_avail,
       [sim_ac_save_cppflags=$CPPFLAGS
+      sim_ac_save_cxxflags=$CXXFLAGS
       sim_ac_save_ldflags=$LDFLAGS
       sim_ac_save_libs=$LIBS
       CPPFLAGS="$CPPFLAGS $sim_ac_coin_cppflags"
+      CXXFLAGS="$CXXFLAGS $sim_ac_coin_cxxflags"
       LDFLAGS="$LDFLAGS $sim_ac_coin_ldflags"
       LIBS="$sim_ac_coin_libs $LIBS"
       AC_LANG_PUSH(C++)
+
       AC_TRY_LINK(
         [#include <Inventor/SoDB.h>],
         [SoDB::init();],
         [sim_cv_coin_avail=true],
         [sim_cv_coin_avail=false])
+
       AC_LANG_POP
       CPPFLAGS=$sim_ac_save_cppflags
+      CXXFLAGS=$sim_ac_save_cxxflags
       LDFLAGS=$sim_ac_save_ldflags
       LIBS=$sim_ac_save_libs
     ])
     sim_ac_coin_avail=$sim_cv_coin_avail
-  else
+    if ! $sim_ac_coin_avail; then
+      AC_MSG_WARN([
+Compilation and/or linking with the Coin main library SDK failed, for
+unknown reason. If you are familiar with configure-based configuration
+and building, investigate the 'config.log' file for clues.
+
+If you can not figure out what went wrong, please forward the 'config.log'
+file to the email address <coin-support@coin3d.org> and ask for help by
+describing the situation where this failed.
+])
+    fi
+  else # no 'coin-config' found
     locations=`IFS="${sim_ac_pathsep}"; for p in $sim_ac_path; do echo " -> $p/coin-config"; done`
     AC_MSG_WARN([cannot find 'coin-config' at any of these locations:
 $locations])
+    AC_MSG_WARN([
+Need to be able to run 'coin-config' to figure out how to build and link
+against the Coin library. To rectify this problem, you most likely need
+to a) install Coin if it has not been installed, b) add the Coin install
+bin/ directory to your PATH environment variable.
+])
   fi
 fi
 
@@ -8058,6 +8080,93 @@ else
 fi
 ]) # SIM_AC_HAVE_COIN_IFELSE()
 
+
+# **************************************************************************
+# SIM_AC_HAVE_LIBSCENERY_IFELSE( IF-FOUND, IF-NOT-FOUND )
+#
+# Variables:
+#   sim_ac_have_libscenery
+#   sim_ac_libscenery_cppflags
+#   sim_ac_libscenery_ldflags
+#   sim_ac_libscenery_libs
+#
+# Authors:
+#   Lars J. Aas <larsa@coin3d.org>
+
+# **************************************************************************
+
+AC_DEFUN([SIM_AC_HAVE_LIBSCENERY_IFELSE],
+[AC_REQUIRE([AC_PATH_X])
+: ${sim_ac_have_libscenery=false}
+AC_MSG_CHECKING([for libscenery])
+AC_ARG_WITH(
+  [scenery],
+  [AC_HELP_STRING([--with-scenery=PATH], [enable/disable libscenery support])],
+  [case $withval in
+  yes | "") sim_ac_want_libscenery=true ;;
+  no)       sim_ac_want_libscenery=false ;;
+  *)        sim_ac_want_libscenery=true
+            sim_ac_libscenery_path=$withval ;;
+  esac],
+  [sim_ac_want_libscenery=true])
+
+case $sim_ac_want_libscenery in
+true)
+  $sim_ac_have_libscenery && break
+  sim_ac_libscenery_save_CPPFLAGS=$CPPFLAGS
+  sim_ac_libscenery_save_LDFLAGS=$LDFLAGS
+  sim_ac_libscenery_save_LIBS=$LIBS
+  sim_ac_libscenery_debug=false
+  test -z "$sim_ac_libscenery_path" -a x"$prefix" != xNONE &&
+    sim_ac_libscenery_path=$prefix
+  sim_ac_libscenery_name=scenery
+  if test -n "$sim_ac_libscenery_path"; then
+    sim_ac_libscenery_cppflags="-I$sim_ac_libscenery_path/include"
+    CPPFLAGS="$CPPFLAGS $sim_ac_libscenery_cppflags"
+    sim_ac_libscenery_ldflags="-L$sim_ac_libscenery_path/lib"
+    LDFLAGS="$LDFLAGS $sim_ac_libscenery_ldflags"
+  fi
+  sim_ac_libscenery_libs="-lscenery -lsdm -lhsvl -lxml -lcbase"
+  LIBS="$sim_ac_libscenery_libs $LIBS"
+  AC_TRY_LINK([
+#include <sim/scenery/scenery.h>
+], [
+    ss_initialize();
+], [
+    sim_ac_have_libscenery=true])
+  if test x"$sim_ac_have_libscenery" = x"false"; then
+    # maybe with Guile
+    sim_ac_libscenery_libs="$sim_ac_libscenery_libs -lguile"
+    LIBS="$sim_ac_libscenery_libs $sim_ac_libscenery_save_LIBS"
+    AC_TRY_LINK([
+#include <sim/scenery/scenery.h>
+], [
+      ss_initialize();
+], [
+      sim_ac_have_libscenery=true])
+  fi
+
+  CPPFLAGS=$sim_ac_libscenery_save_CPPFLAGS
+  LDFLAGS=$sim_ac_libscenery_save_LDFLAGS
+  LIBS=$sim_ac_libscenery_save_LIBS
+  ;;
+esac
+
+if $sim_ac_want_libscenery; then
+  if $sim_ac_have_libscenery; then
+    AC_MSG_RESULT([success ($sim_ac_libscenery_libs)])
+    $1
+  else
+    AC_MSG_RESULT([failure])
+    $2
+  fi
+else
+  AC_MSG_RESULT([disabled])
+  $2
+fi
+])
+
+# EOF **********************************************************************
 
 # **************************************************************************
 # SIM_AC_UNIQIFY_OPTION_LIST( VARIABLE, LIST )

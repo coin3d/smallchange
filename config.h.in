@@ -12,6 +12,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* define if you have the SIM Scenery lib */
+#undef HAVE_LIBSCENERY
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
