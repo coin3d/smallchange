@@ -44,6 +44,7 @@
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/errors/SoDebugError.h>
 #include <float.h>
+#include <assert.h>
 
 SO_NODE_SOURCE(SmExaminerEventHandler);
 
@@ -132,6 +133,20 @@ SbBool
 SmExaminerEventHandler::isAnimating(void)
 {
   return this->currentmode != IDLE;
+}
+
+void
+SmExaminerEventHandler::preRender(SoGLRenderAction * action)
+{
+  SbTime now = SbTime::getTimeOfDay();
+  double secs = now.getValue() - this->prevRedrawTime.getValue();
+  this->prevRedrawTime = now;
+  
+  if (this->currentmode == SPINNING) {
+    SbRotation deltaRotation = this->spinRotation;
+    deltaRotation.scaleAngle(float(secs * 5.0));
+    this->reorientCamera(deltaRotation);
+  }
 }
 
 void
@@ -313,8 +328,7 @@ SmExaminerEventHandler::handleEvent(SoHandleEventAction * action)
         float radians;
         rot.getValue(axis, radians);
 
-        // FIXME: add support for SPINNING. pederb, 2003-10-20
-        if (0 && (radians > 0.01f) && (deltatime < 0.300)) {
+        if ((radians > 0.01f) && (deltatime < 0.300)) {
           newmode = SPINNING;
           this->spinRotation = rot;
         }

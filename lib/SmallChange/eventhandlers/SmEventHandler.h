@@ -37,6 +37,7 @@ class SoCamera;
 class SoSensor;
 class SoTimerSensor;
 class SbVec3f;
+class SoGLRenderAction;
 
 class SMALLCHANGE_DLL_API SmEventHandler : public SoNode {
   typedef SoNode inherited;
@@ -52,6 +53,7 @@ public:
   float getGLAspectRatio(void) const;
   SbVec2s getGLSize(void) const;
 
+  virtual void preRender(SoGLRenderAction * action);
   virtual void pulse(void);
   virtual SbBool isAnimating(void);
   void enablePulse(const SbBool onoff);

@@ -169,7 +169,10 @@ SmCameraControlKit::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
   SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
-  if (eh) eh->setViewportRegion(SoViewportRegionElement::get(state));
+  if (eh) {
+    eh->setViewportRegion(SoViewportRegionElement::get(state));
+    eh->preRender(action);
+  }
   inherited::GLRender(action);
 }
 

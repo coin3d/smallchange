@@ -117,6 +117,12 @@ SmEventHandler::getCamera(void)
 }
 
 void 
+SmEventHandler::preRender(SoGLRenderAction * action)
+{
+  // do nothing here
+}
+
+void 
 SmEventHandler::pulse(void)
 {
   // do nothing here

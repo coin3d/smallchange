@@ -46,6 +46,7 @@ public:
 
   virtual void handleEvent(SoHandleEventAction * action);
   virtual SbBool isAnimating(void);
+  virtual void preRender(SoGLRenderAction * action);
 
 protected:
   virtual ~SmExaminerEventHandler();
