@@ -191,6 +191,208 @@ AC_MSG_ERROR([invalid value "${enableval}" for "$1" configure argument])
 ]) # SIM_AC_ENABLE_ERROR
 
 
+# **************************************************************************
+# gendsp.m4
+#
+# macros:
+#   SIM_AC_MSVC_DSP_ENABLE_OPTION
+#   SIM_AC_MSVC_DSP_SETUP(PROJECT, Project, project, extra-args)
+#
+# authors:
+#   Lars J. Aas <larsa@coin3d.org>
+
+# **************************************************************************
+AC_DEFUN([SIM_AC_MSVC_DSP_ENABLE_OPTION], [
+AC_ARG_ENABLE([msvcdsp],
+  [AC_HELP_STRING([--enable-msvcdsp], [build .dsp, not library])],
+  [case $enableval in
+  no | false) sim_ac_make_dsp=false ;;
+  *)          sim_ac_make_dsp=true ;;
+  esac],
+  [sim_ac_make_dsp=false])
+
+if $sim_ac_make_dsp; then
+  enable_dependency_tracking=no
+  enable_libtool_lock=no
+fi
+]) # SIM_AC_MSVC_DSP_ENABLE_OPTION
+
+# **************************************************************************
+AC_DEFUN([SIM_AC_MSVC_DSP_SETUP], [
+AC_REQUIRE([SIM_AC_MSVC_DSP_ENABLE_OPTION])
+$1_DSP_LIBDIRS=
+$1_DSP_LIBS=
+$1_DSP_INCS=
+$1_DSP_DEFS=
+
+if $sim_ac_make_dsp; then
+  SIM_AC_CONFIGURATION_SETTING([$2 build type], [msvc .dsp])
+
+  # -DHAVE_CONFIG_H is set up in $DEFS too late for us to use, and some
+  # include directives are usually set up in the Makefile.am files
+  for arg in -DHAVE_CONFIG_H $4 $CPPFLAGS $LDFLAGS $LIBS; do
+    case $arg in
+    -L* )
+      libdir=`echo $arg | cut -c3-`
+      $1_DSP_LIBDIRS="[$]$1_DSP_LIBDIRS $libdir"
+      ;;
+    -l* )
+      libname=`echo $arg | cut -c3-`
+      for libdir in [$]$1_DSP_LIBDIRS; do
+        if test -f $libdir/$libname.lib; then
+          # lib is not in any standard location - use full path
+          libname=`cygpath -w "$libdir/$libname" 2>/dev/null || echo "$libdir/$libname"`
+          break
+        fi
+      done
+      if test x"[$]$1_DSP_LIBS" = x""; then
+        $1_DSP_LIBS="$libname.lib"
+      else
+        $1_DSP_LIBS="[$]$1_DSP_LIBS $libname.lib"
+      fi
+      ;;
+    -I* )
+      incdir=`echo $arg | cut -c3-`
+      incdir=`cygpath -w "$incdir" 2>/dev/null || echo "$incdir"`
+      if test x"[$]$1_DSP_INCS" = x""; then
+        $1_DSP_INCS="/I \"$incdir\""
+      else
+        $1_DSP_INCS="[$]$1_DSP_INCS /I \"$incdir\""
+      fi
+      ;;
+    -D$1_DEBUG* | -DNDEBUG )
+      # Defines that vary between release/debug configurations can't be
+      # set up dynamically in <lib>_DSP_DEFS - they must be static in the
+      # gendsp.sh script.  We therefore catch them here so we can ignore
+      # checking for them below.
+      ;;
+    -D*=* | -D* )
+      define=`echo $arg | cut -c3-`
+      if test x"[$]$1_DSP_DEFS" = x""; then
+        $1_DSP_DEFS="/D \"$define\""
+      else
+        $1_DSP_DEFS="[$]$1_DSP_DEFS /D \"$define\""
+      fi
+      ;;
+    esac
+  done
+
+  CC=[$]$3_src_dir/cfg/gendsp.sh
+  CXX=[$]$3_src_dir/cfg/gendsp.sh
+  CXXLD=[$]$3_src_dir/cfg/gendsp.sh
+  # Yes, this is totally bogus stuff, but don't worry about it.  As long
+  # as gendsp.sh recognizes it...  20030219 larsa
+  CPPFLAGS="$CPPFLAGS -Ddspfile=[$]$3_build_dir/$3[$]$1_MAJOR_VERSION.dsp"
+  LDFLAGS="$LDFLAGS -Wl,-Ddspfile=[$]$3_build_dir/$3[$]$1_MAJOR_VERSION.dsp"
+  LIBFLAGS="$LIBFLAGS -o $3[$]$1_MAJOR_VERSION.so.0"
+
+  # this can't be set up at the point the libtool script is generated
+  mv libtool libtool.bak
+  sed -e "s%^CC=\"gcc\"%CC=\"[$]$3_src_dir/cfg/gendsp.sh\"%" \
+      -e "s%^CC=\".*/wrapmsvc.exe\"%CC=\"[$]$3_src_dir/cfg/gendsp.sh\"%" \
+      <libtool.bak >libtool
+  rm -f libtool.bak
+  chmod 755 libtool
+fi
+
+AC_SUBST([$1_DSP_LIBS])
+AC_SUBST([$1_DSP_INCS])
+AC_SUBST([$1_DSP_DEFS])
+])
+
+
+# **************************************************************************
+# configuration_summary.m4
+#
+# This file contains some utility macros for making it easy to have a short
+# summary of the important configuration settings printed at the end of the
+# configure run.
+#
+# Authors:
+#   Lars J. Aas <larsa@sim.no>
+#
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_SETTING( DESCRIPTION, SETTING )
+#
+# This macro registers a configuration setting to be dumped by the
+# SIM_AC_CONFIGURATION_SUMMARY macro.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_SETTING],
+[ifelse($#, 2, [], [m4_fatal([SIM_AC_CONFIGURATION_SETTING: takes two arguments])])
+if test x"${sim_ac_configuration_settings+set}" = x"set"; then
+  sim_ac_configuration_settings="$sim_ac_configuration_settings|$1:$2"
+else
+  sim_ac_configuration_settings="$1:$2"
+fi
+]) # SIM_AC_CONFIGURATION_SETTING
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_WARNING( WARNING )
+#
+# This macro registers a configuration warning to be dumped by the
+# SIM_AC_CONFIGURATION_SUMMARY macro.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_WARNING],
+[ifelse($#, 1, [], [m4_fatal([SIM_AC_CONFIGURATION_WARNING: takes one argument])])
+if test x"${sim_ac_configuration_warnings+set}" = x"set"; then
+  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|$1"
+else
+  sim_ac_configuration_warnings="$1"
+fi
+]) # SIM_AC_CONFIGURATION_WARNING
+
+# **************************************************************************
+# SIM_AC_CONFIGURATION_SUMMARY
+#
+# This macro dumps the settings and warnings summary.
+
+AC_DEFUN([SIM_AC_CONFIGURATION_SUMMARY],
+[ifelse($#, 0, [], [m4_fatal([SIM_AC_CONFIGURATION_SUMMARY: takes no arguments])])
+sim_ac_settings="$sim_ac_configuration_settings"
+sim_ac_num_settings=`echo "$sim_ac_settings" | tr -d -c "|" | wc -c`
+sim_ac_maxlength=0
+while test $sim_ac_num_settings -ge 0; do
+  sim_ac_description=`echo "$sim_ac_settings" | cut -d: -f1`
+  sim_ac_length=`echo "$sim_ac_description" | wc -c`
+  if test $sim_ac_length -gt $sim_ac_maxlength; then
+    sim_ac_maxlength=`expr $sim_ac_length + 0`
+  fi
+  sim_ac_settings=`echo $sim_ac_settings | cut -d"|" -f2-`
+  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
+done
+
+sim_ac_maxlength=`expr $sim_ac_maxlength + 3`
+sim_ac_padding=`echo "                                             " |
+  cut -c1-$sim_ac_maxlength`
+
+sim_ac_num_settings=`echo "$sim_ac_configuration_settings" | tr -d -c "|" | wc -c`
+echo ""
+echo "$PACKAGE configuration settings:"
+while test $sim_ac_num_settings -ge 0; do
+  sim_ac_setting=`echo $sim_ac_configuration_settings | cut -d"|" -f1`
+  sim_ac_description=`echo "$sim_ac_setting" | cut -d: -f1`
+  sim_ac_status=`echo "$sim_ac_setting" | cut -d: -f2-`
+  # hopefully not too many terminals are too dumb for this
+  echo -e "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:"
+  sim_ac_configuration_settings=`echo $sim_ac_configuration_settings | cut -d"|" -f2-`
+  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
+done
+
+if test x${sim_ac_configuration_warnings+set} = xset; then
+sim_ac_num_warnings=`echo "$sim_ac_configuration_warnings" | tr -d -c "|" | wc -c`
+echo ""
+echo "$PACKAGE configuration warnings:"
+while test $sim_ac_num_warnings -ge 0; do
+  sim_ac_warning=`echo "$sim_ac_configuration_warnings" | cut -d"|" -f1`
+  echo "  * $sim_ac_warning"
+  sim_ac_configuration_warnings=`echo $sim_ac_configuration_warnings | cut -d"|" -f2-`
+  sim_ac_num_warnings=`expr $sim_ac_num_warnings - 1`
+done
+fi
+]) # SIM_AC_CONFIGURATION_SUMMARY
+
+
 # AM_CONDITIONAL                                              -*- Autoconf -*-
 
 # Copyright 1997, 2000, 2001 Free Software Foundation, Inc.
@@ -7727,98 +7929,6 @@ eval "$1=\"`echo $2 | sed -e 's%\\/%\\\\\\\\\\\\\\\\%g'`\""
 ])
 
 
-# **************************************************************************
-# configuration_summary.m4
-#
-# This file contains some utility macros for making it easy to have a short
-# summary of the important configuration settings printed at the end of the
-# configure run.
-#
-# Authors:
-#   Lars J. Aas <larsa@sim.no>
-#
-
-# **************************************************************************
-# SIM_AC_CONFIGURATION_SETTING( DESCRIPTION, SETTING )
-#
-# This macro registers a configuration setting to be dumped by the
-# SIM_AC_CONFIGURATION_SUMMARY macro.
-
-AC_DEFUN([SIM_AC_CONFIGURATION_SETTING],
-[ifelse($#, 2, [], [m4_fatal([SIM_AC_CONFIGURATION_SETTING: takes two arguments])])
-if test x"${sim_ac_configuration_settings+set}" = x"set"; then
-  sim_ac_configuration_settings="$sim_ac_configuration_settings|$1:$2"
-else
-  sim_ac_configuration_settings="$1:$2"
-fi
-]) # SIM_AC_CONFIGURATION_SETTING
-
-# **************************************************************************
-# SIM_AC_CONFIGURATION_WARNING( WARNING )
-#
-# This macro registers a configuration warning to be dumped by the
-# SIM_AC_CONFIGURATION_SUMMARY macro.
-
-AC_DEFUN([SIM_AC_CONFIGURATION_WARNING],
-[ifelse($#, 1, [], [m4_fatal([SIM_AC_CONFIGURATION_WARNING: takes one argument])])
-if test x"${sim_ac_configuration_warnings+set}" = x"set"; then
-  sim_ac_configuration_warnings="$sim_ac_configuration_warnings|$1"
-else
-  sim_ac_configuration_warnings="$1"
-fi
-]) # SIM_AC_CONFIGURATION_WARNING
-
-# **************************************************************************
-# SIM_AC_CONFIGURATION_SUMMARY
-#
-# This macro dumps the settings and warnings summary.
-
-AC_DEFUN([SIM_AC_CONFIGURATION_SUMMARY],
-[ifelse($#, 0, [], [m4_fatal([SIM_AC_CONFIGURATION_SUMMARY: takes no arguments])])
-sim_ac_settings="$sim_ac_configuration_settings"
-sim_ac_num_settings=`echo "$sim_ac_settings" | tr -d -c "|" | wc -c`
-sim_ac_maxlength=0
-while test $sim_ac_num_settings -ge 0; do
-  sim_ac_description=`echo "$sim_ac_settings" | cut -d: -f1`
-  sim_ac_length=`echo "$sim_ac_description" | wc -c`
-  if test $sim_ac_length -gt $sim_ac_maxlength; then
-    sim_ac_maxlength=`expr $sim_ac_length + 0`
-  fi
-  sim_ac_settings=`echo $sim_ac_settings | cut -d"|" -f2-`
-  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
-done
-
-sim_ac_maxlength=`expr $sim_ac_maxlength + 3`
-sim_ac_padding=`echo "                                             " |
-  cut -c1-$sim_ac_maxlength`
-
-sim_ac_num_settings=`echo "$sim_ac_configuration_settings" | tr -d -c "|" | wc -c`
-echo ""
-echo "$PACKAGE configuration settings:"
-while test $sim_ac_num_settings -ge 0; do
-  sim_ac_setting=`echo $sim_ac_configuration_settings | cut -d"|" -f1`
-  sim_ac_description=`echo "$sim_ac_setting" | cut -d: -f1`
-  sim_ac_status=`echo "$sim_ac_setting" | cut -d: -f2-`
-  # hopefully not too many terminals are too dumb for this
-  echo -e "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:"
-  sim_ac_configuration_settings=`echo $sim_ac_configuration_settings | cut -d"|" -f2-`
-  sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
-done
-
-if test x${sim_ac_configuration_warnings+set} = xset; then
-sim_ac_num_warnings=`echo "$sim_ac_configuration_warnings" | tr -d -c "|" | wc -c`
-echo ""
-echo "$PACKAGE configuration warnings:"
-while test $sim_ac_num_warnings -ge 0; do
-  sim_ac_warning=`echo "$sim_ac_configuration_warnings" | cut -d"|" -f1`
-  echo "  * $sim_ac_warning"
-  sim_ac_configuration_warnings=`echo $sim_ac_configuration_warnings | cut -d"|" -f2-`
-  sim_ac_num_warnings=`expr $sim_ac_num_warnings - 1`
-done
-fi
-]) # SIM_AC_CONFIGURATION_SUMMARY
-
-
 # Usage:
 #   SIM_AC_HAVE_COIN_IFELSE( IF-FOUND, IF-NOT-FOUND )
 #
@@ -7950,26 +8060,30 @@ fi
 
 
 # **************************************************************************
-# SIM_AC_UNIQIFY_LIST( VARIABLE, LIST )
+# SIM_AC_UNIQIFY_OPTION_LIST( VARIABLE, LIST )
 #
-# This macro filters out redundant items from a list.  This macro was made
-# to avoid having multiple equivalent -I and -L options for the compiler on
-# the command-line, which made compilation quite messy to watch.
-#
-# BUGS:
-#   Items with spaces are probably not supported.
+# This macro filters out redundant commandline options. It is heavily based
+# on the SIM_AC_UNIQIFY_LIST macro, but has been extended to support
+# spaces (i.e. for instance "-framework OpenGL" as needed on Mac OS X).
 #
 # Authors:
 #   Lars J. Aas <larsa@sim.no>
-#
+#   Karin Kosina <kyrah@sim.no>
+#   Tamer Fahmy <tamer@tammura.at>
 
-AC_DEFUN([SIM_AC_UNIQIFY_LIST], [
+AC_DEFUN([SIM_AC_UNIQIFY_OPTION_LIST], [
 sim_ac_save_prefix=$prefix
 sim_ac_save_exec_prefix=$exec_prefix
 test x"$prefix" = xNONE && prefix=/usr/local
 test x"$exec_prefix" = xNONE && exec_prefix='${prefix}'
 sim_ac_uniqued_list=
-for sim_ac_item in $2; do
+eval paramlist='"$2"'
+sim_ac_sed_expr="[s,\(-[_a-zA-Z0-9][%_a-zA-Z0-9]*\) [ ]*\([_a-zA-Z0-9][_a-zA-Z0-9]*\),\1%%%%%\2,g]"
+paramlist="`echo $paramlist | sed \"$sim_ac_sed_expr\"`"
+while test x"$paramlist" != x"`echo $paramlist | sed \"$sim_ac_sed_expr\"`"; do
+  paramlist="`echo $paramlist | sed \"$sim_ac_sed_expr\"`"
+done
+for sim_ac_item in $paramlist; do
   eval sim_ac_eval_item="$sim_ac_item"
   eval sim_ac_eval_item="$sim_ac_eval_item"
   if test x"$sim_ac_uniqued_list" = x; then
@@ -7984,13 +8098,13 @@ for sim_ac_item in $2; do
     $sim_ac_unique && sim_ac_uniqued_list="$sim_ac_uniqued_list $sim_ac_item"
   fi
 done
-$1=$sim_ac_uniqued_list
+$1=`echo $sim_ac_uniqued_list | sed 's/%%%%%/ /g'`
 prefix=$sim_ac_save_prefix
 exec_prefix=$sim_ac_save_exec_prefix
 # unset sim_ac_save_prefix
 # unset sim_ac_save_exec_prefix
 # unset sim_ac_eval_item
 # unset sim_ac_eval_uniq
-]) # SIM_AC_UNIQIFY_LIST
+]) # SIM_AC_UNIQIFY_OPTION_LIST
 
 

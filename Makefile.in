@@ -53,6 +53,7 @@ BUILD_WITH_MSVC_TRUE = @BUILD_WITH_MSVC_TRUE@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CONFIG = @CONFIG@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -100,12 +101,21 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SMALLCHANGE_BETA_VERSION = @SMALLCHANGE_BETA_VERSION@
+SMALLCHANGE_COMPILER = @SMALLCHANGE_COMPILER@
+SMALLCHANGE_EXTRA_CFLAGS = @SMALLCHANGE_EXTRA_CFLAGS@
+SMALLCHANGE_EXTRA_CPPFLAGS = @SMALLCHANGE_EXTRA_CPPFLAGS@
+SMALLCHANGE_EXTRA_CXXFLAGS = @SMALLCHANGE_EXTRA_CXXFLAGS@
+SMALLCHANGE_EXTRA_LDFLAGS = @SMALLCHANGE_EXTRA_LDFLAGS@
+SMALLCHANGE_EXTRA_LIBS = @SMALLCHANGE_EXTRA_LIBS@
 SMALLCHANGE_MAJOR_VERSION = @SMALLCHANGE_MAJOR_VERSION@
 SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
 SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
 SMALLCHANGE_VERSION = @SMALLCHANGE_VERSION@
 STRIP = @STRIP@
+SUFFIX = @SUFFIX@
 VERSION = @VERSION@
+ac_compiler_gnu = @ac_compiler_gnu@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -151,14 +161,30 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+SUBDIRS = bin lib
 
-SUBDIRS = lib
+BUILT_SOURCES = \
+	smallchange-@CONFIG@.cfg
+
+
+DISTCLEANFILES = \
+	smallchange-@CONFIG@.cfg
+
+
+cfgdatadir = $(datadir)/Coin/conf
+cfgdata_DATA = smallchange-@CONFIG@.cfg
+
+EXTRA_DIST = \
+	smallchange.cfg.in
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
+DATA = $(cfgdata_DATA)
+
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	ps-recursive install-info-recursive uninstall-info-recursive \
@@ -171,7 +197,7 @@ DIST_COMMON = README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
 	cfg/missing cfg/mkinstalldirs config.h.in configure \
 	configure.ac
 DIST_SUBDIRS = $(SUBDIRS)
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
@@ -218,6 +244,24 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+cfgdataDATA_INSTALL = $(INSTALL_DATA)
+install-cfgdataDATA: $(cfgdata_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(cfgdatadir)
+	@list='$(cfgdata_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(cfgdataDATA_INSTALL) $$d$$p $(DESTDIR)$(cfgdatadir)/$$f"; \
+	  $(cfgdataDATA_INSTALL) $$d$$p $(DESTDIR)$(cfgdatadir)/$$f; \
+	done
+
+uninstall-cfgdataDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(cfgdata_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(cfgdatadir)/$$f"; \
+	  rm -f $(DESTDIR)$(cfgdatadir)/$$f; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -469,12 +513,15 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
-check: check-recursive
-all-am: Makefile config.h
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
+all-am: Makefile $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
+	$(mkinstalldirs) $(DESTDIR)$(cfgdatadir)
 
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -494,10 +541,12 @@ clean-generic:
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-generic clean-libtool mostlyclean-am
@@ -515,7 +564,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-cfgdataDATA
 
 install-exec-am:
 
@@ -542,7 +591,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-cfgdataDATA uninstall-info-am
 
 uninstall-info: uninstall-info-recursive
 
@@ -552,18 +601,22 @@ uninstall-info: uninstall-info-recursive
 	distclean-generic distclean-hdr distclean-libtool \
 	distclean-recursive distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am dvi-recursive info info-am \
-	info-recursive install install-am install-data install-data-am \
-	install-data-recursive install-exec install-exec-am \
-	install-exec-recursive install-info install-info-am \
-	install-info-recursive install-man install-recursive \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am installdirs-recursive maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive mostlyclean \
-	mostlyclean-generic mostlyclean-libtool mostlyclean-recursive \
-	pdf pdf-am pdf-recursive ps ps-am ps-recursive tags \
-	tags-recursive uninstall uninstall-am uninstall-info-am \
+	info-recursive install install-am install-cfgdataDATA \
+	install-data install-data-am install-data-recursive \
+	install-exec install-exec-am install-exec-recursive \
+	install-info install-info-am install-info-recursive install-man \
+	install-recursive install-strip installcheck installcheck-am \
+	installdirs installdirs-am installdirs-recursive \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-recursive pdf pdf-am \
+	pdf-recursive ps ps-am ps-recursive tags tags-recursive \
+	uninstall uninstall-am uninstall-cfgdataDATA uninstall-info-am \
 	uninstall-info-recursive uninstall-recursive
 
+
+smallchange-@CONFIG@.cfg: config.status $(srcdir)/smallchange.cfg.in
+	@$(SHELL) config.status --file=$@:smallchange.cfg.in
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
