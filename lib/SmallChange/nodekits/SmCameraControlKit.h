@@ -66,6 +66,7 @@ public:
   SbBool seek(const SoEvent * event, const SbViewportRegion & vp);
   void viewAll(const SbViewportRegion & vp,
                const float slack = 1.0f);
+  void pointDir(const SbVec3f & dir, const SbBool resetroll = TRUE);
 
 protected:
 
@@ -85,6 +86,7 @@ public:
   SoSFVec3f viewUp;
 
 private:
+  void resetCameraRoll(void);
   void setClippingPlanes(void);
   void getCameraCoordinateSystem(SoCamera * camera,
                                  SoNode * root,
