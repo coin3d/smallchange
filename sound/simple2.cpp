@@ -140,7 +140,7 @@ main(
 //  buffernode->setAsyncMode(FALSE);
   buffernode->setAsyncMode(TRUE);
   buffernode->setBufferInfo(8820, 10);
-  buffernode->url.setValue("lyd1.wav");
+//  buffernode->url.setValue("lyd1.wav");
 //  buffernode->loop.setValue(TRUE);
   buffernode->loop.setValue(FALSE);
   buffernode->stopTime.setValue(SbTime::getTimeOfDay() + SbTime(100));
