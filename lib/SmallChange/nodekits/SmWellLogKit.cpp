@@ -303,14 +303,14 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(lodDistance2, (100000.0f));
 
   SO_KIT_ADD_FIELD(wellRadius, (1.0f));
-  SO_KIT_ADD_FIELD(wellColor, (0.7, 0.7, 0.7));
+  SO_KIT_ADD_FIELD(wellColor, (0.7f, 0.7f, 0.7f));
 
-  SO_KIT_ADD_FIELD(leftColor, (0.3, 0.6, 0.8));
-  SO_KIT_ADD_FIELD(rightColor, (0.3, 0.6, 0.8));
+  SO_KIT_ADD_FIELD(leftColor, (0.3f, 0.6f, 0.8f));
+  SO_KIT_ADD_FIELD(rightColor, (0.3f, 0.6f, 0.8f));
 
   SO_KIT_ADD_FIELD(topsDepths, (0.0f));
   SO_KIT_ADD_FIELD(topsNames, (NULL));
-  SO_KIT_ADD_FIELD(topsColor, (0.8, 0.4, 0.4));
+  SO_KIT_ADD_FIELD(topsColor, (0.8f, 0.4f, 0.4f));
   SO_KIT_ADD_FIELD(topsSize, (10.0f));
 
   this->wellCoord.setNum(0);
@@ -964,29 +964,29 @@ SmWellLogKitP::buildGeometry(void)
   }
 
   for (i = 0; i < n; i++) {
-    float l = this->poslist[i].left;
-    float r = this->poslist[i].right;
+    float l = (float) this->poslist[i].left;
+    float r = (float) this->poslist[i].right;
 
     if (l == undef) {
       this->leftoffset.append(0.0);
     }
     else {
-      l -= leftmin;
+      l -= (float) leftmin;
       if (PUBLIC(this)->leftUseLog.getValue()) {
-        l = log_func(l);
+        l = (float) log_func(l);
       }
-      l *= leftscale;
+      l *= (float) leftscale;
       this->leftoffset.append(l + PUBLIC(this)->leftSize.getValue() * 0.5f);
     }
     if (r == undef) {
       this->rightoffset.append(0.0);
     }
     else {
-      r -= rightmin;
+      r -= (float) rightmin;
       if (PUBLIC(this)->rightUseLog.getValue()) {
-        r = log_func(r);
+        r = (float) log_func(r);
       }
-      r *= rightscale;
+      r *= (float) rightscale;
       this->rightoffset.append(r + PUBLIC(this)->rightSize.getValue() * 0.5f);
     }
   }
@@ -1104,8 +1104,8 @@ SmWellLogKitP::buildTopsSceneGraph(void)
     }
     if (j==0) j = 1;
     UTMPosition *utm = (UTMPosition *)PUBLIC(this)->getAnyPart("utm", TRUE);
-    toppos->translation.setValue(wcoords[j-1][0]-utm->utmposition.getValue()[0],
-                                 wcoords[j-1][1]-utm->utmposition.getValue()[1],
+    toppos->translation.setValue((float) (wcoords[j-1][0]-utm->utmposition.getValue()[0]),
+                                 (float) (wcoords[j-1][1]-utm->utmposition.getValue()[1]),
                                  depth);
 
     sphere->radius.connectFrom(&this->radiusEngine->oa);
