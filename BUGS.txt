@@ -15,3 +15,15 @@
     20031117 mortene.
 
 =====================================================================
+
+001 SoText2Set miscalculates bounding boxes.
+
+    This might just be a missing feature (I didn't check), but it is
+    the case that SoGetBoundingBoxAction does not return the actual
+    bounding box for an SoText2Set node -- only the bounding box
+    surrounding the point positions for the text strings (i.e. and
+    does not take into account the string bbox themselves).
+
+    20031215 mortene.
+
+=====================================================================
