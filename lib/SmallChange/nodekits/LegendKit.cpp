@@ -227,11 +227,14 @@
 #define FONT_SPACE   4
 #define FONT_WIDTH   8
 
-#ifdef _WIN32
-#include <windows.h> // *sigh* this is needed for gl.h.
-#endif // _WIN32
-
+#ifdef __COIN__
+#include <Inventor/system/gl.h>
+#else // SGI/TGS Inventor
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
+#endif // SGI/TGS Inventor
 
 #ifndef DOXYGEN_SKIP_THIS
 

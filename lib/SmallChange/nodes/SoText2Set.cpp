@@ -65,7 +65,15 @@
 #include <GL/glx.h>
 #endif // HAVE_GLX
 
+#ifdef __COIN__
 #include <Inventor/system/gl.h>
+#else // SGI/TGS Inventor
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif // HAVE_WINDOWS_H
+#include <GL/gl.h>
+#endif // SGI/TGS Inventor
+
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>

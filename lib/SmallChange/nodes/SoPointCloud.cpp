@@ -54,7 +54,14 @@
 #include <windows.h>
 #endif // HAVE_WINDOWS_H
 
+#ifdef __COIN__
+#include <Inventor/system/gl.h>
+#else // SGI/TGS Inventor
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
+#endif // SGI/TGS Inventor
 
 #include <Inventor/nodes/SoVertexProperty.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>

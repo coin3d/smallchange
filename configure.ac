@@ -241,6 +241,18 @@ fi
 
 AC_SUBST([LIBFLAGS], [])
 
+SIM_AC_CHECK_OPENGL(
+  [
+  AC_DEFINE([HAVE_OPENGL],1, [define if you have OpenGL])
+  COIN_EXTRA_CPPFLAGS="$COIN_EXTRA_CPPFLAGS $sim_ac_ogl_cppflags"
+  COIN_EXTRA_LDFLAGS="$COIN_EXTRA_LDFLAGS $sim_ac_ogl_ldflags"
+  COIN_EXTRA_LIBS="$sim_ac_ogl_libs $COIN_EXTRA_LIBS"
+  ],
+  [ # Couldn't link with OpenGL:
+    SIM_AC_ERROR([no-opengl])
+  ]
+)
+
 if $BUILD_WITH_MSVC; then
   rm -f vc60.pdb
   LIBFLAGS="$LIBFLAGS $sim_ac_msvcrt_LIBLDFLAGS"

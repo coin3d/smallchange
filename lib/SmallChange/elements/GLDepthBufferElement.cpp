@@ -32,10 +32,15 @@
 #include <config.h>
 #endif // HAVE_CONFIG_H
 
-#if HAVE_WINDOWS_H
+#ifdef __COIN__
+#include <Inventor/system/gl.h>
+#else // SGI/TGS Inventor
+#ifdef HAVE_WINDOWS_H
 #include <windows.h>
 #endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
+#endif // SGI/TGS Inventor
+
 #include <assert.h>
 
 SO_ELEMENT_SOURCE(GLDepthBufferElement);
