@@ -695,6 +695,20 @@ SmScenery::GLRender(SoGLRenderAction * action)
     }
 
     sc_probe_gl(FALSE);
+    // just override defaults when probing - power-users can override later
+    if ( !sc_found_multitexturing() ) {
+      if ( this->elevationLines.getValue() ) {
+	// a better fix would be to have an internal flag on whether
+	// multitexturing was possible or not, and to combine both
+	// flags on whether to enable multitexturing 
+	this->elevationLines.setValue(FALSE);
+      }
+    }
+    if ( !sc_found_vertexarrays() ) {
+      PRIVATE(this)->usevertexarrays = FALSE;
+    } else {
+      PRIVATE(this)->usevertexarrays = sc_suggest_vertexarrays();
+    }
 
     if ( cc_glglue_has_texture_edge_clamp(gl) ) {
       sc_set_have_clamp_to_edge(TRUE);
