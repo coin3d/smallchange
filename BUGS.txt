@@ -43,3 +43,11 @@
     20040206 handegar
 
 =====================================================================
+
+003 ViewportRegion node fails with tiled SoOffscreenRendering.
+
+    See detailed description of bug as item #121 in Coin/BUGS.txt.
+
+    20040705 mortene.
+
+=====================================================================
