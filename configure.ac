@@ -163,7 +163,13 @@ AC_SUBST(SUFFIX)
 # *******************************************************************
 # System tests.
 
-AC_CHECK_HEADERS([windows.h unistd.h ctype.h sys/types.h dirent.h])
+# The last argument consists of a space character, because the macro
+# wants a non-empty argument to check for compilability instead of
+# just presence.
+AC_CHECK_HEADERS(
+  [windows.h unistd.h ctype.h sys/stat.h sys/types.h dirent.h],
+  [], [], 
+  [ ])
 
 AC_MSG_CHECKING([for strcasecmp() function])
 AC_TRY_LINK([
