@@ -208,6 +208,7 @@
 #include <Inventor/nodes/SoIndexedFaceSet.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
 
 #ifdef __COIN__
 #include <Inventor/lists/SbList.h>
@@ -498,6 +499,7 @@ void
 LegendKit::preRender(SoAction * action)
 {
   SoState * state = action->getState();
+  this->recalcSize(state);
   if (THIS->size == SbVec2f(0.0f, 0.0f)) return; // not initialized
   if (THIS->needimageinit) this->initImage();
   if (THIS->needalphainit) this->fillImageAlpha();  
@@ -509,6 +511,9 @@ LegendKit::preRender(SoAction * action)
 void 
 LegendKit::GLRender(SoGLRenderAction * action)
 {
+  SoGLCacheContextElement::shouldAutoCache(action->getState(),
+                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
+
   if (!this->on.getValue()) return;
 
   if (this->delayedRender.getValue() && !action->isRenderingDelayedPaths()) {
@@ -746,6 +751,9 @@ LegendKit::renderCBtext(void * userdata, SoAction * action)
 void 
 LegendKit::render(SoGLRenderAction * action, const SbBool lines)
 {    
+  SoGLCacheContextElement::shouldAutoCache(action->getState(),
+                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
+  
   SoMaterial * mat = (SoMaterial*) this->getAnyPart("tickMaterial", TRUE);
   if (!lines) {
     SoMaterial * tmp = (SoMaterial*) this->getAnyPart("textMaterial", FALSE);
