@@ -28,7 +28,7 @@
 #include <Inventor/fields/SoMFBool.h>
 #include <Inventor/nodes/SoSubNode.h>
 
-class COIN_DLL_API Switchboard : public SoGroup {
+class Switchboard : public SoGroup {
   typedef SoGroup inherited;
   SO_NODE_HEADER(Switchboard);
 
