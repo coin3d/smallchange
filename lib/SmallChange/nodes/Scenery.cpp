@@ -519,7 +519,6 @@ SmScenery::SmScenery(ss_system * system)
   // FIXME: factor this piece of logic into separate function
   // setImplicitRenderSequence() or something similar
   const int sequencelen = this->renderSequence.getNum();
-  printf("rseqlen: %d  viewid: %d\n", sequencelen, PRIVATE(this)->viewid);
   if ((this->colorTexturing.getValue() != SmScenery::DISABLED) && PRIVATE(this)->colormaptexid != -1) {
     int localsequence[2] = { PRIVATE(this)->colormaptexid, 0 };
     sc_ssglue_view_set_render_sequence_a(PRIVATE(this)->system, PRIVATE(this)->viewid, 2, localsequence);
@@ -879,7 +878,8 @@ raypick_pre_cb(void * closure, const double * bmin, const double * bmax)
   SoState * state = action->getState();
   state->push();
 
-  SbBox3f box(bmin[0], bmin[1], bmin[2], bmax[0], bmax[1], bmax[2]); 
+  SbBox3f box((float) bmin[0], (float) bmin[1], (float) bmin[2],
+	      (float) bmax[0], (float) bmax[1], (float) bmax[2]); 
   if (box.isEmpty()) return 0;
   action->setObjectSpace();
   return action->intersect(box, TRUE);
@@ -1316,8 +1316,23 @@ SmScenery::getRenderCoordinateOffset(void) const
 SbVec2f
 SmScenery::getElevationRange(void) const
 {
+  // FIXME: make this get the elevation range for the current
+  // render-sequence instead?
   return SbVec2f((float) PRIVATE(this)->renderstate.bbmin[2],
                  (float) PRIVATE(this)->renderstate.bbmax[2]);
+}
+
+SbVec2f
+SmScenery::getDatasetElevationRange(int datasetid) const
+{
+  if (!sc_scenery_available() || !PRIVATE(this)->system) {
+    return SbVec2f(0.0f, 0.0f);
+  }
+  float minval, maxval;
+  sc_ssglue_system_get_elevation_range(PRIVATE(this)->system,
+				       1, &datasetid,
+				       &minval, &maxval);
+  return SbVec2f(minval, maxval);
 }
 
 void 
@@ -1934,6 +1949,20 @@ SmScenery::addMaterialDataset(const char * name, uint32_t color)
   if (!sc_scenery_available()) { return -1; }
   assert(PRIVATE(this)->system);
   return sc_ssglue_system_add_runtime_texture0d(PRIVATE(this)->system, color);
+}
+
+int
+SmScenery::addTextureDataset(int elevationdataset, const char * name, SmSceneryTexture2CB * cb, void * closure)
+{
+  if (!sc_scenery_available()) { return -1; }
+  assert(PRIVATE(this)->system);
+  int datasetid =
+    sc_ssglue_system_add_runtime_texture2d(PRIVATE(this)->system,
+					   elevationdataset, cb, closure);
+  if ( datasetid >= 0 ) {
+    sc_ssglue_system_set_dataset_name(PRIVATE(this)->system, datasetid, name);
+  }
+  return datasetid;
 }
 
 int

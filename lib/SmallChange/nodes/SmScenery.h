@@ -100,6 +100,7 @@ public:
 
   SbVec3f getRenderCoordinateOffset(void) const;
   SbVec2f getElevationRange(void) const;
+  SbVec2f getDatasetElevationRange(int dataset) const;
 
   void set2DColorationTextureCB(SmSceneryTexture2CB * callback, void * closure);
 
@@ -113,8 +114,11 @@ public:
 
   void getSpacingForLodlevel(int lodlevel, double * spacing) const;
   float getUndefElevationValue(void) const;
+
   int addElevationDataset(const char * name);
   int addMaterialDataset(const char * name, uint32_t color);
+  int addTextureDataset(int elevationdataset, const char * name, SmSceneryTexture2CB * cb, void * closure);
+
   int deleteElevationDataset(int datasetid);
   void setCrossAndLineElevationData(int datasetid, int lodlevel, int startcross, int startline, int numcross, int numline, float * elevationvalues);
 
