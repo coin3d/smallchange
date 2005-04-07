@@ -35,6 +35,8 @@
 #include <Inventor/nodes/SoPackedColor.h>
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoGroup.h>
+#include <Inventor/nodes/SoIndexedFaceSet.h>
+#include <Inventor/nodes/SoVertexProperty.h>
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbViewportRegion.h>
@@ -88,11 +90,12 @@ class SmToVertexArrayShapeActionP {
 public:
   SmToVertexArrayShapeActionP(void)
     : cbaction(SbViewportRegion(640, 480)) { 
-    cbaction.addTriangleCallback(SoShape::getClassTypeId(), triangle_cb, this);
-    cbaction.addPreCallback(SoVertexShape::getClassTypeId(),
-                            pre_shape_cb, this);
-    this->vhash = new SbHash <int32_t, sm_vavertex>;
-  }
+      cbaction.addTriangleCallback(SoShape::getClassTypeId(), triangle_cb, this);
+      cbaction.addPreCallback(SoVertexShape::getClassTypeId(),
+                              pre_shape_cb, this);
+      this->vhash = new SbHash <int32_t, sm_vavertex>;
+      this->useifs = TRUE;
+    }
 
   static SoCallbackAction::Response pre_shape_cb(void * userdata, SoCallbackAction * action, const SoNode * node) {
     SmToVertexArrayShapeActionP * thisp = (SmToVertexArrayShapeActionP*)userdata;
@@ -192,6 +195,7 @@ public:
   SbBool colorpervertex;
   uint32_t firstcolor;
   SbBool hastexture;
+  SbBool useifs;
 
   void init(void) {
     coordlist.truncate(0);
@@ -203,6 +207,76 @@ public:
     this->vhash = new SbHash<int32_t, sm_vavertex>;
   }
   void replaceNode(SoFullPath * path) {
+    if (useifs) {
+      this->replaceIfs(path);
+    }
+    else {
+      this->replaceVas(path);
+    }
+  }
+
+  void replaceIfs(SoFullPath * path) {
+    SoIndexedFaceSet * ifs = new SoIndexedFaceSet;
+    SoVertexProperty * vp = new SoVertexProperty;
+    vp->normalBinding = SoVertexProperty::PER_VERTEX_INDEXED;
+    vp->materialBinding = SoVertexProperty::OVERALL;
+    ifs->ref();
+    ifs->vertexProperty = vp;
+
+    if (this->hastexture) {
+      vp->texCoord.setValues(0, this->tcoordlist.getLength(),
+                          this->tcoordlist.getArrayPtr());
+    }
+    if (this->colorpervertex) {
+      vp->orderedRGBA.setValues(0, this->colorlist.getLength(),
+                                this->colorlist.getArrayPtr());
+      vp->materialBinding = SoVertexProperty::PER_VERTEX_INDEXED;
+    }
+    else if (this->colorlist.getLength()) {
+      uint32_t dummy = this->colorlist[0];
+      vp->materialBinding = SoVertexProperty::OVERALL;
+      vp->orderedRGBA.setValues(0, 1, &dummy);
+    }
+    vp->vertex.setValues(0, this->coordlist.getLength(),
+                         this->coordlist.getArrayPtr());
+
+    vp->normal.setValues(0, this->normallist.getLength(),
+                         this->normallist.getArrayPtr());
+    
+    ifs->normalIndex.setNum(0);
+    ifs->materialIndex.setNum(0);
+    ifs->textureCoordIndex.setNum(0);
+
+    int numtri = this->indices.getLength() / 3;
+    ifs->coordIndex.setNum(numtri * 4);
+    int32_t * ptr = ifs->coordIndex.startEditing();
+
+    for (int i = 0; i < numtri; i++) {
+      *ptr++ = this->indices[i*3];
+      *ptr++ = this->indices[i*3+1];
+      *ptr++ = this->indices[i*3+2];
+      *ptr++ = -1;
+    }
+    ifs->coordIndex.finishEditing();
+
+    SoNode * parent = path->getNodeFromTail(1);
+    int idx = path->getIndexFromTail(0);
+    
+    path->pop();
+    if (parent->isOfType(SoGroup::getClassTypeId())) {
+      SoGroup * g = (SoGroup*)parent;
+      g->replaceChild(idx, ifs);
+    }
+    else if (parent->isOfType(SoVRMLShape::getClassTypeId())) {
+      SoVRMLShape * vs = (SoVRMLShape*) parent;
+      vs->geometry = ifs;
+    }
+    path->push(idx);
+    ifs->unrefNoDelete();
+  }
+
+
+  void replaceVas(SoFullPath * path) {
     SmVertexArrayShape * vas = new SmVertexArrayShape;
     vas->ref();
 
@@ -321,6 +395,12 @@ void
 SmToVertexArrayShapeAction::beginTraversal(SoNode * node)
 {  
   assert(0 && "should never get here");
+}
+
+void 
+SmToVertexArrayShapeAction::useIndexedFaceSet(const SbBool onoff)
+{
+  PRIVATE(this)->useifs = onoff;
 }
 
 #undef PRIVATE

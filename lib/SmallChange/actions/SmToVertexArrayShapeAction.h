@@ -42,6 +42,8 @@ public:
 
   static void initClass(void);
 
+  void useIndexedFaceSet(const SbBool onoff);
+
   virtual void apply(SoNode * node);
   virtual void apply(SoPath * path);
   virtual void apply(const SoPathList & pathlist, SbBool obeysrules = FALSE);
