@@ -344,7 +344,7 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
       SoBaseColor * basecolor = (SoBaseColor*) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->basecolorvbo);
       cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);  
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, basecolor->rgb.getNum() * sizeof(float), 
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, basecolor->rgb.getNum() * sizeof(float) * 3, 
                       basecolor->rgb.getValues(0), GL_STATIC_DRAW);
 
     }
@@ -749,7 +749,7 @@ SmVertexArrayShape::notify(SoNotList * l)
     PRIVATE(this)->colorarraydirty = TRUE;
     PRIVATE(this)->littleendiancolor.truncate(0);
   }
-  
+  inherited::notify(l);
 }
 
 void 
