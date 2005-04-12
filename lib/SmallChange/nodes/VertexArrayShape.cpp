@@ -69,6 +69,7 @@ struct SmVertexArrayShape_vboidx {
   GLuint packedcolor;
   GLuint texcoord2;
   GLuint texcoord3;
+  GLuint index;
 };
 
 class SmVertexArrayShapeP {
@@ -81,11 +82,12 @@ public:
 public:
   SmVertexArrayShape * master;
 
-  static SbBool is_little_endian;
   static int disable_vbo;
 
   // needed when vertex buffer objects are used
   SbBool indexlistdirty;
+  SbBool onlyoneindexlist;
+  SbBool indexvbodirty;
   SbBool coordarraydirty;
   SbBool normalarraydirty;
   SbBool texcoordarraydirty;
@@ -101,18 +103,17 @@ public:
   GLuint packedcolorvbo;
   GLuint texcoord2vbo;
   GLuint texcoord3vbo;
+  GLuint indexvbo;
 
   unsigned long prevcontextid; 
   int numtriangles;
 
   void updateIndexList(void);
-  void updateVBOs(const cc_glglue * glue);
+  SbBool updateVBOs(const cc_glglue * glue);
   void initializeVBO(const cc_glglue * glue);
   void setupCurrentContextVBOs(SoState * state);
-  void updateLittleEndianList(SoPackedColor * pc);
 };
 
-SbBool SmVertexArrayShapeP::is_little_endian;
 int SmVertexArrayShapeP::disable_vbo = -1;
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -129,6 +130,8 @@ SmVertexArrayShape::SmVertexArrayShape()
 
   PRIVATE(this) = new SmVertexArrayShapeP(this);
   PRIVATE(this)->indexlistdirty = TRUE;
+  PRIVATE(this)->onlyoneindexlist = FALSE;
+  PRIVATE(this)->indexvbodirty = TRUE;
   PRIVATE(this)->coordarraydirty = TRUE;
   PRIVATE(this)->normalarraydirty = TRUE;
   PRIVATE(this)->texcoordarraydirty = TRUE;
@@ -176,14 +179,6 @@ SmVertexArrayShape::initClass(void)
   if (first) {
     first = 0;
     SO_NODE_INIT_CLASS(SmVertexArrayShape, SoShape, "Shape");
-
-    union va_endiantest {
-      uint8_t bytes[2];
-      uint16_t test;
-    };
-    va_endiantest test;
-    test.test = 1;
-    SmVertexArrayShapeP::is_little_endian = test.bytes[0] == 1;
   } 
 }
 
@@ -243,7 +238,7 @@ SmVertexArrayShapeP::initializeVBO(const cc_glglue * glue)
   cc_glglue_glGenBuffers(glue, 1, &this->packedcolorvbo);
   cc_glglue_glGenBuffers(glue, 1, &this->texcoord2vbo);
   cc_glglue_glGenBuffers(glue, 1, &this->texcoord3vbo);
-  
+  cc_glglue_glGenBuffers(glue, 1, &this->indexvbo);
 }
 
 void
@@ -267,6 +262,7 @@ SmVertexArrayShapeP::setupCurrentContextVBOs(SoState * state)
     this->packedcolorvbo = oldvbo->packedcolor;
     this->texcoord2vbo = oldvbo->texcoord2;
     this->texcoord3vbo = oldvbo->texcoord3;  
+    this->indexvbo = oldvbo->index;
   } 
   else {
     initializeVBO(glue);    
@@ -278,32 +274,34 @@ SmVertexArrayShapeP::setupCurrentContextVBOs(SoState * state)
     vbonew->packedcolor = this->packedcolorvbo;
     vbonew->texcoord2 = this->texcoord2vbo;
     vbonew->texcoord3 = this->texcoord3vbo;
+    vbonew->index = this->indexvbo;
     (void) vbodict.enter(contextid, (void *) vbonew);
   }
 
 }
 
-void
+SbBool
 SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
 {
-  
+  SbBool changed = FALSE;
+
   if (this->coordarraydirty) {    
     SoNode * node = PUBLIC(this)->vertexCoord.getValue();
     if (node && node->isOfType(SoCoordinate3::getClassTypeId())) {
       SoCoordinate3 * coord3 = (SoCoordinate3 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->vertex3vbo);
-      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);  
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
                              coord3->point.getNum() * 3 * sizeof(float), 
                              coord3->point.getValues(0), GL_STATIC_DRAW);
+      changed = TRUE;
     }
     else if (node && node->isOfType(SoCoordinate4::getClassTypeId())) {
       SoCoordinate4 * coord4 = (SoCoordinate4 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->vertex4vbo);
-      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, NULL);  
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
                              coord4->point.getNum() * 4 * sizeof(float), 
                              coord4->point.getValues(0), GL_STATIC_DRAW);
+      changed = TRUE;
     }
     this->coordarraydirty = FALSE;
   }
@@ -312,9 +310,9 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
   if (this->normalarraydirty) {    
     SoNormal * normal = (SoNormal *) PUBLIC(this)->vertexNormal.getValue();
     cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->normalvbo);
-    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);  
     cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, normal->vector.getNum() * 3 * sizeof(float), 
                            normal->vector.getValues(0), GL_STATIC_DRAW);
+    changed = TRUE;
     this->normalarraydirty = FALSE;
   }
 
@@ -324,16 +322,16 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
     if (node && node->isOfType(SoTextureCoordinate2::getClassTypeId())) {
       SoTextureCoordinate2 * texcoord2 = (SoTextureCoordinate2 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->texcoord2vbo);
-      cc_glglue_glVertexPointer(glue, 2, GL_FLOAT, 0, NULL);  
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, texcoord2->point.getNum() * 2 * sizeof(float), 
                              texcoord2->point.getValues(0), GL_STATIC_DRAW);
+      changed = TRUE;
     }
     else if (node && node->isOfType(SoTextureCoordinate3::getClassTypeId())) {
       SoTextureCoordinate3 * texcoord3 = (SoTextureCoordinate3 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->texcoord3vbo);
-      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);  
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, texcoord3->point.getNum() * 3 * sizeof(float), 
                              texcoord3->point.getValues(0), GL_STATIC_DRAW);
+      changed = TRUE;
     }   
     this->texcoordarraydirty = FALSE;
   }
@@ -346,26 +344,31 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
       cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);  
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, basecolor->rgb.getNum() * sizeof(float) * 3, 
                       basecolor->rgb.getValues(0), GL_STATIC_DRAW);
-
     }
     else if (node && node->isOfType(SoPackedColor::getClassTypeId())) {
       SoPackedColor * packedcolor = (SoPackedColor*) node;      
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->packedcolorvbo);
-      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, NULL); 
 
       const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
-      if (SmVertexArrayShapeP::is_little_endian) {
-        this->updateLittleEndianList(packedcolor);
-        pcptr = this->littleendiancolor.getArrayPtr();
-      }
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
                              packedcolor->orderedRGBA.getNum() * sizeof(uint32_t), 
                              pcptr, GL_STATIC_DRAW);
+      changed = TRUE;
+
     }
     this->colorarraydirty = FALSE;
   }
-  
 
+  if (this->onlyoneindexlist && this->indexvbodirty) {
+    cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, this->indexvbo);
+    cc_glglue_glBufferData(glue, GL_ELEMENT_ARRAY_BUFFER, 
+                           this->indexlist[1] * sizeof(int32_t),
+                           this->indexlist.getArrayPtr() + 4,
+                           GL_STATIC_DRAW);
+    this->indexvbodirty = FALSE;
+    changed = TRUE;
+  }
+  return changed;
 }
 
 
@@ -424,6 +427,10 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
     packedcolor = (SoPackedColor *) node;
   }
 
+  if (PRIVATE(this)->indexlistdirty) {
+    PRIVATE(this)->updateIndexList();
+  }
+
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
@@ -434,7 +441,12 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
           numberofvertices > 32) { // Dont bother to optimize for very small tri-sets.
         renderasvbo = TRUE;
         PRIVATE(this)->setupCurrentContextVBOs(state);
-        PRIVATE(this)->updateVBOs(glue);
+        if (PRIVATE(this)->updateVBOs(glue)) {
+          SoCacheElement::invalidate(state);
+        }
+      }
+      else {
+        //        SoCacheElement::invalidate(state); // don't cache vertex arrays        
       }
     }
   }
@@ -464,12 +476,6 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
       }
       else { // packedcolor
         const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
-        if (SmVertexArrayShapeP::is_little_endian) {
-          if (PRIVATE(this)->littleendiancolor.getLength() == 0) {
-            PRIVATE(this)->updateLittleEndianList(packedcolor);
-          }
-          pcptr = PRIVATE(this)->littleendiancolor.getArrayPtr();
-        }
         cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0, 
                                  (GLvoid*) pcptr);
       }
@@ -527,34 +533,47 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
       }
       cc_glglue_glEnableClientState(glue, GL_TEXTURE_COORD_ARRAY);
     }  
-   
+
+    if (PRIVATE(this)->onlyoneindexlist) {
+      cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, PRIVATE(this)->indexvbo);
+    }
   }
   
-  if (PRIVATE(this)->indexlistdirty) 
-    PRIVATE(this)->updateIndexList();
+//   fprintf(stderr,"renderasvbo: %d, onelist: %d\n",
+//           renderasvbo, PRIVATE(this)->onlyoneindexlist);
   
   const int32_t * ptr = PRIVATE(this)->indexlist.getArrayPtr();
   const int32_t * endptr =  ptr + PRIVATE(this)->indexlist.getLength();
-  
-  while (ptr < endptr) {
+
+  if (renderasvbo && PRIVATE(this)->onlyoneindexlist) {
     const int32_t type = *ptr++;
     const int32_t len = *ptr++;
-    const int32_t start = *ptr++;
-    const int32_t end = *ptr++;
-    
-    if (!renderasvbo) {
-      cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
-    }
-    else {       
+
+    cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, NULL);    
+    cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding  
+    cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0); // Reset VBO binding  
+  }
+  else {
+    while (ptr < endptr) {
+      const int32_t type = *ptr++;
+      const int32_t len = *ptr++;
+      const int32_t start = *ptr++;
+      const int32_t end = *ptr++;
+      
+      if (!renderasvbo) {
+        cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
+      }
+      else {
 #if 1
-      cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
+        cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
 #else
-      assert(FALSE && "code not enabled, does not build with Coin-2");
-      cc_glglue_glDrawRangeElements(glue, (GLenum) (-type-1), start, end, len, GL_UNSIGNED_INT, ptr);
+        assert(FALSE && "code not enabled, does not build with Coin-2");
+        cc_glglue_glDrawRangeElements(glue, (GLenum) (-type-1), start, end, len, GL_UNSIGNED_INT, ptr);
 #endif
-      cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding  
+        cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding  
+      }
+      ptr += len;
     }
-    ptr += len;
   }
   
   cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
@@ -735,6 +754,7 @@ SmVertexArrayShape::notify(SoNotList * l)
   SoField * f = l->getLastField();
   if (f == &this->vertexIndex) {
     PRIVATE(this)->indexlistdirty = TRUE;
+    PRIVATE(this)->indexvbodirty = TRUE;
   }
   else if (f == &this->vertexCoord) {    
     PRIVATE(this)->coordarraydirty = TRUE;
@@ -760,6 +780,8 @@ SmVertexArrayShapeP::updateIndexList(void)
   this->indexlist.truncate(0);
   this->numtriangles = 0;
 
+  int numlists = 0;
+
   const int n = PUBLIC(this)->vertexIndex.getNum();
   if (n == 0) return;
 
@@ -767,6 +789,7 @@ SmVertexArrayShapeP::updateIndexList(void)
   const int32_t * end = src + n;
 
   do {
+    numlists++;
 
     const int type = *src++;
     assert(type < 0);
@@ -794,19 +817,8 @@ SmVertexArrayShapeP::updateIndexList(void)
     this->indexlist[lenidx + 2] = endvalue;
 
   } while (src < end);
-}
 
-void 
-SmVertexArrayShapeP::updateLittleEndianList(SoPackedColor * pc)
-{
-  this->littleendiancolor.truncate(0);
-  int n = pc->orderedRGBA.getNum();
-  const uint32_t * src = pc->orderedRGBA.getValues(0);
-  
-  for (int i = 0; i < n; i++) {
-    uint32_t t = *src++;
-    this->littleendiancolor.append((t&0xff<<24) | ((t&0xff00)<<8) | ((t&0xff0000)>>8) | (t>>24));
-  }
+  this->onlyoneindexlist = numlists == 1;
 }
 
 #undef PRIVATE
