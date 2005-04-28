@@ -82,6 +82,7 @@ public:
 public:
   SmVertexArrayShape * master;
 
+  static SbBool is_little_endian;
   static int disable_vbo;
 
   // needed when vertex buffer objects are used
@@ -112,8 +113,10 @@ public:
   SbBool updateVBOs(const cc_glglue * glue);
   void initializeVBO(const cc_glglue * glue);
   void setupCurrentContextVBOs(SoState * state);
+  void updateLittleEndianList(SoPackedColor * pc);
 };
 
+SbBool SmVertexArrayShapeP::is_little_endian;
 int SmVertexArrayShapeP::disable_vbo = -1;
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -179,6 +182,14 @@ SmVertexArrayShape::initClass(void)
   if (first) {
     first = 0;
     SO_NODE_INIT_CLASS(SmVertexArrayShape, SoShape, "Shape");
+
+    union va_endiantest {
+      uint8_t bytes[2];
+      uint16_t test;
+    };
+    va_endiantest test;
+    test.test = 1;
+    SmVertexArrayShapeP::is_little_endian = test.bytes[0] == 1;
   } 
 }
 
@@ -350,6 +361,13 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->packedcolorvbo);
 
       const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
+      if (SmVertexArrayShapeP::is_little_endian) {
+        if (this->littleendiancolor.getLength() == 0) {
+          this->updateLittleEndianList(packedcolor);
+        }
+        pcptr = this->littleendiancolor.getArrayPtr();
+      }
+
       cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
                              packedcolor->orderedRGBA.getNum() * sizeof(uint32_t), 
                              pcptr, GL_STATIC_DRAW);
@@ -476,6 +494,12 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
       }
       else { // packedcolor
         const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
+        if (SmVertexArrayShapeP::is_little_endian) {
+          if (PRIVATE(this)->littleendiancolor.getLength() == 0) {
+            PRIVATE(this)->updateLittleEndianList(packedcolor);
+          }
+          pcptr = PRIVATE(this)->littleendiancolor.getArrayPtr();
+        }
         cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0, 
                                  (GLvoid*) pcptr);
       }
@@ -819,6 +843,19 @@ SmVertexArrayShapeP::updateIndexList(void)
   } while (src < end);
 
   this->onlyoneindexlist = numlists == 1;
+}
+
+void 
+SmVertexArrayShapeP::updateLittleEndianList(SoPackedColor * pc)
+{
+  this->littleendiancolor.truncate(0);
+  int n = pc->orderedRGBA.getNum();
+  const uint32_t * src = pc->orderedRGBA.getValues(0);
+  
+  for (int i = 0; i < n; i++) {
+    uint32_t t = *src++;
+    this->littleendiancolor.append((t&0xff<<24) | ((t&0xff00)<<8) | ((t&0xff0000)>>8) | (t>>24));
+  }
 }
 
 #undef PRIVATE
