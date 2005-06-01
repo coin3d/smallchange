@@ -386,6 +386,15 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
           else if ((v1-op1).dot(line.getDirection()) < 0.0f) op1 = v1;
           
           if ((op1-op0).sqrLength() <= r2 && action->isBetweenPlanes(op0)) {
+
+            // adjust picked point to account for radius of the extrusion
+            float dot = 1.0f - SbAbs(line.getDirection().dot(ray.getDirection()));
+            float radius = this->radius.getValue();
+            float angle = acos(SbClamp(dot, 0.0f, 1.0f));
+            float len2 = tan(angle);
+            dot = (float) sqrt(radius*radius + len2*len2);
+            op0 -= ray.getDirection() * dot;
+
             SoPickedPoint * pp = action->addIntersection(op0);
             if (pp) {
               pd0.setCoordinateIndex(i);
