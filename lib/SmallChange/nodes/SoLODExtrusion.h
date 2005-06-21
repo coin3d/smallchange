@@ -56,6 +56,7 @@ public:
   SoSFFloat lodDistance2;
   SoSFVec3f zAxis;
   SoMFColor color;
+  SoSFBool pickLines;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);

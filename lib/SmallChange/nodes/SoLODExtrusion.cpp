@@ -229,6 +229,8 @@ SoLODExtrusion::SoLODExtrusion(void)
   SO_NODE_ADD_FIELD(lodDistance1, (1000.0));
   SO_NODE_ADD_FIELD(lodDistance2, (-1.0));   // default lines to infinity
   SO_NODE_ADD_FIELD(zAxis, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(pickLines, (FALSE));
+
   THIS->dirty = TRUE;
 }
 
@@ -357,7 +359,10 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
   const int num = this->spine.getNum();
   const SbVec3f * sptr = this->spine.getValues(0);
 
-  float d2 = this->lodDistance2.getValue();
+  float d2 = this->lodDistance1.getValue();
+  if (this->pickLines.getValue()) {
+    d2 = this->lodDistance2.getValue();
+  }
   if (d2 < 0.0f) {
     d2 = FLT_MAX;
   }
