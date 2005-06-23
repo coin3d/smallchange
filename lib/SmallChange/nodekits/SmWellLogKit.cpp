@@ -251,6 +251,7 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoDrawStyleElement.h>
 #include <Inventor/elements/SoSwitchElement.h>
+#include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/events/SoLocation2Event.h>
 #include <Inventor/SoPickedPoint.h>
@@ -315,6 +316,7 @@ SmWellLogKit::SmWellLogKit(void)
   PRIVATE(this)->axis = SbVec3f(1.0f, 0.0f, 0.0f);
   PRIVATE(this)->prevaxis = SbVec3f(0.0f, 0.0f, 0.0f);
   PRIVATE(this)->oneshot = new SoOneShotSensor(SmWellLogKitP::oneshot_cb, PRIVATE(this));
+  PRIVATE(this)->oneshot->setPriority(1);
   PRIVATE(this)->processingoneshot = FALSE;
 
   SO_KIT_CONSTRUCTOR(SmWellLogKit);
@@ -477,6 +479,10 @@ SmWellLogKit::GLRender(SoGLRenderAction * action)
   // use SoSwitchElement to control whether we should render with the
   // faceset or the lineset
   SoState * state = action->getState();
+  if (PRIVATE(this)->oneshot->isScheduled()) {
+    SoCacheElement::invalidate(state);
+    return;
+  }
   state->push();
   if (SoDrawStyleElement::get(state) == SoDrawStyleElement::LINES) {
     SoSwitchElement::set(state, this, 0);
@@ -542,15 +548,15 @@ void
 SmWellLogKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SoState * state = action->getState();
+  if (PRIVATE(this)->oneshot->isScheduled()) {
+    SoCacheElement::invalidate(state);
+    return;
+  }
   state->push();
   SoSwitchElement::set(state, this, 1);
   // the kit has changed but the sensor has not triggered
   // yet. Calculate manually and unschedule() so that we get the
   // correct bounding box.
-  if (PRIVATE(this)->oneshot->isScheduled()) {
-    PRIVATE(this)->oneshot->unschedule();
-    SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
-  }
   inherited::getBoundingBox(action);
   state->pop();
 }
@@ -562,8 +568,7 @@ SmWellLogKit::handleEvent(SoHandleEventAction * action)
   // yet. Calculate manually and unschedule() so that we get the
   // correct bounding box.
   if (PRIVATE(this)->oneshot->isScheduled()) {
-    PRIVATE(this)->oneshot->unschedule();
-    SmWellLogKitP::oneshot_cb(PRIVATE(this), PRIVATE(this)->oneshot);
+    return;
   }
 
   SmTooltipKit * tooltip = (SmTooltipKit*)this->getAnyPart("tooltip", FALSE);
@@ -975,7 +980,7 @@ SmWellLogKitP::buildGeometry(void)
 
   SbList <SbVec3f> redlist(this->poslist.getLength());
   for (i = 0; i < n; i++) {
-    if (i == 0 || i == n-1) redlist.append(this->poslist[i].pos);
+    if ((i == 0) || (i == n-1)) redlist.append(this->poslist[i].pos);
     else {
       SbVec3f prev = this->poslist[i-1].pos;
       SbVec3f p = this->poslist[i].pos;
