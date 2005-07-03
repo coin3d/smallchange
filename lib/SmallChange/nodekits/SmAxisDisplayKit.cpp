@@ -443,7 +443,7 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
   camera->orientation.connectFrom(&PUBLIC(thisp)->orientation);
   camera->nearDistance = 0.01f;
   camera->farDistance = 10.0f;
-  camera->heightAngle = 22.5*M_PI/180; // Reduce perspective effect
+  camera->heightAngle = (float) (22.5*M_PI/180.0); // Reduce perspective effect
 
   // FIXME: hack to avoid continuous redraws. Use engine-connections
   // instead, pederb, 2003-10-21

@@ -778,7 +778,7 @@ SmCameraControlKitP::seeksensorCB(void * closure, SoSensor * s)
   camera->orientation = 
     SbRotation::slerp(thisp->seek.camerastartorient,
                       thisp->seek.cameraendorient, 
-                      t);
+                      (float) t);
   UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
     (UTMCamera*) camera : NULL;
   

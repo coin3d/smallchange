@@ -929,7 +929,7 @@ SmPopupMenuKitP::buildTextScenegraph()
 
     SoFont * menufont = (SoFont *) PUBLIC(this)->getAnyPart("textFont", TRUE);
     SoFont * titlefont = new SoFont;
-    titlefont->size.setValue((int) (menufont->size.getValue()*1.2f));
+    titlefont->size.setValue((float) ((int) (menufont->size.getValue()*1.2f)));
     titlefont->name.setValue("Verdana");
 
     SoTranslation * trans = new SoTranslation;

@@ -371,9 +371,9 @@ SoAngle1Dragger::drag(void)
   float diff = PRIVATE(this)->lastAngle - tmp;
   if (fabs(diff) > ((350.0*2*M_PI)/360.0)) {
     if (PRIVATE(this)->lastAngle < 0)
-      PRIVATE(this)->adder -= 2*M_PI;
+      PRIVATE(this)->adder -= (float) (2.0*M_PI);
     else
-      PRIVATE(this)->adder += 2*M_PI;
+      PRIVATE(this)->adder += (float) (2.0*M_PI);
   }//if
 
   PRIVATE(this)->lastAngle = tmp;

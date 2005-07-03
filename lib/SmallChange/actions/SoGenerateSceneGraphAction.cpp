@@ -384,11 +384,11 @@ addConnectorStalk(SoSeparator * parent, float offset, float width)
   translatedown->translation.setValue(SbVec3f(0.0f, -0.35f, 0.0f));
   // cylinder->height.setValue(0.5);
   // cylinder->radius.setValue(0.02);
-  material->diffuseColor.setValue(SbColor(0.0, 0.0, 0.0));
-  material->emissiveColor.setValue(SbColor(0.8, 0.8, 0.0));
-  cube->width.setValue(0.04);
-  cube->depth.setValue(0.04);
-  cube->height.setValue(0.3);
+  material->diffuseColor.setValue(SbColor(0.0f, 0.0f, 0.0f));
+  material->emissiveColor.setValue(SbColor(0.8f, 0.8f, 0.0f));
+  cube->width.setValue(0.04f);
+  cube->depth.setValue(0.04f);
+  cube->height.setValue(0.3f);
   stalksep->addChild(translatedown);
   stalksep->addChild(texture2);
   stalksep->addChild(material);
@@ -411,11 +411,11 @@ addConnector(SoSeparator * root, float offset, float width)
   // rotate->rotation.setValue(SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), 3.1415926f/2.0f));
   // cylinder->height.setValue(width);
   // cylinder->radius.setValue(0.02);
-  material->diffuseColor.setValue(SbColor(0.0, 0.0, 0.0));
-  material->emissiveColor.setValue(SbColor(0.8, 0.8, 0.0));
-  cube->width.setValue(width + 0.04);
-  cube->height.setValue(0.04);
-  cube->depth.setValue(0.04);
+  material->diffuseColor.setValue(SbColor(0.0f, 0.0f, 0.0f));
+  material->emissiveColor.setValue(SbColor(0.8f, 0.8f, 0.0f));
+  cube->width.setValue(width + 0.04f);
+  cube->height.setValue(0.04f);
+  cube->depth.setValue(0.04f);
   stalksep->addChild(translateup);
   stalksep->addChild(texture2);
   stalksep->addChild(material);
@@ -438,16 +438,16 @@ SoGenerateSceneGraphActionP::buildSubSceneGraph(SoSceneGraphNode * sgnode)
     SoScale * scale = new SoScale;
     SoMaterial * material = new SoMaterial;
     SoAsciiText * text = new SoAsciiText;
-    translation->translation.setValue(SbVec3f(0.25, 0.07, 0.0));
-    scale->scaleFactor.setValue(SbVec3f(0.01, 0.01, 0.01));
-    material->emissiveColor.setValue(SbVec3f(0.0, 0.5, 1.0));
+    translation->translation.setValue(SbVec3f(0.25f, 0.07f, 0.0f));
+    scale->scaleFactor.setValue(SbVec3f(0.01f, 0.01f, 0.01f));
+    material->emissiveColor.setValue(SbVec3f(0.0f, 0.5f, 1.0f));
     SbBool addtype = TRUE;
     if ( this->enablenodenames && (strcmp(sgnode->node->getName().getString(), "") != 0) ) {
       if ( this->enablenodetypes && !this->enabledroptypeifname ) {
-        translation->translation.setValue(SbVec3f(0.25, 0.02, 0.0));
+        translation->translation.setValue(SbVec3f(0.25f, 0.02f, 0.0f));
       } else {
         addtype = FALSE;
-        translation->translation.setValue(SbVec3f(0.25, -0.03, 0.0));
+        translation->translation.setValue(SbVec3f(0.25f, -0.03f, 0.0f));
       }
       SbString name;
       name.sprintf("%s", sgnode->node->getName().getString());

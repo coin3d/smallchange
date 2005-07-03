@@ -859,9 +859,7 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   assert(stopindex > startindex);
 
   int curidx = startindex;
-  int newmode;
   int32_t v1, v2, v3, v4, v5 = 0; // v5 init unnecessary, but kills a compiler warning.
-  int32_t nv1, nv2, nv3;
   
   if( iv[curidx+3] < 0) {  /* Triangle */
     assert(0 && "should never get here");
@@ -918,7 +916,7 @@ SoLODExtrusionP::makeCircleCrossSection(const float radius, const int segments)
 {
   SbList <SbVec2f> templist;
   templist.truncate(0);
-  float angle = 2.0 * M_PI / float(segments);
+  float angle = (float) (2.0 * M_PI / float(segments));
   templist.append( SbVec2f( 0.0, radius ) );
   for( int i=1; i < segments; i++) {
     templist.append( SbVec2f( radius*sin(float(i)*angle), radius*cos(float(i)*angle)) );
