@@ -1,0 +1,40 @@
+#Inventor V2.1 ascii
+
+Separator {
+  SmPieChart {
+    height 0.1
+    radius 2
+    values [
+      1, 2, 3, 4, 5
+    ]
+    colors [
+      1 0.6 0,
+      1 0.7 1,
+      1 0.8 0,
+      1 0.9 1,
+      0 1 1
+    ]
+  }
+  Translation {
+    translation 5 0 0
+  }
+  SmPieChart {
+    height 0.5
+    radius 1.5
+    valueType ITEM_BORDER
+    values [
+      1, 2, 3, 4, 5
+    ]
+    colors [
+      1 1 0,
+      1 0 1,
+      1 1 0,
+      1 0 1,
+      0 1 1
+    ]
+    retraction [
+      0, 0, 0.1, 0, 0
+    ]
+  }
+}
+

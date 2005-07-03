@@ -16,6 +16,7 @@ SOURCES = \
 	NormalsKit.cpp SmNormalsKit.h \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
 	SmAxisKit.cpp SmAxisKit.h \
+	SmPieChart.cpp SmPieChart.h \
 	PopupMenuKit.cpp SmPopupMenuKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -33,6 +34,7 @@ libnodekitsinc_HEADERS = \
 	SmNormalsKit.h \
 	SmAxisDisplayKit.h \
 	SmAxisKit.h \
+	SmPieChart.h \
 	SmPopupMenuKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
