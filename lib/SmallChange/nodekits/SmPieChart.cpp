@@ -89,14 +89,19 @@ SmPieChart::SmPieChart(void)
 
   PRIVATE(this)->radiusSensor =
     new SoFieldSensor(SmPieChartP::trigger_update_cb, PRIVATE(this));
+  PRIVATE(this)->radiusSensor->attach(&this->radius);
   PRIVATE(this)->heightSensor =
     new SoFieldSensor(SmPieChartP::trigger_update_cb, PRIVATE(this));
+  PRIVATE(this)->heightSensor->attach(&this->height);
   PRIVATE(this)->valueTypeSensor =
     new SoFieldSensor(SmPieChartP::trigger_update_cb, PRIVATE(this));
+  PRIVATE(this)->valueTypeSensor->attach(&this->valueType);
   PRIVATE(this)->valuesSensor =
     new SoFieldSensor(SmPieChartP::trigger_update_cb, PRIVATE(this));
+  PRIVATE(this)->valuesSensor->attach(&this->values);
   PRIVATE(this)->colorsSensor =
     new SoFieldSensor(SmPieChartP::trigger_update_cb, PRIVATE(this));
+  PRIVATE(this)->colorsSensor->attach(&this->colors);
   
   PRIVATE(this)->trigger =
     new SoOneShotSensor(SmPieChartP::update_cb, PRIVATE(this));

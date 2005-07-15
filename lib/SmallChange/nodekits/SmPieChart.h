@@ -1,16 +1,19 @@
 #ifndef SM_PIECHART_H
 #define SM_PIECHART_H
 
-#include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFEnum.h>
 #include <Inventor/fields/SoMFColor.h>
 #include <Inventor/fields/SoMFFloat.h>
+#include <Inventor/nodekits/SoBaseKit.h>
+
+#include <SmallChange/Basic.h>
 
 // *************************************************************************
 
 class SmPieChartP;
-class SmPieChart : public SoBaseKit {
+
+class SMALLCHANGE_DLL_API SmPieChart : public SoBaseKit {
   typedef SoBaseKit inherited;
   SO_KIT_HEADER(SmPieChart);
 
