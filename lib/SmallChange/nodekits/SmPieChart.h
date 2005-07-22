@@ -7,7 +7,7 @@
 #include <Inventor/fields/SoMFFloat.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 
-#include <SmallChange/Basic.h>
+#include <SmallChange/basic.h>
 
 // *************************************************************************
 

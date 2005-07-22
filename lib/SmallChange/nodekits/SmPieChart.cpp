@@ -66,7 +66,7 @@ SmPieChart::SmPieChart(void)
   SO_KIT_ADD_FIELD(height, (1.0f));
   SO_KIT_ADD_FIELD(radius, (1.0f));
 
-  SO_KIT_ADD_FIELD(valueType, (ValueType::ITEM_SIZE));
+  SO_KIT_ADD_FIELD(valueType, (ITEM_SIZE));
   SO_KIT_ADD_FIELD(values, (0.0f));
   SO_KIT_ADD_FIELD(colors, (SbColor(0.8f, 0.8f, 0.8f)));
   SO_KIT_ADD_FIELD(retraction, (0.0f));
