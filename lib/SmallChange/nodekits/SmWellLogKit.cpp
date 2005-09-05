@@ -992,7 +992,9 @@ SmWellLogKitP::buildGeometry(void)
       v0.normalize();
       v1.normalize();
 
-      if (SbAbs(1.0f-v0.dot(v1)) > 0.02f) {
+      // try to reduce lines that are almost straight. 0.00001 is
+      // chosen based on experience...
+      if (SbAbs(1.0f-v0.dot(v1)) > 0.00001f) {
         redlist.append(this->poslist[i].pos);
       } 
     }
