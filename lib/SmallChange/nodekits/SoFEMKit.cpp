@@ -260,6 +260,7 @@ SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int la
   
   SoFEMLookup lookup;
   lookup.index = -1;
+  lookup.is3d = FALSE;
 
   // append dummy lookup elements
   while (THIS->elementlookup.getLength() <= elementidx) {
@@ -305,6 +306,7 @@ SoFEMKit::add2DElement(const int elementidx, const int32_t * nodes, const int la
   
   SoFEMLookup lookup;
   lookup.index = -1;
+  lookup.is3d = FALSE;
 
   // append dummy lookup elements
   while (THIS->elementlookup.getLength() <= elementidx) {

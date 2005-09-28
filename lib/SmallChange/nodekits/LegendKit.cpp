@@ -1112,6 +1112,7 @@ LegendKit::addDiscreteColor(double uppernval)
   LegendKitP::legend_discrete item;
   item.uppernval = uppernval;
   item.colorset = FALSE;
+  item.color = 0;
 
   int i = 0;
   int n = PRIVATE(this)->discretelist.getLength();
