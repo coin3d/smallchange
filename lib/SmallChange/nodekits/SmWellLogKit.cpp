@@ -262,6 +262,7 @@
 // struct used for storing data for each depth value
 typedef struct {
   SbVec3f pos;
+  SbColor col;
   double mdepth;  // measured depth
   double tvdepth; // true vertical depth
   double left;  // curve data for the left side
@@ -324,6 +325,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(undefVal, (-999.25));
   SO_KIT_ADD_FIELD(name,(""));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
+  SO_KIT_ADD_FIELD(wellColor, (0.8, 0.8, 0.8));
 
   SO_KIT_ADD_FIELD(curveNames, (""));
   SO_KIT_ADD_FIELD(curveDescription, (""));
@@ -407,9 +409,6 @@ SmWellLogKit::SmWellLogKit(void)
   sh->vertexOrdering = SoShapeHints::CLOCKWISE;
   sh->shapeType = SoShapeHints::UNKNOWN_SHAPE_TYPE;
   sh->faceType = SoShapeHints::CONVEX;
-
-  SoBaseColor *wellBaseColor = (SoBaseColor *) this->getAnyPart("wellBaseColor", TRUE);
-  wellBaseColor->rgb.connectFrom(&this->wellColor);
 
   SoLODExtrusion * well = (SoLODExtrusion*) this->getAnyPart("well", TRUE);
   well->ccw = TRUE;
@@ -978,29 +977,46 @@ SmWellLogKitP::buildGeometry(void)
         this->poslist[i+1].right != PUBLIC(this)->undefVal.getValue()) numright++;
   }
 
+  SoBaseColor *wellBaseColor = (SoBaseColor *) PUBLIC(this)->getAnyPart("wellBaseColor", TRUE);
+  wellBaseColor->rgb = 
+    PUBLIC(this)->wellColor.getNum() ? 
+    PUBLIC(this)->wellColor[0] : SbColor(0.8f, 0.8f, 0.8f);
+
   SbList <SbVec3f> redlist(this->poslist.getLength());
-  for (i = 0; i < n; i++) {
-    if ((i == 0) || (i == n-1)) redlist.append(this->poslist[i].pos);
-    else {
-      SbVec3f prev = this->poslist[i-1].pos;
-      SbVec3f p = this->poslist[i].pos;
-      SbVec3f next = this->poslist[i+1].pos;
+  SoLODExtrusion * well = (SoLODExtrusion*) PUBLIC(this)->getAnyPart("well", TRUE);
 
-      SbVec3f v0 = p - prev;
-      SbVec3f v1 = next - p;
+  if (PUBLIC(this)->wellColor.getNum() == PUBLIC(this)->wellCoord.getNum()) {
+    well->color.setNum(n);
+    SbColor * coldst = well->color.startEditing();
+    for (i = 0; i < n; i++) {
+      redlist.append(this->poslist[i].pos);
+      coldst[i] = this->poslist[i].col;
+    }
+    well->color.finishEditing();
+  }
+  else {
+    for (i = 0; i < n; i++) {
+      if ((i == 0) || (i == n-1)) redlist.append(this->poslist[i].pos);
+      else {
+        SbVec3f prev = this->poslist[i-1].pos;
+        SbVec3f p = this->poslist[i].pos;
+        SbVec3f next = this->poslist[i+1].pos;
+        
+        SbVec3f v0 = p - prev;
+        SbVec3f v1 = next - p;
       
-      v0.normalize();
-      v1.normalize();
-
+        v0.normalize();
+        v1.normalize();
+        
       // try to reduce lines that are almost straight. 0.00001 is
-      // chosen based on experience...
-      if (SbAbs(1.0f-v0.dot(v1)) > 0.00001f) {
-        redlist.append(this->poslist[i].pos);
-      } 
+        // chosen based on experience...
+        if (SbAbs(1.0f-v0.dot(v1)) > 0.00001f) {
+          redlist.append(this->poslist[i].pos);
+        } 
+      }
     }
   }
 
-  SoLODExtrusion * well = (SoLODExtrusion*) PUBLIC(this)->getAnyPart("well", TRUE);
   well->spine.setNum(redlist.getLength());
 
   SbVec3f * lsdst = well->spine.startEditing();
@@ -1292,6 +1308,8 @@ SmWellLogKitP::updateList(void)
 {
   this->poslist.truncate(0);
   int n = PUBLIC(this)->wellCoord.getNum();
+  SbBool colorpersegment = PUBLIC(this)->wellColor.getNum() == n;
+  
   if (n == 0) {
     SoIndexedFaceSet * fs = (SoIndexedFaceSet*) PUBLIC(this)->getPart("faceSet", TRUE);
     fs->coordIndex.setNum(0);
@@ -1315,7 +1333,8 @@ SmWellLogKitP::updateList(void)
 
   double prevdepth = 0.0;
   SbVec3f prev(0.0f, 0.0f, 0.0f);
-  
+  const SbColor * colptr = PUBLIC(this)->wellColor.getValues(0);
+
   for (int i = 0; i < n; i++) {
     SbVec3d t = SbVec3d(welldata[i][0],
                         welldata[i][1],
@@ -1325,7 +1344,13 @@ SmWellLogKitP::updateList(void)
     t -= origin;
 
     pos.pos = SbVec3f((float) t[0], (float) t[1], (float) t[2]);
-    
+    pos.col = SbColor(0.8, 0.8, 0.8);
+    if (colorpersegment) {
+      pos.col = colptr[i];
+    }
+    else {
+      pos.col = colptr[0];
+    }
     pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.left = PUBLIC(this)->getLeftCurveData(i);
     pos.right = PUBLIC(this)->getRightCurveData(i);

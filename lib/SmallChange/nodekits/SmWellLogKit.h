@@ -30,6 +30,7 @@
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/fields/SoSFString.h>
 #include <Inventor/fields/SoSFColor.h>
+#include <Inventor/fields/SoMFColor.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
@@ -82,7 +83,7 @@ public:
   SoSFFloat undefVal;
   SoSFString name;
   SoMFVec3d wellCoord;
-  
+
   SoMFString curveNames;
   SoMFString curveDescription;
   SoMFString curveUnits;
@@ -102,7 +103,7 @@ public:
   SoSFFloat lodDistance1;
   SoSFFloat lodDistance2;
   SoSFFloat wellRadius;
-  SoSFColor wellColor;
+  SoMFColor wellColor;
 
   SoMFFloat topsDepths;
   SoMFString topsNames;
