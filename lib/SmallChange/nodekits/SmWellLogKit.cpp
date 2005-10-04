@@ -983,47 +983,51 @@ SmWellLogKitP::buildGeometry(void)
     PUBLIC(this)->wellColor[0] : SbColor(0.8f, 0.8f, 0.8f);
 
   SbList <SbVec3f> redlist(this->poslist.getLength());
+  SbList <SbColor> collist(this->poslist.getLength());
+
   SoLODExtrusion * well = (SoLODExtrusion*) PUBLIC(this)->getAnyPart("well", TRUE);
 
-  if (PUBLIC(this)->wellColor.getNum() == PUBLIC(this)->wellCoord.getNum()) {
-    well->color.setNum(n);
-    SbColor * coldst = well->color.startEditing();
-    for (i = 0; i < n; i++) {
+  SbBool colpersegment = PUBLIC(this)->wellColor.getNum() == PUBLIC(this)->wellCoord.getNum();
+
+  for (i = 0; i < n; i++) {
+    if ((i == 0) || (i == n-1)) {
       redlist.append(this->poslist[i].pos);
-      coldst[i] = this->poslist[i].col;
+      if (colpersegment) collist.append(this->poslist[i].col);
     }
-    well->color.finishEditing();
-  }
-  else {
-    for (i = 0; i < n; i++) {
-      if ((i == 0) || (i == n-1)) redlist.append(this->poslist[i].pos);
-      else {
-        SbVec3f prev = this->poslist[i-1].pos;
-        SbVec3f p = this->poslist[i].pos;
-        SbVec3f next = this->poslist[i+1].pos;
-        
-        SbVec3f v0 = p - prev;
-        SbVec3f v1 = next - p;
+    else {
+      SbVec3f prev = this->poslist[i-1].pos;
+      SbVec3f p = this->poslist[i].pos;
+      SbVec3f next = this->poslist[i+1].pos;
       
-        v0.normalize();
-        v1.normalize();
-        
-      // try to reduce lines that are almost straight. 0.00001 is
-        // chosen based on experience...
-        if (SbAbs(1.0f-v0.dot(v1)) > 0.00001f) {
-          redlist.append(this->poslist[i].pos);
-        } 
+      SbVec3f v0 = p - prev;
+      SbVec3f v1 = next - p;
+      
+      v0.normalize();
+      v1.normalize();
+      
+      SbBool coldiff = FALSE;
+      if (colpersegment) {
+        if ((this->poslist[i-1].col != this->poslist[i].col) ||
+            (this->poslist[i].col != this->poslist[i+1].col)) {
+          coldiff = TRUE;
+        }
       }
+
+      // try to reduce lines that are almost straight. 0.00001 is
+      // chosen based on experience...
+      if (SbAbs(1.0f-v0.dot(v1)) > 0.00001f || coldiff) {
+        redlist.append(this->poslist[i].pos);
+        if (colpersegment) collist.append(this->poslist[i].col);
+      } 
     }
   }
 
   well->spine.setNum(redlist.getLength());
-
-  SbVec3f * lsdst = well->spine.startEditing();
-  for (i = 0; i < redlist.getLength(); i++) {
-    lsdst[i] = redlist[i];
+  well->spine.setValues(0, redlist.getLength(), redlist.getArrayPtr());
+  well->color.setNum(0);
+  if (colpersegment) {
+    well->color.setValues(0, collist.getLength(), collist.getArrayPtr());
   }
-  well->spine.finishEditing();
 
   SoPackedColor * fscol = (SoPackedColor*) PUBLIC(this)->getAnyPart("faceSetColor", TRUE);
   SoCoordinate3 * coord = (SoCoordinate3*) PUBLIC(this)->getAnyPart("coord", TRUE);
