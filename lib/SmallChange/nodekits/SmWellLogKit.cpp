@@ -344,8 +344,6 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(lodDistance2, (100000.0f));
 
   SO_KIT_ADD_FIELD(wellRadius, (1.0f));
-  SO_KIT_ADD_FIELD(wellColor, (0.7f, 0.7f, 0.7f));
-
   SO_KIT_ADD_FIELD(leftColor, (0.3f, 0.6f, 0.8f));
   SO_KIT_ADD_FIELD(rightColor, (0.3f, 0.6f, 0.8f));
 
@@ -1024,8 +1022,9 @@ SmWellLogKitP::buildGeometry(void)
 
   well->spine.setNum(redlist.getLength());
   well->spine.setValues(0, redlist.getLength(), redlist.getArrayPtr());
-  well->color.setNum(0);
+  well->color.setNum(collist.getLength());
   if (colpersegment) {
+    fprintf(stderr,"setting colors: %d, %d\n", collist.getLength(), redlist.getLength());
     well->color.setValues(0, collist.getLength(), collist.getArrayPtr());
   }
 
@@ -1353,7 +1352,7 @@ SmWellLogKitP::updateList(void)
       pos.col = colptr[i];
     }
     else {
-      pos.col = colptr[0];
+      pos.col = colptr ? colptr[0] : SbColor(0.7f, 0.7f, 0.7f);
     }
     pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.left = PUBLIC(this)->getLeftCurveData(i);
