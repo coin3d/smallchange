@@ -423,10 +423,10 @@ SmWellLogKit::SmWellLogKit(void)
   lm->model = SoLightModel::BASE_COLOR;
 
   SoLOD * toplod = (SoLOD*) this->getAnyPart("topLod", TRUE);
-  toplod->range.connectFrom(&this->lodDistance1);
+  toplod->range.connectFrom(&this->lodDistance2);
 
   SoLOD * facelod = (SoLOD*) this->getAnyPart("lod", TRUE);
-  facelod->range.connectFrom(&this->lodDistance2);
+  facelod->range.connectFrom(&this->lodDistance1);
 
   SoCallback * cb = (SoCallback*) this->getAnyPart("callbackNode", TRUE);
   cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
@@ -698,10 +698,10 @@ SmWellLogKit::connectNodes(void)
   well->radius.connectFrom(&this->wellRadius);
 
   SoLOD * toplod = (SoLOD*) this->getAnyPart("topLod", TRUE);
-  toplod->range.connectFrom(&this->lodDistance1);
+  toplod->range.connectFrom(&this->lodDistance2);
 
   SoLOD * facelod = (SoLOD*) this->getAnyPart("lod", TRUE);
-  facelod->range.connectFrom(&this->lodDistance2);
+  facelod->range.connectFrom(&this->lodDistance1);
 
   SoCallback * cb = (SoCallback*) this->getAnyPart("callbackNode", TRUE);
   cb->setCallback(SmWellLogKitP::callback_cb, PRIVATE(this));
