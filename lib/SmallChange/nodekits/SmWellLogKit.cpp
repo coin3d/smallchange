@@ -1024,7 +1024,6 @@ SmWellLogKitP::buildGeometry(void)
   well->spine.setValues(0, redlist.getLength(), redlist.getArrayPtr());
   well->color.setNum(collist.getLength());
   if (colpersegment) {
-    fprintf(stderr,"setting colors: %d, %d\n", collist.getLength(), redlist.getLength());
     well->color.setValues(0, collist.getLength(), collist.getArrayPtr());
   }
 
