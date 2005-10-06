@@ -383,8 +383,10 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topLodGroup, SoSeparator, FALSE, topLod, topInfo, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topLodGroup, wellBaseColor, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(wellBaseColor, SoBaseColor, FALSE, topLodGroup, well, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, wellName, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(wellName, SoText2, FALSE, topLodGroup, lightModel, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, wellNameSep, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(wellNameSep, SoSeparator, FALSE, topLodGroup, lightModel, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(wellNameColor, SoBaseColor, FALSE, wellNameSep, wellName, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(wellName, SoText2, FALSE, wellNameSep, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, pickStyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, FALSE, topLodGroup, lod, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lod, SoLOD, FALSE, topLodGroup, topsSep, TRUE);
@@ -407,6 +409,9 @@ SmWellLogKit::SmWellLogKit(void)
 
   SoText2 * welltext = (SoText2*) this->getAnyPart("wellName", TRUE);
   welltext->string.connectFrom(&this->name);
+
+  SoBaseColor * wellnamecolor = (SoBaseColor*) this->getAnyPart("wellNameColor", TRUE);
+  wellnamecolor->rgb = SbColor(0.0f, 0.0f, 0.0f);
 
   // initialize parts to default values
   SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapeHints", TRUE);
