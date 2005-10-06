@@ -242,6 +242,7 @@
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoRotation.h>
 #include <Inventor/nodes/SoText3.h>
+#include <Inventor/nodes/SoText2.h>
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/VRMLnodes/SoVRMLBillboard.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
@@ -293,6 +294,7 @@ public:
   uint32_t find_col(const SbName & name);
   int find_colidx(const SbName & name);
   void updateList(void);
+  void updateName() { }
   void buildGeometry(void);
   void buildTopsSceneGraph(void);
   void generateFaces(const SbVec3f & axis);
@@ -381,7 +383,8 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topLodGroup, SoSeparator, FALSE, topLod, topInfo, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topLodGroup, wellBaseColor, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(wellBaseColor, SoBaseColor, FALSE, topLodGroup, well, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, lightModel, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(well, SoLODExtrusion, FALSE, topLodGroup, wellName, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(wellName, SoText2, FALSE, topLodGroup, lightModel, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topLodGroup, pickStyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(pickStyle, SoPickStyle, FALSE, topLodGroup, lod, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(lod, SoLOD, FALSE, topLodGroup, topsSep, TRUE);
@@ -401,6 +404,9 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topInfo, SoInfo, FALSE, topLod, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
+
+  SoText2 * welltext = (SoText2*) this->getAnyPart("wellName", TRUE);
+  welltext->string.connectFrom(&this->name);
 
   // initialize parts to default values
   SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapeHints", TRUE);
@@ -1298,6 +1304,7 @@ SmWellLogKitP::oneshot_cb(void * closure, SoSensor * s)
   thisp->updateList();
   thisp->buildGeometry();
   thisp->buildTopsSceneGraph();
+  thisp->updateName();
   thisp->generateFaces(SbVec3f(1.0f, 0.0f, 0.0f));
   if (thisp->oneshot->isScheduled()) thisp->oneshot->unschedule();
   thisp->processingoneshot = FALSE;;
