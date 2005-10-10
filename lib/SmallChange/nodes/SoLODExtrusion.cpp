@@ -258,14 +258,21 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
   matrix.multVecMatrix(vv.getProjectionPoint(), cameralocal);
 
+  const SbVec3f * sv = this->spine.getValues(0);
   int spinelength = this->spine.getNum();
+
   SbBool use_color;
   if( spinelength == this->color.getNum())
     use_color = TRUE;
   else
     use_color = FALSE;
 
-  const SbVec3f * sv = this->spine.getValues(0);
+  // check for closed spine
+  if (sv[0] == sv[spinelength-1]) {
+    spinelength--;
+  }
+
+
   const SbVec3f * colorv = this->color.getValues(0);
   const float * lengths = this->pimpl->spinelens.getArrayPtr();
   int lodmode, i = 0;
@@ -283,10 +290,10 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     }
     else if (this->lodDistance2.getValue() > 0.0) {
       if (dist < this->lodDistance2.getValue()) {
-	lodmode = 1;
+        lodmode = 1;
       }
       else { 
-	lodmode = 2;
+        lodmode = 2;
       }
     }
     else {
@@ -295,9 +302,9 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     switch (lodmode) {
     case 0:    // render extrusion until above lodDistance1
       while (accdist < ld1dist && i < spinelength-1) {
-	THIS->renderSegidx(i, use_color);
-	accdist += lengths[i];
-	i++;
+        THIS->renderSegidx(i, use_color);
+        accdist += lengths[i];
+        i++;
       }
       break;
     case 1:    // render line until crossing a lodDistance
@@ -356,8 +363,13 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
   const SbLine & ray = action->getLine();
 
   const float r = this->radius.getValue();
-  const int num = this->spine.getNum();
+
+  int num = this->spine.getNum();
   const SbVec3f * sptr = this->spine.getValues(0);
+
+  if (sptr[0] == sptr[num-1]) {
+    num--;
+  }
 
   float d2 = this->lodDistance1.getValue();
   if (this->pickLines.getValue()) {
@@ -554,7 +566,7 @@ SoLODExtrusionP::generateCoords(void)
   const SbVec3f * spine = master->spine.getValues(0);
   if (spine[0] == spine[numspine-1]) {
     closed = TRUE;
-    //    numspine--;
+    numspine--;
   }
 
   SbVec3f zaxis = this->master->zAxis.getValue();
