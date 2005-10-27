@@ -259,6 +259,7 @@
 #include <Inventor/details/SoLineDetail.h>
 #include <Inventor/engines/SoCalculator.h>
 #include <float.h>
+#include <string.h>
 
 // struct used for storing data for each depth value
 typedef struct {
@@ -268,7 +269,35 @@ typedef struct {
   double tvdepth; // true vertical depth
   double left;  // curve data for the left side
   double right; // curve data for the right side
+  int realidx;
 } well_pos;
+
+class well_tooltip_info {
+public:
+  well_tooltip_info(const char * name, const int idx, const int num, const float * val,
+                    const char ** text) {
+    this->name = new char[strlen(name)+1];
+    strcpy(this->name, name);
+    this->curveidx = idx;
+    this->num = num;
+    this->data = new float[num];
+    memcpy(this->data, val, num*sizeof(float));
+    this->text = new char*[num];
+    for (int i = 0; i < num; i++) {
+      int len = strlen(text[i]);
+      this->text[i] = new char[len+1];
+      strcpy(this->text[i], text[i]);
+    }
+  }
+  ~well_tooltip_info() {
+  }
+public:
+  char * name;
+  int curveidx;
+  int num;
+  float * data;
+  char ** text;
+};
 
 class SmWellLogKitP {
 public:  
@@ -290,6 +319,7 @@ public:
   SbBool processingoneshot;
 
   SoCalculator *radiusEngine;
+  SbList <well_tooltip_info*> extra_tooltip_info;
 
   uint32_t find_col(const SbName & name);
   int find_colidx(const SbName & name);
@@ -470,6 +500,10 @@ SmWellLogKit::SmWellLogKit(void)
 
 SmWellLogKit::~SmWellLogKit(void)
 {
+  for (int i = 0; i < PRIVATE(this)->extra_tooltip_info.getLength(); i++) {
+    delete PRIVATE(this)->extra_tooltip_info[i];
+  }
+
   PRIVATE(this)->radiusEngine->unref();
   delete PRIVATE(this)->oneshot;
   delete PRIVATE(this);
@@ -677,13 +711,29 @@ SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
   // Reset to avoid old cruft showing up. Multifield will expand
   // automatically on the set1Value() calls below.
   tooltip->description.setNum(0);
+  int numcurves = this->getNumCurves();
+  SbString str;
 
   unsigned int stridx = 0;
   if (this->name.getValue() != "") {
     tooltip->description.set1Value(stridx++, this->name.getValue());
   }
+  for (int i = 0; i < PRIVATE(this)->extra_tooltip_info.getLength(); i++) {
+    well_tooltip_info * info = PRIVATE(this)->extra_tooltip_info[i];
+    int fidx = pos.realidx * numcurves + info->curveidx;
 
-  SbString str;
+    if (fidx < this->curveData.getNum()) {
+      float val = this->curveData[fidx];
+      for (int j = 0; j < info->num; j++) {
+        if (fabs(info->data[j]-val) < 0.5f) {
+          str.sprintf("%s: %s",
+                      info->name, info->text[j]);
+          tooltip->description.set1Value(stridx++, str);    
+          break;
+        }
+      }
+    }
+  }
   str.sprintf("Depth: %g", pos.mdepth);
   tooltip->description.set1Value(stridx++, str);
   str.sprintf("TVDSS: %g", pos.tvdepth);
@@ -702,6 +752,8 @@ SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
                 this->curveNames[ridx].getString(), r.getString());
     tooltip->description.set1Value(stridx++, str);    
   }
+
+
   return TRUE;
 }
 
@@ -832,6 +884,19 @@ SmWellLogKit::setDefaultOnNonWritingFields(void)
     }
   }  
   inherited::setDefaultOnNonWritingFields();
+}
+
+void 
+SmWellLogKit::addTooltipInfo(const char * name,
+                             const int curveidx,
+                             const int numvalues,
+                             const float * data,
+                             const char ** datatext)
+{
+  PRIVATE(this)->extra_tooltip_info.append(new well_tooltip_info(name, curveidx,
+                                                                 numvalues,
+                                                                 data,
+                                                                 datatext));
 }
 
 #undef PRIVATE
@@ -1242,6 +1307,8 @@ interpolate(well_pos & p, const well_pos & prev, const well_pos & next,
   p.right = prev.right;
   p.mdepth = prev.mdepth + (next.mdepth-prev.mdepth) * t;
   p.tvdepth = newdepth;
+  p.realidx = next.realidx;
+  p.col = next.col;
 }
 
 // time/depth interpolation function. Used when converting between
@@ -1372,7 +1439,8 @@ SmWellLogKitP::updateList(void)
     pos.mdepth = PUBLIC(this)->getDepth(i);
     pos.left = PUBLIC(this)->getLeftCurveData(i);
     pos.right = PUBLIC(this)->getRightCurveData(i);
-    
+    pos.realidx = i;
+
     // workaround for some LAS files that specifies an undef value,
     // but use some other value instead
     if (SbAbs(pos.left-undefval) < 1.0f) pos.left = undefval;
@@ -1387,3 +1455,11 @@ SmWellLogKitP::updateList(void)
 
 
 #undef PUBLIC
+
+
+
+
+
+
+
+

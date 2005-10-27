@@ -130,6 +130,12 @@ public:
   virtual void search(SoSearchAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
 
+  void addTooltipInfo(const char * name,
+                      const int curveidx,
+                      const int numvalues,
+                      const float * data,
+                      const char ** datatext);
+
 protected:
   virtual SbBool readInstance(SoInput * in, unsigned short flags);
   virtual void notify(SoNotList * l);
