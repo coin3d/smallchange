@@ -118,6 +118,7 @@
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SbLine.h>
+#include <Inventor/SbCylinder.h>
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/details/SoLineDetail.h>
 #include <Inventor/details/SoFaceDetail.h>
@@ -403,11 +404,9 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
           else if ((v1-op1).dot(line.getDirection()) < 0.0f) op1 = v1;
           
           if ((op1-op0).sqrLength() <= r2 && action->isBetweenPlanes(op0)) {
-
             // adjust picked point to account for radius of the extrusion
-
-            // FIXME: for now we just place the picked point on top of the extrusion
-            op0[2] += this->radius.getValue();
+            SbCylinder cyl(line, r);
+            (void) cyl.intersect(ray, op0);
 
             SoPickedPoint * pp = action->addIntersection(op0);
             if (pp) {
