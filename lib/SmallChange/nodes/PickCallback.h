@@ -39,7 +39,7 @@
 class SoPath;
 class SoPickedPoint;
 class SoEvent;
-
+class pc_sensordata;
 
 class SMALLCHANGE_DLL_API PickCallback : public SoGroup {
   typedef SoGroup inherited;
