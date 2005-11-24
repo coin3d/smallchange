@@ -46,6 +46,9 @@
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SoFullPath.h>
 #include <Inventor/SbPlane.h>
+#include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/details/SoFaceDetail.h>
+#include <Inventor/details/SoPointDetail.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
@@ -85,6 +88,7 @@ protected:
   
 private:  
 
+  void updateQuadtree(SoState * state);
   ocean_quadnode * root;
   SbList <ocean_quadnode*> nodelist;
 
@@ -268,14 +272,9 @@ static void add_node_rec(SbList <ocean_quadnode*> & list, ocean_quadnode * node)
   }
 }
 
-
 void
-OceanShape::GLRender(SoGLRenderAction * action)
+OceanShape::updateQuadtree(SoState * state)
 {
-  if (!this->shouldGLRender(action)) return;
-
-  SoState * state = action->getState();
-
   SbVec2f s = this->size.getValue();
   int minlevel = 4, maxlevel = 12;
 
@@ -301,11 +300,23 @@ OceanShape::GLRender(SoGLRenderAction * action)
     this->root->distanceSplit(pos, 1, minlevel, maxlevel); 
   }
 
+}
+
+
+void
+OceanShape::GLRender(SoGLRenderAction * action)
+{
+  if (!this->shouldGLRender(action)) return;
+
+  SoState * state = action->getState();
+
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
+  this->updateQuadtree(state);
   this->nodelist.truncate(0);
   add_node_rec(this->nodelist, this->root);
+
   for (int i = 0; i < nodelist.getLength(); i++) {
     ocean_quadnode * node = this->nodelist[i];
     const SbVec3f * corners = node->getCorners();
@@ -332,6 +343,27 @@ OceanShape::GLRender(SoGLRenderAction * action)
 void
 OceanShape::generatePrimitives(SoAction * action)
 {
+  SbVec2f s = this->size.getValue();
+  SoPrimitiveVertex vertex;
+  SoFaceDetail faceDetail;
+  SoPointDetail pointDetail;
+
+  vertex.setDetail(&pointDetail);
+  vertex.setNormal(SbVec3f(0.0f, 0.0f, 1.0f));
+
+  this->beginShape(action, QUADS, &faceDetail);
+  vertex.setPoint(SbVec3f(0.0f, 0.0f, 0.0f));
+  this->shapeVertex(&vertex);
+
+  vertex.setPoint(SbVec3f(s[0], 0.0f, 0.0f));
+  this->shapeVertex(&vertex);
+
+  vertex.setPoint(SbVec3f(s[0], s[1], 0.0f));
+  this->shapeVertex(&vertex);
+
+  vertex.setPoint(SbVec3f(0.0f, s[1], 0.0f));
+  this->shapeVertex(&vertex);
+  this->endShape();
 }
 
 void
