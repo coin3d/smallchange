@@ -465,7 +465,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os sim_ac_mks_make BUILD_WITH_MSVC BUILD_WITH_MSVC_TRUE BUILD_WITH_MSVC_FALSE SMALLCHANGE_MAJOR_VERSION SMALLCHANGE_MINOR_VERSION SMALLCHANGE_MICRO_VERSION SMALLCHANGE_BETA_VERSION SMALLCHANGE_VERSION LT_CURRENT LT_REVISION LT_AGE smallchange_build_dir smallchange_src_dir ac_unique_file sim_ac_relative_src_dir sim_ac_relative_src_dir_p CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP SMALLCHANGE_EXTRA_CPPFLAGS SMALLCHANGE_EXTRA_CFLAGS SMALLCHANGE_EXTRA_CXXFLAGS SMALLCHANGE_EXTRA_LDFLAGS SMALLCHANGE_EXTRA_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB F77 FFLAGS ac_ct_F77 LIBTOOL DSUFFIX CONFIG SUFFIX sim_ac_coin_configcmd LIBFLAGS X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS SMALLCHANGE_COMPILER ac_compiler_gnu SMALLCHANGE_DSP_LIBS SMALLCHANGE_DSP_INCS SMALLCHANGE_DSP_DEFS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os sim_ac_mks_make BUILD_WITH_MSVC BUILD_WITH_MSVC_TRUE BUILD_WITH_MSVC_FALSE SMALLCHANGE_MAJOR_VERSION SMALLCHANGE_MINOR_VERSION SMALLCHANGE_MICRO_VERSION SMALLCHANGE_BETA_VERSION SMALLCHANGE_VERSION LT_CURRENT LT_REVISION LT_AGE smallchange_build_dir smallchange_src_dir ac_unique_file sim_ac_relative_src_dir sim_ac_relative_src_dir_p CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP CXX CXXFLAGS ac_ct_CXX CXXCPP SMALLCHANGE_EXTRA_CPPFLAGS SMALLCHANGE_EXTRA_CFLAGS SMALLCHANGE_EXTRA_CXXFLAGS SMALLCHANGE_EXTRA_LDFLAGS SMALLCHANGE_EXTRA_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB F77 FFLAGS ac_ct_F77 LIBTOOL DSUFFIX CONFIG SUFFIX sim_ac_coin_configcmd LIBFLAGS X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS SMALLCHANGE_COMPILER ac_compiler_gnu SMALLCHANGE_DSP_LIBS SMALLCHANGE_DSP_INCS SMALLCHANGE_DSP_DEFS SMALLCHANGE_LIB_DSP_DEFS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1077,7 +1077,7 @@ Optional Packages:
   --with-inventor-qt=PATH specify where InventorQt resides
   --with-coin             enable use of Coin [default=yes]
   --with-coin=DIR         give prefix location of Coin
-  --with-mesa             prefer MesaGL (if found) over OpenGL [default=yes]
+  --with-mesa             prefer MesaGL (if found) over OpenGL [default=no]
   --with-opengl=DIR       OpenGL/Mesa installation directory
   --with-x                use the X Window System
   --with-pthread=DIR      pthread installation directory
@@ -1769,7 +1769,58 @@ echo $ECHO_N "checking setup for wrapmsvc.exe... $ECHO_C" >&6
       BUILD_WITH_MSVC=true
       echo "$as_me:$LINENO: result: working" >&5
 echo "${ECHO_T}working" >&6
+
+      # FIXME: why is this here, larsa? 20050714 mortene.
       # SIM_AC_MSVC_VERSION
+
+      # Robustness: we had multiple reports of Cygwin ''link'' getting in
+      # the way of MSVC link.exe, so do a little sanity check for that.
+      #
+      # FIXME: a better fix would be to call link.exe with full path from
+      # the wrapmsvc wrapper, to avoid any trouble with this -- I believe
+      # that should be possible, using the dirname of the full cl.exe path.
+      # 20050714 mortene.
+      sim_ac_check_link=`type link`
+      echo "$as_me:$LINENO: checking whether Cygwin's /usr/bin/link shadows MSVC link.exe" >&5
+echo $ECHO_N "checking whether Cygwin's /usr/bin/link shadows MSVC link.exe... $ECHO_C" >&6
+      case x"$sim_ac_check_link" in
+      x"link is /usr/bin/link"* )
+        echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+
+echo >&2 ""
+
+
+: ${sim_ac_message_file=$ac_aux_dir/errors.txt}
+if test -f $sim_ac_message_file; then
+  sim_ac_message="`sed -n -e '/^!cygwin-link$/,/^!/ { /^!/ d; p; }' <$sim_ac_message_file`"
+  if test x"$sim_ac_message" = x""; then
+    { { echo "$as_me:$LINENO: error: no message named 'cygwin-link' in '$sim_ac_message_file' - notify the $PACKAGE_NAME maintainer(s)" >&5
+echo "$as_me: error: no message named 'cygwin-link' in '$sim_ac_message_file' - notify the $PACKAGE_NAME maintainer(s)" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    eval "echo >&2 \"$sim_ac_message\""
+  fi
+else
+  { { echo "$as_me:$LINENO: error: file '$sim_ac_message_file' not found - notify the $PACKAGE_NAME maintainer(s)" >&5
+echo "$as_me: error: file '$sim_ac_message_file' not found - notify the $PACKAGE_NAME maintainer(s)" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+
+echo >&2 ""
+{ { echo "$as_me:$LINENO: error: aborting" >&5
+echo "$as_me: error: aborting" >&2;}
+   { (exit 1); exit 1; }; }
+
+        ;;
+      * )
+        echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+        ;;
+      esac
+
     else
       case $host in
       *-cygwin)
@@ -4973,7 +5024,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4976 "configure"' > conftest.$ac_ext
+  echo '#line 5027 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5854,7 +5905,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5857:" \
+echo "$as_me:5908:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6911,11 +6962,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6914: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6965: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6918: \$? = $ac_status" >&5
+   echo "$as_me:6969: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -7154,11 +7205,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7157: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7208: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7161: \$? = $ac_status" >&5
+   echo "$as_me:7212: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -7214,11 +7265,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7217: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7268: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7221: \$? = $ac_status" >&5
+   echo "$as_me:7272: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9399,7 +9450,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9402 "configure"
+#line 9453 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -9497,7 +9548,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9500 "configure"
+#line 9551 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11690,11 +11741,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11693: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11744: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11697: \$? = $ac_status" >&5
+   echo "$as_me:11748: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -11750,11 +11801,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11753: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11804: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11757: \$? = $ac_status" >&5
+   echo "$as_me:11808: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -13111,7 +13162,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 13114 "configure"
+#line 13165 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13209,7 +13260,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 13212 "configure"
+#line 13263 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14046,11 +14097,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14049: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14100: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14053: \$? = $ac_status" >&5
+   echo "$as_me:14104: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -14106,11 +14157,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14109: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14160: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14113: \$? = $ac_status" >&5
+   echo "$as_me:14164: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16141,11 +16192,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16144: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16195: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16148: \$? = $ac_status" >&5
+   echo "$as_me:16199: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -16384,11 +16435,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16387: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16438: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16391: \$? = $ac_status" >&5
+   echo "$as_me:16442: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings
@@ -16444,11 +16495,11 @@ else
    -e 's:.*FLAGS}? :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16447: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16498: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16451: \$? = $ac_status" >&5
+   echo "$as_me:16502: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18629,7 +18680,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 18632 "configure"
+#line 18683 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18727,7 +18778,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 18730 "configure"
+#line 18781 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19809,6 +19860,7 @@ if $enable_debug; then
     case $CXX in
     *wrapmsvc* )
       # uninitialized checks
+      if test ${sim_ac_msvc_version-0} -gt 6; then
 
 
 
@@ -19961,7 +20013,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-      # stack frame checks
+        # stack frame checks
 
 
 
@@ -20114,6 +20166,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+      fi
       ;;
     esac
   fi
@@ -20947,57 +21000,6 @@ echo "${ECHO_T}release version" >&6
 esac
 
 
-echo "$as_me:$LINENO: checking Visual Studio C++ version" >&5
-echo $ECHO_N "checking Visual Studio C++ version... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-int
-main ()
-{
-long long number = 0;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  sim_ac_msvc_version=7
-  sim_ac_msvc_version=6
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-echo "$as_me:$LINENO: result: $sim_ac_msvc_version" >&5
-echo "${ECHO_T}$sim_ac_msvc_version" >&6
-
-
 
 
 
@@ -21026,6 +21028,7 @@ if $enable_debug; then
     case $CXX in
     *wrapmsvc* )
       # uninitialized checks
+      if test ${sim_ac_msvc_version-0} -gt 6; then
 
 
 
@@ -21178,7 +21181,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-      # stack frame checks
+        # stack frame checks
 
 
 
@@ -21331,6 +21334,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+      fi
       ;;
     esac
   fi
@@ -22345,7 +22349,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   else
     case $CXX in
     *wrapmsvc* )
-
       if $sim_ac_simian; then
         if $sim_ac_source_release; then :; else
           # break build on warnings, except for in official source code releases
@@ -22658,7 +22661,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
-      if test x$sim_ac_msvc_version = x7; then
+      if test ${sim_ac_msvc_version-0} -gt 6; then
         # 64-bit porting warnings
 
 
@@ -25417,7 +25420,7 @@ if test "${with_mesa+set}" = set; then
   withval="$with_mesa"
 
 else
-  with_mesa=yes
+  with_mesa=no
 fi;
 
 
@@ -25783,6 +25786,9 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 #include <pthread.h>
 int
 main ()
@@ -25847,6 +25853,9 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 #include <pthread.h>
 int
 main ()
@@ -26437,6 +26446,7 @@ exec_prefix=$sim_ac_save_exec_prefix
 SMALLCHANGE_DSP_LIBDIRS=
 SMALLCHANGE_DSP_LIBS=
 SMALLCHANGE_DSP_INCS=
+SMALLCHANGE_LIB_DSP_DEFS=
 SMALLCHANGE_DSP_DEFS=
 
 if $sim_ac_make_dsp; then
@@ -26493,6 +26503,15 @@ fi
       else
         SMALLCHANGE_DSP_DEFS="$SMALLCHANGE_DSP_DEFS /D \"$define\""
       fi
+      if (echo $define | grep _MAKE_DLL) >/dev/null 2>&1; then
+        :
+      else
+        if test x"$SMALLCHANGE_DSP_DEFS" = x""; then
+          SMALLCHANGE_LIB_DSP_DEFS="/D \"$define\""
+        else
+          SMALLCHANGE_LIB_DSP_DEFS="$SMALLCHANGE_LIB_DSP_DEFS /D \"$define\""
+        fi
+      fi
       ;;
     esac
   done
@@ -26514,6 +26533,7 @@ fi
   rm -f libtool.bak
   chmod 755 libtool
 fi
+
 
 
 
@@ -27311,6 +27331,7 @@ s,@ac_compiler_gnu@,$ac_compiler_gnu,;t t
 s,@SMALLCHANGE_DSP_LIBS@,$SMALLCHANGE_DSP_LIBS,;t t
 s,@SMALLCHANGE_DSP_INCS@,$SMALLCHANGE_DSP_INCS,;t t
 s,@SMALLCHANGE_DSP_DEFS@,$SMALLCHANGE_DSP_DEFS,;t t
+s,@SMALLCHANGE_LIB_DSP_DEFS@,$SMALLCHANGE_LIB_DSP_DEFS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

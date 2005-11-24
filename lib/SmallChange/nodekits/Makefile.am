@@ -17,7 +17,8 @@ SOURCES = \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
 	SmAxisKit.cpp SmAxisKit.h \
 	SmPieChart.cpp SmPieChart.h \
-	PopupMenuKit.cpp SmPopupMenuKit.h
+	PopupMenuKit.cpp SmPopupMenuKit.h \
+	OceanKit.cpp SmOceanKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
@@ -35,7 +36,8 @@ libnodekitsinc_HEADERS = \
 	SmAxisDisplayKit.h \
 	SmAxisKit.h \
 	SmPieChart.h \
-	SmPopupMenuKit.h
+	SmPopupMenuKit.h \
+	SmOceanKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \

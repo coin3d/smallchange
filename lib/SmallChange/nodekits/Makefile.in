@@ -111,6 +111,7 @@ SMALLCHANGE_EXTRA_CPPFLAGS = @SMALLCHANGE_EXTRA_CPPFLAGS@
 SMALLCHANGE_EXTRA_CXXFLAGS = @SMALLCHANGE_EXTRA_CXXFLAGS@
 SMALLCHANGE_EXTRA_LDFLAGS = @SMALLCHANGE_EXTRA_LDFLAGS@
 SMALLCHANGE_EXTRA_LIBS = @SMALLCHANGE_EXTRA_LIBS@
+SMALLCHANGE_LIB_DSP_DEFS = @SMALLCHANGE_LIB_DSP_DEFS@
 SMALLCHANGE_MAJOR_VERSION = @SMALLCHANGE_MAJOR_VERSION@
 SMALLCHANGE_MICRO_VERSION = @SMALLCHANGE_MICRO_VERSION@
 SMALLCHANGE_MINOR_VERSION = @SMALLCHANGE_MINOR_VERSION@
@@ -190,7 +191,8 @@ SOURCES = \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
 	SmAxisKit.cpp SmAxisKit.h \
 	SmPieChart.cpp SmPieChart.h \
-	PopupMenuKit.cpp SmPopupMenuKit.h
+	PopupMenuKit.cpp SmPopupMenuKit.h \
+	OceanKit.cpp SmOceanKit.h
 
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -209,7 +211,8 @@ libnodekitsinc_HEADERS = \
 	SmAxisDisplayKit.h \
 	SmAxisKit.h \
 	SmPieChart.h \
-	SmPopupMenuKit.h
+	SmPopupMenuKit.h \
+	SmOceanKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -224,7 +227,8 @@ am__objects_1 = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT) \
 	SmTooltipKit.$(OBJEXT) SmWellLogKit.$(OBJEXT) \
 	SmCameraControlKit.$(OBJEXT) GeoMarkerKit.$(OBJEXT) \
 	NormalsKit.$(OBJEXT) SmAxisDisplayKit.$(OBJEXT) \
-	SmAxisKit.$(OBJEXT) SmPieChart.$(OBJEXT) PopupMenuKit.$(OBJEXT)
+	SmAxisKit.$(OBJEXT) SmPieChart.$(OBJEXT) PopupMenuKit.$(OBJEXT) \
+	OceanKit.$(OBJEXT)
 am_nodekits_lst_OBJECTS = $(am__objects_1)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -233,7 +237,8 @@ libnodekits_la_LDFLAGS =
 libnodekits_la_LIBADD =
 am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo SmWellLogKit.lo \
 	SmCameraControlKit.lo GeoMarkerKit.lo NormalsKit.lo \
-	SmAxisDisplayKit.lo SmAxisKit.lo SmPieChart.lo PopupMenuKit.lo
+	SmAxisDisplayKit.lo SmAxisKit.lo SmPieChart.lo PopupMenuKit.lo \
+	OceanKit.lo
 am_libnodekits_la_OBJECTS = $(am__objects_2)
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
@@ -244,7 +249,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/GeoMarkerKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/LegendKit.Plo ./$(DEPDIR)/LegendKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/NormalsKit.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/NormalsKit.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/NormalsKit.Po ./$(DEPDIR)/OceanKit.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/OceanKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PopupMenuKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PopupMenuKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmAxisDisplayKit.Plo \
@@ -289,7 +295,8 @@ SOURCES = \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
 	SmAxisKit.cpp SmAxisKit.h \
 	SmPieChart.cpp SmPieChart.h \
-	PopupMenuKit.cpp SmPopupMenuKit.h
+	PopupMenuKit.cpp SmPopupMenuKit.h \
+	OceanKit.cpp SmOceanKit.h
 
 
 all: all-am
@@ -328,6 +335,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LegendKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NormalsKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NormalsKit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OceanKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OceanKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PopupMenuKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PopupMenuKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmAxisDisplayKit.Plo@am__quote@
