@@ -317,7 +317,7 @@ OceanShape::GLRender(SoGLRenderAction * action)
     for (int j = 0; j < 4; j++) {
       glVertex3fv(corners[j].getValue());
       ocean_quadnode * tmp = node->searchNeighbor(j);
-      if (!tmp || tmp->isSplit()) {
+      if (tmp && tmp->isSplit()) {
         SbVec3f e = (corners[j]+corners[(j+1)%4]) * 0.5f;
         glVertex3fv(e.getValue());
       }
