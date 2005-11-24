@@ -78,6 +78,7 @@
 #include <SmallChange/nodes/SmCoordinateSystem.h>
 #include <SmallChange/nodes/SmViewpointWrapper.h>
 #include <SmallChange/nodekits/SmPopupMenuKit.h>
+#include <SmallChange/nodekits/SmOceanKit.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
 
@@ -142,4 +143,5 @@ smallchange_init(void)
   SmPopupMenuKit::initClass();
 
   SmPieChart::initClass();
+  SmOceanKit::initClass();
 }
