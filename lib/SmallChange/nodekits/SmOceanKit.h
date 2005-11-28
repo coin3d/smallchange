@@ -27,6 +27,7 @@
 #include <Inventor/nodekits/SoSubKit.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFVec2f.h>
+#include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/SbVec2f.h>
 #include <SmallChange/basic.h>
 
@@ -43,6 +44,7 @@ class SMALLCHANGE_DLL_API SmOceanKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(utmposition);
   SO_KIT_CATALOG_ENTRY_HEADER(material);
   SO_KIT_CATALOG_ENTRY_HEADER(shapeHints);
+  SO_KIT_CATALOG_ENTRY_HEADER(shader);
   SO_KIT_CATALOG_ENTRY_HEADER(oceanShape);
   
 public:
@@ -50,6 +52,23 @@ public:
   static void initClass(void);
 
   SoSFVec2f size;
+
+  SoSFFloat chop;
+  SoSFFloat angleDeviation;
+  SoSFVec2f windDirection;
+  SoSFFloat minWaveLength;
+  SoSFFloat maxWaveLength;
+  SoSFFloat amplitudeRatio;
+  
+  SoSFFloat specAttenuation;
+  SoSFFloat specEnd;
+  SoSFFloat specTrans;
+  
+  SoSFFloat envHeight;
+  SoSFFloat envRadius;
+  SoSFFloat waterLevel;
+  SoSFFloat transitionSpeed;
+  SoSFFloat sharpness;
 
 protected:
   virtual void setDefaultOnNonWritingFields(void);

@@ -37,6 +37,7 @@
 #include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/sensors/SoFieldSensor.h>
+#include <Inventor/fields/SoSFNode.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoShape.h>
@@ -52,15 +53,74 @@
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
+#include <Inventor/elements/SoCullElement.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/nodes/SoShaderProgram.h>
+#include <Inventor/nodes/SoVertexShader.h>
+#include <Inventor/nodes/SoFragmentShader.h>
+#include <Inventor/nodes/SoShaderParameter.h>
+
+#include <Inventor/sensors/SoTimerSensor.h>
 #include <SmallChange/nodes/UTMPosition.h>
+#include <SmallChange/misc/SbHash.h>
 #include <Inventor/system/gl.h>
+#include <Inventor/C/glue/gl.h>
 #include <Inventor/C/base/memalloc.h>
+#include <Inventor/misc/SoContextHandler.h>
+
+#include <math.h>
+#include <stdlib.h>
+
+static int vbo_vertex_count_min_limit = -1;
+static int vbo_vertex_count_max_limit = -1;
+
+class SmVBO {
+ public:
+  SmVBO(const GLenum target = GL_ARRAY_BUFFER,
+        const GLenum usage = GL_STATIC_DRAW);
+  ~SmVBO();
+
+  static void init(void);
+  
+  void setBufferData(const GLvoid * data, intptr_t size, uint32_t dataid = 0);  
+  void * allocBufferData(intptr_t size, uint32_t dataid = 0);  
+  uint32_t getBufferDataId(void) const;
+  void getBufferData(const GLvoid *& data, intptr_t & size);
+  void bindBuffer(uint32_t contextid);
+  
+  static void setVertexCountLimits(const int minlimit, const int maxlimit);
+  static int getVertexCountMinLimit(void);
+  static int getVertexCountMaxLimit(void);
+
+  static void testGLPerformance(const uint32_t contextid);
+  static SbBool shouldCreateVBO(const uint32_t contextid, const int numdata);
+
+ private:
+  static void context_created(const cc_glglue * glue, void * closure);
+  static SbBool isVBOFast(const uint32_t contextid);
+  static void context_destruction_cb(uint32_t context, void * userdata);
+  static void vbo_schedule(const uint32_t & key,
+                           const GLuint & value,
+                           void * closure);
+  static void vbo_delete(void * closure, uint32_t contextid);
+  
+  GLenum target;
+  GLenum usage;
+  const GLvoid * data;
+  intptr_t datasize;
+  uint32_t dataid;
+  SbBool didalloc;
+
+  SbHash <GLuint, uint32_t> vbohash;
+};
 
 class SmOceanKitP {
 public:
   SmOceanKitP(void) 
   { }
 };
+
+static const float kGravConst = 30.f;
 
 class ocean_quadnode;
 
@@ -74,7 +134,26 @@ public:
   static void initClass(void);
   OceanShape(void);
 
+  SoSFNode shader;
   SoSFVec2f size;
+  SoSFFloat chop;
+  SoSFFloat angleDeviation;
+  SoSFVec2f windDirection;
+  SoSFFloat minWaveLength;
+  SoSFFloat maxWaveLength;
+  SoSFFloat amplitudeRatio;
+  
+  SoSFFloat specAttenuation;
+  SoSFFloat specEnd;
+  SoSFFloat specTrans;
+  
+  SoSFFloat envHeight;
+  SoSFFloat envRadius;
+  SoSFFloat waterLevel;
+  SoSFFloat transitionSpeed;
+  SoSFFloat sharpness;
+
+  void tick(void);
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
@@ -86,14 +165,117 @@ protected:
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
   
-private:  
-
+private:
+  void updateShader(void);
+  void initShader(void);
+  void renderGrid(ocean_quadnode * node, const int bitmask);
+  void wavefunc(const SbVec3f & in, SbVec3f &v, SbVec3f &n);
   void updateQuadtree(SoState * state);
   ocean_quadnode * root;
   SbList <ocean_quadnode*> nodelist;
+  SoTimerSensor * timersensor;
+
+  void initTexState(void);
+  void updateTexWave(const int i, const float dt);
+  void initTexWave(const int i);
+
+  void updateGeoWave(const int i, const float dt);
+  void initGeoWave(const int i);
+  void updateWaves(const double dt);
+  void copyGeoState();
+  void initWaves();
+  void initLevels();
+  static void timerCB(void * closure, SoSensor * s);
+  SbTime currtime;
+
+  SoVertexShader * vertexshader;
+  SoFragmentShader * fragmentshader;
+
+public:
+  enum {
+    NUM_GEO_WAVES = 4,
+    NUM_TEX_WAVES = 16,
+    BUMPSIZE = 256,
+    GRIDSIZE = 17
+  };
+
+private:
+  SbVec3f * grid;
+  SmVBO * gridvbo;
+  SmVBO * idxvbo[16];
+  unsigned short * grididx[16];
+  int idxlen[16];
+  int minlevel;
+  int maxlevel;
+
+  typedef struct {
+    float chop;
+    float angleDeviation;
+    SbVec2f windDir;
+    float minLength;
+    float maxLength;
+    float ampRatio;
+    
+    float specAtten;
+    float specEnd;
+    float specTrans;
+    
+    float envHeight;
+    float envRadius;
+    float waterLevel;
+    
+    float transDel;
+    int transIdx;
+    float Q;
+  } geostate;
+
+  typedef struct {
+    float noise;
+    float chop;
+    float angleDeviation;
+    SbVec2f windDir;
+    float maxLength;
+    float minLength;
+    float ampRatio;
+    float rippleScale;
+    float speedDeviation;
+
+    int	transIdx;
+    float transDel;
+  } texstate;
+  
+  geostate geostate_cache;
+  texstate texstate_cache;
+
+  SbBool invalidstate;
+
+  typedef struct {
+    float phase;
+    float amp;
+    float fullamp;
+    float len;
+    float freq;
+    SbVec2f dir;
+    float fade;
+  } geowave;
+
+  geowave geowaves[4];
+
+  typedef struct {
+    float phase;
+    float amp;
+    float fullamp;
+    float len;
+    float speed;
+    float freq;
+    SbVec2f dir;
+    SbVec2f rotScale;
+    float fade;
+  } texwave;
+  
+  texwave texwaves[16];
 
 };
-
 
 class ocean_quadnode {
 public:
@@ -141,6 +323,8 @@ public:
   const SbVec3f * getCorners() {
     return this->corner;
   }
+  int getNodeBitmask(void);
+
 private:
   void rotate(void);
   friend class quadsphere;
@@ -186,17 +370,54 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_CONSTRUCTOR(SmOceanKit);
   
   SO_KIT_ADD_FIELD(size, (10000.0f, 10000.0f));
+  SO_KIT_ADD_FIELD(chop, (2.5f));
+  SO_KIT_ADD_FIELD(angleDeviation, (15.0f));
+  SO_KIT_ADD_FIELD(windDirection, (0.0f, 1.0f));
+  
+  SO_KIT_ADD_FIELD(minWaveLength, (15.f));
+  SO_KIT_ADD_FIELD(maxWaveLength, (25.f));
+  SO_KIT_ADD_FIELD(amplitudeRatio, (0.1f));
+  
+  SO_KIT_ADD_FIELD(envHeight, (-50.f));
+  SO_KIT_ADD_FIELD(envRadius, (100.f));
+  SO_KIT_ADD_FIELD(waterLevel, (-2.0f));
+    
+  SO_KIT_ADD_FIELD(specAttenuation, (1.0f));
+  SO_KIT_ADD_FIELD(specEnd, (200.0f));
+  SO_KIT_ADD_FIELD(specTrans, (100.0f));
+  SO_KIT_ADD_FIELD(transitionSpeed, (1.0f / 6.0f));
+  SO_KIT_ADD_FIELD(sharpness, (0.5f));
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, oceanShape, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, shader, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, FALSE, topSeparator, oceanShape, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(oceanShape, OceanShape, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
 
   OceanShape * shape = (OceanShape*) this->getAnyPart("oceanShape", TRUE);
   shape->size.connectFrom(&this->size);
+  shape->chop.connectFrom(&this->chop);
+  shape->angleDeviation.connectFrom(&this->angleDeviation);
+  shape->windDirection.connectFrom(&this->windDirection);
+  shape->minWaveLength.connectFrom(&this->minWaveLength);
+  shape->maxWaveLength.connectFrom(&this->maxWaveLength);
+  shape->amplitudeRatio.connectFrom(&this->amplitudeRatio);
+  
+  shape->specAttenuation.connectFrom(&this->specAttenuation);
+  shape->specEnd.connectFrom(&this->specEnd);
+  shape->specTrans.connectFrom(&this->specTrans);
+  
+  shape->envHeight.connectFrom(&this->envHeight);
+  shape->envRadius.connectFrom(&this->envRadius);
+  shape->waterLevel.connectFrom(&this->waterLevel);
+  shape->transitionSpeed.connectFrom(&this->transitionSpeed);
+  shape->sharpness.connectFrom(&this->sharpness);
+
+  SoShaderProgram * shader = (SoShaderProgram*) this->getAnyPart("shader", TRUE);
+  shape->shader = shader;
 }
 
 /*!
@@ -229,20 +450,150 @@ SmOceanKit::setDefaultOnNonWritingFields(void)
 
 SO_NODE_SOURCE(OceanShape);
 
+static unsigned short * add_triangles(unsigned short * ptr,
+                                      const unsigned short * fanptr,
+                                      int fanlen)
+{
+  int i = 0;
+  int v0 = fanptr[i++];
+  int v1 = fanptr[i++];
+  while (i < fanlen) {
+    int v2 = fanptr[i++];
+    *ptr++ = v0;
+    *ptr++ = v1;
+    *ptr++ = v2;
+    v1 = v2;
+  }
+  return ptr;
+}
+
+static unsigned short * 
+add_fan(unsigned short * ptr, int x, int y, int gridsize, int bitmask) 
+{
+  unsigned short fanidx[10];
+  unsigned short * fanptr = fanidx;
+  int i = 0;
+
+#define IDX(_x_, _y_) ((_y_)*gridsize + (_x_))
+
+  // create triangle fan first
+  fanptr[i++] = IDX(x,y);
+  fanptr[i++] = IDX(x-1, y-1);
+  if ((y > 1) || (bitmask&0x1)) {
+    fanptr[i++] = IDX(x,y-1);
+  }
+  fanptr[i++] = IDX(x+1, y-1);
+  if ((x < gridsize-2) || (bitmask&0x2)) {
+    fanptr[i++] = IDX(x+1, y);
+  }
+  fanptr[i++] = IDX(x+1, y+1);
+  if ((y < gridsize-2) || (bitmask&0x4)) {
+    fanptr[i++] = IDX(x, y+1);
+  }
+  fanptr[i++] = IDX(x-1, y+1);
+  if ((x > 1) || (bitmask & 0x8)) {
+    fanptr[i++] = IDX(x-1,y);
+  }
+  fanptr[i++] = IDX(x-1, y-1);
+  
+#undef IDX
+
+  // convert triangle fan to triangles for fast rendering
+  return add_triangles(ptr, fanptr, i);
+}
+
+
 OceanShape::OceanShape()
 {
   SO_NODE_CONSTRUCTOR(OceanShape);
   SO_NODE_ADD_FIELD(size, (10000.0f, 10000.0f));
+  SO_NODE_ADD_FIELD(chop, (2.5f));
+  SO_NODE_ADD_FIELD(angleDeviation, (15.0f));
+  SO_NODE_ADD_FIELD(windDirection, (0.0f, 1.0f));
+  
+  SO_NODE_ADD_FIELD(minWaveLength, (15.f));
+  SO_NODE_ADD_FIELD(maxWaveLength, (25.f));
+  SO_NODE_ADD_FIELD(amplitudeRatio, (0.1f));
+  
+  SO_NODE_ADD_FIELD(envHeight, (-50.f));
+  SO_NODE_ADD_FIELD(envRadius, (100.f));
+  SO_NODE_ADD_FIELD(waterLevel, (-2.0f));
+    
+  SO_NODE_ADD_FIELD(specAttenuation, (1.0f));
+  SO_NODE_ADD_FIELD(specEnd, (200.0f));
+  SO_NODE_ADD_FIELD(specTrans, (100.0f));
+  SO_NODE_ADD_FIELD(transitionSpeed, (1.0f / 6.0f));
+  SO_NODE_ADD_FIELD(sharpness, (0.5f));
+  SO_NODE_ADD_FIELD(shader, (NULL));
 
   this->root = NULL;
   if (node_memalloc == NULL) {
     node_memalloc = cc_memalloc_construct(sizeof(ocean_quadnode));
     numnodes++;
   }
+  this->geostate_cache.transIdx = 0;
+  this->texstate_cache.transIdx = 0;
+  this->invalidstate = TRUE;
+  this->minlevel = 4;
+  this->maxlevel = 12;
+  this->currtime = SbTime::zero();
+  this->timersensor = new SoTimerSensor(timerCB, this);
+  this->timersensor->setInterval(SbTime(1.0f/60.0f));
+  this->timersensor->schedule();
+
+  this->grid = new SbVec3f[GRIDSIZE*GRIDSIZE];
+  int i = 0;
+  int x, y;
+  for (y = 0; y < GRIDSIZE; y++) {
+    float fy = float(y) / float(GRIDSIZE-1);
+    for (x = 0; x < GRIDSIZE; x++) {
+      this->grid[i++] = SbVec3f(float(x)/float(GRIDSIZE-1),
+                                fy,
+                                0.0f);
+    }
+  }
+  this->gridvbo = new SmVBO(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+  this->gridvbo->setBufferData(this->grid, GRIDSIZE*GRIDSIZE*3*sizeof(float));
+  int size = (GRIDSIZE/2)*(GRIDSIZE/2)*3*8;
+  
+  for (i = 0; i < 16; i++) {
+    this->grididx[i] = new unsigned short[size];
+    unsigned short * ptr = this->grididx[i]; 
+    unsigned short * orgptr = ptr;
+    for (y = 1; y < GRIDSIZE; y += 2) {
+      for (x = 1; x < GRIDSIZE; x += 2) {
+        ptr = add_fan(ptr, x, y, GRIDSIZE, i);
+      }
+    }
+    this->idxlen[i] = ptr-orgptr;
+    this->idxvbo[i] = new SmVBO(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+    this->idxvbo[i]->setBufferData(this->grididx[i], this->idxlen[i]*sizeof(short));
+    
+    fprintf(stderr,"idxlen %d: %d\n", i , this->idxlen[i]);
+  }
+  this->vertexshader = NULL;
+  this->fragmentshader = NULL;
 }
 
 OceanShape::~OceanShape()
 {
+  delete this->timersensor;
+
+  if (this->vertexshader) {
+    this->vertexshader->unref();
+  }
+  if (this->fragmentshader) {
+    this->fragmentshader->unref();
+  }
+  delete this->root;
+  delete[] this->grid;
+  delete this->gridvbo;
+
+  for (int i = 0; i < 16; i++) {
+    delete[] this->grididx[i];
+    delete this->idxvbo[i];
+  }
+
   numnodes--;
   if (numnodes == 0) {
     cc_memalloc_destruct(node_memalloc);
@@ -260,24 +611,62 @@ OceanShape::initClass()
   }
 }
 
-static void add_node_rec(SbList <ocean_quadnode*> & list, ocean_quadnode * node)
+void 
+OceanShape::timerCB(void * closure, SoSensor * s)
 {
+  ((OceanShape*)closure)->touch(); // force a redraw
+}
+
+void
+OceanShape::tick()
+{
+  SbTime t = SbTime::getTimeOfDay();
+  if (this->currtime == SbTime::zero() || this->invalidstate) {
+    this->copyGeoState();
+    this->initTexState();
+    this->initWaves();
+    this->initLevels();
+    this->invalidstate = FALSE;
+    this->initShader();
+  }
+  else {
+    this->updateWaves((t - this->currtime).getValue());
+    this->updateShader();
+  }
+  this->currtime = t;
+}
+
+static void add_node_rec(SoState * state,
+                         const float h,
+                         SbList <ocean_quadnode*> & list, ocean_quadnode * node)
+{
+  int i;
+
+  state->push();
+  if (!SoCullElement::completelyInside(state)) {
+    const SbVec3f * corners = node->getCorners();
+    SbBox3f box(corners[0][0], corners[0][1], -h,
+                corners[2][0], corners[2][1], h);
+    if (SoCullElement::cullBox(state, box)) {
+      state->pop();
+      return;
+    }
+  }
   if (!node->isSplit()) list.append(node);
   else {
-    for (int i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
       ocean_quadnode * child = node->getChild(i);
-      if (child->isSplit()) add_node_rec(list, child);
+      if (child->isSplit()) add_node_rec(state, h, list, child);
       else list.append(child);
     }
   }
+  state->pop();
 }
 
 void
 OceanShape::updateQuadtree(SoState * state)
 {
   SbVec2f s = this->size.getValue();
-  int minlevel = 4, maxlevel = 12;
-
   const SbMatrix & mat = SoModelMatrixElement::get(state);
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
 
@@ -288,7 +677,7 @@ OceanShape::updateQuadtree(SoState * state)
   if (this->root) {
     this->root->clearNeighbors();
     this->root->unsplit();
-    this->root->distanceSplit(pos, 1, minlevel, maxlevel);
+    this->root->distanceSplit(pos, 1, this->minlevel, this->maxlevel);
     this->root->deleteHiddenChildren();
   }
   else {
@@ -308,6 +697,7 @@ OceanShape::GLRender(SoGLRenderAction * action)
 {
   if (!this->shouldGLRender(action)) return;
 
+  this->tick();
   SoState * state = action->getState();
 
   SoMaterialBundle mb(action);
@@ -315,27 +705,77 @@ OceanShape::GLRender(SoGLRenderAction * action)
 
   this->updateQuadtree(state);
   this->nodelist.truncate(0);
-  add_node_rec(this->nodelist, this->root);
+  float h = this->amplitudeRatio.getValue() * this->maxWaveLength.getValue();
+
+  add_node_rec(state, h, this->nodelist, this->root);
+
+  SbVec3f n, v;
+  
+  uint32_t contextid = action->getCacheContext();
+  const cc_glglue * glue = cc_glglue_instance(contextid);
+
+#if 1 // render waves using VBO and vertex/fragment shaders
+  this->gridvbo->bindBuffer((uint32_t) contextid);
+  cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
+  cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
 
   for (int i = 0; i < nodelist.getLength(); i++) {
     ocean_quadnode * node = this->nodelist[i];
+    int mask = node->getNodeBitmask();
     const SbVec3f * corners = node->getCorners();
-    SbVec3f c = (corners[0] + corners[2]) * 0.5f;
-
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3fv(c.getValue());
-    for (int j = 0; j < 4; j++) {
-      glVertex3fv(corners[j].getValue());
-      ocean_quadnode * tmp = node->searchNeighbor(j);
-      if (tmp && tmp->isSplit()) {
-        SbVec3f e = (corners[j]+corners[(j+1)%4]) * 0.5f;
-        glVertex3fv(e.getValue());
-      }
-    }
-    glVertex3fv(corners[0].getValue());
-    glEnd();
+    SbVec3f scale = corners[2] - corners[0];
+    glPushMatrix();
+    glTranslatef(corners[0][0], corners[0][1], 0.0f); 
+    glScalef(scale[0], scale[1], 1.0f);
+    this->idxvbo[mask]->bindBuffer(contextid);
+    cc_glglue_glDrawElements(glue,
+                             GL_TRIANGLES,
+                             this->idxlen[mask],
+                             GL_UNSIGNED_SHORT, NULL);
+    glPopMatrix();
+    
   }
+  cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
+  cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0);
+  cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0);
+
+#else // just render everything using the CPU
+  for (int i = 0; i < nodelist.getLength(); i++) {
+    ocean_quadnode * node = this->nodelist[i];
+    int mask = node->getNodeBitmask();    
+    this->renderGrid(node, mask);
+  }
+#endif
+}
+
+void
+OceanShape::renderGrid(ocean_quadnode * node, const int bitmask) 
+{
+  const SbVec3f * corners = node->getCorners();
+  SbVec3f scale = corners[2] - corners[0];
+  scale[2] = 1.0f;
+
+  SbMatrix m;
+  m.setScale(scale);
+  SbMatrix m2;
+  m2.setTranslate(corners[0]);
+  m.multRight(m2);
+
+  unsigned short * iptr = this->grididx[bitmask];
+  int len = this->idxlen[bitmask];
+
+  glBegin(GL_TRIANGLES);
+  SbVec3f v0,v,n;
+  while (len--) {
+    int idx = *iptr++;
+    // fprintf(stderr,"idx: %d\n", idx);
+    v0 = this->grid[idx];
+    m.multVecMatrix(v0,v0);
+    this->wavefunc(v0, v, n);
+    glNormal3fv(n.getValue());
+    glVertex3fv(v.getValue());
+  }
+  glEnd();
 }
 
 /*!
@@ -370,8 +810,10 @@ void
 OceanShape::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
   SbVec2f s = this->size.getValue();
-  box.setBounds(0.0f, 0.0f, 0.0f, s[0], s[1], 0.0f);
-  center.setValue(s[0]*0.5f, s[1]*0.5, 0.0f);
+  float h = this->amplitudeRatio.getValue() * this->maxWaveLength.getValue();
+  box.setBounds(0.0f, 0.0f, -h, s[0], s[1], h);
+
+  center.setValue(s[0]*0.5f, s[1]*0.5f, 0.0f);
 }
 
 void
@@ -406,6 +848,8 @@ OceanShape::notify(SoNotList * list)
     delete this->root;
     this->root = NULL;
   }
+  else if (f) this->invalidstate = TRUE;
+  inherited::notify(list);
 }
 
 
@@ -421,10 +865,10 @@ ocean_quadnode::getAllocator()
 }
 
 ocean_quadnode::ocean_quadnode(ocean_quadnode * parent,
-                 const SbVec3f & c0,
-                 const SbVec3f & c1,
-                 const SbVec3f & c2,
-                 const SbVec3f & c3)
+                               const SbVec3f & c0,
+                               const SbVec3f & c1,
+                               const SbVec3f & c2,
+                               const SbVec3f & c3)
 {
   this->parent = parent;
 
@@ -469,6 +913,53 @@ ocean_quadnode::~ocean_quadnode(void)
   }
 }
 
+int
+ocean_quadnode::getNodeBitmask(void)
+{
+  int splittest[4] = {0,0,0,0};
+  int mask = 0;
+
+  if (this->parent) {
+    switch (this->parent->getChildIndex(this)) {
+    case BOTTOM_LEFT:
+      splittest[LEFT] = 1;
+      splittest[BOTTOM] = 1;
+      break;
+    case BOTTOM_RIGHT:
+      splittest[BOTTOM] = 1;
+      splittest[RIGHT] = 1;
+      break;
+    case TOP_RIGHT:
+      splittest[TOP] = 1;
+      splittest[RIGHT] = 1;
+      break;
+    case TOP_LEFT:
+      splittest[TOP] = 1;
+      splittest[LEFT] = 1;
+      break;
+    default:
+      assert(0 && "oops");
+      break;
+    }
+    
+    for (int j = 0; j < 4; j++) {
+      if (!splittest[j]) {
+        mask |= 1<<j;
+      }
+      else {
+        ocean_quadnode * n = this->parent->searchNeighbor(j);
+        if (!n || n->isSplit()) {
+          mask |= 1<<j;
+        }
+      }
+    }
+  }
+  else mask = 0xf;
+  return mask;
+}
+
+#define SPLIT_K 8.0f
+
 void 
 ocean_quadnode::distanceSplit(const SbVec3f & pos,
                               const int level,
@@ -483,7 +974,7 @@ ocean_quadnode::distanceSplit(const SbVec3f & pos,
   double dist = (pos-c).sqrLength();
 
   // fprintf(stderr,"test: %g %g\n", len, dist);
-  if ((dist < len*64.0) || (level < minlevel)) {
+  if ((dist < len*SPLIT_K) || (level < minlevel)) {
     if (!this->isSplit()) this->split(TRUE);
     else this->findNeighbors();
     for (int i = 0; i < 4; i++) {
@@ -634,7 +1125,7 @@ ocean_quadnode::findNeighbors()
   int dosplit[4];
   int didsplit[4];
 
-  for (int i = 0; i < 4; i++) {
+  for (i = 0; i < 4; i++) {
     n[i] = this->parent->getNeighbor(i);
     dosplit[i] = 0;
     didsplit[i] = 0;
@@ -804,6 +1295,583 @@ ocean_quadnode::operator delete(void * ptr)
   cc_memalloc_deallocate(node_memalloc, ptr);
 }
 
+// All code below is just for testing the wave functions
+
+
+static float RandMinusOneToOne()
+{
+  return float( double(rand()) / double(RAND_MAX) * 2.0 - 1.0 );
+}
+
+static float RandZeroToOne()
+{
+  return float( double(rand()) / double(RAND_MAX) );
+}
+
+
+void 
+OceanShape::copyGeoState()
+{
+  this->geostate_cache.chop = this->chop.getValue();
+  this->geostate_cache.angleDeviation = this->angleDeviation.getValue();
+  this->geostate_cache.windDir = this->windDirection.getValue();
+  (void) this->geostate_cache.windDir.normalize();
+
+  this->geostate_cache.minLength = this->minWaveLength.getValue();
+  this->geostate_cache.maxLength = this->maxWaveLength.getValue();
+  this->geostate_cache.ampRatio = this->amplitudeRatio.getValue();
+  
+  this->geostate_cache.envHeight = this->envHeight.getValue();
+  this->geostate_cache.envRadius = this->envRadius.getValue();
+  this->geostate_cache.waterLevel = this->waterLevel.getValue();
+  
+  this->geostate_cache.transDel = -this->transitionSpeed.getValue();
+  this->geostate_cache.transIdx = 0;
+  this->geostate_cache.specAtten = this->specAttenuation.getValue();
+  this->geostate_cache.specEnd = this->specEnd.getValue();
+  this->geostate_cache.specTrans = this->specTrans.getValue();
+  this->geostate_cache.Q = this->sharpness.getValue();
+}
+
+void 
+OceanShape::initGeoWave(const int i)
+{
+  this->geowaves[i].phase = RandZeroToOne() * float(M_PI) * 2.0f;
+  this->geowaves[i].len = this->geostate_cache.minLength + RandZeroToOne() * (this->geostate_cache.maxLength - this->geostate_cache.minLength);
+  this->geowaves[i].amp = this->geowaves[i].fullamp = this->geowaves[i].len * this->geostate_cache.ampRatio / float(NUM_GEO_WAVES);
+  this->geowaves[i].freq = 2.0f * float(M_PI) / this->geowaves[i].len;
+  this->geowaves[i].fade = 1.0f;
+  
+  float rotBase = this->geostate_cache.angleDeviation * float(M_PI) / 180.f;
+  
+  float rads = rotBase * RandMinusOneToOne();
+  float rx = float(cos(rads));
+  float ry = float(sin(rads));
+  
+  float x = this->geostate_cache.windDir[0];
+  float y = this->geostate_cache.windDir[1];
+  this->geowaves[i].dir[0] = x * rx + y * ry;
+  this->geowaves[i].dir[1] = x * -ry + y * rx;
+}
+
+void 
+OceanShape::updateGeoWave(const int i, const float dt)
+{
+  if (i == this->geostate_cache.transIdx) {
+    this->geowaves[i].fade += this->geostate_cache.transDel * dt;
+    if (this->geowaves[i].fade < 0.0f) {
+      // This wave is faded out. Re-init and fade it back up.
+      this->initGeoWave(i);
+      this->geowaves[i].fade = 0.0f;
+      this->geostate_cache.transDel = -this->geostate_cache.transDel;
+    }
+    else if (this->geowaves[i].fade > 1.0f) {
+      // This wave is faded back up. Start fading another down.
+      this->geowaves[i].fade = 1.0f;
+      this->geostate_cache.transDel = -this->geostate_cache.transDel;
+      this->geostate_cache.transIdx++;
+      if (this->geostate_cache.transIdx >= NUM_GEO_WAVES) {
+        this->geostate_cache.transIdx = 0;
+      }
+    }
+  }
+  const float speed = float(1.0 / sqrt(this->geowaves[i].len / (2.f * float(M_PI) * kGravConst)));
+  
+  this->geowaves[i].phase += speed * dt;
+  this->geowaves[i].phase = float(fmod(this->geowaves[i].phase, 2.0*M_PI));
+  this->geowaves[i].amp = (this->geowaves[i].len * this->geostate_cache.ampRatio / float(NUM_GEO_WAVES)) * this->geowaves[i].fade;
+}
+
+void 
+OceanShape::updateTexWave(const int i, const float dt)
+{
+  if (i == this->texstate_cache.transIdx) {
+    this->texwaves[i].fade += this->texstate_cache.transDel * dt;
+    if (this->texwaves[i].fade < 0.0f) {
+      // This wave is faded out. Re-init and fade it back up.
+      this->initTexWave(i);
+      this->texwaves[i].fade = 0.0f;
+      this->texstate_cache.transDel = -this->texstate_cache.transDel;
+    }
+    else if (this->texwaves[i].fade > 1.0f) {
+      // This wave is faded back up. Start fading another down.
+      this->texwaves[i].fade = 1.0f;
+      this->texstate_cache.transDel = -this->texstate_cache.transDel;
+      this->texstate_cache.transIdx++;
+      if (this->texstate_cache.transIdx >= NUM_TEX_WAVES)
+        this->texstate_cache.transIdx = 0;
+    }
+  }
+  this->texwaves[i].phase -= dt * this->texwaves[i].speed;
+  this->texwaves[i].phase -= int(this->texwaves[i].phase);
+}
+
+void 
+OceanShape::initTexWave(const int i) 
+{
+  float rads = RandMinusOneToOne() * this->texstate_cache.angleDeviation * float(M_PI) / 180.f;
+  float dx = float(sin(rads));
+  float dy = float(cos(rads));
+
+  float tx = dx;
+  dx = this->texstate_cache.windDir[1] * dx - this->texstate_cache.windDir[0] * dy;
+  dy = this->texstate_cache.windDir[0] * tx + this->texstate_cache.windDir[1] * dy;
+
+  float maxLen = this->texstate_cache.maxLength * BUMPSIZE / this->texstate_cache.rippleScale;
+  float minLen = this->texstate_cache.minLength * BUMPSIZE / this->texstate_cache.rippleScale;
+  float len = float(i) / float(NUM_TEX_WAVES-1) * (maxLen - minLen) + minLen;
+  
+  float reps = float(BUMPSIZE) / len;
+  
+  dx *= reps;
+  dy *= reps;
+  dx = float(int(dx >= 0.0f ? dx + 0.5f : dx - 0.5f));
+  dy = float(int(dy >= 0.0f ? dy + 0.5f : dy - 0.5f));
+  
+  this->texwaves[i].rotScale[0] = dx;
+  this->texwaves[i].rotScale[1] = dy;
+  
+  float effK = float(1.0 / sqrt(dx*dx + dy*dy));
+  this->texwaves[i].len = float(BUMPSIZE) * effK;
+  this->texwaves[i].freq = float(M_PI) * 2.0f / this->texwaves[i].len;
+  this->texwaves[i].amp = this->texwaves[i].len * this->texstate_cache.ampRatio;
+  this->texwaves[i].phase = RandZeroToOne();
+  
+  this->texwaves[i].dir[0] = dx * effK;
+  this->texwaves[i].dir[1] = dy * effK;
+  
+  this->texwaves[i].fade = 1.0f;
+  
+  float speed = float( 1.0 / sqrt(this->texwaves[i].len / (2.0f * float(M_PI) * kGravConst)) ) / 3.0f;
+  speed *= 1.0f + RandMinusOneToOne() * this->texstate_cache.speedDeviation;
+  this->texwaves[i].speed = speed;
+}
+
+void
+OceanShape::initTexState()
+{
+  this->texstate_cache.noise = 0.2f;
+  this->texstate_cache.chop = 1.f;
+  this->texstate_cache.angleDeviation = 15.f;
+  this->texstate_cache.windDir = this->windDirection.getValue();
+  this->texstate_cache.windDir[1] = 1.f;
+  this->texstate_cache.maxLength = 10.f;
+  this->texstate_cache.minLength = 1.0f;
+  this->texstate_cache.ampRatio = 0.1f;
+  this->texstate_cache.rippleScale = 25.f;
+  this->texstate_cache.speedDeviation = 0.1f;
+  
+  this->texstate_cache.transIdx = 0;
+  this->texstate_cache.transDel = -1.0f / 5.f;
+}
+
+void 
+OceanShape::updateWaves(const double dt)
+{
+  int i;
+  for (i = 0; i < NUM_GEO_WAVES; i++) {
+    this->updateGeoWave(i, (float) dt);
+  }
+  for (i = 0; i < NUM_TEX_WAVES; i++) {
+    this->updateTexWave(i, (float) dt);
+  }
+}
+
+void 
+OceanShape::initLevels()
+{
+  float minlen = this->geostate_cache.minLength / 4.0f;
+  float minsize = SbMin(this->size.getValue()[0], this->size.getValue()[1]);
+
+  float vdist = minsize / float(GRIDSIZE-1);
+  int level = 1;
+  while (vdist > minlen) {
+    level++;
+    vdist *= 0.5f;
+  }
+
+  this->maxlevel = level;
+  this->minlevel = 1;
+
+  fprintf(stderr,"min/max levels: %d %d\n", this->minlevel, this->maxlevel);
+}
+
+void 
+OceanShape::initWaves()
+{
+  int i;
+  for (i = 0; i < NUM_GEO_WAVES; i++) {
+    this->initGeoWave(i);
+  }
+  for (i = 0; i < NUM_TEX_WAVES; i++) {
+    this->initTexWave(i);
+  }
+}
+
+void
+OceanShape::updateShader(void)
+{
+}
+
+void 
+OceanShape::initShader(void)
+{
+  SoShaderProgram * s = (SoShaderProgram*) this->shader.getValue();
+  if (!s) return;
+
+  if (!this->vertexshader) {
+    this->vertexshader = new SoVertexShader();
+    this->vertexshader->ref();
+    this->vertexshader->sourceType = SoVertexShader::FILENAME;
+    this->vertexshader->sourceProgram = "smocean_vertex.cg";
+
+    this->fragmentshader = new SoFragmentShader();
+    this->fragmentshader->ref();
+    this->fragmentshader->sourceType = SoFragmentShader::FILENAME;
+    this->fragmentshader->sourceProgram = "smocean_fragment.cg";
+
+    SoShaderParameter3f * mycolor = new SoShaderParameter3f();
+    mycolor->name = "mycolor";
+    mycolor->value = SbVec3f(1.0f, 0.0, 0.0f);
+
+    SoShaderParameter3f * mycolor2 = new SoShaderParameter3f();
+    mycolor->name = "mycolor2";
+    mycolor->value = SbVec3f(0.0f, 1.0, 0.0f);
+
+    this->vertexshader->parameter.setValue(mycolor);
+    // this->fragmentshader->parameter.setValue(mycolor2);
+
+    s->shaderObject.setValue(this->vertexshader);
+    s->shaderObject.set1Value(1, this->fragmentshader);
+  }
+}
+
+void OceanShape::wavefunc(const SbVec3f & in, SbVec3f & v, SbVec3f & n) 
+{
+  SbVec3f tv(in[0], in[1], 0.0f);
+  SbVec3f tn(0.0f, 0.0f, 1.0f);
+
+  float Q[NUM_GEO_WAVES];
+  int i;
+  for (i = 0; i < NUM_GEO_WAVES; i++) {
+    if (this->geowaves[i].amp > 0.01f) {
+      Q[i] = this->geostate_cache.Q / (this->geowaves[i].freq * this->geowaves[i].amp * float(NUM_GEO_WAVES));
+    }
+    else {
+      Q[i] = 0.0f;
+    }
+    Q[i] = this->geostate_cache.Q / (this->geowaves[i].freq * this->geowaves[i].fullamp * float(NUM_GEO_WAVES));
+  }
+
+  for (i = 0; i < NUM_GEO_WAVES; i++) {
+
+    float dot = this->geowaves[i].dir[0] * in[0] + this->geowaves[i].dir[1] * in[1];
+    float cossinval = (float) (dot *
+                               this->geowaves[i].freq + 
+                               this->geowaves[i].phase);
+    
+    float cosval = (float) cos(cossinval);
+    float sinval = (float) sin(cossinval);
+
+    tv[0] += Q[i]*this->geowaves[i].amp*this->geowaves[i].dir[0] * cosval;
+    tv[1] += Q[i]*this->geowaves[i].amp*this->geowaves[i].dir[1] * cosval;
+    tv[2] += this->geowaves[i].amp * sinval;
+  }
+  for (i = 0; i < NUM_GEO_WAVES; i++) {
+    float dot = this->geowaves[i].dir[0] * tv[0] + this->geowaves[i].dir[1] * tv[1];
+    float cossinval = (float) (dot *
+                               this->geowaves[i].freq + 
+                               this->geowaves[i].phase);
+    float cosval = (float) cos(cossinval);
+    float sinval = (float) sin(cossinval);
+
+    tn[0] -= (this->geowaves[i].freq * 
+              this->geowaves[i].amp *
+              cosval);
+    tn[1] -= (this->geowaves[i].freq * 
+              this->geowaves[i].amp *
+              cosval);
+    tn[2] -= Q[i] * this->geowaves[i].freq * this->geowaves[i].amp * sinval;
+  }
+  v = tv;
+  n = tn;
+}
+
+
 #undef FLAG_ISSPLIT
+
+
+
+/*!
+  Constructor
+*/
+SmVBO::SmVBO(const GLenum target, const GLenum usage)
+  : target(target),
+    usage(usage),
+    data(NULL),
+    datasize(0),
+    dataid(0),
+    didalloc(FALSE),
+    vbohash(5)
+{
+  SoContextHandler::addContextDestructionCallback(context_destruction_cb, this);
+}
+
+
+/*!
+  Destructor
+*/
+SmVBO::~SmVBO()
+{
+  SoContextHandler::removeContextDestructionCallback(context_destruction_cb, this);
+  // schedule delete for all allocated GL resources
+  this->vbohash.apply(vbo_schedule, NULL);
+  if (this->didalloc) {
+    char * ptr = (char*) this->data;
+    delete[] ptr;
+  }
+}
+
+void 
+SmVBO::init(void)
+{
+  // coin_glglue_add_instance_created_callback(context_created, NULL);
+}
+
+/*!
+  Used to allocate buffer data. The user is responsible for filling in
+  the correct type of data in the buffer before the buffer is used.
+
+  \sa setBufferData()
+*/
+void *
+SmVBO::allocBufferData(intptr_t size, uint32_t dataid)
+{
+  // schedule delete for all allocated GL resources
+  this->vbohash.apply(vbo_schedule, NULL);
+  // clear hash table
+  this->vbohash.clear();
+
+  if (this->didalloc && this->datasize == size) {
+    return (void*)this->data;
+  }
+  if (this->didalloc) {
+    char * ptr = (char*) this->data;
+    delete[] ptr;
+  }
+
+  char * ptr = new char[size];
+  this->didalloc = TRUE;
+  this->data = (const GLvoid*) ptr;
+  this->datasize = size;
+  this->dataid = dataid;
+  return (void*) this->data;
+}
+
+/*!
+  Sets the buffer data. \a dataid is a unique id used to identify 
+  the buffer data. In Coin it's possible to use the node id
+  (SoNode::getNodeId()) to test if a buffer is valid for a node.
+*/
+void 
+SmVBO::setBufferData(const GLvoid * data, intptr_t size, uint32_t dataid)
+{
+  // schedule delete for all allocated GL resources
+  this->vbohash.apply(vbo_schedule, NULL);
+  // clear hash table
+  this->vbohash.clear();
+
+  // clean up old buffer (if any)
+  if (this->didalloc) {
+    char * ptr = (char*) this->data;
+    delete[] ptr;
+  }
+  
+  this->data = data;
+  this->datasize = size;
+  this->dataid = dataid;
+  this->didalloc = FALSE;
+}
+
+/*!
+  Returns the buffer data id. 
+  
+  \sa setBufferData()
+*/
+uint32_t 
+SmVBO::getBufferDataId(void) const
+{
+  return this->dataid;
+}
+
+/*!
+  Returns the data pointer and size.
+*/
+void 
+SmVBO::getBufferData(const GLvoid *& data, intptr_t & size)
+{
+  data = this->data;
+  size = this->datasize;
+}
+
+
+/*!
+  Binds the buffer for the context \a contextid.
+*/
+void 
+SmVBO::bindBuffer(uint32_t contextid)
+{
+  if ((this->data == NULL) ||
+      (this->datasize == 0)) {
+    assert(0 && "no data in buffer");
+    return;
+  }
+
+  const cc_glglue * glue = cc_glglue_instance((int) contextid);
+
+  GLuint buffer;
+  if (!this->vbohash.get(contextid, buffer)) {
+    // need to create a new buffer for this context
+    cc_glglue_glGenBuffers(glue, 1, &buffer);
+    cc_glglue_glBindBuffer(glue, this->target, buffer);
+    cc_glglue_glBufferData(glue, this->target,
+                           this->datasize,
+                           this->data,
+                           this->usage);
+    this->vbohash.put(contextid, buffer);
+  }
+  else {
+    // buffer already exists, bind it
+    cc_glglue_glBindBuffer(glue, this->target, buffer);
+  }
+}
+
+//
+// Callback from SbHash
+//
+void 
+SmVBO::vbo_schedule(const uint32_t & key,
+                    const GLuint & value,
+                    void * closure)
+{
+  void * ptr = (void*) ((uintptr_t) value);
+  SoGLCacheContextElement::scheduleDeleteCallback(key, vbo_delete, ptr);
+}
+
+//
+// Callback from SoGLCacheContextElement
+//
+void 
+SmVBO::vbo_delete(void * closure, uint32_t contextid)
+{
+  const cc_glglue * glue = cc_glglue_instance((int) contextid);
+  GLuint id = (GLuint) ((uintptr_t) closure);
+  cc_glglue_glDeleteBuffers(glue, 1, &id);
+}
+
+//
+// Callback from SoContextHandler
+//
+void 
+SmVBO::context_destruction_cb(uint32_t context, void * userdata)
+{
+  GLuint buffer;
+  SmVBO * thisp = (SmVBO*) userdata;
+
+  if (thisp->vbohash.get(context, buffer)) {
+    const cc_glglue * glue = cc_glglue_instance((int) context);
+    cc_glglue_glDeleteBuffers(glue, 1, &buffer);    
+    thisp->vbohash.remove(context);
+  }
+}
+
+
+/*!
+  Sets the global limits on the number of vertex data in a node before
+  vertex buffer objects are considered to be used for rendering.
+*/
+void 
+SmVBO::setVertexCountLimits(const int minlimit, const int maxlimit)
+{
+  vbo_vertex_count_min_limit = minlimit;
+  vbo_vertex_count_max_limit = maxlimit;
+}
+
+/*!
+  Returns the vertex VBO minimum limit.
+
+  \sa setVertexCountLimits()
+ */
+int 
+SmVBO::getVertexCountMinLimit(void)
+{
+  if (vbo_vertex_count_min_limit < 0) {
+    const char * env = coin_getenv("COIN_VBO_MIN_LIMIT");
+    if (env) {
+      vbo_vertex_count_min_limit = atoi(env);
+    }
+    else {
+      vbo_vertex_count_min_limit = 40;
+    }
+  } 
+  return vbo_vertex_count_min_limit;
+}
+
+/*!
+  Returns the vertex VBO maximum limit.
+
+  \sa setVertexCountLimits()
+ */
+int 
+SmVBO::getVertexCountMaxLimit(void)
+{
+  if (vbo_vertex_count_max_limit < 0) {
+    const char * env = coin_getenv("COIN_VBO_MAX_LIMIT");
+    if (env) {
+      vbo_vertex_count_max_limit = atoi(env);
+    }
+    else {
+      vbo_vertex_count_max_limit = 10000000;
+    }
+  }
+  return vbo_vertex_count_max_limit;
+}
+
+SbBool 
+SmVBO::shouldCreateVBO(const uint32_t contextid, const int numdata)
+{
+  int minv = SmVBO::getVertexCountMinLimit();
+  int maxv = SmVBO::getVertexCountMaxLimit();
+  return (numdata >= minv) && (numdata <= maxv) && SmVBO::isVBOFast(contextid);
+}
+
+
+SbBool 
+SmVBO::isVBOFast(const uint32_t contextid)
+{
+  return TRUE;
+}
+
+//
+// callback from glglue (when a new glglue instance is created)
+//
+void 
+SmVBO::context_created(const cc_glglue * glue, void * closure)
+{
+  // SmVBO::testGLPerformance(coin_glglue_get_contextid(glue));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
