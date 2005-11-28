@@ -1,0 +1,11 @@
+struct smoutput {
+  float4 color : COLOR;
+};
+
+smoutput main(float4 color : COLOR, uniform float3 mycolor2)
+{
+  smoutput OUT;
+  OUT.color = float4(mycolor2[0]*color[0], mycolor2[1]*color[1], mycolor2[2]*color[1], 1);
+  // OUT.color = color;
+  return OUT;
+}
