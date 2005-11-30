@@ -3,13 +3,14 @@ struct smoutput {
   float4 color : COLOR;
 };
 
-smoutput main(float4 position : POSITION, uniform float3 mycolor)
+smoutput main(float4 position : POSITION, uniform float3 mycolor, uniform float3 fragcolor)
 {
   smoutput OUT;
   float4x4 modelViewProj = glstate.matrix.mvp ;
 
   OUT.position = mul(modelViewProj, position);    // position in clip space
-  OUT.color = float4(mycolor[0], mycolor[1], mycolor[2],1);
+  // OUT.color = float4(mycolor[0], mycolor[1], mycolor[2],1);
+  OUT.color = float4(fragcolor[0], fragcolor[1], fragcolor[2],1);
   
   return OUT;
 }

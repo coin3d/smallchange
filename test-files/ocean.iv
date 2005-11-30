@@ -1,0 +1,8 @@
+#Inventor V2.1 ascii
+
+LightModel { model BASE_COLOR }
+SmOceanKit { 
+size 100000 100000 
+sharpness 0.8
+
+}
