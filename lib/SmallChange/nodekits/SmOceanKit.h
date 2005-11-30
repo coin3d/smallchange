@@ -1,6 +1,9 @@
 #ifndef SMALLCHANGE_SMOCEANKIT_H
 #define SMALLCHANGE_SMOCEANKIT_H
 
+#include <Inventor/SbBasic.h>
+#if defined(__COIN__) && (COIN_MAJOR_VERSION >= 3)
+
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
@@ -79,6 +82,6 @@ public:
   SmOceanKitP * pimpl;
 };
 
-
+#endif // temporary compile fix
 #endif // SMALLCHANGE_SMOCEANKIT_H
 

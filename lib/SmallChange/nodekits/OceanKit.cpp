@@ -1,3 +1,5 @@
+#include <Inventor/SbBasic.h>
+
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
@@ -31,6 +33,8 @@
 
 
 #include "SmOceanKit.h"
+#if defined(__COIN__) && (COIN_MAJOR_VERSION >= 3)
+
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
@@ -44,6 +48,7 @@
 #include <Inventor/nodes/SoShapeHints.h>
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoCallback.h>
+#include <Inventor/nodes/SoInfo.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SoFullPath.h>
 #include <Inventor/SbPlane.h>
@@ -55,10 +60,6 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoCullElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
-#include <Inventor/nodes/SoShaderProgram.h>
-#include <Inventor/nodes/SoVertexShader.h>
-#include <Inventor/nodes/SoFragmentShader.h>
-#include <Inventor/nodes/SoShaderParameter.h>
 
 #include <Inventor/sensors/SoTimerSensor.h>
 #include <SmallChange/nodes/UTMPosition.h>
@@ -67,6 +68,11 @@
 #include <Inventor/C/glue/gl.h>
 #include <Inventor/C/base/memalloc.h>
 #include <Inventor/misc/SoContextHandler.h>
+
+#include <Inventor/nodes/SoShaderProgram.h>
+#include <Inventor/nodes/SoVertexShader.h>
+#include <Inventor/nodes/SoFragmentShader.h>
+#include <Inventor/nodes/SoShaderParameter.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -1520,29 +1526,36 @@ OceanShape::initShader(void)
   if (!s) return;
 
   if (!this->vertexshader) {
-    this->vertexshader = new SoVertexShader();
-    this->vertexshader->ref();
-    this->vertexshader->sourceType = SoVertexShader::FILENAME;
-    this->vertexshader->sourceProgram = "smocean_vertex.cg";
 
     this->fragmentshader = new SoFragmentShader();
     this->fragmentshader->ref();
     this->fragmentshader->sourceType = SoFragmentShader::FILENAME;
     this->fragmentshader->sourceProgram = "smocean_fragment.cg";
 
+    this->vertexshader = new SoVertexShader();
+    this->vertexshader->ref();
+    this->vertexshader->sourceType = SoVertexShader::FILENAME;
+    this->vertexshader->sourceProgram = "smocean_vertex.cg";
+
+
     SoShaderParameter3f * mycolor = new SoShaderParameter3f();
     mycolor->name = "mycolor";
     mycolor->value = SbVec3f(1.0f, 0.0, 0.0f);
 
     SoShaderParameter3f * mycolor2 = new SoShaderParameter3f();
-    mycolor->name = "mycolor2";
-    mycolor->value = SbVec3f(0.0f, 1.0, 0.0f);
+    mycolor2->name = "fragcolor";
+    mycolor2->value = SbVec3f(0.0f, 1.0, 0.0f);
 
+    this->fragmentshader->parameter.setValue(mycolor2);
     this->vertexshader->parameter.setValue(mycolor);
-    // this->fragmentshader->parameter.setValue(mycolor2);
 
+#if 0
     s->shaderObject.setValue(this->vertexshader);
+    //    s->shaderObject.set1Value(1, this->fragmentshader);
+#else
     s->shaderObject.set1Value(1, this->fragmentshader);
+    s->shaderObject.set1Value(0, this->vertexshader);
+#endif
   }
 }
 
@@ -1861,7 +1874,7 @@ SmVBO::context_created(const cc_glglue * glue, void * closure)
   // SmVBO::testGLPerformance(coin_glglue_get_contextid(glue));
 }
 
-
+#endif // temporary compile fix
 
 
 
