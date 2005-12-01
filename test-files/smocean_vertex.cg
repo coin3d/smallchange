@@ -10,10 +10,9 @@ struct smoutput {
 // geowave*[3] = fade
 
 void main(float4 position : POSITION, out smoutput OUT,
-          uniform float4 geowave1,
-          uniform float4 geowave2,
-          uniform float4 geowave3,
-          uniform float4 geowave4,
+          uniform float4 geowaveAmp,
+          uniform float4 geowaveFreq,
+          uniform float4 geowavePhase,
           uniform float2 geowave1dir,
           uniform float2 geowave2dir,
           uniform float2 geowave3dir,
@@ -22,43 +21,41 @@ void main(float4 position : POSITION, out smoutput OUT,
 {
   float4x4 modelViewProj = glstate.matrix.mvp ;
   
-  float4 p = position;
+  float4 p;
   float sinval1, cosval1;
   float sinval2, cosval2;
   float sinval3, cosval3;
   float sinval4, cosval4;
   float2 xy;
-  xy[0] = p[0];
-  xy[1] = p[1];
+  xy[0] = position[0];
+  xy[1] = position[1];
 
   float dot1 = dot(xy, geowave1dir);
   float dot2 = dot(xy, geowave2dir);
   float dot3 = dot(xy, geowave3dir);
   float dot4 = dot(xy, geowave4dir);
 
-  sincos(dot1 * geowave1[2] + geowave1[0], sinval1, cosval1); 
-  sincos(dot2 * geowave2[2] + geowave2[0], sinval2, cosval2); 
-  sincos(dot3 * geowave3[2] + geowave3[0], sinval3, cosval3); 
-  sincos(dot4 * geowave4[2] + geowave4[0], sinval4, cosval4); 
+  sincos(dot1 * geowaveFreq[0] + geowavePhase[0], sinval1, cosval1); 
+  sincos(dot2 * geowaveFreq[1] + geowavePhase[1], sinval2, cosval2); 
+  sincos(dot3 * geowaveFreq[2] + geowavePhase[2], sinval3, cosval3); 
+  sincos(dot4 * geowaveFreq[3] + geowavePhase[3], sinval4, cosval4); 
 
-  // tv[0] += Q[i]*this->geowaves[i].amp*this->geowaves[i].dir[0] * cosval;
+  float4 sinvec = float4(sinval1, sinval2, sinval3, sinval4);
+  //  float4 cosvec = float4(cosval1, cosval2, cosval3, cosval4);
 
-         //+ 
-         //geowaveQ[0] * geowave1[1]*geowave1dir[0]*cosval1 + 
-         //geowaveQ[1] * geowave2[1]*geowave2dir[0]*cosval2 + 
-         //geowaveQ[2] * geowave3[1]*geowave3dir[0]*cosval3 + 
-         //geowaveQ[3] * geowave4[1]*geowave4dir[0]*cosval4; 
+  p[0] = position[0] + 
+         geowaveQ[0] * geowaveAmp[0] * geowave1dir[0] * cosval1 + 
+         geowaveQ[1] * geowaveAmp[1] * geowave2dir[0] * cosval2 + 
+         geowaveQ[2] * geowaveAmp[2] * geowave3dir[0] * cosval3 + 
+         geowaveQ[3] * geowaveAmp[3] * geowave4dir[0] * cosval4; 
 
-         //+ 
-         //geowaveQ[0] * geowave1[1]*geowave1dir[1]*cosval1 + 
-         //geowaveQ[1] * geowave2[1]*geowave2dir[1]*cosval2 + 
-         //geowaveQ[2] * geowave3[1]*geowave3dir[1]*cosval3 + 
-         //geowaveQ[3] * geowave4[1]*geowave4dir[1]*cosval4; 
+  p[1] = position[1] + 
+         geowaveQ[0] * geowaveAmp[0] * geowave1dir[1] * cosval1 + 
+         geowaveQ[1] * geowaveAmp[1] * geowave2dir[1] * cosval2 + 
+         geowaveQ[2] * geowaveAmp[2] * geowave3dir[1] * cosval3 + 
+         geowaveQ[3] * geowaveAmp[3] * geowave4dir[1] * cosval4; 
 
-  p[2] = geowave1[1] * sinval1 + 
-         geowave2[1] * sinval2 + 
-         geowave3[1] * sinval3 + 
-         geowave4[1] * sinval4; 
+  p[2] = dot(geowaveAmp, sinvec);
   p[3] = 1.0;
 
   OUT.position = mul(modelViewProj, p);    // position in clip space

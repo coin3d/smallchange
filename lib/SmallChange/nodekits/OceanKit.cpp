@@ -197,10 +197,9 @@ private:
 
   SoVertexShader * vertexshader;
   SoFragmentShader * fragmentshader;
-  SoShaderParameter4f * param_geowave1;
-  SoShaderParameter4f * param_geowave2;
-  SoShaderParameter4f * param_geowave3;
-  SoShaderParameter4f * param_geowave4;
+  SoShaderParameter4f * param_geowaveamp;
+  SoShaderParameter4f * param_geowavephase;
+  SoShaderParameter4f * param_geowavefreq;
   SoShaderParameter4f * param_geowaveQ;
 
   SoShaderParameter2f * param_geowave1dir;
@@ -1592,19 +1591,22 @@ OceanShape::initShader(void)
     this->vertexshader->ref();
     this->vertexshader->sourceProgram = "smocean_vertex.cg";
 
-    this->param_geowave1 = new SoShaderParameter4f();
-    this->param_geowave1->ref();
-    this->param_geowave1->name = "geowave1";
-    this->param_geowave2 = new SoShaderParameter4f();
-    this->param_geowave2->ref();
-    this->param_geowave2->name = "geowave2";
-    this->param_geowave3 = new SoShaderParameter4f();
-    this->param_geowave3->ref();
-    this->param_geowave3->name = "geowave3";
-    this->param_geowave4 = new SoShaderParameter4f();
-    this->param_geowave4->ref();
-    this->param_geowave4->name = "geowave4";
+    this->param_geowaveamp = new SoShaderParameter4f();
+    this->param_geowaveamp->ref();
+    this->param_geowaveamp->name = "geowaveAmp";
 
+    this->param_geowavefreq = new SoShaderParameter4f();
+    this->param_geowavefreq->ref();
+    this->param_geowavefreq->name = "geowaveFreq";
+
+    this->param_geowavephase = new SoShaderParameter4f();
+    this->param_geowavephase->ref();
+    this->param_geowavephase->name = "geowavePhase";
+
+    this->param_geowaveQ = new SoShaderParameter4f();
+    this->param_geowaveQ->ref();
+    this->param_geowaveQ->name = "geowaveQ";
+    
     this->param_geowave1dir = new SoShaderParameter2f();
     this->param_geowave1dir->ref();
     this->param_geowave1dir->name = "geowave1dir";
@@ -1618,19 +1620,15 @@ OceanShape::initShader(void)
     this->param_geowave4dir->ref();
     this->param_geowave4dir->name = "geowave4dir";
 
-    this->param_geowaveQ = new SoShaderParameter4f();
-    this->param_geowaveQ->ref();
-    this->param_geowaveQ->name = "geowaveQ";
 
-    this->vertexshader->parameter.set1Value(0, this->param_geowave1);
-    this->vertexshader->parameter.set1Value(1, this->param_geowave2);
-    this->vertexshader->parameter.set1Value(2, this->param_geowave3);
-    this->vertexshader->parameter.set1Value(3, this->param_geowave4);
+    this->vertexshader->parameter.set1Value(0, this->param_geowaveamp);
+    this->vertexshader->parameter.set1Value(1, this->param_geowavephase);
+    this->vertexshader->parameter.set1Value(2, this->param_geowavefreq);
+    this->vertexshader->parameter.set1Value(3, this->param_geowaveQ);
     this->vertexshader->parameter.set1Value(4, this->param_geowave1dir);
-    this->vertexshader->parameter.set1Value(5, this->param_geowave1dir);
-    this->vertexshader->parameter.set1Value(6, this->param_geowave1dir);
-    this->vertexshader->parameter.set1Value(7, this->param_geowave1dir);
-    this->vertexshader->parameter.set1Value(8, this->param_geowaveQ);
+    this->vertexshader->parameter.set1Value(5, this->param_geowave2dir);
+    this->vertexshader->parameter.set1Value(6, this->param_geowave3dir);
+    this->vertexshader->parameter.set1Value(7, this->param_geowave4dir);
 
     s->shaderObject.set1Value(0, this->fragmentshader);
     s->shaderObject.set1Value(1, this->vertexshader);
@@ -1652,26 +1650,15 @@ void OceanShape::updateParameters()
   }
   this->param_geowaveQ->value = Q;
 
-//    typedef struct {
-//      float phase;
-//      float amp;
-//      float fullamp;
-//      float len;
-//      float freq;
-//      SbVec2f dir;
-//      float fade;
-//    } geowave;
-
-
   SbVec4f tmp;
-  tmp.setValue(this->geowaves[0].phase, this->geowaves[0].amp, this->geowaves[0].freq, this->geowaves[0].fade);
-  this->param_geowave1->value = tmp;
-  tmp.setValue(this->geowaves[1].phase, this->geowaves[1].amp, this->geowaves[1].freq, this->geowaves[1].fade);
-  this->param_geowave2->value = tmp;
-  tmp.setValue(this->geowaves[2].phase, this->geowaves[2].amp, this->geowaves[2].freq, this->geowaves[2].fade);
-  this->param_geowave3->value = tmp;
-  tmp.setValue(this->geowaves[3].phase, this->geowaves[3].amp, this->geowaves[3].freq, this->geowaves[3].fade);
-  this->param_geowave4->value = tmp;
+  tmp.setValue(this->geowaves[0].amp, this->geowaves[1].amp, this->geowaves[2].amp, this->geowaves[3].amp);
+  this->param_geowaveamp->value = tmp;
+
+  tmp.setValue(this->geowaves[0].freq, this->geowaves[1].freq, this->geowaves[2].freq, this->geowaves[3].freq);
+  this->param_geowavefreq->value = tmp;
+
+  tmp.setValue(this->geowaves[0].phase, this->geowaves[1].phase, this->geowaves[2].phase, this->geowaves[3].phase);
+  this->param_geowavephase->value = tmp;
 
   this->param_geowave1dir->value = this->geowaves[0].dir;
   this->param_geowave2dir->value = this->geowaves[1].dir;
