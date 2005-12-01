@@ -185,6 +185,7 @@ private:
   void updateTexWave(const int i, const float dt);
   void initTexWave(const int i);
 
+  void updateParameters();
   void updateGeoWave(const int i, const float dt);
   void initGeoWave(const int i);
   void updateWaves(const double dt);
@@ -196,6 +197,16 @@ private:
 
   SoVertexShader * vertexshader;
   SoFragmentShader * fragmentshader;
+  SoShaderParameter4f * param_geowave1;
+  SoShaderParameter4f * param_geowave2;
+  SoShaderParameter4f * param_geowave3;
+  SoShaderParameter4f * param_geowave4;
+  SoShaderParameter4f * param_geowaveQ;
+
+  SoShaderParameter2f * param_geowave1dir;
+  SoShaderParameter2f * param_geowave2dir;
+  SoShaderParameter2f * param_geowave3dir;
+  SoShaderParameter2f * param_geowave4dir;
 
 public:
   enum {
@@ -343,6 +354,8 @@ private:
   unsigned char neighbor_rotate_bits;
   unsigned char flags;
 
+  GLuint gridvbo;
+
 private:
   friend class OceanShape;
   void findNeighbors(void);
@@ -350,7 +363,7 @@ private:
   void setNeighborRotate(const int i, const int rot);
   int getNeighborRotate(const int i) const;
   void unsplit(void);
-  void deleteHiddenChildren(void);
+  void deleteHiddenChildren(const cc_glglue * glue);
 
 public:
   float debugcolor[3];
@@ -398,7 +411,7 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, shader, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, FALSE, topSeparator, oceanShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, topSeparator, oceanShape, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(oceanShape, OceanShape, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
@@ -676,6 +689,9 @@ OceanShape::updateQuadtree(SoState * state)
   const SbMatrix & mat = SoModelMatrixElement::get(state);
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
 
+  uint32_t contextid = SoGLCacheContextElement::get(state);
+  const cc_glglue * glue = cc_glglue_instance(contextid);
+
   SbVec3f pos = vv.getProjectionPoint();
   // move camera position to object space
   mat.inverse().multVecMatrix(pos, pos);
@@ -684,7 +700,7 @@ OceanShape::updateQuadtree(SoState * state)
     this->root->clearNeighbors();
     this->root->unsplit();
     this->root->distanceSplit(pos, 1, this->minlevel, this->maxlevel);
-    this->root->deleteHiddenChildren();
+    this->root->deleteHiddenChildren(glue);
   }
   else {
     this->root = new (node_memalloc) ocean_quadnode(NULL,
@@ -721,6 +737,7 @@ OceanShape::GLRender(SoGLRenderAction * action)
   const cc_glglue * glue = cc_glglue_instance(contextid);
 
 #if 1 // render waves using VBO and vertex/fragment shaders
+  this->updateParameters();
   this->gridvbo->bindBuffer((uint32_t) contextid);
   cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
   cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
@@ -730,6 +747,7 @@ OceanShape::GLRender(SoGLRenderAction * action)
     int mask = node->getNodeBitmask();
     const SbVec3f * corners = node->getCorners();
     SbVec3f scale = corners[2] - corners[0];
+#if 0
     glPushMatrix();
     glTranslatef(corners[0][0], corners[0][1], 0.0f); 
     glScalef(scale[0], scale[1], 1.0f);
@@ -739,7 +757,40 @@ OceanShape::GLRender(SoGLRenderAction * action)
                              this->idxlen[mask],
                              GL_UNSIGNED_SHORT, NULL);
     glPopMatrix();
-    
+#else
+    if (!node->gridvbo) {
+      SbMatrix m;
+      m.setScale(scale);
+      SbMatrix m2;
+      m2.setTranslate(corners[0]);
+      m.multRight(m2);
+
+      int i = 0;
+      for (int y = 0; y < GRIDSIZE; y++) {
+        float fy = float(y) / float(GRIDSIZE-1);
+        for (int x = 0; x < GRIDSIZE; x++) {
+          float fx = float(x) / float(GRIDSIZE-1);
+          SbVec3f tmp(fx, fy, 0.0f);
+          m.multVecMatrix(tmp, tmp);
+          this->grid[i++] = tmp;
+        }
+      }
+      cc_glglue_glGenBuffers(glue, 1, &node->gridvbo);
+      cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, node->gridvbo);
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, i*sizeof(SbVec3f),
+                             this->grid,
+                             GL_STATIC_DRAW); 
+    }
+    else {
+      cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, node->gridvbo);
+    }
+    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
+    this->idxvbo[mask]->bindBuffer(contextid);
+    cc_glglue_glDrawElements(glue,
+                             GL_TRIANGLES,
+                             this->idxlen[mask],
+                             GL_UNSIGNED_SHORT, NULL);
+#endif
   }
   cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
   cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0);
@@ -854,7 +905,9 @@ OceanShape::notify(SoNotList * list)
     delete this->root;
     this->root = NULL;
   }
-  else if (f) this->invalidstate = TRUE;
+  else if (f != &this->shader) {
+    //this->invalidstate = TRUE;
+  }
   inherited::notify(list);
 }
 
@@ -910,6 +963,7 @@ ocean_quadnode::ocean_quadnode(ocean_quadnode * parent,
       this->debugcolor[i] = val;
     }
   }
+  this->gridvbo = 0;
 }
 
 ocean_quadnode::~ocean_quadnode(void)
@@ -1004,11 +1058,14 @@ ocean_quadnode::unsplit(void)
 }
 
 void 
-ocean_quadnode::deleteHiddenChildren(void)
+ocean_quadnode::deleteHiddenChildren(const cc_glglue * glue)
 {
   if (!this->isSplit() && this->hasChildren()) {
     for (int i = 0; i < 4; i++) {
-      this->child[i]->deleteHiddenChildren();
+      this->child[i]->deleteHiddenChildren(glue);
+      if (this->child[i]->gridvbo) {
+        cc_glglue_glDeleteBuffers(glue, 1, &this->child[i]->gridvbo);
+      }
       delete this->child[i];
       this->child[i] = NULL;
     }
@@ -1529,34 +1586,98 @@ OceanShape::initShader(void)
 
     this->fragmentshader = new SoFragmentShader();
     this->fragmentshader->ref();
-    this->fragmentshader->sourceType = SoFragmentShader::FILENAME;
     this->fragmentshader->sourceProgram = "smocean_fragment.cg";
 
     this->vertexshader = new SoVertexShader();
     this->vertexshader->ref();
-    this->vertexshader->sourceType = SoVertexShader::FILENAME;
     this->vertexshader->sourceProgram = "smocean_vertex.cg";
 
+    this->param_geowave1 = new SoShaderParameter4f();
+    this->param_geowave1->ref();
+    this->param_geowave1->name = "geowave1";
+    this->param_geowave2 = new SoShaderParameter4f();
+    this->param_geowave2->ref();
+    this->param_geowave2->name = "geowave2";
+    this->param_geowave3 = new SoShaderParameter4f();
+    this->param_geowave3->ref();
+    this->param_geowave3->name = "geowave3";
+    this->param_geowave4 = new SoShaderParameter4f();
+    this->param_geowave4->ref();
+    this->param_geowave4->name = "geowave4";
 
-    SoShaderParameter3f * mycolor = new SoShaderParameter3f();
-    mycolor->name = "mycolor";
-    mycolor->value = SbVec3f(1.0f, 0.0, 0.0f);
+    this->param_geowave1dir = new SoShaderParameter2f();
+    this->param_geowave1dir->ref();
+    this->param_geowave1dir->name = "geowave1dir";
+    this->param_geowave2dir = new SoShaderParameter2f();
+    this->param_geowave2dir->ref();
+    this->param_geowave2dir->name = "geowave2dir";
+    this->param_geowave3dir = new SoShaderParameter2f();
+    this->param_geowave3dir->ref();
+    this->param_geowave3dir->name = "geowave3dir";
+    this->param_geowave4dir = new SoShaderParameter2f();
+    this->param_geowave4dir->ref();
+    this->param_geowave4dir->name = "geowave4dir";
 
-    SoShaderParameter3f * mycolor2 = new SoShaderParameter3f();
-    mycolor2->name = "fragcolor";
-    mycolor2->value = SbVec3f(0.0f, 1.0, 0.0f);
+    this->param_geowaveQ = new SoShaderParameter4f();
+    this->param_geowaveQ->ref();
+    this->param_geowaveQ->name = "geowaveQ";
 
-    this->fragmentshader->parameter.setValue(mycolor2);
-    this->vertexshader->parameter.setValue(mycolor);
+    this->vertexshader->parameter.set1Value(0, this->param_geowave1);
+    this->vertexshader->parameter.set1Value(1, this->param_geowave2);
+    this->vertexshader->parameter.set1Value(2, this->param_geowave3);
+    this->vertexshader->parameter.set1Value(3, this->param_geowave4);
+    this->vertexshader->parameter.set1Value(4, this->param_geowave1dir);
+    this->vertexshader->parameter.set1Value(5, this->param_geowave1dir);
+    this->vertexshader->parameter.set1Value(6, this->param_geowave1dir);
+    this->vertexshader->parameter.set1Value(7, this->param_geowave1dir);
+    this->vertexshader->parameter.set1Value(8, this->param_geowaveQ);
 
-#if 0
-    s->shaderObject.setValue(this->vertexshader);
-    //    s->shaderObject.set1Value(1, this->fragmentshader);
-#else
-    s->shaderObject.set1Value(1, this->fragmentshader);
-    s->shaderObject.set1Value(0, this->vertexshader);
-#endif
+    s->shaderObject.set1Value(0, this->fragmentshader);
+    s->shaderObject.set1Value(1, this->vertexshader);
   }
+}
+
+void OceanShape::updateParameters()
+{
+  SbVec4f Q;
+  int i;
+  for (i = 0; i < NUM_GEO_WAVES; i++) {
+    if (this->geowaves[i].amp > 0.01f) {
+      Q[i] = this->geostate_cache.Q / (this->geowaves[i].freq * this->geowaves[i].amp * float(NUM_GEO_WAVES));
+    }
+    else {
+      Q[i] = 0.0f;
+    }
+    Q[i] = this->geostate_cache.Q / (this->geowaves[i].freq * this->geowaves[i].fullamp * float(NUM_GEO_WAVES));
+  }
+  this->param_geowaveQ->value = Q;
+
+//    typedef struct {
+//      float phase;
+//      float amp;
+//      float fullamp;
+//      float len;
+//      float freq;
+//      SbVec2f dir;
+//      float fade;
+//    } geowave;
+
+
+  SbVec4f tmp;
+  tmp.setValue(this->geowaves[0].phase, this->geowaves[0].amp, this->geowaves[0].freq, this->geowaves[0].fade);
+  this->param_geowave1->value = tmp;
+  tmp.setValue(this->geowaves[1].phase, this->geowaves[1].amp, this->geowaves[1].freq, this->geowaves[1].fade);
+  this->param_geowave2->value = tmp;
+  tmp.setValue(this->geowaves[2].phase, this->geowaves[2].amp, this->geowaves[2].freq, this->geowaves[2].fade);
+  this->param_geowave3->value = tmp;
+  tmp.setValue(this->geowaves[3].phase, this->geowaves[3].amp, this->geowaves[3].freq, this->geowaves[3].fade);
+  this->param_geowave4->value = tmp;
+
+  this->param_geowave1dir->value = this->geowaves[0].dir;
+  this->param_geowave2dir->value = this->geowaves[1].dir;
+  this->param_geowave3dir->value = this->geowaves[2].dir;
+  this->param_geowave4dir->value = this->geowaves[3].dir;
+
 }
 
 void OceanShape::wavefunc(const SbVec3f & in, SbVec3f & v, SbVec3f & n) 
