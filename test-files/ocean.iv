@@ -2,7 +2,7 @@
 
 LightModel { model BASE_COLOR }
 SmOceanKit { 
-size 100000 100000 
+size 10000 10000 
 sharpness 0.8
 
 }

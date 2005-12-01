@@ -1,12 +1,9 @@
-struct smoutput {
+struct smoutput2 {
   float4 color : COLOR;
 };
 
-smoutput main(float4 color : COLOR, uniform float3 fragcolor, uniform float3 mycolor)
+void main(float4 color : COLOR, out smoutput2 OUT)
 {
-  smoutput OUT;
-  OUT.color = float4(fragcolor[0]*color[0], fragcolor[1]*color[1], fragcolor[2]*color[1], 1);
-//  OUT.color = float4(mycolor[0]*color[0], mycolor[1]*color[1], mycolor[2]*color[1], 1);
-  // OUT.color = color;
-  return OUT;
+  OUT.color = color;
 }
+
