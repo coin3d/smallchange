@@ -1,68 +1,77 @@
 struct smoutput {
   float4 position : POSITION;
   float4 color : COLOR;
-//  float3 normal : NORMAL;
 };
 
-// geowave*[0] = phase
-// geowave*[1] = amp
-// geowave*[2] = freq
-// geowave*[3] = fade
-
-void main(float4 position : POSITION, out smoutput OUT,
-          uniform float4 geowaveAmp,
-          uniform float4 geowaveFreq,
-          uniform float4 geowavePhase,
-          uniform float2 geowave1dir,
-          uniform float2 geowave2dir,
-          uniform float2 geowave3dir,
-          uniform float2 geowave4dir,
-          uniform float4 geowaveQ)
+void calc_sincos(const in float2 xy,
+                 const in float4 geowaveFreq,
+                 const in float4 geowavePhase,
+                 const in float2 geowave1dir,
+                 const in float2 geowave2dir,
+                 const in float2 geowave3dir,
+                 const in float2 geowave4dir,
+                 out float4 sinvec,
+                 out float4 cosvec)
 {
-  float4x4 modelViewProj = glstate.matrix.mvp ;
-  
+  float sinval, cosval;
+
+  // FIXME: precalc geowaveFreq * wavedirvector ??
+  sincos(dot(xy, geowave1dir) * geowaveFreq[0] + geowavePhase[0], sinval, cosval); 
+  sinvec[0] = sinval;
+  cosvec[0] = cosval;
+
+  sincos(dot(xy, geowave2dir) * geowaveFreq[1] + geowavePhase[1], sinval, cosval); 
+  sinvec[1] = sinval;
+  cosvec[1] = cosval;
+
+  sincos(dot(xy, geowave3dir) * geowaveFreq[2] + geowavePhase[2], sinval, cosval); 
+  sinvec[2] = sinval;
+  cosvec[2] = cosval;
+
+  sincos(dot(xy, geowave4dir) * geowaveFreq[3] + geowavePhase[3], sinval, cosval); 
+  sinvec[3] = sinval;
+  cosvec[3] = cosval;
+} 
+
+
+float4 calc_position(const in float2 xy,
+                     const in float4 geowaveAmp,     
+                     const in float2 geowave1dir,
+                     const in float2 geowave2dir,
+                     const in float2 geowave3dir,
+                     const in float2 geowave4dir,
+                     const in float4 geowaveQ,
+                     const in float4 sinvec,
+                     const in float4 cosvec)
+{
+  // FIXME: precalculate these vectors outside the program and pass them as parameters
+  float4 posvecx = float4(geowaveQ[0] * geowaveAmp[0] * geowave1dir[0],
+                          geowaveQ[1] * geowaveAmp[1] * geowave2dir[0],
+                          geowaveQ[2] * geowaveAmp[2] * geowave3dir[0],
+                          geowaveQ[3] * geowaveAmp[3] * geowave4dir[0]);
+  float4 posvecy = float4(geowaveQ[0] * geowaveAmp[0] * geowave1dir[1],
+                          geowaveQ[1] * geowaveAmp[1] * geowave2dir[1],
+                          geowaveQ[2] * geowaveAmp[2] * geowave3dir[1],
+                          geowaveQ[3] * geowaveAmp[3] * geowave4dir[1]);
+
+
   float4 p;
-  float sinval1, cosval1;
-  float sinval2, cosval2;
-  float sinval3, cosval3;
-  float sinval4, cosval4;
-  float2 xy;
-  xy[0] = position[0];
-  xy[1] = position[1];
-
-  float dot1 = dot(xy, geowave1dir);
-  float dot2 = dot(xy, geowave2dir);
-  float dot3 = dot(xy, geowave3dir);
-  float dot4 = dot(xy, geowave4dir);
-
-  sincos(dot1 * geowaveFreq[0] + geowavePhase[0], sinval1, cosval1); 
-  sincos(dot2 * geowaveFreq[1] + geowavePhase[1], sinval2, cosval2); 
-  sincos(dot3 * geowaveFreq[2] + geowavePhase[2], sinval3, cosval3); 
-  sincos(dot4 * geowaveFreq[3] + geowavePhase[3], sinval4, cosval4); 
-
-  float4 sinvec = float4(sinval1, sinval2, sinval3, sinval4);
-  //  float4 cosvec = float4(cosval1, cosval2, cosval3, cosval4);
-
-  p[0] = position[0] + 
-         geowaveQ[0] * geowaveAmp[0] * geowave1dir[0] * cosval1 + 
-         geowaveQ[1] * geowaveAmp[1] * geowave2dir[0] * cosval2 + 
-         geowaveQ[2] * geowaveAmp[2] * geowave3dir[0] * cosval3 + 
-         geowaveQ[3] * geowaveAmp[3] * geowave4dir[0] * cosval4; 
-
-  p[1] = position[1] + 
-         geowaveQ[0] * geowaveAmp[0] * geowave1dir[1] * cosval1 + 
-         geowaveQ[1] * geowaveAmp[1] * geowave2dir[1] * cosval2 + 
-         geowaveQ[2] * geowaveAmp[2] * geowave3dir[1] * cosval3 + 
-         geowaveQ[3] * geowaveAmp[3] * geowave4dir[1] * cosval4; 
+  p[0] = xy[0] + dot(posvecx, cosvec);
+  p[1] = xy[1] + dot(posvecy, cosvec);
 
   p[2] = dot(geowaveAmp, sinvec);
   p[3] = 1.0;
-
-  OUT.position = mul(modelViewProj, p);    // position in clip space
-  OUT.color = float4(1,1,1,1);
+  return p;
 }
 
 
+float3 calc_normal(const in float2 xy,
+                   const in float4 geowaveAmp,     
+                   const in float4 geowaveFreq,     
+                   const in float4 Q,
+                   const in float4 sinvec,
+                   const in float4 cosvec)
+{
 //  for (i = 0; i < NUM_GEO_WAVES; i++) {
 //    float dot = this->geowaves[i].dir[0] * tv[0] + this->geowaves[i].dir[1] * tv[1];
 //    float cossinval = (float) (dot *
@@ -79,6 +88,70 @@ void main(float4 position : POSITION, out smoutput OUT,
 //              cosval);
 //    tn[2] -= Q[i] * this->geowaves[i].freq * this->geowaves[i].amp * sinval;
 //  }
+
+  float3 n;
+  float4 freqamp = float4(geowaveFreq[0] * geowaveAmp[0],
+                          geowaveFreq[1] * geowaveAmp[1],
+                          geowaveFreq[2] * geowaveAmp[2],
+                          geowaveFreq[3] * geowaveAmp[3]);
+
+  n[0] = - dot(freqamp, cosvec);
+  n[1] = - dot(freqamp, cosvec);
+  n[2] =  1.0f - (Q[0]*freqamp[0]*sinvec[0] +
+                  Q[1]*freqamp[1]*sinvec[1] +
+                  Q[2]*freqamp[2]*sinvec[2] +
+                  Q[3]*freqamp[3]*sinvec[3]);
+  n = normalize(n);
+  return n;
+}
+
+void main(float4 position : POSITION, out smoutput OUT,
+          uniform float4 geowaveAmp,
+          uniform float4 geowaveFreq,
+          uniform float4 geowavePhase,
+          uniform float2 geowave1dir,
+          uniform float2 geowave2dir,
+          uniform float2 geowave3dir,
+          uniform float2 geowave4dir,
+          uniform float4 geowaveQ)
+{
+  float4x4 modelViewProj = glstate.matrix.mvp ;
+  float4 sinvec;
+  float4 cosvec;
+  calc_sincos(position.xy,
+              geowaveFreq,  
+              geowavePhase,
+              geowave1dir,
+              geowave2dir,
+              geowave3dir,
+              geowave4dir,
+              sinvec, cosvec);
+
+  float4 p = calc_position(position.xy,
+                           geowaveAmp,
+                           geowave1dir,
+                           geowave2dir,
+                           geowave3dir,
+                           geowave4dir,
+                           geowaveQ,
+                           sinvec,
+                           cosvec);
+
+  float3 n = calc_normal(position.xy,
+                         geowaveAmp,
+                         geowaveFreq,
+                         geowaveQ,
+                         sinvec, cosvec);
+     
+  float3 l = float3(1,1,1);
+  l = normalize(l);
+  float d = dot(l, n);
+
+  OUT.position = mul(modelViewProj, p);    // position in clip space
+  OUT.color = float4(d, d, d, 1);
+}
+
+
 
 //  for (i = 0; i < NUM_GEO_WAVES; i++) {
 
