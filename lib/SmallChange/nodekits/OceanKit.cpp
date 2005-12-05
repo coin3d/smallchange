@@ -28,6 +28,8 @@
   \brief The SmOceanKit class... 
   \ingroup nodekits
 
+  Based on the water rendering algorithm and example code in GPU Gems.
+  
   FIXME: doc
 */
 
@@ -172,6 +174,8 @@ protected:
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
   
 private:
+  void createCosLUT();
+  void createBiasNoiseBuffer();
   void updateShader(void);
   void initShader(void);
   void renderGrid(ocean_quadnode * node, const int bitmask);
@@ -206,6 +210,11 @@ private:
   SoShaderParameter2f * param_geowave2dir;
   SoShaderParameter2f * param_geowave3dir;
   SoShaderParameter2f * param_geowave4dir;
+
+  //TODO: add some precalculated variables
+  //SoShaderParameter4f * param_geowave_freqamp;
+  //SoShaderParameter4f * param_geowave_freqampx;
+  //SoShaderParameter4f * param_geowave_freqampy;
 
 public:
   enum {
@@ -290,6 +299,8 @@ private:
   } texwave;
   
   texwave texwaves[16];
+  unsigned char * coslut;
+  unsigned char * biasnoisebuf;
 
 };
 
@@ -545,6 +556,10 @@ OceanShape::OceanShape()
   SO_NODE_ADD_FIELD(shader, (NULL));
 
   this->root = NULL;
+  this->coslut = NULL;
+  this->biasnoisebuf = NULL;
+  this->createBiasNoiseBuffer();
+
   if (node_memalloc == NULL) {
     node_memalloc = cc_memalloc_construct(sizeof(ocean_quadnode));
     numnodes++;
@@ -595,6 +610,8 @@ OceanShape::OceanShape()
 
 OceanShape::~OceanShape()
 {
+  delete[] this->coslut;
+  delete[] this->biasnoisebuf;
   delete this->timersensor;
 
   if (this->vertexshader) {
@@ -640,6 +657,8 @@ OceanShape::tick()
 {
   SbTime t = SbTime::getTimeOfDay();
   if (this->currtime == SbTime::zero() || this->invalidstate) {
+    this->createCosLUT();
+    this->createBiasNoiseBuffer();
     this->copyGeoState();
     this->initTexState();
     this->initWaves();
@@ -1513,7 +1532,7 @@ void
 OceanShape::initTexState()
 {
   this->texstate_cache.noise = 0.2f;
-  this->texstate_cache.chop = 1.f;
+  this->texstate_cache.chop = 1.0f;
   this->texstate_cache.angleDeviation = 15.f;
   this->texstate_cache.windDir = this->windDirection.getValue();
   this->texstate_cache.windDir[1] = 1.f;
@@ -1718,6 +1737,45 @@ void OceanShape::wavefunc(const SbVec3f & in, SbVec3f & v, SbVec3f & n)
   n = tn;
 }
 
+void
+OceanShape::createBiasNoiseBuffer()
+{
+  unsigned char * buf = new unsigned char[BUMPSIZE*BUMPSIZE*4];
+  this->biasnoisebuf = buf;
+  
+  for(int i = 0; i < BUMPSIZE*BUMPSIZE; i++) {
+    float x = RandZeroToOne();
+    float y = RandZeroToOne();
+    
+    *buf++ = (unsigned char)(x * 255.999f);
+    *buf++ = (unsigned char)(y * 255.999f);
+    *buf++ = 255;
+    *buf++ = 255;
+  }
+}
+
+void
+OceanShape::createCosLUT()
+{
+  delete[] this->coslut;
+  unsigned char * buf = new unsigned char[BUMPSIZE*4];
+  this->coslut = buf;
+
+  for(int i = 0; i < BUMPSIZE; i++) {
+    float dist = float(i) / float(BUMPSIZE-1) * 2.0f * float(M_PI);
+    float c = float(cos(dist));
+    float s = float(sin(dist));
+    s *= 0.5f;
+    s += 0.5f;
+    s = float(pow(s, this->texstate_cache.chop));
+    c *= s;
+    unsigned char cosDist = (unsigned char)((c * 0.5 + 0.5) * 255.999f);
+    *buf++ = cosDist;
+    *buf++ = cosDist;
+    *buf++ = 255;
+    *buf++ = 255;
+  }
+}
 
 #undef FLAG_ISSPLIT
 
