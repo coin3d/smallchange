@@ -160,6 +160,8 @@ public:
   SoSFFloat waterLevel;
   SoSFFloat transitionSpeed;
   SoSFFloat sharpness;
+  SoSFVec3f lightDirection;
+  SoSFVec3f distanceAttenuation;
 
   void tick(void);
 
@@ -201,6 +203,9 @@ private:
 
   SoVertexShader * vertexshader;
   SoFragmentShader * fragmentshader;
+  SoShaderParameter3f * param_eyepos;
+  SoShaderParameter3f * param_lightdir;
+  SoShaderParameter3f * param_attenuation;
   SoShaderParameter4f * param_geowaveamp;
   SoShaderParameter4f * param_geowavephase;
   SoShaderParameter4f * param_geowavefreq;
@@ -416,6 +421,8 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_FIELD(specTrans, (100.0f));
   SO_KIT_ADD_FIELD(transitionSpeed, (1.0f / 6.0f));
   SO_KIT_ADD_FIELD(sharpness, (0.5f));
+  SO_KIT_ADD_FIELD(lightDirection, (1.0f, 1.0f, -1.0f));
+  SO_KIT_ADD_FIELD(distanceAttenuation, (1.0f, 0.01f, 0.0001f));
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
@@ -444,6 +451,8 @@ SmOceanKit::SmOceanKit(void)
   shape->waterLevel.connectFrom(&this->waterLevel);
   shape->transitionSpeed.connectFrom(&this->transitionSpeed);
   shape->sharpness.connectFrom(&this->sharpness);
+  shape->lightDirection.connectFrom(&this->lightDirection);
+  shape->distanceAttenuation.connectFrom(&this->distanceAttenuation);
 
   SoShaderProgram * shader = (SoShaderProgram*) this->getAnyPart("shader", TRUE);
   shape->shader = shader;
@@ -554,6 +563,8 @@ OceanShape::OceanShape()
   SO_NODE_ADD_FIELD(transitionSpeed, (1.0f / 6.0f));
   SO_NODE_ADD_FIELD(sharpness, (0.5f));
   SO_NODE_ADD_FIELD(shader, (NULL));
+  SO_NODE_ADD_FIELD(lightDirection, (1.0f, 1.0f, -1.0f));
+  SO_NODE_ADD_FIELD(distanceAttenuation, (1.0f, 0.01f, 0.0001f));
 
   this->root = NULL;
   this->coslut = NULL;
@@ -756,6 +767,16 @@ OceanShape::GLRender(SoGLRenderAction * action)
 
 #if 1 // render waves using VBO and vertex/fragment shaders
   this->updateParameters();
+
+  SbVec3f eyepos = SoViewVolumeElement::get(state).getProjectionPoint();
+  SoModelMatrixElement::get(state).inverse().multVecMatrix(eyepos, eyepos);
+
+  this->param_eyepos->value = eyepos;
+  // negate to get direction towards the light source
+  SbVec3f ldir = - this->lightDirection.getValue();
+  (void) ldir.normalize();
+  this->param_lightdir->value = ldir;
+
   this->gridvbo->bindBuffer((uint32_t) contextid);
   cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
   cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
@@ -1533,9 +1554,9 @@ OceanShape::initTexState()
 {
   this->texstate_cache.noise = 0.2f;
   this->texstate_cache.chop = 1.0f;
-  this->texstate_cache.angleDeviation = 15.f;
+  this->texstate_cache.angleDeviation = 15.0f;
   this->texstate_cache.windDir = this->windDirection.getValue();
-  this->texstate_cache.windDir[1] = 1.f;
+  this->texstate_cache.windDir[1] = 1.0f;
   this->texstate_cache.maxLength = 10.f;
   this->texstate_cache.minLength = 1.0f;
   this->texstate_cache.ampRatio = 0.1f;
@@ -1543,7 +1564,7 @@ OceanShape::initTexState()
   this->texstate_cache.speedDeviation = 0.1f;
   
   this->texstate_cache.transIdx = 0;
-  this->texstate_cache.transDel = -1.0f / 5.f;
+  this->texstate_cache.transDel = -1.0f / 5.0f;
 }
 
 void 
@@ -1639,6 +1660,17 @@ OceanShape::initShader(void)
     this->param_geowave4dir->ref();
     this->param_geowave4dir->name = "geowave4dir";
 
+    this->param_lightdir = new SoShaderParameter3f();
+    this->param_lightdir->ref();
+    this->param_lightdir->name = "lightdir";
+
+    this->param_eyepos = new SoShaderParameter3f();
+    this->param_eyepos->ref();
+    this->param_eyepos->name = "eyepos";
+
+    this->param_attenuation = new SoShaderParameter3f();
+    this->param_attenuation->ref();
+    this->param_attenuation->name = "attenuation";
 
     this->vertexshader->parameter.set1Value(0, this->param_geowaveamp);
     this->vertexshader->parameter.set1Value(1, this->param_geowavephase);
@@ -1648,6 +1680,9 @@ OceanShape::initShader(void)
     this->vertexshader->parameter.set1Value(5, this->param_geowave2dir);
     this->vertexshader->parameter.set1Value(6, this->param_geowave3dir);
     this->vertexshader->parameter.set1Value(7, this->param_geowave4dir);
+    this->vertexshader->parameter.set1Value(8, this->param_eyepos);
+    this->vertexshader->parameter.set1Value(9, this->param_lightdir);
+    this->vertexshader->parameter.set1Value(10, this->param_attenuation);
 
     s->shaderObject.set1Value(0, this->fragmentshader);
     s->shaderObject.set1Value(1, this->vertexshader);
@@ -1683,6 +1718,8 @@ void OceanShape::updateParameters()
   this->param_geowave2dir->value = this->geowaves[1].dir;
   this->param_geowave3dir->value = this->geowaves[2].dir;
   this->param_geowave4dir->value = this->geowaves[3].dir;
+
+  this->param_attenuation->value = this->distanceAttenuation.getValue();
 
 }
 

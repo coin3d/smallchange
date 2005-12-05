@@ -30,6 +30,7 @@
 #include <Inventor/nodekits/SoSubKit.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFVec2f.h>
+#include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/SbVec2f.h>
 #include <SmallChange/basic.h>
@@ -72,6 +73,8 @@ public:
   SoSFFloat waterLevel;
   SoSFFloat transitionSpeed;
   SoSFFloat sharpness;
+  SoSFVec3f lightDirection;
+  SoSFVec3f distanceAttenuation;
 
 protected:
   virtual void setDefaultOnNonWritingFields(void);
