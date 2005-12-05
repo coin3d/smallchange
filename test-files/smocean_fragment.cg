@@ -6,21 +6,27 @@ void main(float4 color : COLOR,
           float3 normal : TEXCOORD0,
           float3 lightdir : TEXCOORD1, 
           float3 halfangle : TEXCOORD2,
+          float3 ray : TEXCOORD3,
           out smoutput2 OUT)
 {
   float3 n = float3(0,0,1); // FIXME: get normal from normal map
   float3 l = normalize(lightdir); // FIXME: use normalization cube map instead
 
-  float d = saturate(dot(l,n));
+  float d = lightdir.z > 0 ? saturate(dot(l, n)) : 0;
 
+//  float3 r = reflect(ray, n);
   // specular component is disabled for now
-  //  float3 h = normalize(halfangle);
-  //  float s = saturate(dot(l,h));
-  //float s2 = s * s;
-  //float s4 = s2 * s2;
-  //float s8 = s4 * s4;
-  //float3 speccol = float3(0,0,0);
-//  OUT.color = float4(color.xyz * d + speccol * s8, color.w);
-  OUT.color = float4(color.xyz * d, color.w);
+  float3 h = normalize(halfangle);
+  // fixme do a lookup in a 1D specular texture?
+  float s = saturate(dot(h, n));
+  float s2 = s * s;
+  float s4 = s2 * s2;
+  float s8 = s4 * s4;
+  float s16 = s8 * s8;
+  float s32 = s16 * s16;
+  
+  float3 speccol = float3(1, 1, 1);
+  OUT.color = float4(color.rgb * d + speccol * s32, color.a);
+  // OUT.color = float4(color.xyz * d, color.w);
 }
 

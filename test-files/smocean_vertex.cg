@@ -4,6 +4,7 @@ struct smoutput {
   float3 normal : TEXCOORD0;
   float3 lightdir : TEXCOORD1;
   float3 halfvec : TEXCOORD2;
+  float3 ray : TEXCOORD3;
 };
 
 void calc_sincos(const in float2 xy,
@@ -111,7 +112,6 @@ float3 calc_tangent(const in float4 geowaveAmp,
   float4 freqamp = geowaveAmp * geowaveFreq;
   float4 dirx = float4(geowave1dir[0], geowave2dir[0], geowave3dir[0], geowave4dir[0]);
   float4 diry = float4(geowave1dir[1], geowave2dir[1], geowave3dir[1], geowave4dir[1]);
-  float4 diry2 = diry * diry;
 
   float3 t = float3(-dot(Q*dirx*diry*freqamp, sinvec),
                     1.0f - dot(Q*diry*diry*freqamp, sinvec),
@@ -185,10 +185,11 @@ void main(float4 position : POSITION,
 
   float3 ldir = mul(rot, lightdir);
   OUT.lightdir = ldir;
-  float3 eyedir = mul(rot, normalize(eyepos - position.xyz));
-  OUT.halfvec = normalize(ldir + eyedir);
+  float3 eyedir = mul(rot, normalize(eyepos - p.xyz));
+  OUT.halfvec = normalize(normalize(ldir) + normalize(eyedir));
 
   OUT.position = mul(modelViewProj, p);    // position in clip space
   OUT.color = float4(0.2, 0.4, 0.7, 1);
-  // OUT.color = float4(0.8, 0.8, 0.8, 1);
+  OUT.ray = -eyedir;
+   // OUT.color = float4(0.8, 0.8, 0.8, 1);
 }

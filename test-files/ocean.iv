@@ -3,9 +3,10 @@
 # LightModel { model BASE_COLOR }
 SmOceanKit { 
 size 10000 10000 
-sharpness 1.0
-lightDirection 1 1 -2
+sharpness 0.5
+lightDirection 0 -1 -1
 windDirection 0 1
-distanceAttenuation 1 0.01 0.0001
+distanceAttenuation 1 0.02 0.0002
+# amplitudeRatio 0.2
 
 }
