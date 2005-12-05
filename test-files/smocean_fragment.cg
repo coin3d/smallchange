@@ -2,8 +2,25 @@ struct smoutput2 {
   float4 color : COLOR;
 };
 
-void main(float4 color : COLOR, out smoutput2 OUT)
+void main(float4 color : COLOR, 
+          float3 normal : TEXCOORD0,
+          float3 lightdir : TEXCOORD1, 
+          float3 halfangle : TEXCOORD2,
+          out smoutput2 OUT)
 {
-  OUT.color = color;
+  float3 n = float3(0,0,1); // FIXME: get normal from normal map
+  float3 l = normalize(lightdir); // FIXME: use normalization cube map instead
+
+  float d = saturate(dot(l,n));
+
+  // specular component is disabled for now
+  //  float3 h = normalize(halfangle);
+  //  float s = saturate(dot(l,h));
+  //float s2 = s * s;
+  //float s4 = s2 * s2;
+  //float s8 = s4 * s4;
+  //float3 speccol = float3(0,0,0);
+//  OUT.color = float4(color.xyz * d + speccol * s8, color.w);
+  OUT.color = float4(color.xyz * d, color.w);
 }
 

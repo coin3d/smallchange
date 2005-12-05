@@ -1,6 +1,9 @@
 struct smoutput {
   float4 position : POSITION;
   float4 color : COLOR;
+  float3 normal : TEXCOORD0;
+  float3 lightdir : TEXCOORD1;
+  float3 halfvec : TEXCOORD2;
 };
 
 void calc_sincos(const in float2 xy,
@@ -95,7 +98,32 @@ float3 calc_normal(const in float4 geowaveAmp,
   return n;
 }
 
-void main(float4 position : POSITION, out smoutput OUT,
+float3 calc_tangent(const in float4 geowaveAmp,     
+                    const in float4 geowaveFreq,     
+                    const in float2 geowave1dir,
+                    const in float2 geowave2dir,
+                    const in float2 geowave3dir,
+                    const in float2 geowave4dir,
+                    const in float4 Q,
+                    const in float4 sinvec,
+                    const in float4 cosvec)
+{
+  float4 freqamp = geowaveAmp * geowaveFreq;
+  float4 dirx = float4(geowave1dir[0], geowave2dir[0], geowave3dir[0], geowave4dir[0]);
+  float4 diry = float4(geowave1dir[1], geowave2dir[1], geowave3dir[1], geowave4dir[1]);
+  float4 diry2 = diry * diry;
+
+  float3 t = float3(-dot(Q*dirx*diry*freqamp, sinvec),
+                    1.0f - dot(Q*diry*diry*freqamp, sinvec),
+                    dot(diry * freqamp, cosvec));
+  return t;
+}
+
+void main(float4 position : POSITION, 
+          out smoutput OUT,
+          uniform float3 eyepos,
+          uniform float3 lightdir,
+          uniform float3 attenuation, 
           uniform float4 geowaveAmp,
           uniform float4 geowaveFreq,
           uniform float4 geowavePhase,
@@ -105,6 +133,10 @@ void main(float4 position : POSITION, out smoutput OUT,
           uniform float2 geowave4dir,
           uniform float4 geowaveQ)
 {
+  float dist = distance(position.xyz, eyepos);
+  float att = 1.0f / (attenuation[0] + attenuation[1] * dist + attenuation[2] * dist * dist);
+  float4 amp = geowaveAmp * att;
+
   float4x4 modelViewProj = glstate.matrix.mvp ;
   float4 sinvec;
   float4 cosvec;
@@ -119,7 +151,7 @@ void main(float4 position : POSITION, out smoutput OUT,
               sinvec, cosvec);
 
   float4 p = calc_position(position.xy,
-                           geowaveAmp,
+                           amp,
                            geowave1dir,
                            geowave2dir,
                            geowave3dir,
@@ -128,7 +160,7 @@ void main(float4 position : POSITION, out smoutput OUT,
                            sinvec,
                            cosvec);
 
-  float3 n = calc_normal(geowaveAmp,
+  float3 n = calc_normal(amp,
                          geowaveFreq,
                          geowave1dir,
                          geowave2dir,
@@ -136,11 +168,27 @@ void main(float4 position : POSITION, out smoutput OUT,
                          geowave4dir,
                          geowaveQ,
                          sinvec, cosvec);
-     
-  float3 l = float3(1,1,1);
-  l = normalize(l);
-  float d = max(dot(l, n), 0);
+
+  float3 t = calc_tangent(amp,
+                         geowaveFreq,
+                         geowave1dir,
+                         geowave2dir,
+                         geowave3dir,
+                         geowave4dir,
+                         geowaveQ,
+                         sinvec, cosvec);
+
+  float3 binormal = cross(t, n);
+  float3x3 rot = float3x3(t, binormal, n);
+  
+  OUT.normal = n;  
+
+  float3 ldir = mul(rot, lightdir);
+  OUT.lightdir = ldir;
+  float3 eyedir = mul(rot, normalize(eyepos - position.xyz));
+  OUT.halfvec = normalize(ldir + eyedir);
 
   OUT.position = mul(modelViewProj, p);    // position in clip space
-  OUT.color = float4(d, d, d, 1);
+  OUT.color = float4(0.2, 0.4, 0.7, 1);
+  // OUT.color = float4(0.8, 0.8, 0.8, 1);
 }

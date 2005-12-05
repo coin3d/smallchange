@@ -1,8 +1,11 @@
 #Inventor V2.1 ascii
 
-LightModel { model BASE_COLOR }
+# LightModel { model BASE_COLOR }
 SmOceanKit { 
 size 10000 10000 
-sharpness 0.5
+sharpness 1.0
+lightDirection 1 1 -2
+windDirection 0 1
+distanceAttenuation 1 0.01 0.0001
 
 }
