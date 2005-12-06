@@ -51,6 +51,7 @@
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoCallback.h>
 #include <Inventor/nodes/SoInfo.h>
+#include <Inventor/elements/SoOverrideElement.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SoFullPath.h>
 #include <Inventor/SbPlane.h>
@@ -140,6 +141,7 @@ class OceanShape : public SoShape {
 
 public:
   static void initClass(void);
+  static void preShaderCB(void * closure, SoAction * action);
   OceanShape(void);
 
   SoSFNode shader;
@@ -427,7 +429,8 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, shader, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, callback, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, topSeparator, shader, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, topSeparator, oceanShape, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(oceanShape, OceanShape, FALSE, topSeparator, "", FALSE);
 
@@ -456,6 +459,11 @@ SmOceanKit::SmOceanKit(void)
 
   SoShaderProgram * shader = (SoShaderProgram*) this->getAnyPart("shader", TRUE);
   shape->shader = shader;
+
+  // we need a callback to update the parameters before the shader
+  // nodes are traversed
+  SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
+  cb->setCallback(OceanShape::preShaderCB, shape);
 }
 
 /*!
@@ -742,13 +750,30 @@ OceanShape::updateQuadtree(SoState * state)
 
 }
 
+void 
+OceanShape::preShaderCB(void * closure, SoAction * action)
+{
+  if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
+    SoState * state = action->getState();
+    OceanShape * thisp = (OceanShape*)closure;
+    thisp->tick();
+    thisp->updateParameters();
+    SbVec3f eyepos = SoViewVolumeElement::get(state).getProjectionPoint();
+    SoModelMatrixElement::get(state).inverse().multVecMatrix(eyepos, eyepos);
+    
+    thisp->param_eyepos->value = eyepos;
+    // negate to get direction towards the light source
+    SbVec3f ldir = - thisp->lightDirection.getValue();
+    (void) ldir.normalize();
+    thisp->param_lightdir->value = ldir;  
+  }
+}
 
 void
 OceanShape::GLRender(SoGLRenderAction * action)
 {
   if (!this->shouldGLRender(action)) return;
 
-  this->tick();
   SoState * state = action->getState();
 
   SoMaterialBundle mb(action);
@@ -766,21 +791,11 @@ OceanShape::GLRender(SoGLRenderAction * action)
   const cc_glglue * glue = cc_glglue_instance(contextid);
 
 #if 1 // render waves using VBO and vertex/fragment shaders
-  this->updateParameters();
-
-  SbVec3f eyepos = SoViewVolumeElement::get(state).getProjectionPoint();
-  SoModelMatrixElement::get(state).inverse().multVecMatrix(eyepos, eyepos);
-
-  this->param_eyepos->value = eyepos;
-  // negate to get direction towards the light source
-  SbVec3f ldir = - this->lightDirection.getValue();
-  (void) ldir.normalize();
-  this->param_lightdir->value = ldir;
-
+  
   this->gridvbo->bindBuffer((uint32_t) contextid);
   cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
   cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
-
+  
   for (int i = 0; i < nodelist.getLength(); i++) {
     ocean_quadnode * node = this->nodelist[i];
     int mask = node->getNodeBitmask();
@@ -803,7 +818,7 @@ OceanShape::GLRender(SoGLRenderAction * action)
       SbMatrix m2;
       m2.setTranslate(corners[0]);
       m.multRight(m2);
-
+      
       int i = 0;
       for (int y = 0; y < GRIDSIZE; y++) {
         float fy = float(y) / float(GRIDSIZE-1);
