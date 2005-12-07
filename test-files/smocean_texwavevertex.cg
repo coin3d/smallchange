@@ -1,0 +1,35 @@
+struct Input
+{
+  float4 position : POSITION;
+  float4 uv : TEXCOORD0;
+};
+
+struct Output {
+    float4 position : POSITION;
+    float4 uv0 : TEXCOORD0;
+    float4 uv1 : TEXCOORD1;
+    float4 uv2 : TEXCOORD2;
+    float4 uv3 : TEXCOORD3;
+};
+
+void main(const in Input In,
+          out Output Out,
+	  uniform float4 trans0,
+	  uniform float4 trans1,
+	  uniform float4 trans2,
+	  uniform float4 trans3)
+{
+  float4x4 modelViewProj = glstate.matrix.mvp;
+  Out.position = mul(modelViewProj, In.position);
+
+  float4 uv = float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+  uv.x = dot(In.uv, trans0);
+  Out.uv0 = uv;
+  uv.x = dot(In.uv, trans1);
+  Out.uv1 = uv;
+  uv.x = dot(In.uv, trans2);
+  Out.uv2 = uv;
+  uv.x = dot(In.uv, trans3);
+  Out.uv3 = uv;
+}

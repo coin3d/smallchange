@@ -1,0 +1,30 @@
+// FIXME: rewrite as ARB?
+
+void main(const in float2 uv0 : TEXCOORD0,
+          const in float2 uv1 : TEXCOORD1,
+          const in float2 uv2 : TEXCOORD2,
+          const in float2 uv3 : TEXCOORD3,
+          const in sampler2D cosmap0 : TEXUNIT0,
+          const in sampler2D cosmap1 : TEXUNIT1,
+          const in sampler2D cosmap2 : TEXUNIT2,
+          const in sampler2D cosmap3 : TEXUNIT3,
+          uniform float4 wavecoef0,
+          uniform float4 wavecoef1,
+          uniform float4 wavecoef2,
+          uniform float4 wavecoef3,
+          uniform float4 rescale,
+          out float4 color : COLOR)
+{
+  float4 w0 = tex2D(cosmap0, uv0);
+  float4 w1 = tex2D(cosmap1, uv1);
+  float4 w2 = tex2D(cosmap2, uv2);
+  float4 w3 = tex2D(cosmap3, uv3);
+
+  float4 tmp = w0 * wavecoef0 + w1 * wavecoef1 + w2 * wavecoef2 + w3 * wavecoef3;
+  tmp *= rescale;
+  tmp += rescale;
+
+  color = tmp;
+}
+
+
