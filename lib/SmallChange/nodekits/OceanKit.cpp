@@ -502,10 +502,10 @@ SmOceanKit::SmOceanKit(void)
   SoTextureUnit * cmunit = (SoTextureUnit*) this->getAnyPart("cubeMapUnit", TRUE);
   cmunit->unit = 1;
 
-//    SoCube * cube = (SoCube*) this->getAnyPart("debugCube", TRUE);
-//    cube->width = 500.0;
-//    cube->height = 500.0;
-//    cube->depth = 500.0;
+//   SoCube * cube = (SoCube*) this->getAnyPart("debugCube", TRUE);
+//   cube->width = 500.0;
+//   cube->height = 500.0;
+//   cube->depth = 500.0;
 }
 
 /*!
@@ -741,9 +741,9 @@ OceanShape::tick()
 {
   SbTime t = SbTime::getTimeOfDay();
   if (this->currtime == SbTime::zero() || this->invalidstate) {
+    this->initTexState();
     this->createCosLUT();
     this->copyGeoState();
-    this->initTexState();
     this->initWaves();
     this->initLevels();
     this->invalidstate = FALSE;
@@ -1875,40 +1875,40 @@ OceanShape::updateParameters(SoState * state)
 void
 OceanShape::updateTextureParameters(SoState * state)
 {
-	int i;
-	for (i = 0; i < 16; i++) {
+  int i;
+  for (i = 0; i < 16; i++) {
     SbVec4f trans(this->texwaves[i].rotScale[0], this->texwaves[i].rotScale[1], 0.0f, this->texwaves[i].phase);
     this->texparam_trans[i]->value = trans;
-
-		float normScale = this->texwaves[i].fade / float(NUM_BUMP_PASSES);
-    SbVec4f coef(this->texwaves[i].dir[0] * normScale, this->texwaves[i].dir[1] * normScale, 1.0f, 1.0f);
+    
+    float normScale = this->texwaves[i].fade / float(NUM_BUMP_PASSES);
+    SbVec4f coef(this->texwaves[i].dir[0] * normScale, this->texwaves[i].dir[1] * normScale, (i&3)==0 ? 1.0f : 0.0, 1.0f);
     this->texparam_coef[i]->value = coef;
-	}
+  }
 
   SbVec4f xform;
   const float kRate = 0.1f;
 #if 0
-	m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
-	xform.w += m_fElapsedTime * kRate;
-	m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
-
-	m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
-	xform.w += m_fElapsedTime * kRate;
-	m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
+  m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
+  xform.w += m_fElapsedTime * kRate;
+  m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
+  
+  m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
+  xform.w += m_fElapsedTime * kRate;
+  m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
 #endif
-
-	float s = 0.5f / (float(NUM_BUMPS_PER_PASS) + this->texstate_cache.noise);
+  
+  float s = 0.5f / (float(NUM_BUMPS_PER_PASS) + this->texstate_cache.noise);
   SbVec4f rescale(s, s, 1.0f, 1.0f);
   for (i = 0; i < 4; i++) {
     this->texparam_rescale[i]->value = rescale;
   }
 #if 0
-	float scaleBias = 0.5f * m_TexState.m_Noise / (float(kNumBumpPasses) + m_TexState.m_Noise);
-	D3DXVECTOR4 scaleBiasVec(scaleBias, scaleBias, 0.f, 1.f);
-	m_CompCosinesEff->SetVector(m_CompCosineParams.m_ScaleBias, &scaleBiasVec);
-
-	m_CompCosinesEff->SetTexture(m_CompCosineParams.m_CosineLUT, m_CosineLUT);
-	m_CompCosinesEff->SetTexture(m_CompCosineParams.m_BiasNoise, m_BiasNoiseMap);
+  float scaleBias = 0.5f * m_TexState.m_Noise / (float(kNumBumpPasses) + m_TexState.m_Noise);
+  D3DXVECTOR4 scaleBiasVec(scaleBias, scaleBias, 0.f, 1.f);
+  m_CompCosinesEff->SetVector(m_CompCosineParams.m_ScaleBias, &scaleBiasVec);
+  
+  m_CompCosinesEff->SetTexture(m_CompCosineParams.m_CosineLUT, m_CosineLUT);
+  m_CompCosinesEff->SetTexture(m_CompCosineParams.m_BiasNoise, m_BiasNoiseMap);
 #endif
 }
 
@@ -1998,6 +1998,7 @@ OceanShape::createCosLUT()
     unsigned char cosDist = (unsigned char)((c * 0.5 + 0.5) * 255.999f);
     *buf++ = cosDist;
     *buf++ = cosDist;
+
     *buf++ = 255;
     *buf++ = 255;
   }
