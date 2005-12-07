@@ -1,7 +1,7 @@
 struct smoutput {
   float4 position : POSITION;
-  float4 color : COLOR;
-  float3 normal : TEXCOORD0;
+  float4 color : COLOR0;
+  float2 bumpcoord : TEXCOORD0;
   float3 lightdir : TEXCOORD1;
   float3 halfvec : TEXCOORD2;
   float3 ray : TEXCOORD3;
@@ -181,7 +181,7 @@ void main(float4 position : POSITION,
   float3 binormal = cross(t, n);
   float3x3 rot = float3x3(t, binormal, n);
   
-  OUT.normal = n;  
+  OUT.bumpcoord = float2(position.x*0.04, position.y*0.04);  
 
   float3 ldir = mul(rot, lightdir);
   OUT.lightdir = ldir;
@@ -193,3 +193,7 @@ void main(float4 position : POSITION,
   OUT.ray = -eyedir;
    // OUT.color = float4(0.8, 0.8, 0.8, 1);
 }
+
+
+
+

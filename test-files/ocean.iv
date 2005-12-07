@@ -1,12 +1,33 @@
 #Inventor V2.1 ascii
 
-# LightModel { model BASE_COLOR }
+Complexity { textureQuality 1.0 }
+LightModel { model BASE_COLOR }
 SmOceanKit { 
 size 10000 10000 
-sharpness 0.5
-lightDirection 0 -1 -1
+sharpness 0.2
+lightDirection 0 -2 -1
 windDirection 0 1
 distanceAttenuation 1 0.02 0.0002
-# amplitudeRatio 0.2
+angleDeviation 15
+# amplitudeRatio 0.00000001
+
+cubeMap TextureCubeMap {
+
+  filenames [
+#"Ocean_diffuse_negx.png",
+#"Ocean_diffuse_posx.png",
+#"Ocean_diffuse_negz.png",
+#"Ocean_diffuse_posz.png",
+#"Ocean_diffuse_negy.png",
+#"Ocean_diffuse_posy.png"
+
+"negx.jpg.flip.png",
+"posx.jpg.flip.png",
+"negy.jpg.flip.png",
+"posy.jpg.flip.png",
+"negz.jpg.flip.png",
+"posz.jpg.flip.png",
+]
+ }
 
 }
