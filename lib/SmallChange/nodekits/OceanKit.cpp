@@ -47,9 +47,14 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoShape.h>
+#include <Inventor/nodes/SoTextureUnit.h>
+#include <Inventor/nodes/SoTextureCubeMap.h>
 #include <Inventor/nodes/SoShapeHints.h>
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoCallback.h>
+#include <Inventor/nodes/SoSceneTexture2.h>
+#include <Inventor/nodes/SoTexture2.h>
+#include <Inventor/nodes/SoCube.h>
 #include <Inventor/nodes/SoInfo.h>
 #include <Inventor/elements/SoOverrideElement.h>
 #include <Inventor/SoPickedPoint.h>
@@ -63,6 +68,8 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoCullElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/elements/SoGLLazyElement.h>
+#include <Inventor/nodes/SoOrthographicCamera.h>
 
 #include <Inventor/sensors/SoTimerSensor.h>
 #include <SmallChange/nodes/UTMPosition.h>
@@ -144,7 +151,6 @@ public:
   static void preShaderCB(void * closure, SoAction * action);
   OceanShape(void);
 
-  SoSFNode shader;
   SoSFVec2f size;
   SoSFFloat chop;
   SoSFFloat angleDeviation;
@@ -166,6 +172,8 @@ public:
   SoSFVec3f distanceAttenuation;
 
   void tick(void);
+  void initWaveTexture(SoSceneTexture2 * tex);
+  void initShader(SoShaderProgram * s, SoSceneTexture2 * tex);
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
@@ -178,10 +186,12 @@ protected:
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
   
 private:
+  void cleanupShader();
   void createCosLUT();
   void createBiasNoiseBuffer();
+  void createTexParameters();
+  void createTexScene();
   void updateShader(void);
-  void initShader(void);
   void renderGrid(ocean_quadnode * node, const int bitmask);
   void wavefunc(const SbVec3f & in, SbVec3f &v, SbVec3f &n);
   void updateQuadtree(SoState * state);
@@ -193,7 +203,8 @@ private:
   void updateTexWave(const int i, const float dt);
   void initTexWave(const int i);
 
-  void updateParameters();
+  void updateParameters(SoState * state);
+  void updateTextureParameters(SoState * state);
   void updateGeoWave(const int i, const float dt);
   void initGeoWave(const int i);
   void updateWaves(const double dt);
@@ -203,6 +214,7 @@ private:
   static void timerCB(void * closure, SoSensor * s);
   SbTime currtime;
 
+  SoShaderProgram * shader;
   SoVertexShader * vertexshader;
   SoFragmentShader * fragmentshader;
   SoShaderParameter3f * param_eyepos;
@@ -217,18 +229,30 @@ private:
   SoShaderParameter2f * param_geowave2dir;
   SoShaderParameter2f * param_geowave3dir;
   SoShaderParameter2f * param_geowave4dir;
+  SoShaderParameter4f * texparam_coef[16];
+  SoShaderParameter4f * texparam_trans[16];
+  SoShaderParameter4f * texparam_rescale[4];
+  SoShaderParameter4f * texparam_noisexform[4];
+  SoShaderParameter4f * texparam_scalebias;
+  static void disable_blend(void * closure, SoAction * action);
+  static void enable_blend(void * closure, SoAction * action);
+  static void render_quad(void * closure, SoAction * action);
 
   //TODO: add some precalculated variables
   //SoShaderParameter4f * param_geowave_freqamp;
   //SoShaderParameter4f * param_geowave_freqampx;
   //SoShaderParameter4f * param_geowave_freqampy;
 
+  SoShaderParameter4f * waveparam[16];
+
 public:
   enum {
     NUM_GEO_WAVES = 4,
     NUM_TEX_WAVES = 16,
     BUMPSIZE = 256,
-    GRIDSIZE = 17
+    GRIDSIZE = 17,
+    NUM_BUMP_PASSES = 4,
+    NUM_BUMPS_PER_PASS = 4
   };
 
 private:
@@ -309,6 +333,8 @@ private:
   unsigned char * coslut;
   unsigned char * biasnoisebuf;
 
+  SoSceneTexture2 * wavetex;
+  SoTexture2 * cosluttex;
 };
 
 class ocean_quadnode {
@@ -431,7 +457,13 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, callback, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, topSeparator, shader, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, topSeparator, oceanShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, topSeparator, waveTexture, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, topSeparator, debugCube, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, topSeparator, cubeMapUnit, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(cubeMapUnit, SoTextureUnit, FALSE, topSeparator, cubeMap, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(cubeMap, SoTextureCubeMap, FALSE, topSeparator, resetUnit, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(resetUnit, SoTextureUnit, FALSE, topSeparator, oceanShape, FALSE);
+
   SO_KIT_ADD_CATALOG_ENTRY(oceanShape, OceanShape, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
@@ -458,12 +490,22 @@ SmOceanKit::SmOceanKit(void)
   shape->distanceAttenuation.connectFrom(&this->distanceAttenuation);
 
   SoShaderProgram * shader = (SoShaderProgram*) this->getAnyPart("shader", TRUE);
-  shape->shader = shader;
 
   // we need a callback to update the parameters before the shader
   // nodes are traversed
   SoCallback * cb = (SoCallback*) this->getAnyPart("callback", TRUE);
   cb->setCallback(OceanShape::preShaderCB, shape);
+
+  SoSceneTexture2 * tex = (SoSceneTexture2*) this->getAnyPart("waveTexture", TRUE);
+  shape->initShader(shader, tex);
+
+  SoTextureUnit * cmunit = (SoTextureUnit*) this->getAnyPart("cubeMapUnit", TRUE);
+  cmunit->unit = 1;
+
+//    SoCube * cube = (SoCube*) this->getAnyPart("debugCube", TRUE);
+//    cube->width = 500.0;
+//    cube->height = 500.0;
+//    cube->depth = 500.0;
 }
 
 /*!
@@ -570,11 +612,39 @@ OceanShape::OceanShape()
   SO_NODE_ADD_FIELD(specTrans, (100.0f));
   SO_NODE_ADD_FIELD(transitionSpeed, (1.0f / 6.0f));
   SO_NODE_ADD_FIELD(sharpness, (0.5f));
-  SO_NODE_ADD_FIELD(shader, (NULL));
   SO_NODE_ADD_FIELD(lightDirection, (1.0f, 1.0f, -1.0f));
   SO_NODE_ADD_FIELD(distanceAttenuation, (1.0f, 0.01f, 0.0001f));
 
+  this->shader = NULL;
+  this->vertexshader = NULL;
+  this->fragmentshader = NULL;
+  this->param_eyepos = NULL;
+  this->param_lightdir = NULL;
+  this->param_attenuation = NULL;
+  this->param_geowaveamp = NULL;
+  this->param_geowavephase = NULL;
+  this->param_geowavefreq = NULL;
+  this->param_geowaveQ = NULL;
+
+  this->param_geowave1dir = NULL;
+  this->param_geowave2dir = NULL;
+  this->param_geowave3dir = NULL;
+  this->param_geowave4dir = NULL;
+
+  int i;
+  for (i = 0; i < 16; i++) {
+    this->texparam_coef[i] = NULL;
+    this->texparam_trans[i] = NULL;
+  }
+  for (i = 0; i < 4; i++) {
+    this->texparam_rescale[i] = NULL;
+    this->texparam_noisexform[i] = NULL;
+  }
+  this->texparam_scalebias = NULL;
+
   this->root = NULL;
+  this->wavetex = NULL;
+  this->cosluttex = NULL;
   this->coslut = NULL;
   this->biasnoisebuf = NULL;
   this->createBiasNoiseBuffer();
@@ -594,7 +664,7 @@ OceanShape::OceanShape()
   this->timersensor->schedule();
 
   this->grid = new SbVec3f[GRIDSIZE*GRIDSIZE];
-  int i = 0;
+  i = 0;
   int x, y;
   for (y = 0; y < GRIDSIZE; y++) {
     float fy = float(y) / float(GRIDSIZE-1);
@@ -619,26 +689,21 @@ OceanShape::OceanShape()
     }
     this->idxlen[i] = ptr-orgptr;
     this->idxvbo[i] = new SmVBO(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-    this->idxvbo[i]->setBufferData(this->grididx[i], this->idxlen[i]*sizeof(short));
-    
-    fprintf(stderr,"idxlen %d: %d\n", i , this->idxlen[i]);
+    this->idxvbo[i]->setBufferData(this->grididx[i], this->idxlen[i]*sizeof(short));    
   }
-  this->vertexshader = NULL;
-  this->fragmentshader = NULL;
 }
 
 OceanShape::~OceanShape()
 {
+  this->cleanupShader();
   delete[] this->coslut;
   delete[] this->biasnoisebuf;
   delete this->timersensor;
+  
+  if (this->cosluttex) {
+    this->cosluttex->unref();
+  }
 
-  if (this->vertexshader) {
-    this->vertexshader->unref();
-  }
-  if (this->fragmentshader) {
-    this->fragmentshader->unref();
-  }
   delete this->root;
   delete[] this->grid;
   delete this->gridvbo;
@@ -677,13 +742,11 @@ OceanShape::tick()
   SbTime t = SbTime::getTimeOfDay();
   if (this->currtime == SbTime::zero() || this->invalidstate) {
     this->createCosLUT();
-    this->createBiasNoiseBuffer();
     this->copyGeoState();
     this->initTexState();
     this->initWaves();
     this->initLevels();
     this->invalidstate = FALSE;
-    this->initShader();
   }
   else {
     this->updateWaves((t - this->currtime).getValue());
@@ -757,15 +820,15 @@ OceanShape::preShaderCB(void * closure, SoAction * action)
     SoState * state = action->getState();
     OceanShape * thisp = (OceanShape*)closure;
     thisp->tick();
-    thisp->updateParameters();
-    SbVec3f eyepos = SoViewVolumeElement::get(state).getProjectionPoint();
-    SoModelMatrixElement::get(state).inverse().multVecMatrix(eyepos, eyepos);
+    thisp->updateParameters(state);
+    thisp->updateTextureParameters(state);
+
+    // need to force the texture update here before the new shader is activated
+    if (thisp->wavetex) thisp->wavetex->GLRender((SoGLRenderAction*)action);
     
-    thisp->param_eyepos->value = eyepos;
-    // negate to get direction towards the light source
-    SbVec3f ldir = - thisp->lightDirection.getValue();
-    (void) ldir.normalize();
-    thisp->param_lightdir->value = ldir;  
+    // invalidate texture state so that texture is reloaded after the Cg program is loaded
+    SoGLLazyElement::getInstance(state)->send(state, SoLazyElement::GLIMAGE_MASK);
+    SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
   }
 }
 
@@ -958,9 +1021,6 @@ OceanShape::notify(SoNotList * list)
   if (f == &this->size) {
     delete this->root;
     this->root = NULL;
-  }
-  else if (f != &this->shader) {
-    //this->invalidstate = TRUE;
   }
   inherited::notify(list);
 }
@@ -1519,7 +1579,7 @@ OceanShape::updateTexWave(const int i, const float dt)
         this->texstate_cache.transIdx = 0;
     }
   }
-  this->texwaves[i].phase -= dt * this->texwaves[i].speed;
+  this->texwaves[i].phase += dt * this->texwaves[i].speed;
   this->texwaves[i].phase -= int(this->texwaves[i].phase);
 }
 
@@ -1609,8 +1669,6 @@ OceanShape::initLevels()
 
   this->maxlevel = level;
   this->minlevel = 1;
-
-  fprintf(stderr,"min/max levels: %d %d\n", this->minlevel, this->maxlevel);
 }
 
 void 
@@ -1631,80 +1689,148 @@ OceanShape::updateShader(void)
 }
 
 void 
-OceanShape::initShader(void)
+OceanShape::initShader(SoShaderProgram * s, SoSceneTexture2 * wavetex)
 {
-  SoShaderProgram * s = (SoShaderProgram*) this->shader.getValue();
-  if (!s) return;
+  if (this->shader) {
+    this->cleanupShader();
+  }
+  this->fragmentshader = new SoFragmentShader();
+  this->fragmentshader->ref();
+  this->fragmentshader->sourceProgram = "smocean_fragment.cg";
+  
+  this->vertexshader = new SoVertexShader();
+  this->vertexshader->ref();
+  this->vertexshader->sourceProgram = "smocean_vertex.cg";
+  
+  this->param_geowaveamp = new SoShaderParameter4f();
+  this->param_geowaveamp->ref();
+  this->param_geowaveamp->name = "geowaveAmp";
+  
+  this->param_geowavefreq = new SoShaderParameter4f();
+  this->param_geowavefreq->ref();
+  this->param_geowavefreq->name = "geowaveFreq";
 
-  if (!this->vertexshader) {
+  this->param_geowavephase = new SoShaderParameter4f();
+  this->param_geowavephase->ref();
+  this->param_geowavephase->name = "geowavePhase";
+  
+  this->param_geowaveQ = new SoShaderParameter4f();
+  this->param_geowaveQ->ref();
+  this->param_geowaveQ->name = "geowaveQ";
+  
+  this->param_geowave1dir = new SoShaderParameter2f();
+  this->param_geowave1dir->ref();
+  this->param_geowave1dir->name = "geowave1dir";
+  this->param_geowave2dir = new SoShaderParameter2f();
+  this->param_geowave2dir->ref();
+  this->param_geowave2dir->name = "geowave2dir";
+  this->param_geowave3dir = new SoShaderParameter2f();
+  this->param_geowave3dir->ref();
+  this->param_geowave3dir->name = "geowave3dir";
+  this->param_geowave4dir = new SoShaderParameter2f();
+  this->param_geowave4dir->ref();
+  this->param_geowave4dir->name = "geowave4dir";
+  
+  this->param_lightdir = new SoShaderParameter3f();
+  this->param_lightdir->ref();
+  this->param_lightdir->name = "lightdir";
+  
+  this->param_eyepos = new SoShaderParameter3f();
+  this->param_eyepos->ref();
+  this->param_eyepos->name = "eyepos";
+  
+  this->param_attenuation = new SoShaderParameter3f();
+  this->param_attenuation->ref();
+  this->param_attenuation->name = "attenuation";
 
-    this->fragmentshader = new SoFragmentShader();
-    this->fragmentshader->ref();
-    this->fragmentshader->sourceProgram = "smocean_fragment.cg";
+  this->vertexshader->parameter.set1Value(0, this->param_geowaveamp);
+  this->vertexshader->parameter.set1Value(1, this->param_geowavephase);
+  this->vertexshader->parameter.set1Value(2, this->param_geowavefreq);
+  this->vertexshader->parameter.set1Value(3, this->param_geowaveQ);
+  this->vertexshader->parameter.set1Value(4, this->param_geowave1dir);
+  this->vertexshader->parameter.set1Value(5, this->param_geowave2dir);
+  this->vertexshader->parameter.set1Value(6, this->param_geowave3dir);
+  this->vertexshader->parameter.set1Value(7, this->param_geowave4dir);
+  this->vertexshader->parameter.set1Value(8, this->param_eyepos);
+  this->vertexshader->parameter.set1Value(9, this->param_lightdir);
+  this->vertexshader->parameter.set1Value(10, this->param_attenuation);
 
-    this->vertexshader = new SoVertexShader();
-    this->vertexshader->ref();
-    this->vertexshader->sourceProgram = "smocean_vertex.cg";
+  s->shaderObject.set1Value(0, this->fragmentshader);
+  s->shaderObject.set1Value(1, this->vertexshader);
+  this->shader = s;
+  this->shader->ref();
+  this->wavetex = wavetex;
+  this->wavetex->ref();
+  this->createTexParameters();
+  this->createTexScene();
+}
 
-    this->param_geowaveamp = new SoShaderParameter4f();
-    this->param_geowaveamp->ref();
-    this->param_geowaveamp->name = "geowaveAmp";
+void
+OceanShape::cleanupShader()
+{
+  if (this->vertexshader) {
+    this->vertexshader->unref();
+  }
+  if (this->fragmentshader) {
+    this->fragmentshader->unref();
+  }
+  if (this->param_eyepos) {
+    this->param_eyepos->unref();
+  }
+  if (this->param_lightdir) {
+    this->param_lightdir->unref();
+  }
+  if (this->param_attenuation) {
+    this->param_attenuation->unref();
+  }
+  if (this->param_geowaveamp) {
+    this->param_geowaveamp->unref();
+  }
+  if (this->param_geowavephase) {
+    this->param_geowavephase->unref();
+  }
+  if (this->param_geowavefreq) {
+    this->param_geowavefreq->unref();
+  }
+  if (this->param_geowaveQ) {
+    this->param_geowaveQ->unref();
+  }
+  if (this->param_geowave1dir) {
+    this->param_geowave1dir->unref();
+  }
+  if (this->param_geowave2dir) {
+    this->param_geowave2dir->unref();
+  }
+  if (this->param_geowave3dir) {
+    this->param_geowave3dir->unref();
+  }
+  if (this->param_geowave4dir) {
+    this->param_geowave4dir->unref();
+  }
 
-    this->param_geowavefreq = new SoShaderParameter4f();
-    this->param_geowavefreq->ref();
-    this->param_geowavefreq->name = "geowaveFreq";
+  int i;
+  for (i = 0; i < 16; i++) {
+    if (this->texparam_coef[i]) this->texparam_coef[i]->unref();
+    if (this->texparam_trans[i]) this->texparam_trans[i]->unref();
+  }
+  for (i = 0; i < 4; i++) {
+    if (this->texparam_rescale[i]) this->texparam_rescale[i]->unref(); 
+    if (this->texparam_noisexform[i]) this->texparam_noisexform[i]->unref();
+  }
+  if (this->texparam_scalebias) this->texparam_scalebias->unref();
 
-    this->param_geowavephase = new SoShaderParameter4f();
-    this->param_geowavephase->ref();
-    this->param_geowavephase->name = "geowavePhase";
-
-    this->param_geowaveQ = new SoShaderParameter4f();
-    this->param_geowaveQ->ref();
-    this->param_geowaveQ->name = "geowaveQ";
-    
-    this->param_geowave1dir = new SoShaderParameter2f();
-    this->param_geowave1dir->ref();
-    this->param_geowave1dir->name = "geowave1dir";
-    this->param_geowave2dir = new SoShaderParameter2f();
-    this->param_geowave2dir->ref();
-    this->param_geowave2dir->name = "geowave2dir";
-    this->param_geowave3dir = new SoShaderParameter2f();
-    this->param_geowave3dir->ref();
-    this->param_geowave3dir->name = "geowave3dir";
-    this->param_geowave4dir = new SoShaderParameter2f();
-    this->param_geowave4dir->ref();
-    this->param_geowave4dir->name = "geowave4dir";
-
-    this->param_lightdir = new SoShaderParameter3f();
-    this->param_lightdir->ref();
-    this->param_lightdir->name = "lightdir";
-
-    this->param_eyepos = new SoShaderParameter3f();
-    this->param_eyepos->ref();
-    this->param_eyepos->name = "eyepos";
-
-    this->param_attenuation = new SoShaderParameter3f();
-    this->param_attenuation->ref();
-    this->param_attenuation->name = "attenuation";
-
-    this->vertexshader->parameter.set1Value(0, this->param_geowaveamp);
-    this->vertexshader->parameter.set1Value(1, this->param_geowavephase);
-    this->vertexshader->parameter.set1Value(2, this->param_geowavefreq);
-    this->vertexshader->parameter.set1Value(3, this->param_geowaveQ);
-    this->vertexshader->parameter.set1Value(4, this->param_geowave1dir);
-    this->vertexshader->parameter.set1Value(5, this->param_geowave2dir);
-    this->vertexshader->parameter.set1Value(6, this->param_geowave3dir);
-    this->vertexshader->parameter.set1Value(7, this->param_geowave4dir);
-    this->vertexshader->parameter.set1Value(8, this->param_eyepos);
-    this->vertexshader->parameter.set1Value(9, this->param_lightdir);
-    this->vertexshader->parameter.set1Value(10, this->param_attenuation);
-
-    s->shaderObject.set1Value(0, this->fragmentshader);
-    s->shaderObject.set1Value(1, this->vertexshader);
+  if (this->shader) {
+    this->shader->unref();
+    this->shader = NULL;
+  }
+  if (this->wavetex) {
+    this->wavetex->unref();
+    this->wavetex = NULL;
   }
 }
 
-void OceanShape::updateParameters()
+void 
+OceanShape::updateParameters(SoState * state)
 {
   SbVec4f Q;
   int i;
@@ -1736,6 +1862,54 @@ void OceanShape::updateParameters()
 
   this->param_attenuation->value = this->distanceAttenuation.getValue();
 
+  SbVec3f eyepos = SoViewVolumeElement::get(state).getProjectionPoint();
+  SoModelMatrixElement::get(state).inverse().multVecMatrix(eyepos, eyepos);
+  
+  this->param_eyepos->value = eyepos;
+  // negate to get direction towards the light source
+  SbVec3f ldir = - this->lightDirection.getValue();
+  (void) ldir.normalize();
+  this->param_lightdir->value = ldir;
+}
+
+void
+OceanShape::updateTextureParameters(SoState * state)
+{
+	int i;
+	for (i = 0; i < 16; i++) {
+    SbVec4f trans(this->texwaves[i].rotScale[0], this->texwaves[i].rotScale[1], 0.0f, this->texwaves[i].phase);
+    this->texparam_trans[i]->value = trans;
+
+		float normScale = this->texwaves[i].fade / float(NUM_BUMP_PASSES);
+    SbVec4f coef(this->texwaves[i].dir[0] * normScale, this->texwaves[i].dir[1] * normScale, 1.0f, 1.0f);
+    this->texparam_coef[i]->value = coef;
+	}
+
+  SbVec4f xform;
+  const float kRate = 0.1f;
+#if 0
+	m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
+	xform.w += m_fElapsedTime * kRate;
+	m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
+
+	m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
+	xform.w += m_fElapsedTime * kRate;
+	m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
+#endif
+
+	float s = 0.5f / (float(NUM_BUMPS_PER_PASS) + this->texstate_cache.noise);
+  SbVec4f rescale(s, s, 1.0f, 1.0f);
+  for (i = 0; i < 4; i++) {
+    this->texparam_rescale[i]->value = rescale;
+  }
+#if 0
+	float scaleBias = 0.5f * m_TexState.m_Noise / (float(kNumBumpPasses) + m_TexState.m_Noise);
+	D3DXVECTOR4 scaleBiasVec(scaleBias, scaleBias, 0.f, 1.f);
+	m_CompCosinesEff->SetVector(m_CompCosineParams.m_ScaleBias, &scaleBiasVec);
+
+	m_CompCosinesEff->SetTexture(m_CompCosineParams.m_CosineLUT, m_CosineLUT);
+	m_CompCosinesEff->SetTexture(m_CompCosineParams.m_BiasNoise, m_BiasNoiseMap);
+#endif
 }
 
 void OceanShape::wavefunc(const SbVec3f & in, SbVec3f & v, SbVec3f & n) 
@@ -1826,6 +2000,155 @@ OceanShape::createCosLUT()
     *buf++ = cosDist;
     *buf++ = 255;
     *buf++ = 255;
+  }
+  if (this->cosluttex == NULL) {
+    this->cosluttex = new SoTexture2;
+    this->cosluttex->ref();
+  }
+  this->cosluttex->image.setValue(SbVec2s(BUMPSIZE,1), 4, this->coslut);
+}
+
+void 
+OceanShape::createTexParameters()
+{
+  int i;
+  for (i = 0; i < 16; i++) {
+    SbString s;
+    s.sprintf("wavecoef%d", i&3);
+
+    texparam_coef[i] = new SoShaderParameter4f;
+    texparam_coef[i]->ref();
+    texparam_coef[i]->name = s;
+
+    s.sprintf("trans%d", i&3);
+
+    texparam_trans[i] = new SoShaderParameter4f;
+    texparam_trans[i]->ref();
+    texparam_trans[i]->name = s;
+  }
+  for (i = 0; i < 4; i++) {
+    texparam_rescale[i] = new SoShaderParameter4f;
+    texparam_rescale[i]->ref();
+    texparam_rescale[i]->name = "rescale";
+  }
+  for (i = 0; i < 4; i++) {
+    texparam_noisexform[i] = new SoShaderParameter4f;
+    texparam_noisexform[i]->ref();
+    SbString s;
+    s.sprintf("noisexform%d", i);
+    texparam_noisexform[i]->name = s;
+  }
+  texparam_scalebias = new SoShaderParameter4f;
+  texparam_scalebias->ref();
+  texparam_scalebias->identifier = 4;
+}
+
+void 
+OceanShape::createTexScene()
+{
+  int i;
+  SoSeparator * sep = new SoSeparator;
+  
+  SoOrthographicCamera * cam = new SoOrthographicCamera;
+  cam->nearDistance = 0.5f;
+  cam->viewportMapping = SoCamera::LEAVE_ALONE;
+  sep->addChild(cam);
+  
+  SoCallback * quad = new SoCallback;
+  quad->setCallback(OceanShape::render_quad, this);
+
+  if (this->cosluttex == NULL) {
+    this->cosluttex = new SoTexture2;
+    this->cosluttex->ref();
+  }
+
+  for (i = 0; i < 4; i++) {
+    SoCallback * cb = new SoCallback;
+    if (i == 0) {
+      cb->setCallback(OceanShape::disable_blend, this);
+    }
+    else {
+      cb->setCallback(OceanShape::enable_blend, this);
+    }
+    sep->addChild(cb);
+    SoShaderProgram * prog = new SoShaderProgram;
+    SoVertexShader * vshader = new SoVertexShader;
+    SoFragmentShader * fshader = new SoFragmentShader;
+    vshader->sourceProgram = "smocean_texwavevertex.cg";
+    fshader->sourceProgram = "smocean_texwavefragment.cg";
+    int j;
+    for (j = 0; j < 4; j++) {
+      vshader->parameter.set1Value(j, this->texparam_trans[i*4+j]);
+      fshader->parameter.set1Value(j, this->texparam_coef[i*4+j]);
+    }
+    fshader->parameter.set1Value(4, this->texparam_rescale[i]);
+
+    prog->shaderObject.set1Value(0, vshader);
+    prog->shaderObject.set1Value(1, fshader);
+    sep->addChild(prog);
+    for (j = 3; j >= 0; j--) {
+      SoTextureUnit * unit = new SoTextureUnit;
+      unit->unit = j;
+      sep->addChild(unit);
+      sep->addChild(this->cosluttex);
+    }
+
+    sep->addChild(quad);
+  }
+  this->wavetex->scene = sep;
+  this->wavetex->size = SbVec2s(BUMPSIZE, BUMPSIZE);
+  this->wavetex->wrapS = SoSceneTexture2::REPEAT;
+  this->wavetex->wrapT = SoSceneTexture2::REPEAT;
+}
+
+void OceanShape::disable_blend(void * closure, SoAction * action)
+{
+  if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
+    SoMaterialBundle mb(action);
+    mb.sendFirst(); // just to make sure textures are sent to GL
+    glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST); 
+    glDisable(GL_CULL_FACE);
+ }
+}
+
+void OceanShape::enable_blend(void * closure, SoAction * action)
+{
+  if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
+    SoMaterialBundle mb(action);
+    mb.sendFirst(); // just to make sure textures are sent to GL
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+  }
+}
+
+void OceanShape::render_quad(void * closure, SoAction * action)
+{
+  if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
+    SoMaterialBundle mb(action);
+    mb.sendFirst(); // just to make sure textures are sent to GL
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST); 
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-1.0f, -1.0f, 0.0f);
+
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(1.0f, -1.0f, 0.0f);
+
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-1.0f, 1.0f, 0.0f);
+    glEnd();
+  }
+  else if (action->isOfType(SoGetBoundingBoxAction::getClassTypeId())) {
+    SoGetBoundingBoxAction * bb = (SoGetBoundingBoxAction *) action;
+    SbBox3f box(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+    bb->extendBy(box);
+    bb->setCenter(SbVec3f(0.0f, 0.0f, 0.0f), TRUE);
   }
 }
 
