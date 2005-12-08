@@ -1,0 +1,26 @@
+!!ARBvp1.0
+PARAM c0 = program.env[0]; 
+PARAM c1 = program.env[1];
+PARAM c2 = program.env[2]; 
+PARAM c3 = program.env[3];
+PARAM c4 = {0, 0.5, 1, 2};
+PARAM c5 = program.env[4];
+PARAM mvp[4] = { state.matrix.mvp };
+TEMP r0;
+ATTRIB v0 = vertex.position;
+ATTRIB v7 = vertex.texcoord[0];
+
+DPH result.position.x, v0.xyzz, mvp[0];
+DPH result.position.y, v0.xyzz, mvp[1];
+DPH result.position.z, v0.xyzz, mvp[2];
+DPH result.position.w, v0.xyzz, mvp[3];
+MOV r0.zw, c4.xxxz;
+DP4 r0.x, v7, c0;
+DP4 r0.y, v7, c1;
+MOV result.texcoord[1], r0;
+DP4 r0.x, v7, c2;
+DP4 r0.y, v7, c3;
+MOV result.texcoord[0], r0;
+MOV result.color.primary, c5.xxzz;
+MOV result.color.secondary, c5.yyzz;
+END
