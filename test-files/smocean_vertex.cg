@@ -1,6 +1,7 @@
 struct smoutput {
   float4 position : POSITION;
   float4 color : COLOR0;
+  float4 params : COLOR1;
   float2 bumpcoord : TEXCOORD0;
   float3 lightdir : TEXCOORD1;
   float3 halfvec : TEXCOORD2;
@@ -191,7 +192,7 @@ void main(float4 position : POSITION,
   OUT.position = mul(modelViewProj, p);    // position in clip space
   OUT.color = float4(0.2, 0.4, 0.7, 1);
   OUT.ray = -eyedir;
-   // OUT.color = float4(0.8, 0.8, 0.8, 1);
+  OUT.params = float4(max(att, 0.05), 0.0f, 0.0f, 0.0f);
 }
 
 

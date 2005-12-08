@@ -7,7 +7,8 @@ float3 expand(float3 v)
   return (v - 0.5) * 2.0;
 }
 
-void main(const in float4 color : COLOR0, 
+void main(const in float4 color : COLOR0,
+          const in float4 params : COLOR1,
           const in sampler2D normalmap : TEXUNIT0,
           const in samplerCUBE diffusemap : TEXUNIT1,
           float2 bumpcoord : TEXCOORD0,
@@ -17,7 +18,9 @@ void main(const in float4 color : COLOR0,
           out smoutput2 OUT)
 {
   // float3 n = float3(0,0,1); // FIXME: get normal from normal map
-  float3 n = normalize(expand(tex2D(normalmap, bumpcoord).xyz));
+  float3 n = expand(tex2D(normalmap, bumpcoord).xyz);
+  n.xy *= params[0];
+  n = normalize(n);
   float3 l = normalize(lightdir); // FIXME: use normalization cube map instead
 
   float d = lightdir.z > 0 ? saturate(dot(l, n)) : 0;
