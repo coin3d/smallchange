@@ -1,4 +1,11 @@
+
+// apple's GLSL implementation is really slow on my G5 at least
+#ifdef __APPLE__
+#define USE_CG 1
+#endif
+
 #include <Inventor/SbBasic.h>
+
 
 /**************************************************************************\
  *
@@ -313,6 +320,7 @@ private:
     float freq;
     SbVec2f dir;
     float fade;
+    float speedfactor;
   } geowave;
 
   geowave geowaves[4];
@@ -1518,7 +1526,9 @@ OceanShape::initGeoWave(const int i)
   this->geowaves[i].amp = this->geowaves[i].fullamp = this->geowaves[i].len * this->geostate_cache.ampRatio / float(NUM_GEO_WAVES);
   this->geowaves[i].freq = 2.0f * float(M_PI) / this->geowaves[i].len;
   this->geowaves[i].fade = 1.0f;
-  
+  this->geowaves[i].speedfactor = (2.0f + RandZeroToOne()) / 3.0f;
+  this->geowaves[i].speedfactor = 1.0f;
+
   float rotBase = this->geostate_cache.angleDeviation * float(M_PI) / 180.f;
   
   float rads = rotBase * RandMinusOneToOne();
@@ -1554,7 +1564,7 @@ OceanShape::updateGeoWave(const int i, const float dt)
   }
   const float speed = float(1.0 / sqrt(this->geowaves[i].len / (2.f * float(M_PI) * kGravConst)));
   
-  this->geowaves[i].phase += speed * dt;
+  this->geowaves[i].phase += speed * dt * this->geowaves[i].speedfactor;
   this->geowaves[i].phase = float(fmod(this->geowaves[i].phase, 2.0*M_PI));
   this->geowaves[i].amp = (this->geowaves[i].len * this->geostate_cache.ampRatio / float(NUM_GEO_WAVES)) * this->geowaves[i].fade;
 }
@@ -1629,7 +1639,7 @@ OceanShape::initTexState()
 {
   this->texstate_cache.noise = 0.2f;
   this->texstate_cache.chop = 1.0f;
-  this->texstate_cache.angleDeviation = 15.0f;
+  this->texstate_cache.angleDeviation = 90.0f;
   this->texstate_cache.windDir = this->windDirection.getValue();
   this->texstate_cache.windDir[1] = 1.0f;
   this->texstate_cache.maxLength = 10.f;
@@ -1696,12 +1706,18 @@ OceanShape::initShader(SoShaderProgram * s, SoSceneTexture2 * wavetex)
   }
   this->fragmentshader = new SoFragmentShader();
   this->fragmentshader->ref();
-  this->fragmentshader->sourceProgram = "smocean_fragment.cg";
   
   this->vertexshader = new SoVertexShader();
   this->vertexshader->ref();
+
+#ifdef USE_CG
   this->vertexshader->sourceProgram = "smocean_vertex.cg";
-  
+  this->fragmentshader->sourceProgram = "smocean_fragment.cg";
+#else
+  this->vertexshader->sourceProgram = "smocean_vertex.glsl";
+  this->fragmentshader->sourceProgram = "smocean_fragment.glsl";
+#endif  
+
   this->param_geowaveamp = new SoShaderParameter4f();
   this->param_geowaveamp->ref();
   this->param_geowaveamp->name = "geowaveAmp";
@@ -1754,6 +1770,27 @@ OceanShape::initShader(SoShaderProgram * s, SoSceneTexture2 * wavetex)
   this->vertexshader->parameter.set1Value(8, this->param_eyepos);
   this->vertexshader->parameter.set1Value(9, this->param_lightdir);
   this->vertexshader->parameter.set1Value(10, this->param_attenuation);
+
+#ifndef USE_CG
+  // needed for GLSL
+  SoShaderParameter1i * texunit0 = new SoShaderParameter1i();
+  SoShaderParameter1i * texunit1 = new SoShaderParameter1i();
+  SoShaderParameter1i * texunit2 = new SoShaderParameter1i();
+  SoShaderParameter1i * texunit3 = new SoShaderParameter1i();
+  texunit0->name = "bumpmap";
+  texunit0->value = 0;
+  texunit1->name = "envmap";
+  texunit1->value = 1;
+  texunit2->name = "texunit2";
+  texunit2->value = 2;
+  texunit3->name = "texunit3";
+  texunit3->value = 3;
+
+  this->fragmentshader->parameter.set1Value(0, texunit0);
+  this->fragmentshader->parameter.set1Value(1, texunit1);
+  this->fragmentshader->parameter.set1Value(2, texunit2);
+  this->fragmentshader->parameter.set1Value(3, texunit3);
+#endif
 
   s->shaderObject.set1Value(0, this->fragmentshader);
   s->shaderObject.set1Value(1, this->vertexshader);
@@ -1881,7 +1918,7 @@ OceanShape::updateTextureParameters(SoState * state)
     this->texparam_trans[i]->value = trans;
     
     float normScale = this->texwaves[i].fade / float(NUM_BUMP_PASSES);
-    SbVec4f coef(this->texwaves[i].dir[0] * normScale, this->texwaves[i].dir[1] * normScale, (i&3)==0 ? 1.0f : 0.0, 1.0f);
+    SbVec4f coef(this->texwaves[i].dir[0] * normScale, this->texwaves[i].dir[1] * normScale, 1.0f, 1.0f);
     this->texparam_coef[i]->value = coef;
   }
 
@@ -2075,14 +2112,41 @@ OceanShape::createTexScene()
     SoShaderProgram * prog = new SoShaderProgram;
     SoVertexShader * vshader = new SoVertexShader;
     SoFragmentShader * fshader = new SoFragmentShader;
+    
+#ifdef USE_CG
     vshader->sourceProgram = "smocean_texwavevertex.cg";
     fshader->sourceProgram = "smocean_texwavefragment.cg";
+#else
+    vshader->sourceProgram = "smocean_texwavevertex.glsl";
+    fshader->sourceProgram = "smocean_texwavefragment.glsl";
+#endif
     int j;
     for (j = 0; j < 4; j++) {
       vshader->parameter.set1Value(j, this->texparam_trans[i*4+j]);
       fshader->parameter.set1Value(j, this->texparam_coef[i*4+j]);
     }
     fshader->parameter.set1Value(4, this->texparam_rescale[i]);
+
+#ifndef USE_CG
+    // needed for GLSL
+    SoShaderParameter1i * texunit0 = new SoShaderParameter1i();
+    SoShaderParameter1i * texunit1 = new SoShaderParameter1i();
+    SoShaderParameter1i * texunit2 = new SoShaderParameter1i();
+    SoShaderParameter1i * texunit3 = new SoShaderParameter1i();
+    texunit0->name = "cosmap0";
+    texunit0->value = 0;
+    texunit1->name = "cosmap1";
+    texunit1->value = 1;
+    texunit2->name = "cosmap2";
+    texunit2->value = 2;
+    texunit3->name = "cosmap3";
+    texunit3->value = 3;
+    
+    fshader->parameter.set1Value(5, texunit0);
+    fshader->parameter.set1Value(6, texunit1);
+    fshader->parameter.set1Value(7, texunit2);
+    fshader->parameter.set1Value(8, texunit3);
+#endif
 
     prog->shaderObject.set1Value(0, vshader);
     prog->shaderObject.set1Value(1, fshader);
