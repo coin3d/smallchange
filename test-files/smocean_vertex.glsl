@@ -152,6 +152,15 @@ void main(void)
                          sinvec,
                          cosvec);
 
+  calc_sincos(p.xy,
+              geowaveFreq,  
+              geowavePhase,
+              geowave1dir,
+              geowave2dir,
+              geowave3dir,
+              geowave4dir,
+              sinvec, cosvec);
+
   vec3 n = calc_normal(amp,
                        geowaveFreq,
                        geowave1dir,
@@ -171,7 +180,7 @@ void main(void)
                         sinvec, cosvec);
 
   vec3 binormal = normalize(cross(t, n));
-  mat3 rot = mat3(t, binormal, n);
+  mat3 rot = mat3(binormal, t, n);
   
   // set bumpmap coordinates
   gl_TexCoord[0] = vec4(position.xy*0.04, 0.0, 1.0);  

@@ -1,4 +1,7 @@
 
+uniform sampler2D bumpmap;
+uniform samplerCube envmap;
+
 vec3 expand(vec3 v)
 {
   return (v - 0.5) * 2.0;
@@ -8,26 +11,32 @@ void main(void)
 {
   vec4 params = gl_SecondaryColor;
   vec4 color = gl_Color;
-  vec2 bumpcoord = gl_TexCoord[0].xy;
-  vec3 lightdir = gl_TexCoord[1].xyz;
-  vec3 halfangle = gl_TexCoord[2].xyz;
-  vec3 ray = gl_TexCoord[3].xyz;
+  vec2 bumpcoord = vec2(gl_TexCoord[0]);
+  vec3 lightdir = vec3(gl_TexCoord[1]);
+  vec3 halfangle = vec3(gl_TexCoord[2]);
+  vec3 ray = vec3(gl_TexCoord[3]);
 
-  vec3 n = vec3(0,0,1);
-  // vec3 n = expand(tex2D(normalmap, bumpcoord).xyz);
-  //  n.xy *= params[0];
+  // vec3 n = vec3(0,0,1);
+  vec3 n = expand(texture2D(bumpmap, bumpcoord).xyz);
+  n.xy *= params[0];
   n = normalize(n);
   vec3 l = normalize(lightdir);
   
-  float d = dot(l, n);
+  float d = clamp(dot(l, n), 0.0, 1.0);
+  if (lightdir.z <= 0.0) d = 0.0;
+
+  vec3 r = normalize(reflect(ray,n));
+  float intensity = max(0.0, dot(r, -ray));  
 
   vec3 h = normalize(halfangle);
   float s = clamp(dot(h, n), 0.0, 1.0);
+  if (d == 0.0) s = 0.0;
   vec3 speccol = vec3(pow(s, 128.0));
-  vec3 r = reflect(ray, n);
-  // vec3 diffuse = texCUBE(diffusemap, r);
+  // vec3 speccol = vec3(pow(intensity, 128.0));
+  vec3 diffuse1 = textureCube(envmap, r).xyz * d;
+  // vec3 diffuse1 = color.xyz * d;
   //  vec3 diffuse = color.xyz;
-  vec3 diffuse = color.xyz;
-  gl_FragColor = vec4(diffuse.xyz * d + speccol, color.a);
+  vec3 diffuse2 = color.xyz * d;
+  gl_FragColor = vec4(diffuse1 * 0.2 + diffuse2 * 0.8 + speccol, color.a);
 }
 
