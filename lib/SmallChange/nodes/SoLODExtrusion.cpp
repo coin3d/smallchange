@@ -110,6 +110,7 @@
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/elements/SoGLLazyElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
 #include <Inventor/actions/SoRayPickAction.h>
@@ -181,7 +182,7 @@ public:
   SbBool dirty;
 
   void generateCoords(void);
-  void renderSegidx( const int, const SbBool);
+  void renderSegidx(SoState * state, const int, const SbBool, const SbBool);
   void makeCircleCrossSection( const float, const int);
 };
 #endif // DOXYGEN_SKIP_THIS
@@ -231,6 +232,8 @@ SoLODExtrusion::SoLODExtrusion(void)
   SO_NODE_ADD_FIELD(lodDistance2, (-1.0));   // default lines to infinity
   SO_NODE_ADD_FIELD(zAxis, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(pickLines, (FALSE));
+  SO_NODE_ADD_FIELD(alternateColor, (0.0, 0.0, 0.0));
+  SO_NODE_ADD_FIELD(doAlternateColor, (FALSE));
 
   THIS->dirty = TRUE;
 }
@@ -263,6 +266,7 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   int spinelength = this->spine.getNum();
 
   SbBool use_color;
+
   if( spinelength == this->color.getNum())
     use_color = TRUE;
   else
@@ -273,12 +277,17 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     spinelength--;
   }
 
-
   const SbVec3f * colorv = this->color.getValues(0);
   const float * lengths = this->pimpl->spinelens.getArrayPtr();
   int lodmode, i = 0;
   float dist, ld1dist, ld2dist, accdist;
 
+  SbBool use_alternate_color = this->doAlternateColor.getValue();
+  
+  SbColor alt_color = this->alternateColor.getValue();
+  SbColor main_color = SoLazyElement::getDiffuse(state, 0);
+
+  if (use_alternate_color) use_color = FALSE;
 
   while (i < spinelength-1) {
     int oldi = i;
@@ -303,25 +312,31 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     switch (lodmode) {
     case 0:    // render extrusion until above lodDistance1
       while (accdist < ld1dist && i < spinelength-1) {
-        THIS->renderSegidx(i, use_color);
+        THIS->renderSegidx(state, i, use_color, use_alternate_color);
         accdist += lengths[i];
         i++;
       }
       break;
     case 1:    // render line until crossing a lodDistance
       {
+        if (use_alternate_color) {
+          glColor3fv(main_color.getValue());
+        }
+
         SbBool wasenabled = glIsEnabled(GL_LIGHTING);
         if (wasenabled) glDisable(GL_LIGHTING);
         glBegin(GL_LINE_STRIP);
         while (accdist < ld1dist && accdist < ld2dist && i < spinelength-1) {
-          if( use_color )
+          if (use_color) {
             glColor3fv((const GLfloat*)colorv[i].getValue());
+          }
           glVertex3fv((const GLfloat*)sv[i].getValue());
           accdist += lengths[i];
           i++;
         }
-        if( use_color )
+        if (use_color) {
           glColor3fv((const GLfloat*)colorv[i].getValue());
+        }
         glVertex3fv((const GLfloat*)sv[i].getValue());
         glEnd();
         if (wasenabled) glEnable(GL_LIGHTING);
@@ -343,7 +358,8 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   } 
   SoGLCacheContextElement::shouldAutoCache(action->getState(),
                                            SoGLCacheContextElement::DONT_AUTO_CACHE);
-
+  SoGLLazyElement::getInstance(state)->reset(action->getState(),
+                                             SoLazyElement::DIFFUSE_MASK);
 }
 
 void 
@@ -849,10 +865,16 @@ SoLODExtrusionP::generateCoords(void)
 // Assumes per vertex normals, no materials or texture coords
 //
 void 
-SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
+SoLODExtrusionP::renderSegidx(SoState * state,
+                              const int index, 
+                              const SbBool use_color,
+                              const SbBool use_alternate_color)
 {
   assert( index >=0 && index < this->segidx.getLength() );
 
+  SbColor alt_color = this->master->alternateColor.getValue();
+  SbColor main_color = SoLazyElement::getDiffuse(state, 0);
+  
   const int * siv = this->segidx.getArrayPtr();
   const int * iv = this->idx.getArrayPtr();
   const SbVec3f * cv = this->coord.getArrayPtr();
@@ -872,11 +894,11 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
   int curidx = startindex;
   int32_t v1, v2, v3, v4, v5 = 0; // v5 init unnecessary, but kills a compiler warning.
   
-  if( iv[curidx+3] < 0) {  /* Triangle */
+  if (iv[curidx+3] < 0) {  /* Triangle */
     assert(0 && "should never get here");
     //    printf("renderSegidx: triangles. \n");
     glBegin(GL_TRIANGLES);
-    while( curidx < stopindex ) {
+    while (curidx < stopindex) {
       v1 = iv[curidx++];
       v2 = iv[curidx++];
       v3 = iv[curidx++];
@@ -886,32 +908,41 @@ SoLODExtrusionP::renderSegidx( const int index, const SbBool use_color )
       assert( v4 < 0);  /* Triangle means every 4th index = -1  */
       
       /* vertex 1 *********************************************************/
-      if( use_color )
+      if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
+      }
+      else if (use_alternate_color) {
+        glColor3fv(index & 1 ? main_color.getValue(): alt_color.getValue());
+      }
       glNormal3fv((const GLfloat*)nv[v1].getValue());
       glVertex3fv((const GLfloat*)cv[v1].getValue());
       
       /* vertex 2 *********************************************************/
-      if( use_color )
+      if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v2]].getValue());
+      }
       glNormal3fv((const GLfloat*)nv[v2].getValue());
       glVertex3fv((const GLfloat*)cv[v2].getValue());
       
       /* vertex 3 *********************************************************/
-      if( use_color )
+      if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v3]].getValue());
+      }
       glNormal3fv((const GLfloat*)nv[v3].getValue());
       glVertex3fv((const GLfloat*)cv[v3].getValue());
     }
     glEnd(); /* draw triangles */
   } 
   else {   /* Tristrip(s) */
+    if (use_alternate_color) {
+      glColor3fv(index & 1 ? main_color.getValue() : alt_color.getValue());
+    }
     glBegin(GL_TRIANGLE_STRIP);
     while( curidx < stopindex ) {
       assert(curidx < this->idx.getLength());
       v1 = iv[curidx];
       assert(v1 >= 0 && v1 < vcnt);
-      if( use_color ) {
+      if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v1].getValue());

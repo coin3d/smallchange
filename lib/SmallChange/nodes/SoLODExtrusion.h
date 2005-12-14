@@ -27,6 +27,7 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFColor.h>
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoMFVec2f.h>
@@ -57,6 +58,8 @@ public:
   SoSFVec3f zAxis;
   SoMFColor color;
   SoSFBool pickLines;
+  SoSFColor alternateColor;
+  SoSFBool doAlternateColor;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
