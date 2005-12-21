@@ -270,7 +270,7 @@ typedef struct {
   double left;  // curve data for the left side
   double right; // curve data for the right side
   int realidx;
-} well_pos;
+} sm_well_pos;
 
 class well_tooltip_info {
 public:
@@ -313,7 +313,7 @@ public:
   SbList <float> leftoffset;
   SbList <float> rightoffset;
 
-  SbList <well_pos> poslist;
+  SbList <sm_well_pos> poslist;
   SbVec3f axis;
   SbVec3f prevaxis;
   SbBool processingoneshot;
@@ -694,7 +694,7 @@ SmWellLogKit::setTooltipInfo(const int idx, SmTooltipKit * tooltip)
 {
   if (idx < 0 || idx >= PRIVATE(this)->poslist.getLength()) return FALSE;
 
-  const well_pos & pos = PRIVATE(this)->poslist[idx];
+  const sm_well_pos & pos = PRIVATE(this)->poslist[idx];
   
   SbString l("UNDEFINED");
   SbString r("UNDEFINED");
@@ -1284,7 +1284,7 @@ SmWellLogKitP::buildTopsSceneGraph(void)
 }
 
 static void
-interpolate(well_pos & p, const well_pos & prev, const well_pos & next,
+interpolate(sm_well_pos & p, const sm_well_pos & prev, const sm_well_pos & next,
             double newdepth)
 {
   double delta = next.tvdepth - prev.tvdepth;
@@ -1363,7 +1363,7 @@ SmWellLogKitP::convertDepth(const SbList <double> & data)
   if (n < 2) return;
 
   for (i = 0; i < n; i++) {
-    well_pos & pos = this->poslist[i];
+    sm_well_pos & pos = this->poslist[i];
     pos.pos[2] = - time_depth_interpolate((double) -pos.pos[2], data); 
   }
 }
@@ -1412,7 +1412,7 @@ SmWellLogKitP::updateList(void)
   // set origin to avoid floating point precision issues
   utm->utmposition = origin;
 
-  well_pos pos;
+  sm_well_pos pos;
   int cnt = 0;
   double undefval = PUBLIC(this)->undefVal.getValue();
 
