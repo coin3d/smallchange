@@ -45,6 +45,7 @@
 #include <Inventor/nodes/SoPerspectiveCamera.h>
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/nodes/SoDirectionalLight.h>
+#include <Inventor/SbRotation.h>
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoInfo.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
@@ -537,6 +538,43 @@ SmCameraControlKit::isBusy(void) const
   return PRIVATE(this)->seek.seeking;
 }
 
+SbBool
+SmCameraControlKit::seekToPoint(const SbVec3d & point,
+                                const SbRotation & orientation,
+                                const SbViewportRegion & vp)
+{
+  SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
+  if (!camera) return FALSE;
+
+  UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
+    (UTMCamera *)camera : NULL;
+
+  if (utmcamera) {
+    PRIVATE(this)->seek.camerastartposition = utmcamera->utmposition.getValue();
+  }
+  else {
+    PRIVATE(this)->seek.camerastartposition.setValue(camera->position.getValue());
+  }
+  PRIVATE(this)->seek.camerastartorient = camera->orientation.getValue();
+  
+  float fd = PRIVATE(this)->seek.distance / 100.0f;
+  fd *= (float) ((point - PRIVATE(this)->seek.camerastartposition).length());
+  camera->focalDistance = fd;
+
+  PRIVATE(this)->seek.cameraendposition = point;
+  PRIVATE(this)->seek.cameraendorient = orientation.getValue();
+
+  if (PRIVATE(this)->seek.sensor->isScheduled()) {
+    PRIVATE(this)->seek.sensor->unschedule();
+  }
+
+  PRIVATE(this)->seek.seeking = TRUE;
+  PRIVATE(this)->seek.sensor->setBaseTime(SbTime::getTimeOfDay());
+  PRIVATE(this)->seek.sensor->schedule();
+
+  return TRUE;
+}
+
 SbBool 
 SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
 {
@@ -585,16 +623,11 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   SbRotation diffrot(olddir, dir);
   SbVec3d tmp;
   tmp.setValue(fd * dir);
-  PRIVATE(this)->seek.cameraendposition = hitpoint - tmp;
-  PRIVATE(this)->seek.cameraendorient = camera->orientation.getValue() * diffrot;
 
-  if (PRIVATE(this)->seek.sensor->isScheduled()) {
-    PRIVATE(this)->seek.sensor->unschedule();
-  }
+  SbVec3d cameraendposition = hitpoint - tmp;
+  SbRotation cameraendorient = camera->orientation.getValue() * diffrot;
 
-  PRIVATE(this)->seek.seeking = TRUE;
-  PRIVATE(this)->seek.sensor->setBaseTime(SbTime::getTimeOfDay());
-  PRIVATE(this)->seek.sensor->schedule();
+  this->seekToPoint(cameraendposition, cameraendorient, vp);
 
   return TRUE;
 }

@@ -36,6 +36,7 @@ class SmCameraControlKitP;
 class SoCamera;
 class SbMatrix;
 class SbViewportRegion;
+class SbRotation;
 class SoEvent;
 
 class SMALLCHANGE_DLL_API SmCameraControlKit : public SoBaseKit {
@@ -63,6 +64,9 @@ public:
   SbBool isAnimating(void);
   SbBool isBusy(void) const;
   SbBool seek(const SoEvent * event, const SbViewportRegion & vp);
+  SbBool seekToPoint(const SbVec3d & point,
+                     const SbRotation & orientation,
+                     const SbViewportRegion & vp);
   void viewAll(const SbViewportRegion & vp, const float slack = 1.0f);
   void pointDir(const SbVec3f & dir, const SbBool resetroll = TRUE);
   void resetCameraRoll(void);
