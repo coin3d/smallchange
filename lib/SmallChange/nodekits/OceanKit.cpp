@@ -1565,7 +1565,7 @@ OceanShape::updateGeoWave(const int i, const float dt)
   const float speed = float(1.0 / sqrt(this->geowaves[i].len / (2.f * float(M_PI) * kGravConst)));
   
   this->geowaves[i].phase += speed * dt * this->geowaves[i].speedfactor;
-  this->geowaves[i].phase = float(fmod(this->geowaves[i].phase, 2.0*M_PI));
+  this->geowaves[i].phase = float(fmod(float(this->geowaves[i].phase), float(2.0*M_PI)));
   this->geowaves[i].amp = (this->geowaves[i].len * this->geostate_cache.ampRatio / float(NUM_GEO_WAVES)) * this->geowaves[i].fade;
 }
 
