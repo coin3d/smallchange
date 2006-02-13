@@ -51,8 +51,8 @@ class SMALLCHANGE_DLL_API SmOceanKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(callback);
   SO_KIT_CATALOG_ENTRY_HEADER(waveTexture);
   SO_KIT_CATALOG_ENTRY_HEADER(debugCube);
-  SO_KIT_CATALOG_ENTRY_HEADER(cubeMapUnit);
-  SO_KIT_CATALOG_ENTRY_HEADER(cubeMap);
+  SO_KIT_CATALOG_ENTRY_HEADER(envMapUnit);
+  SO_KIT_CATALOG_ENTRY_HEADER(envMap);
   SO_KIT_CATALOG_ENTRY_HEADER(resetUnit);
   SO_KIT_CATALOG_ENTRY_HEADER(shader);
   SO_KIT_CATALOG_ENTRY_HEADER(oceanShape);
@@ -63,6 +63,7 @@ public:
 
   SoSFVec2f size;
 
+  SoSFFloat gravConst;
   SoSFFloat chop;
   SoSFFloat angleDeviation;
   SoSFVec2f windDirection;

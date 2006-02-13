@@ -143,8 +143,6 @@ public:
   { }
 };
 
-static const float kGravConst = 30.f;
-
 class ocean_quadnode;
 
 // helper class for actually rendering the ocean
@@ -160,6 +158,7 @@ public:
 
   SoSFVec2f size;
   SoSFFloat chop;
+  SoSFFloat gravConst;
   SoSFFloat angleDeviation;
   SoSFVec2f windDirection;
   SoSFFloat minWaveLength;
@@ -273,6 +272,7 @@ private:
 
   typedef struct {
     float chop;
+    float gravConst;
     float angleDeviation;
     SbVec2f windDir;
     float minLength;
@@ -295,6 +295,7 @@ private:
   typedef struct {
     float noise;
     float chop;
+    float gravConst;
     float angleDeviation;
     SbVec2f windDir;
     float maxLength;
@@ -441,6 +442,7 @@ SmOceanKit::SmOceanKit(void)
   
   SO_KIT_ADD_FIELD(size, (10000.0f, 10000.0f));
   SO_KIT_ADD_FIELD(chop, (2.5f));
+  SO_KIT_ADD_FIELD(gravConst, (9.8f));
   SO_KIT_ADD_FIELD(angleDeviation, (15.0f));
   SO_KIT_ADD_FIELD(windDirection, (0.0f, 1.0f));
   
@@ -467,9 +469,11 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, topSeparator, shader, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, topSeparator, waveTexture, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, topSeparator, debugCube, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, topSeparator, cubeMapUnit, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(cubeMapUnit, SoTextureUnit, FALSE, topSeparator, cubeMap, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(cubeMap, SoTextureCubeMap, FALSE, topSeparator, resetUnit, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, topSeparator, envMapUnit, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(envMapUnit, SoTextureUnit, FALSE, topSeparator, envMap, FALSE);
+  // use a detail texture instead of an environment texture right now
+  // SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTextureCubeMap, FALSE, topSeparator, resetUnit, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTexture2, FALSE, topSeparator, resetUnit, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(resetUnit, SoTextureUnit, FALSE, topSeparator, oceanShape, FALSE);
 
   SO_KIT_ADD_CATALOG_ENTRY(oceanShape, OceanShape, FALSE, topSeparator, "", FALSE);
@@ -479,6 +483,7 @@ SmOceanKit::SmOceanKit(void)
   OceanShape * shape = (OceanShape*) this->getAnyPart("oceanShape", TRUE);
   shape->size.connectFrom(&this->size);
   shape->chop.connectFrom(&this->chop);
+  shape->gravConst.connectFrom(&this->gravConst);
   shape->angleDeviation.connectFrom(&this->angleDeviation);
   shape->windDirection.connectFrom(&this->windDirection);
   shape->minWaveLength.connectFrom(&this->minWaveLength);
@@ -507,8 +512,8 @@ SmOceanKit::SmOceanKit(void)
   SoSceneTexture2 * tex = (SoSceneTexture2*) this->getAnyPart("waveTexture", TRUE);
   shape->initShader(shader, tex);
 
-  SoTextureUnit * cmunit = (SoTextureUnit*) this->getAnyPart("cubeMapUnit", TRUE);
-  cmunit->unit = 1;
+  SoTextureUnit * emunit = (SoTextureUnit*) this->getAnyPart("envMapUnit", TRUE);
+  emunit->unit = 1;
 
 //   SoCube * cube = (SoCube*) this->getAnyPart("debugCube", TRUE);
 //   cube->width = 500.0;
@@ -604,6 +609,7 @@ OceanShape::OceanShape()
   SO_NODE_CONSTRUCTOR(OceanShape);
   SO_NODE_ADD_FIELD(size, (10000.0f, 10000.0f));
   SO_NODE_ADD_FIELD(chop, (2.5f));
+  SO_NODE_ADD_FIELD(gravConst, (9.8f));
   SO_NODE_ADD_FIELD(angleDeviation, (15.0f));
   SO_NODE_ADD_FIELD(windDirection, (0.0f, 1.0f));
   
@@ -1498,6 +1504,7 @@ void
 OceanShape::copyGeoState()
 {
   this->geostate_cache.chop = this->chop.getValue();
+  this->geostate_cache.gravConst = this->gravConst.getValue();
   this->geostate_cache.angleDeviation = this->angleDeviation.getValue();
   this->geostate_cache.windDir = this->windDirection.getValue();
   (void) this->geostate_cache.windDir.normalize();
@@ -1562,7 +1569,7 @@ OceanShape::updateGeoWave(const int i, const float dt)
       }
     }
   }
-  const float speed = float(1.0 / sqrt(this->geowaves[i].len / (2.f * float(M_PI) * kGravConst)));
+  const float speed = float(1.0 / sqrt(this->geowaves[i].len / (2.f * float(M_PI) * this->geostate_cache.gravConst)));
   
   this->geowaves[i].phase += speed * dt * this->geowaves[i].speedfactor;
   this->geowaves[i].phase = float(fmod(float(this->geowaves[i].phase), float(2.0*M_PI)));
@@ -1629,7 +1636,7 @@ OceanShape::initTexWave(const int i)
   
   this->texwaves[i].fade = 1.0f;
   
-  float speed = float( 1.0 / sqrt(this->texwaves[i].len / (2.0f * float(M_PI) * kGravConst)) ) / 3.0f;
+  float speed = float( 1.0 / sqrt(this->texwaves[i].len / (2.0f * float(M_PI) * this->texstate_cache.gravConst)) ) / 3.0f;
   speed *= 1.0f + RandMinusOneToOne() * this->texstate_cache.speedDeviation;
   this->texwaves[i].speed = speed;
 }
@@ -1639,6 +1646,7 @@ OceanShape::initTexState()
 {
   this->texstate_cache.noise = 0.2f;
   this->texstate_cache.chop = 1.0f;
+  this->texstate_cache.gravConst = this->gravConst.getValue();
   this->texstate_cache.angleDeviation = 90.0f;
   this->texstate_cache.windDir = this->windDirection.getValue();
   this->texstate_cache.windDir[1] = 1.0f;
