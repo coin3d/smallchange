@@ -10,6 +10,7 @@
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
 #include <assert.h>
+#include <SmallChange/misc/Init.h>
 #include <SmallChange/nodekits/LegendKit.h>
 #include <SmallChange/elements/GLDepthBufferElement.h>
 #include <SmallChange/nodes/ViewportRegion.h>
@@ -51,7 +52,8 @@ main(int argc, char ** argv)
   }
 
   QWidget * window = SoQt::init(argv[0]);
-  LegendKit::initClass();
+  smallchange_init();
+  // LegendKit::initClass();
 
   SoInput input;
   SbBool ret = input.openFile(argv[1]);
