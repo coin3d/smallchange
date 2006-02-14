@@ -319,11 +319,12 @@ void
 SmCameraControlKit::notify(SoNotList * list)
 {
   SoField * f = list->getLastField();
+
   if (f == &this->camera) {
-    PRIVATE(this)->autoclippingsensor->schedule();
+    if (this->autoClipping.getValue()) PRIVATE(this)->autoclippingsensor->schedule();
   }
   else if (f == &this->scene) {
-    PRIVATE(this)->autoclippingsensor->schedule();
+    if (this->autoClipping.getValue()) PRIVATE(this)->autoclippingsensor->schedule();
   }
   else if (f == &this->eventHandler) {
     // FIXME: ugly, get rid of this, pederb 2003-09-30
