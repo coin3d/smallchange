@@ -18,6 +18,7 @@
 #include <Inventor/fields/SoSFRotation.h>
 #include <Inventor/C/basic.h>
 #include <Inventor/SbVec3f.h>
+#include <SmallChange/basic.h>
 
 // Application must set this cb 
 typedef int (*dok_elevation_cb_type)(double easting, double northing, float &elevation);
@@ -25,7 +26,7 @@ typedef int (*dok_elevation_cb_type)(double easting, double northing, float &ele
 class SmDynamicObjectKitP;
 class SoSensor;
 
-class SmDynamicObjectKit : public SoBaseKit {
+class SMALLCHANGE_DLL_API SmDynamicObjectKit : public SoBaseKit {
   typedef SoBaseKit inherited;
   
   SO_KIT_HEADER(SmDynamicObjectKit);
