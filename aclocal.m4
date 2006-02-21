@@ -8972,9 +8972,9 @@ sim_ac_ogl_libs=
 AC_ARG_WITH(
   [mesa],
   AC_HELP_STRING([--with-mesa],
-                 [prefer MesaGL (if found) over OpenGL [[default=no]]]),
+                 [prefer MesaGL (if found) over OpenGL [[default=yes]]]),
   [],
-  [with_mesa=no])
+  [with_mesa=yes])
 
 
 sim_ac_ogl_glnames="GL opengl32"

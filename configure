@@ -1077,7 +1077,7 @@ Optional Packages:
   --with-inventor-qt=PATH specify where InventorQt resides
   --with-coin             enable use of Coin [default=yes]
   --with-coin=DIR         give prefix location of Coin
-  --with-mesa             prefer MesaGL (if found) over OpenGL [default=no]
+  --with-mesa             prefer MesaGL (if found) over OpenGL [default=yes]
   --with-opengl=DIR       OpenGL/Mesa installation directory
   --with-x                use the X Window System
   --with-pthread=DIR      pthread installation directory
@@ -25420,7 +25420,7 @@ if test "${with_mesa+set}" = set; then
   withval="$with_mesa"
 
 else
-  with_mesa=no
+  with_mesa=yes
 fi;
 
 
