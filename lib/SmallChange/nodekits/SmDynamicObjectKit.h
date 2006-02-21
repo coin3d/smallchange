@@ -22,13 +22,13 @@
 // Application must set this cb 
 typedef int (*dok_elevation_cb_type)(double easting, double northing, float &elevation);
 
-class DynamicObjectKitP;
+class SmDynamicObjectKitP;
 class SoSensor;
 
-class DynamicObjectKit : public SoBaseKit {
+class SmDynamicObjectKit : public SoBaseKit {
   typedef SoBaseKit inherited;
   
-  SO_KIT_HEADER(DynamicObjectKit);
+  SO_KIT_HEADER(SmDynamicObjectKit);
   
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(utmPosition);
@@ -45,7 +45,7 @@ class DynamicObjectKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(childList);
   
 public:
-  DynamicObjectKit(void);
+  SmDynamicObjectKit(void);
   
   SoSFBool isThreadSafe;
   SoSFBool hasRelativeElevation;
@@ -65,12 +65,12 @@ public:
   void setOrientation(float heading, float pitch, float roll);
   void setGeometryVisibility(SbBool visibility);
   SbBool getGeometryVisibility(void);
-  DynamicObjectKit * getObjectByObjectId(const SbName objectId);
-  DynamicObjectKit * addObject(DynamicObjectKit * newObject, const SbName parentId);
-  DynamicObjectKit * removeObject(const SbName objectId);
+  SmDynamicObjectKit * getObjectByObjectId(const SbName objectId);
+  SmDynamicObjectKit * addObject(SmDynamicObjectKit * newObject, const SbName parentId);
+  SmDynamicObjectKit * removeObject(const SbName objectId);
   
 protected:
-  virtual ~DynamicObjectKit();
+  virtual ~SmDynamicObjectKit();
 
 public:
   
@@ -87,7 +87,7 @@ private:
 
   void updateScene(void);
 
-  DynamicObjectKitP * pimpl;
+  SmDynamicObjectKitP * pimpl;
 
 };
 

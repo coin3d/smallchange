@@ -4,7 +4,7 @@
  *
 \**************************************************************************/
 
-#include "DynamicObjectKit.h"
+#include "SmDynamicObjectKit.h"
 
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoNormal.h>
@@ -33,7 +33,7 @@
 // Application must set this cb (for relative elevation to work)
 static dok_elevation_cb_type dok_elevation_cb = NULL;
 
-class DynamicObjectKitP {
+class SmDynamicObjectKitP {
 public:
   SbBool needupdate;
   
@@ -49,17 +49,17 @@ public:
 // convenience define to access private data
 #define PRIVATE(obj) (obj)->pimpl
 
-SO_KIT_SOURCE(DynamicObjectKit);
+SO_KIT_SOURCE(SmDynamicObjectKit);
 
 /*!
   Constructor. 
 */
-DynamicObjectKit::DynamicObjectKit(void) 
+SmDynamicObjectKit::SmDynamicObjectKit(void) 
 {
-  PRIVATE(this) = new DynamicObjectKitP;
+  PRIVATE(this) = new SmDynamicObjectKitP;
   PRIVATE(this)->needupdate = FALSE;
 
-  SO_KIT_CONSTRUCTOR(DynamicObjectKit);
+  SO_KIT_CONSTRUCTOR(SmDynamicObjectKit);
   
   SO_KIT_ADD_FIELD(isThreadSafe, (FALSE));
   SO_KIT_ADD_FIELD(hasRelativeElevation, (FALSE));
@@ -85,7 +85,7 @@ DynamicObjectKit::DynamicObjectKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(scale, SoScale, TRUE, shape, offset, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(offset, SoTranslation, TRUE, shape, file, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(file, AutoFile, TRUE, shape, "", TRUE);
-  SO_KIT_ADD_CATALOG_LIST_ENTRY(childList, SoSeparator, TRUE, geometry, "", DynamicObjectKit, TRUE);
+  SO_KIT_ADD_CATALOG_LIST_ENTRY(childList, SoSeparator, TRUE, geometry, "", SmDynamicObjectKit, TRUE);
   
   SO_KIT_INIT_INSTANCE();
   
@@ -120,16 +120,16 @@ DynamicObjectKit::DynamicObjectKit(void)
 }
 
 void
-DynamicObjectKit::field_change_cb(void * closure, SoSensor *)
+SmDynamicObjectKit::field_change_cb(void * closure, SoSensor *)
 {
-  DynamicObjectKit * thisp = (DynamicObjectKit*) closure;
+  SmDynamicObjectKit * thisp = (SmDynamicObjectKit*) closure;
   PRIVATE(thisp)->needupdate = TRUE;
 }
 
 /*!
   Destructor
 */
-DynamicObjectKit::~DynamicObjectKit()
+SmDynamicObjectKit::~SmDynamicObjectKit()
 {
   PRIVATE(this)->relativeElevationSensor->detach();
   delete PRIVATE(this)->relativeElevationSensor;
@@ -148,12 +148,12 @@ DynamicObjectKit::~DynamicObjectKit()
 
 // Documented in superclass
 void
-DynamicObjectKit::initClass(void)
+SmDynamicObjectKit::initClass(void)
 {
   static int first = 1;
   if (first) {
     first = 0;
-    SO_KIT_INIT_CLASS(DynamicObjectKit, SoBaseKit, "BaseKit");
+    SO_KIT_INIT_CLASS(SmDynamicObjectKit, SoBaseKit, "BaseKit");
   }
 }
 
@@ -164,7 +164,7 @@ DynamicObjectKit::initClass(void)
   This method need only be called once.
 */
 void 
-DynamicObjectKit::setElevationCallback(dok_elevation_cb_type cbfunc)
+SmDynamicObjectKit::setElevationCallback(dok_elevation_cb_type cbfunc)
 {
   assert(cbfunc);
   dok_elevation_cb = cbfunc;
@@ -174,7 +174,7 @@ DynamicObjectKit::setElevationCallback(dok_elevation_cb_type cbfunc)
   Reset the kit. All elements and nodes will be removed.
 */
 void 
-DynamicObjectKit::reset(void)
+SmDynamicObjectKit::reset(void)
 {
   // just overwrite with new, empty nodes. The old ones will be deleted
   this->setAnyPart("utmposition", NULL, TRUE);
@@ -192,7 +192,7 @@ DynamicObjectKit::reset(void)
 
 // doc in parent
 void 
-DynamicObjectKit::getBoundingBox(SoGetBoundingBoxAction * action)
+SmDynamicObjectKit::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   this->updateScene();
   inherited::getBoundingBox(action);
@@ -205,14 +205,14 @@ DynamicObjectKit::getBoundingBox(SoGetBoundingBoxAction * action)
   rendering the scene graph.
 */
 void
-DynamicObjectKit::preRender(SoAction * action)
+SmDynamicObjectKit::preRender(SoAction * action)
 {
   this->updateScene();
 }
 
 // doc in parent
 void 
-DynamicObjectKit::GLRender(SoGLRenderAction * action)
+SmDynamicObjectKit::GLRender(SoGLRenderAction * action)
 {
   // if (!this->isThreadSafe.getValue()) this->preRender(action);
   updateScene();
@@ -220,7 +220,7 @@ DynamicObjectKit::GLRender(SoGLRenderAction * action)
 }
 
 void 
-DynamicObjectKit::updateScene(void)
+SmDynamicObjectKit::updateScene(void)
 {
   SbVec3d thispos = this->position.getValue();
   if (dok_elevation_cb) {
@@ -268,7 +268,7 @@ DynamicObjectKit::updateScene(void)
   Set the 'orientation' part.
  */
 void 
-DynamicObjectKit::setOrientation(float heading, float pitch, float roll)
+SmDynamicObjectKit::setOrientation(float heading, float pitch, float roll)
 {
   this->heading.setValue(heading);
   this->pitch.setValue(pitch);
@@ -279,7 +279,7 @@ DynamicObjectKit::setOrientation(float heading, float pitch, float roll)
   Hide or show file geometry and all children (see 'childList').
  */
 void 
-DynamicObjectKit::setGeometryVisibility(SbBool visibility)
+SmDynamicObjectKit::setGeometryVisibility(SbBool visibility)
 {
   SoSwitch * geo = (SoSwitch*)this->getAnyPart("geometry", TRUE);
   assert(geo);
@@ -292,7 +292,7 @@ DynamicObjectKit::setGeometryVisibility(SbBool visibility)
 /*!
  */
 SbBool 
-DynamicObjectKit::getGeometryVisibility(void)
+SmDynamicObjectKit::getGeometryVisibility(void)
 {
   SoSwitch * geo = (SoSwitch*)this->getAnyPart("geometry", FALSE);
   if (!geo)
@@ -311,16 +311,16 @@ DynamicObjectKit::getGeometryVisibility(void)
   - cannot limit id to not duplicate node name already used elsewhere
     in the scene graph.
 */
-DynamicObjectKit *
-DynamicObjectKit::getObjectByObjectId(const SbName objectId)
+SmDynamicObjectKit *
+SmDynamicObjectKit::getObjectByObjectId(const SbName objectId)
 {
   if (objectId == this->objectId.getValue())
     return this;
-  DynamicObjectKit * found = NULL;
+  SmDynamicObjectKit * found = NULL;
   SoNodeKitListPart * children = (SoNodeKitListPart *)this->getAnyPart("childList", FALSE);
   if (children) {
     for (int i=0; i<children->getNumChildren() && !found; i++) {
-      found = ((DynamicObjectKit *)(children->getChild(i)))->getObjectByObjectId(objectId);
+      found = ((SmDynamicObjectKit *)(children->getChild(i)))->getObjectByObjectId(objectId);
     }
   }
   return found;
@@ -333,7 +333,7 @@ DynamicObjectKit::getObjectByObjectId(const SbName objectId)
 
   Add a new object to the object hierarchy. \a parentId controls
   where in the object hierarchy the new object is inserted. Note that
-  "" is default objectId for new DynamicObjectKit instances; calling
+  "" is default objectId for new SmDynamicObjectKit instances; calling
   this method on the root object with \a parentId = "" means new
   object will be added directly under the root object (since root object
   always has default id).
@@ -346,8 +346,8 @@ DynamicObjectKit::getObjectByObjectId(const SbName objectId)
 
   \sa getObjectByObjectId
 */
-DynamicObjectKit *
-DynamicObjectKit::addObject(DynamicObjectKit * newObject, const SbName parentId)
+SmDynamicObjectKit *
+SmDynamicObjectKit::addObject(SmDynamicObjectKit * newObject, const SbName parentId)
 {
   assert(newObject);
   assert(newObject->objectId.getValue() != SbName("") && "All objects must have an id");
@@ -361,11 +361,11 @@ DynamicObjectKit::addObject(DynamicObjectKit * newObject, const SbName parentId)
     return this;
   }
   else {
-    DynamicObjectKit * inserted = NULL;
+    SmDynamicObjectKit * inserted = NULL;
     SoNodeKitListPart * children = SO_GET_PART(this, "childList", SoNodeKitListPart);
     if (children) {
       for (int i=0; i<children->getNumChildren() && !inserted; i++) {
-        inserted = ((DynamicObjectKit *)(children->getChild(i)))->addObject(newObject, parentId);
+        inserted = ((SmDynamicObjectKit *)(children->getChild(i)))->addObject(newObject, parentId);
       }
     }
     return inserted;
@@ -378,16 +378,16 @@ DynamicObjectKit::addObject(DynamicObjectKit * newObject, const SbName parentId)
   Returns pointer to removed object, or NULL if no object with
   \a objectId was found.
 */
-DynamicObjectKit * 
-DynamicObjectKit::removeObject(const SbName objectId)
+SmDynamicObjectKit * 
+SmDynamicObjectKit::removeObject(const SbName objectId)
 {
   assert(objectId != SbName("") && "You may not remove the root node");
 
-  DynamicObjectKit * removed = NULL, * child;
+  SmDynamicObjectKit * removed = NULL, * child;
   SoNodeKitListPart * children = SO_GET_PART(this, "childList", SoNodeKitListPart);
   if (children) {
     for (int i=0; i<children->getNumChildren() && !removed; i++) {
-      child = (DynamicObjectKit *)(children->getChild(i));
+      child = (SmDynamicObjectKit *)(children->getChild(i));
       if (objectId == child->objectId.getValue()) {
         child->ref();
         children->removeChild(i);
