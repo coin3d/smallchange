@@ -70,6 +70,7 @@ public:
   SoSFFloat minWaveLength;
   SoSFFloat maxWaveLength;
   SoSFFloat amplitudeRatio;
+  SoSFFloat frequency;
   
   SoSFFloat specAttenuation;
   SoSFFloat specEnd;

@@ -164,7 +164,8 @@ public:
   SoSFFloat minWaveLength;
   SoSFFloat maxWaveLength;
   SoSFFloat amplitudeRatio;
-  
+  SoSFFloat frequency;
+
   SoSFFloat specAttenuation;
   SoSFFloat specEnd;
   SoSFFloat specTrans;
@@ -204,6 +205,7 @@ private:
   ocean_quadnode * root;
   SbList <ocean_quadnode*> nodelist;
   SoTimerSensor * timersensor;
+  SoFieldSensor * frequencysensor;
 
   void initTexState(void);
   void updateTexWave(const int i, const float dt);
@@ -218,6 +220,7 @@ private:
   void initWaves();
   void initLevels();
   static void timerCB(void * closure, SoSensor * s);
+  static void frequencyCB(void * closure, SoSensor * s);
   SbTime currtime;
 
   SoShaderProgram * shader;
@@ -449,6 +452,7 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_FIELD(minWaveLength, (15.f));
   SO_KIT_ADD_FIELD(maxWaveLength, (25.f));
   SO_KIT_ADD_FIELD(amplitudeRatio, (0.1f));
+  SO_KIT_ADD_FIELD(frequency, (1.0f/60.0f));
   
   SO_KIT_ADD_FIELD(envHeight, (-50.f));
   SO_KIT_ADD_FIELD(envRadius, (100.f));
@@ -489,6 +493,7 @@ SmOceanKit::SmOceanKit(void)
   shape->minWaveLength.connectFrom(&this->minWaveLength);
   shape->maxWaveLength.connectFrom(&this->maxWaveLength);
   shape->amplitudeRatio.connectFrom(&this->amplitudeRatio);
+  shape->frequency.connectFrom(&this->frequency);
   
   shape->specAttenuation.connectFrom(&this->specAttenuation);
   shape->specEnd.connectFrom(&this->specEnd);
@@ -616,6 +621,7 @@ OceanShape::OceanShape()
   SO_NODE_ADD_FIELD(minWaveLength, (15.f));
   SO_NODE_ADD_FIELD(maxWaveLength, (25.f));
   SO_NODE_ADD_FIELD(amplitudeRatio, (0.1f));
+  SO_NODE_ADD_FIELD(frequency, (1.0f/60.0f));
   
   SO_NODE_ADD_FIELD(envHeight, (-50.f));
   SO_NODE_ADD_FIELD(envRadius, (100.f));
@@ -674,8 +680,11 @@ OceanShape::OceanShape()
   this->maxlevel = 12;
   this->currtime = SbTime::zero();
   this->timersensor = new SoTimerSensor(timerCB, this);
-  this->timersensor->setInterval(SbTime(1.0f/60.0f));
+  this->timersensor->setInterval(SbTime(this->frequency.getValue()));
   this->timersensor->schedule();
+
+  this->frequencysensor = new SoFieldSensor(frequencyCB, this);
+  this->frequencysensor->attach(&this->frequency);
 
   this->grid = new SbVec3f[GRIDSIZE*GRIDSIZE];
   i = 0;
@@ -713,6 +722,8 @@ OceanShape::~OceanShape()
   delete[] this->coslut;
   delete[] this->biasnoisebuf;
   delete this->timersensor;
+  this->frequencysensor->detach();
+  delete this->frequencysensor;
   
   if (this->cosluttex) {
     this->cosluttex->unref();
@@ -748,6 +759,20 @@ void
 OceanShape::timerCB(void * closure, SoSensor * s)
 {
   ((OceanShape*)closure)->touch(); // force a redraw
+}
+
+void
+OceanShape::frequencyCB(void * closure, SoSensor * s)
+{
+  OceanShape * thisp = (OceanShape *) closure;
+  float freq = thisp->frequency.getValue();
+  if (freq == 0.0f) {
+    thisp->timersensor->unschedule();
+  }
+  else {
+    thisp->timersensor->setInterval(SbTime(freq));
+    thisp->timersensor->schedule();
+  }
 }
 
 void
