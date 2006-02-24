@@ -5,6 +5,7 @@
 #endif
 
 #include <Inventor/SbBasic.h>
+#include <float.h>
 
 
 /**************************************************************************\
@@ -452,7 +453,7 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_FIELD(minWaveLength, (15.f));
   SO_KIT_ADD_FIELD(maxWaveLength, (25.f));
   SO_KIT_ADD_FIELD(amplitudeRatio, (0.1f));
-  SO_KIT_ADD_FIELD(frequency, (1.0f/60.0f));
+  SO_KIT_ADD_FIELD(frequency, (60.0f));
   
   SO_KIT_ADD_FIELD(envHeight, (-50.f));
   SO_KIT_ADD_FIELD(envRadius, (100.f));
@@ -621,7 +622,7 @@ OceanShape::OceanShape()
   SO_NODE_ADD_FIELD(minWaveLength, (15.f));
   SO_NODE_ADD_FIELD(maxWaveLength, (25.f));
   SO_NODE_ADD_FIELD(amplitudeRatio, (0.1f));
-  SO_NODE_ADD_FIELD(frequency, (1.0f/60.0f));
+  SO_NODE_ADD_FIELD(frequency, (60.0f));
   
   SO_NODE_ADD_FIELD(envHeight, (-50.f));
   SO_NODE_ADD_FIELD(envRadius, (100.f));
@@ -680,8 +681,6 @@ OceanShape::OceanShape()
   this->maxlevel = 12;
   this->currtime = SbTime::zero();
   this->timersensor = new SoTimerSensor(timerCB, this);
-  this->timersensor->setInterval(SbTime(this->frequency.getValue()));
-  this->timersensor->schedule();
 
   this->frequencysensor = new SoFieldSensor(frequencyCB, this);
   this->frequencysensor->attach(&this->frequency);
@@ -765,13 +764,16 @@ void
 OceanShape::frequencyCB(void * closure, SoSensor * s)
 {
   OceanShape * thisp = (OceanShape *) closure;
-  float freq = thisp->frequency.getValue();
-  if (freq == 0.0f) {
-    thisp->timersensor->unschedule();
+  float interval = thisp->frequency.getValue();
+
+  if (fabs(interval) < FLT_EPSILON) {
+    if (thisp->timersensor->isScheduled())
+      thisp->timersensor->unschedule();
   }
   else {
-    thisp->timersensor->setInterval(SbTime(freq));
-    thisp->timersensor->schedule();
+    thisp->timersensor->setInterval(SbTime(1.0f/interval));
+    if (!thisp->timersensor->isScheduled())
+      thisp->timersensor->schedule();
   }
 }
 
