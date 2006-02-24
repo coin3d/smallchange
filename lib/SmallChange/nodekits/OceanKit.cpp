@@ -764,14 +764,14 @@ void
 OceanShape::frequencyCB(void * closure, SoSensor * s)
 {
   OceanShape * thisp = (OceanShape *) closure;
-  float interval = thisp->frequency.getValue();
+  float freq = thisp->frequency.getValue();
 
-  if (fabs(interval) < FLT_EPSILON) {
+  if (fabs(freq) < FLT_EPSILON) {
     if (thisp->timersensor->isScheduled())
       thisp->timersensor->unschedule();
   }
   else {
-    thisp->timersensor->setInterval(SbTime(1.0f/interval));
+    thisp->timersensor->setInterval(SbTime(1.0f/freq));
     if (!thisp->timersensor->isScheduled())
       thisp->timersensor->schedule();
   }
