@@ -142,6 +142,7 @@ SmCameraControlKit::SmCameraControlKit(void)
   SO_KIT_ADD_FIELD(autoClippingValue, (0.6f));
   SO_KIT_ADD_FIELD(eventHandler, (NULL));
   SO_KIT_ADD_FIELD(viewUp, (0.0f, 1.0f, 0.0f));
+  SO_KIT_ADD_FIELD(handleInheritedEventFirst, (TRUE));
 
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, VARIABLE_NEAR_PLANE);
   SO_KIT_DEFINE_ENUM_VALUE(AutoClippingStrategy, CONSTANT_NEAR_PLANE);
@@ -208,7 +209,8 @@ SmCameraControlKit::GLRender(SoGLRenderAction * action)
 void 
 SmCameraControlKit::handleEvent(SoHandleEventAction * action)
 {
-  inherited::handleEvent(action);
+  if (this->handleInheritedEventFirst.getValue())
+    inherited::handleEvent(action);
   if (action->isHandled()) { return; }
 
   const SbViewportRegion vpr = SoViewportRegionElement::get(action->getState());
@@ -225,6 +227,8 @@ SmCameraControlKit::handleEvent(SoHandleEventAction * action)
     eh->setViewportRegion(vpr);
     eh->handleEvent(action);
   }
+  if (!this->handleInheritedEventFirst.getValue())
+    inherited::handleEvent(action);
 }
 
 /*!  

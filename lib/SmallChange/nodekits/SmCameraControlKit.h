@@ -88,6 +88,7 @@ public:
   SoSFFloat autoClippingValue;
   SoSFNode eventHandler;
   SoSFVec3f viewUp;
+  SoSFBool handleInheritedEventFirst;
 
 private:
   void setClippingPlanes(void);
