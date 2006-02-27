@@ -78,13 +78,14 @@ SmDynamicObjectKit::SmDynamicObjectKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(relativePosition, SoTranslation, TRUE, topSeparator, rotation, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(rotation, SoRotation, TRUE, topSeparator, geometry, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(geometry, SoSwitch, TRUE, topSeparator, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(shape, SoSeparator, TRUE, geometry, childList, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(target, SoInfo, TRUE, shape, stdRotation, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(stdRotation, SoRotation, FALSE, shape, modelRotation, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(modelRotation, SoRotation, TRUE, shape, scale, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(scale, SoScale, TRUE, shape, offset, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(offset, SoTranslation, TRUE, shape, file, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(file, AutoFile, TRUE, shape, "", TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(shape, SoSeparator, TRUE, geometry, fileShape, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(fileShape, SoSeparator, TRUE, geometry, childList, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(target, SoInfo, TRUE, fileShape, stdRotation, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(stdRotation, SoRotation, FALSE, fileShape, modelRotation, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(modelRotation, SoRotation, TRUE, fileShape, scale, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(scale, SoScale, TRUE, fileShape, offset, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(offset, SoTranslation, TRUE, fileShape, file, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(file, AutoFile, TRUE, fileShape, "", TRUE);
   SO_KIT_ADD_CATALOG_LIST_ENTRY(childList, SoSeparator, TRUE, geometry, "", SmDynamicObjectKit, TRUE);
   
   SO_KIT_INIT_INSTANCE();
