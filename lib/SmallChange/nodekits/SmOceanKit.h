@@ -60,6 +60,7 @@ class SMALLCHANGE_DLL_API SmOceanKit : public SoBaseKit {
 public:
   SmOceanKit(void);
   static void initClass(void);
+  float getElevation(float x, float y);
 
   SoSFVec2f size;
 

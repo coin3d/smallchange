@@ -156,6 +156,7 @@ public:
   static void initClass(void);
   static void preShaderCB(void * closure, SoAction * action);
   OceanShape(void);
+  float getElevation(float x, float y);
 
   SoSFVec2f size;
   SoSFFloat chop;
@@ -552,6 +553,15 @@ SmOceanKit::setDefaultOnNonWritingFields(void)
 {
   this->oceanShape.setDefault(TRUE);
 }
+
+float
+SmOceanKit::getElevation(float x, float y)
+{
+  OceanShape * shape = (OceanShape*) this->getAnyPart("oceanShape", TRUE);
+  assert(shape);
+  return shape->getElevation(x, y);
+}
+
 
 //********************************************************************************************
 
@@ -2250,6 +2260,13 @@ void OceanShape::render_quad(void * closure, SoAction * action)
     bb->extendBy(box);
     bb->setCenter(SbVec3f(0.0f, 0.0f, 0.0f), TRUE);
   }
+}
+
+float OceanShape::getElevation(float x, float y)
+{
+  SbVec3f in(x, y, 0.0), v, n;
+  this->wavefunc(in, v, n);
+  return v[2];
 }
 
 #undef FLAG_ISSPLIT
