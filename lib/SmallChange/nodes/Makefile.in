@@ -207,7 +207,8 @@ SOURCES = \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h \
-	ViewpointWrapper.cpp SmViewpointWrapper.h
+	ViewpointWrapper.cpp SmViewpointWrapper.h \
+        SmShadowText2.cpp SmShadowText2.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -242,7 +243,8 @@ libnodesinc_HEADERS = \
 	SmVertexArrayShape.h \
 	SmCoordinateSystem.h \
 	SmMarkerSet.h \
-	SmViewpointWrapper.h
+	SmViewpointWrapper.h \
+        SmShadowText2.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -266,7 +268,7 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SmHQSphere.$(OBJEXT) SmBillboardClipPlane.$(OBJEXT) \
 	SmHeadlight.$(OBJEXT) VertexArrayShape.$(OBJEXT) \
 	SmCoordinateSystem.$(OBJEXT) SmMarkerSet.$(OBJEXT) \
-	ViewpointWrapper.$(OBJEXT)
+	ViewpointWrapper.$(OBJEXT) SmShadowText2.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -280,7 +282,8 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
 	UTMCoordinate.lo SmTooltip.lo SmHQSphere.lo \
 	SmBillboardClipPlane.lo SmHeadlight.lo VertexArrayShape.lo \
-	SmCoordinateSystem.lo SmMarkerSet.lo ViewpointWrapper.lo
+	SmCoordinateSystem.lo SmMarkerSet.lo ViewpointWrapper.lo \
+	SmShadowText2.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -312,6 +315,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmMarkerSet.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmMarkerSet.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmShadowText2.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmShadowText2.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Plo ./$(DEPDIR)/SmTooltip.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Po \
@@ -382,7 +387,8 @@ SOURCES = \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h \
-	ViewpointWrapper.cpp SmViewpointWrapper.h
+	ViewpointWrapper.cpp SmViewpointWrapper.h \
+        SmShadowText2.cpp SmShadowText2.h
 
 
 all: all-am
@@ -443,6 +449,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmMarkerSet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmMarkerSet.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmShadowText2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmShadowText2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Plo@am__quote@
