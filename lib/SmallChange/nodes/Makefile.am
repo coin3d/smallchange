@@ -33,7 +33,8 @@ SOURCES = \
 	VertexArrayShape.cpp SmVertexArrayShape.h \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h \
-	ViewpointWrapper.cpp SmViewpointWrapper.h
+	ViewpointWrapper.cpp SmViewpointWrapper.h \
+        SmShadowText2.cpp SmShadowText2.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -68,7 +69,8 @@ libnodesinc_HEADERS = \
 	SmVertexArrayShape.h \
 	SmCoordinateSystem.h \
 	SmMarkerSet.h \
-	SmViewpointWrapper.h
+	SmViewpointWrapper.h \
+        SmShadowText2.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \
