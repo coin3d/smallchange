@@ -7,6 +7,8 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFEnum.h>
 
+#include <SmallChange/basic.h>
+
 class SmShadowText2P;
 
 class SMALLCHANGE_DLL_API SmShadowText2 : public SoText2 {
@@ -16,7 +18,7 @@ class SMALLCHANGE_DLL_API SmShadowText2 : public SoText2 {
 
 public:
   static void initClass(void);
-  ShadowText2(void);
+  SmShadowText2(void);
 
   enum Justification {
     LEFT = 1,
@@ -27,7 +29,7 @@ public:
   virtual void GLRender(SoGLRenderAction * action);
 
 protected:
-  virtual ~ShadowText2();
+  virtual ~SmShadowText2();
 
 private:
   class SmShadowText2P * pimpl;

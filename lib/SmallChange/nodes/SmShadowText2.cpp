@@ -3,7 +3,7 @@
   \brief The ShadowText2 class draws white text with a black border.
 */
 
-#include "ShadowText2.h"
+#include "SmShadowText2.h"
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/system/gl.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
