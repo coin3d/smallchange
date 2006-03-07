@@ -173,6 +173,7 @@ SO_NODE_SOURCE(SmShadowText2);
 SmShadowText2::SmShadowText2(void)
 {
   SO_NODE_CONSTRUCTOR(SmShadowText2);
+  SO_NODE_ADD_FIELD(pixelOffset, (0.0f, 0.0f));
 }
 
 /*!
@@ -233,6 +234,9 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
   glLoadIdentity();
   glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+
+  nilpoint[0] += this->pixelOffset.getValue()[0];
+  nilpoint[1] += this->pixelOffset.getValue()[1];
   
   float xpos, ypos;
   int strwidth;

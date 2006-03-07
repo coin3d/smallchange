@@ -6,6 +6,7 @@
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFEnum.h>
+#include <Inventor/fields/SoSFVec2f.h>
 
 #include <SmallChange/basic.h>
 
@@ -25,6 +26,8 @@ public:
     RIGHT,
     CENTER
   };
+
+  SoSFVec2f pixelOffset;
 
   virtual void GLRender(SoGLRenderAction * action);
 
