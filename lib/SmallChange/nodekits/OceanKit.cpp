@@ -971,6 +971,9 @@ OceanShape::GLRender(SoGLRenderAction * action)
     this->renderGrid(node, mask);
   }
 #endif
+
+  // reset the diffuse color just in case
+  SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
 }
 
 void
