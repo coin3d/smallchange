@@ -3,6 +3,13 @@
   \brief The ShadowText2 class draws white text with a black border.
 */
 
+/*!
+  \var SoSFVec2f ShadowText2::pixelOffset
+  
+  Offset text placement, in pixels, relative to the viewport position calculated
+  from the transformation matrix. Default (0,0).
+*/
+
 #include "SmShadowText2.h"
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/system/gl.h>
