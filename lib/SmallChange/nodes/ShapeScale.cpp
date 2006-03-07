@@ -122,7 +122,7 @@ ShapeScale::preRender(SoAction * action)
       const SbViewportRegion & vp = SoViewportRegionElement::get(state);
       const SbViewVolume & vv = SoViewVolumeElement::get(state);
       SbVec3f center(0.0f, 0.0f, 0.0f);
-      const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[1]);
+      const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[0]);
       const SbMatrix & mm = SoModelMatrixElement::get(state);
       mm.multVecMatrix(center, center);
       const float scalefactor = vv.getWorldToScreenScale(center, nsize);
