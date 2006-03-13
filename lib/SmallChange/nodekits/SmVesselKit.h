@@ -14,6 +14,7 @@
 #include <Inventor/fields/SoSFVec2f.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFNode.h>
+#include <Inventor/fields/SoSFTime.h>
 #include <Inventor/C/basic.h>
 #include <Inventor/SbVec3f.h>
 #include <SmallChange/basic.h>
@@ -31,6 +32,9 @@ public:
   
   SoSFNode oceanKit;
   SoSFVec2f size;
+  SoSFFloat speed;
+  SoSFTime lastDatumTime;
+  SoSFFloat maxExtrapolationTime;
   SoSFFloat pitchInertia;
   SoSFFloat pitchResistance;
   SoSFFloat pitchBalance;

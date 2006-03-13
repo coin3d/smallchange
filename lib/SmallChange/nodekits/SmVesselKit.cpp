@@ -20,6 +20,7 @@
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbColor.h>
 #include <Inventor/SbPlane.h>
+#include <Inventor/SbTime.h>
 #include <Inventor/C/basic.h>
 #include <Inventor/SbBSPTree.h>
 #include <Inventor/sensors/SoFieldSensor.h>
@@ -38,6 +39,8 @@ class SmVesselKitP {
 public:
   SbVec3d heading2SbVec3d(float heading);
   float getWaveSlope(SoGLRenderAction * action, SmOceanKit * ok, SbVec3d & pos, float heading, float length, float & avgElevation);
+  SbVec2f getTranslation(float heading, float speed, float dt);
+  SbTime lasttime;
 };
 
 
@@ -52,11 +55,15 @@ SO_KIT_SOURCE(SmVesselKit);
 SmVesselKit::SmVesselKit(void) 
 {
   PRIVATE(this) = new SmVesselKitP;
+  PRIVATE(this)->lasttime = SbTime::getTimeOfDay();
 
   SO_KIT_CONSTRUCTOR(SmVesselKit);
   
   SO_KIT_ADD_FIELD(oceanKit, (NULL)); 
   SO_KIT_ADD_FIELD(size, (40.0, 10.0));
+  SO_KIT_ADD_FIELD(speed, (0.0));
+  SO_KIT_ADD_FIELD(lastDatumTime, (0.0));
+  SO_KIT_ADD_FIELD(maxExtrapolationTime, (10.0));
   SO_KIT_ADD_FIELD(pitchInertia, (1.0));
   SO_KIT_ADD_FIELD(pitchResistance, (1.0));
   SO_KIT_ADD_FIELD(pitchBalance, (1.0));
@@ -93,14 +100,20 @@ SmVesselKit::GLRender(SoGLRenderAction * action)
   // TODO: update inherited pitch and roll fields based on oceanKit geometry
   SmOceanKit * ok = (SmOceanKit*)this->oceanKit.getValue();
   if (ok && ok->isOfType(SmOceanKit::getClassTypeId())) {
-    SbVec3d utmpos = this->position.getValue();
-    float e1, e2;
-    float pitch = PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue(), this->size.getValue()[0], e1);
-    float roll = -1.0 * PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue()+90.0, this->size.getValue()[1], e2);
-    float elevation = (e1+e2)/2.0;
-    this->pitch.setValue(pitch);
-    this->roll.setValue(roll);
-    this->position.setValue( SbVec3d(utmpos[0], utmpos[1], elevation) );
+    SbTime now = SbTime::getTimeOfDay();
+    if (now.getValue() - this->lastDatumTime.getValue().getValue() < this->maxExtrapolationTime.getValue() ) {
+      double dt = now.getValue() - PRIVATE(this)->lasttime.getValue();
+      PRIVATE(this)->lasttime = now;
+      SbVec3d utmpos = this->position.getValue();
+      float e1, e2;
+      float pitch = PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue(), this->size.getValue()[0], e1);
+      float roll = -1.0 * PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue()+90.0, this->size.getValue()[1], e2);
+      float elevation = (e1+e2)/2.0;
+      SbVec2f motion  = PRIVATE(this)->getTranslation(this->heading.getValue(), this->speed.getValue(), dt);
+      this->pitch.setValue(pitch);
+      this->roll.setValue(roll);
+      this->position.setValue( SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation) );
+    }
   }
   inherited::GLRender(action);
 }
@@ -129,4 +142,13 @@ SmVesselKitP::getWaveSlope(SoGLRenderAction * action, SmOceanKit * ok, SbVec3d &
   float slopeangle = atan(elevdiff/length) * 180.0 / M_PI;
   avgElevation = (p1e+p2e)/2.0;
   return slopeangle;
+}
+
+SbVec2f
+SmVesselKitP::getTranslation(float heading, float speed, float dt)
+{
+  SbVec3d v = this->heading2SbVec3d(heading);
+  v *= speed * 1.852 / 3.6;  // From knots to km/h to m/s
+  v *= dt;
+  return SbVec2f(v[0], v[1]);
 }
