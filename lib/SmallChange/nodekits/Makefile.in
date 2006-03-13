@@ -193,7 +193,8 @@ SOURCES = \
 	SmPieChart.cpp SmPieChart.h \
 	PopupMenuKit.cpp SmPopupMenuKit.h \
 	OceanKit.cpp SmOceanKit.h \
-        SmDynamicObjectKit.cpp SmDynamicObjectKit.h
+        SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
+        SmVesselKit.cpp SmVesselKit.h
 
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -214,7 +215,8 @@ libnodekitsinc_HEADERS = \
 	SmPieChart.h \
 	SmPopupMenuKit.h \
 	SmOceanKit.h \
-        SmDynamicObjectKit.h
+        SmDynamicObjectKit.h \
+        SmVesselKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -230,7 +232,8 @@ am__objects_1 = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT) \
 	SmCameraControlKit.$(OBJEXT) GeoMarkerKit.$(OBJEXT) \
 	NormalsKit.$(OBJEXT) SmAxisDisplayKit.$(OBJEXT) \
 	SmAxisKit.$(OBJEXT) SmPieChart.$(OBJEXT) PopupMenuKit.$(OBJEXT) \
-	OceanKit.$(OBJEXT) SmDynamicObjectKit.$(OBJEXT)
+	OceanKit.$(OBJEXT) SmDynamicObjectKit.$(OBJEXT) \
+	SmVesselKit.$(OBJEXT)
 am_nodekits_lst_OBJECTS = $(am__objects_1)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -240,7 +243,7 @@ libnodekits_la_LIBADD =
 am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo SmWellLogKit.lo \
 	SmCameraControlKit.lo GeoMarkerKit.lo NormalsKit.lo \
 	SmAxisDisplayKit.lo SmAxisKit.lo SmPieChart.lo PopupMenuKit.lo \
-	OceanKit.lo SmDynamicObjectKit.lo
+	OceanKit.lo SmDynamicObjectKit.lo SmVesselKit.lo
 am_libnodekits_la_OBJECTS = $(am__objects_2)
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
@@ -266,6 +269,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmPieChart.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltipKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltipKit.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmVesselKit.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmVesselKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmWellLogKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmWellLogKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoFEMKit.Plo ./$(DEPDIR)/SoFEMKit.Po
@@ -301,7 +306,8 @@ SOURCES = \
 	SmPieChart.cpp SmPieChart.h \
 	PopupMenuKit.cpp SmPopupMenuKit.h \
 	OceanKit.cpp SmOceanKit.h \
-        SmDynamicObjectKit.cpp SmDynamicObjectKit.h
+        SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
+        SmVesselKit.cpp SmVesselKit.h
 
 
 all: all-am
@@ -356,6 +362,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmPieChart.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltipKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltipKit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmVesselKit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmVesselKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmWellLogKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmWellLogKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoFEMKit.Plo@am__quote@
