@@ -157,6 +157,7 @@ public:
   static void preShaderCB(void * closure, SoAction * action);
   OceanShape(void);
   float getElevation(float x, float y);
+  SbMatrix lastModelMatrix;
 
   SoSFVec2f size;
   SoSFFloat chop;
@@ -526,6 +527,8 @@ SmOceanKit::SmOceanKit(void)
 //   cube->width = 500.0;
 //   cube->height = 500.0;
 //   cube->depth = 500.0;
+
+  shape->lastModelMatrix.makeIdentity();
 }
 
 /*!
@@ -838,6 +841,7 @@ OceanShape::updateQuadtree(SoState * state)
 {
   SbVec2f s = this->size.getValue();
   const SbMatrix & mat = SoModelMatrixElement::get(state);
+  this->lastModelMatrix = mat;
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
 
   uint32_t contextid = SoGLCacheContextElement::get(state);
@@ -2268,6 +2272,7 @@ void OceanShape::render_quad(void * closure, SoAction * action)
 float OceanShape::getElevation(float x, float y)
 {
   SbVec3f in(x, y, 0.0), v, n;
+  this->lastModelMatrix.inverse().multVecMatrix(in, in);
   this->wavefunc(in, v, n);
   return v[2];
 }
