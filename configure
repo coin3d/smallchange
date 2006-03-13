@@ -1077,7 +1077,7 @@ Optional Packages:
   --with-inventor-qt=PATH specify where InventorQt resides
   --with-coin             enable use of Coin [default=yes]
   --with-coin=DIR         give prefix location of Coin
-  --with-mesa             prefer MesaGL (if found) over OpenGL [default=yes]
+  --with-mesa             prefer MesaGL (if found) over OpenGL [default=no]
   --with-opengl=DIR       OpenGL/Mesa installation directory
   --with-x                use the X Window System
   --with-pthread=DIR      pthread installation directory
@@ -25420,7 +25420,7 @@ if test "${with_mesa+set}" = set; then
   withval="$with_mesa"
 
 else
-  with_mesa=yes
+  with_mesa=no
 fi;
 
 
@@ -25463,7 +25463,14 @@ if test x"$with_opengl" != xno; then
   case $host_os in
   darwin*)
 
-    if test x"$GCC" = x"yes" -a x$sim_ac_enable_darwin_x11 = xfalse; then
+    if test x"$GCC" = x"yes" -a x$sim_ac_enable_darwin_x11 = xtrue; then
+      # On Mac OS X, OpenGL is installed as part of the optional X11 SDK.
+      sim_ac_gl_darwin_x11=/usr/X11R6
+      if test -d $sim_ac_gl_darwin_x11; then
+        sim_ac_ogl_cppflags=-I$sim_ac_gl_darwin_x11/include
+        sim_ac_ogl_ldflags=-L$sim_ac_gl_darwin_x11/lib
+      fi
+    else
 
 
 
@@ -25540,13 +25547,6 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-    else
-      # On Mac OS X, OpenGL is installed as part of the optional X11 SDK.
-      sim_ac_gl_darwin_x11=/usr/X11R6
-      if test -d $sim_ac_gl_darwin_x11; then
-        sim_ac_ogl_cppflags=-I$sim_ac_gl_darwin_x11/include
-        sim_ac_ogl_ldflags=-L$sim_ac_gl_darwin_x11/lib
-      fi
     fi
     ;;
   esac
@@ -25599,57 +25599,7 @@ if test x"$with_opengl" != x"no"; then
   CPPFLAGS="$CPPFLAGS $sim_ac_gl_cppflags"
 
   # Mac OS X framework (no X11, -framework OpenGL)
-  if test x$sim_ac_enable_darwin_x11 = xfalse; then
-
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <OpenGL/gl.h>
-_ACEOF
-if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
-  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null; then
-  if test -s conftest.err; then
-    ac_cpp_err=$ac_cxx_preproc_warn_flag
-    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
-  else
-    ac_cpp_err=
-  fi
-else
-  ac_cpp_err=yes
-fi
-if test -z "$ac_cpp_err"; then
-  ac_cv_header_OpenGL_gl_h=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_cv_header_OpenGL_gl_h=no
-fi
-rm -f conftest.err conftest.$ac_ext
-if test $ac_cv_header_OpenGL_gl_h = yes; then
-
-      sim_ac_gl_header_avail=true
-      sim_ac_gl_header=OpenGL/gl.h
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_OPENGL_GL_H 1
-_ACEOF
-
-
-fi
-
-
-
-  else
+  if test x$sim_ac_enable_darwin_x11 = xtrue; then
 
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -25692,6 +25642,56 @@ if test $ac_cv_header_GL_gl_h = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_GL_GL_H 1
+_ACEOF
+
+
+fi
+
+
+
+  else
+
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <OpenGL/gl.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_cv_header_OpenGL_gl_h=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_cv_header_OpenGL_gl_h=no
+fi
+rm -f conftest.err conftest.$ac_ext
+if test $ac_cv_header_OpenGL_gl_h = yes; then
+
+      sim_ac_gl_header_avail=true
+      sim_ac_gl_header=OpenGL/gl.h
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_OPENGL_GL_H 1
 _ACEOF
 
 
