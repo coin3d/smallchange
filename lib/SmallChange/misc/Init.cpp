@@ -79,6 +79,7 @@
 #include <SmallChange/nodes/SmViewpointWrapper.h>
 #include <SmallChange/nodekits/SmPopupMenuKit.h>
 #include <SmallChange/nodekits/SmOceanKit.h>
+#include <SmallChange/nodekits/SmVesselKit.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
 
@@ -146,4 +147,5 @@ smallchange_init(void)
 #if defined(__COIN__) && COIN_MAJOR_VERSION >= 3
   SmOceanKit::initClass();
 #endif // temporary compile fix
+  SmVesselKit::initClass();
 }
