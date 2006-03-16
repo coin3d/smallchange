@@ -7,6 +7,9 @@
 #ifndef VESSELKIT_H
 #define VESSELKIT_H
 
+#include <Inventor/SbBasic.h>
+#if defined(__COIN__) && (COIN_MAJOR_VERSION >= 3)
+
 #include "SmDynamicObjectKit.h"
 
 #include <Inventor/nodekits/SoSubKit.h>
@@ -57,5 +60,6 @@ private:
 
 };
 
+#endif // temporary compile fix
 #endif // !VESSELKIT_H
 

@@ -4,7 +4,10 @@
  *
 \**************************************************************************/
 
+#include <Inventor/SbBasic.h>
 #include "SmVesselKit.h"
+#if defined(__COIN__) && (COIN_MAJOR_VERSION >= 3)
+
 #include "SmOceanKit.h"
 
 #include <math.h>
@@ -152,3 +155,6 @@ SmVesselKitP::getTranslation(float heading, float speed, float dt)
   v *= dt;
   return SbVec2f(v[0], v[1]);
 }
+
+
+#endif // temporary compile fix
