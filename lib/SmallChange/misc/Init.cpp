@@ -146,6 +146,7 @@ smallchange_init(void)
   SmPieChart::initClass();
 #if defined(__COIN__) && COIN_MAJOR_VERSION >= 3
   SmOceanKit::initClass();
+  SmDynamicObjectKit::initClass();
   SmVesselKit::initClass();
 #endif // temporary compile fix
 }
