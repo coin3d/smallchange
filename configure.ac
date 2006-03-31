@@ -115,6 +115,11 @@ AC_SUBST([SMALLCHANGE_EXTRA_LDFLAGS], [$LDFLAGS])
 AC_SUBST([SMALLCHANGE_EXTRA_LIBS], [$LIBS])
 
 # **************************************************************************
+# Universal Binary support (Mac OS X)
+
+SIM_AC_UNIVERSAL_BINARIES
+
+# **************************************************************************
 
 AM_INIT_AUTOMAKE(SmallChange, $VERSION)
 
