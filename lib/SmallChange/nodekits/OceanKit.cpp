@@ -1,8 +1,4 @@
 
-// apple's GLSL implementation is really slow on my G5 at least
-#ifdef __APPLE__
-#define USE_CG 1
-#endif
 
 #include <Inventor/SbBasic.h>
 #include <float.h>
@@ -55,6 +51,7 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoShape.h>
+#include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoTextureUnit.h>
 #include <Inventor/nodes/SoTextureCubeMap.h>
 #include <Inventor/nodes/SoShapeHints.h>
@@ -203,6 +200,7 @@ private:
   void createTexScene();
   void updateShader(void);
   void renderGrid(ocean_quadnode * node, const int bitmask);
+  void renderOutline(ocean_quadnode * node, const int bitmask);
   void wavefunc(const SbVec3f & in, SbVec3f &v, SbVec3f &n);
   void updateQuadtree(SoState * state);
   ocean_quadnode * root;
@@ -472,14 +470,15 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, callback, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, topSeparator, shader, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, topSeparator, waveTexture, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, topSeparator, debugCube, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, topSeparator, envMapUnit, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, programSwitch, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(programSwitch, SoSwitch, FALSE, topSeparator, envMapUnit, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, programSwitch, shader, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, programSwitch, waveTexture, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, programSwitch, debugCube, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, programSwitch, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(envMapUnit, SoTextureUnit, FALSE, topSeparator, envMap, FALSE);
   // use a detail texture instead of an environment texture right now
-  // SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTextureCubeMap, FALSE, topSeparator, resetUnit, TRUE);
+  // SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTextureCubeMap, FALSE, programSwitch, resetUnit, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTexture2, FALSE, topSeparator, resetUnit, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(resetUnit, SoTextureUnit, FALSE, topSeparator, oceanShape, FALSE);
 
@@ -549,6 +548,27 @@ SmOceanKit::initClass(void)
     SO_KIT_INIT_CLASS(SmOceanKit, SoBaseKit, "BaseKit");
     OceanShape::initClass();
   }
+}
+
+void 
+SmOceanKit::GLRender(SoGLRenderAction * action)
+{
+  uint32_t contextid = action->getCacheContext();
+  const cc_glglue * glue = cc_glglue_instance(contextid);
+
+  SbBool cando =
+    cc_glglue_has_vertex_buffer_object(glue) &&
+    cc_glglue_has_arb_fragment_program(glue) &&
+    cc_glglue_has_arb_vertex_program(glue);
+
+  int swval = cando ? -3 : -1;
+
+  SoSwitch * sw = (SoSwitch*) this->getAnyPart("programSwitch", TRUE);
+  if (swval != sw->whichChild.getValue()) {
+    sw->whichChild = swval;
+  }
+  
+  inherited::GLRender(action);
 }
 
 void 
@@ -908,76 +928,106 @@ OceanShape::GLRender(SoGLRenderAction * action)
   uint32_t contextid = action->getCacheContext();
   const cc_glglue * glue = cc_glglue_instance(contextid);
 
-#if 1 // render waves using VBO and vertex/fragment shaders
-  
-  this->gridvbo->bindBuffer((uint32_t) contextid);
-  cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
-  cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
-  
-  for (int i = 0; i < nodelist.getLength(); i++) {
-    ocean_quadnode * node = this->nodelist[i];
-    int mask = node->getNodeBitmask();
-    const SbVec3f * corners = node->getCorners();
-    SbVec3f scale = corners[2] - corners[0];
-#if 0
-    glPushMatrix();
-    glTranslatef(corners[0][0], corners[0][1], 0.0f); 
-    glScalef(scale[0], scale[1], 1.0f);
-    this->idxvbo[mask]->bindBuffer(contextid);
-    cc_glglue_glDrawElements(glue,
-                             GL_TRIANGLES,
-                             this->idxlen[mask],
-                             GL_UNSIGNED_SHORT, NULL);
-    glPopMatrix();
-#else
-    if (!node->gridvbo) {
-      SbMatrix m;
-      m.setScale(scale);
-      SbMatrix m2;
-      m2.setTranslate(corners[0]);
-      m.multRight(m2);
-      
-      int i = 0;
-      for (int y = 0; y < GRIDSIZE; y++) {
-        float fy = float(y) / float(GRIDSIZE-1);
-        for (int x = 0; x < GRIDSIZE; x++) {
-          float fx = float(x) / float(GRIDSIZE-1);
-          SbVec3f tmp(fx, fy, 0.0f);
-          m.multVecMatrix(tmp, tmp);
-          this->grid[i++] = tmp;
-        }
-      }
-      cc_glglue_glGenBuffers(glue, 1, &node->gridvbo);
-      cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, node->gridvbo);
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, i*sizeof(SbVec3f),
-                             this->grid,
-                             GL_STATIC_DRAW); 
-    }
-    else {
-      cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, node->gridvbo);
-    }
+  if (cc_glglue_has_vertex_buffer_object(glue) &&
+      cc_glglue_has_arb_fragment_program(glue) &&
+      cc_glglue_has_arb_vertex_program(glue)) {
+
+    this->gridvbo->bindBuffer((uint32_t) contextid);
+    cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
     cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
-    this->idxvbo[mask]->bindBuffer(contextid);
-    cc_glglue_glDrawElements(glue,
-                             GL_TRIANGLES,
-                             this->idxlen[mask],
-                             GL_UNSIGNED_SHORT, NULL);
-#endif
+    
+    for (int i = 0; i < nodelist.getLength(); i++) {
+      ocean_quadnode * node = this->nodelist[i];
+      int mask = node->getNodeBitmask();
+      const SbVec3f * corners = node->getCorners();
+      SbVec3f scale = corners[2] - corners[0];
+      if (!node->gridvbo) {
+        SbMatrix m;
+        m.setScale(scale);
+        SbMatrix m2;
+        m2.setTranslate(corners[0]);
+        m.multRight(m2);
+        
+        int i = 0;
+        for (int y = 0; y < GRIDSIZE; y++) {
+          float fy = float(y) / float(GRIDSIZE-1);
+          for (int x = 0; x < GRIDSIZE; x++) {
+            float fx = float(x) / float(GRIDSIZE-1);
+            SbVec3f tmp(fx, fy, 0.0f);
+            m.multVecMatrix(tmp, tmp);
+            this->grid[i++] = tmp;
+          }
+        }
+        cc_glglue_glGenBuffers(glue, 1, &node->gridvbo);
+        cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, node->gridvbo);
+        cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, i*sizeof(SbVec3f),
+                               this->grid,
+                               GL_STATIC_DRAW); 
+      }
+      else {
+        cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, node->gridvbo);
+      }
+      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
+      this->idxvbo[mask]->bindBuffer(contextid);
+      cc_glglue_glDrawElements(glue,
+                               GL_TRIANGLES,
+                               this->idxlen[mask],
+                               GL_UNSIGNED_SHORT, NULL);
+    }
+    cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
+    cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0);
+    cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0);
   }
-  cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
-  cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0);
-  cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0);
-
-#else // just render everything using the CPU
-  for (int i = 0; i < nodelist.getLength(); i++) {
-    ocean_quadnode * node = this->nodelist[i];
-    int mask = node->getNodeBitmask();    
-    this->renderGrid(node, mask);
+  else {
+    for (int i = 0; i < nodelist.getLength(); i++) {
+      ocean_quadnode * node = this->nodelist[i];
+      int mask = node->getNodeBitmask();    
+      this->renderOutline(node, mask);
+    }
   }
-#endif
-
   // reset the diffuse color just in case
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
+}
+
+
+void
+OceanShape::renderOutline(ocean_quadnode * node, const int bitmask) 
+{
+  const SbVec3f * corners = node->getCorners();
+  SbVec3f scale = corners[2] - corners[0];
+  scale[2] = 1.0f;
+
+  SbMatrix m;
+  m.setScale(scale);
+  SbMatrix m2;
+  m2.setTranslate(corners[0]);
+  m.multRight(m2);
+
+  SbVec3f v;
+  glNormal3f(0.0f, 0.0f, 1.0f);
+  glBegin(GL_QUADS);
+
+  v.setValue(0.0f, 0.0f, 0.0f);
+  m.multVecMatrix(v, v);
+  glTexCoord2f(v[0], v[1]);
+  glVertex3f(v[0], v[1], v[2]);
+
+  v.setValue(1.0f, 0.0f, 0.0f);
+  m.multVecMatrix(v, v);
+  glTexCoord2f(v[0], v[1]);
+  glVertex3f(v[0], v[1], v[2]);
+
+  v.setValue(1.0f, 1.0f, 0.0f);
+  m.multVecMatrix(v, v);
+  glTexCoord2f(v[0], v[1]);
+  glVertex3f(v[0], v[1], v[2]);
+
+  v.setValue(0.0f, 1.0f, 0.0f);
+  m.multVecMatrix(v, v);
+  glTexCoord2f(v[0], v[1]);
+  glVertex3f(v[0], v[1], v[2]);
+
+  glEnd();
 }
 
 void

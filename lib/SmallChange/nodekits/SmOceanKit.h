@@ -48,6 +48,7 @@ class SMALLCHANGE_DLL_API SmOceanKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(utmposition);
   SO_KIT_CATALOG_ENTRY_HEADER(material);
   SO_KIT_CATALOG_ENTRY_HEADER(shapeHints);
+  SO_KIT_CATALOG_ENTRY_HEADER(programSwitch);
   SO_KIT_CATALOG_ENTRY_HEADER(callback);
   SO_KIT_CATALOG_ENTRY_HEADER(waveTexture);
   SO_KIT_CATALOG_ENTRY_HEADER(debugCube);
@@ -85,7 +86,10 @@ public:
   SoSFVec3f lightDirection;
   SoSFVec3f distanceAttenuation;
 
+  virtual void GLRender(SoGLRenderAction * action);
+
 protected:
+
   virtual void setDefaultOnNonWritingFields(void);
   virtual ~SmOceanKit();
   
