@@ -1,9 +1,4 @@
 
-
-#include <Inventor/SbBasic.h>
-#include <float.h>
-
-
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
@@ -41,6 +36,8 @@
 #include "SmOceanKit.h"
 #if defined(__COIN__) && (COIN_MAJOR_VERSION >= 3)
 
+#include <Inventor/SbBasic.h>
+#include <float.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
@@ -345,9 +342,12 @@ private:
   texwave texwaves[16];
   unsigned char * coslut;
   unsigned char * biasnoisebuf;
+  double elapsedtime;
 
   SoSceneTexture2 * wavetex;
   SoTexture2 * cosluttex;
+  SoTexture2 * biasnoisetex;
+
 };
 
 class ocean_quadnode {
@@ -471,16 +471,17 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(shapeHints, SoShapeHints, FALSE, topSeparator, programSwitch, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(programSwitch, SoSwitch, FALSE, topSeparator, envMapUnit, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(programSwitch, SoSwitch, FALSE, topSeparator, envMapSwitch, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, programSwitch, shader, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, programSwitch, waveTexture, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, programSwitch, debugCube, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, programSwitch, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(envMapUnit, SoTextureUnit, FALSE, topSeparator, envMap, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(envMapSwitch, SoSwitch, FALSE, topSeparator, oceanShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(envMapUnit, SoTextureUnit, FALSE, envMapSwitch, envMap, FALSE);
   // use a detail texture instead of an environment texture right now
   // SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTextureCubeMap, FALSE, programSwitch, resetUnit, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTexture2, FALSE, topSeparator, resetUnit, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(resetUnit, SoTextureUnit, FALSE, topSeparator, oceanShape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(envMap, SoTexture2, FALSE, envMapSwitch, resetUnit, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(resetUnit, SoTextureUnit, FALSE, envMapSwitch, "", FALSE);
 
   SO_KIT_ADD_CATALOG_ENTRY(oceanShape, OceanShape, FALSE, topSeparator, "", FALSE);
 
@@ -564,6 +565,12 @@ SmOceanKit::GLRender(SoGLRenderAction * action)
   int swval = cando ? -3 : -1;
 
   SoSwitch * sw = (SoSwitch*) this->getAnyPart("programSwitch", TRUE);
+  if (swval != sw->whichChild.getValue()) {
+    sw->whichChild = swval;
+  }
+  
+  swval = cando ? -3 : 1;
+  sw = (SoSwitch*) this->getAnyPart("envMapSwitch", TRUE);
   if (swval != sw->whichChild.getValue()) {
     sw->whichChild = swval;
   }
@@ -699,6 +706,8 @@ OceanShape::OceanShape()
   this->root = NULL;
   this->wavetex = NULL;
   this->cosluttex = NULL;
+  this->biasnoisetex = NULL;
+  this->elapsedtime = 0.0;
   this->coslut = NULL;
   this->biasnoisebuf = NULL;
   this->createBiasNoiseBuffer();
@@ -760,6 +769,9 @@ OceanShape::~OceanShape()
   if (this->cosluttex) {
     this->cosluttex->unref();
   }
+  if (this->biasnoisetex) {
+    this->biasnoisetex->unref();
+  }
 
   delete this->root;
   delete[] this->grid;
@@ -814,7 +826,9 @@ void
 OceanShape::tick()
 {
   SbTime t = SbTime::getTimeOfDay();
+
   if (this->currtime == SbTime::zero() || this->invalidstate) {
+    this->elapsedtime = 0.0;
     this->initTexState();
     this->createCosLUT();
     this->copyGeoState();
@@ -823,6 +837,7 @@ OceanShape::tick()
     this->invalidstate = FALSE;
   }
   else {
+    this->elapsedtime = (t - this->currtime).getValue();
     this->updateWaves((t - this->currtime).getValue());
     this->updateShader();
   }
@@ -1812,13 +1827,8 @@ OceanShape::initShader(SoShaderProgram * s, SoSceneTexture2 * wavetex)
   this->vertexshader = new SoVertexShader();
   this->vertexshader->ref();
 
-#ifdef USE_CG
-  this->vertexshader->sourceProgram = "smocean_vertex.cg";
-  this->fragmentshader->sourceProgram = "smocean_fragment.cg";
-#else
   this->vertexshader->sourceProgram = "smocean_vertex.glsl";
   this->fragmentshader->sourceProgram = "smocean_fragment.glsl";
-#endif  
 
   this->param_geowaveamp = new SoShaderParameter4f();
   this->param_geowaveamp->ref();
@@ -1873,7 +1883,6 @@ OceanShape::initShader(SoShaderProgram * s, SoSceneTexture2 * wavetex)
   this->vertexshader->parameter.set1Value(9, this->param_lightdir);
   this->vertexshader->parameter.set1Value(10, this->param_attenuation);
 
-#ifndef USE_CG
   // needed for GLSL
   SoShaderParameter1i * texunit0 = new SoShaderParameter1i();
   SoShaderParameter1i * texunit1 = new SoShaderParameter1i();
@@ -1892,7 +1901,6 @@ OceanShape::initShader(SoShaderProgram * s, SoSceneTexture2 * wavetex)
   this->fragmentshader->parameter.set1Value(1, texunit1);
   this->fragmentshader->parameter.set1Value(2, texunit2);
   this->fragmentshader->parameter.set1Value(3, texunit3);
-#endif
 
   s->shaderObject.set1Value(0, this->fragmentshader);
   s->shaderObject.set1Value(1, this->vertexshader);
@@ -2026,29 +2034,24 @@ OceanShape::updateTextureParameters(SoState * state)
 
   SbVec4f xform;
   const float kRate = 0.1f;
-#if 0
-  m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
-  xform.w += m_fElapsedTime * kRate;
-  m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[0], &xform);
-  
-  m_CompCosinesEff->GetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
-  xform.w += m_fElapsedTime * kRate;
-  m_CompCosinesEff->SetVector(m_CompCosineParams.m_NoiseXform[3], &xform);
-#endif
+
+  xform = this->texparam_noisexform[0]->value.getValue();
+  xform[0] += this->elapsedtime * kRate;
+  this->texparam_noisexform[0]->value = xform;
+
+  xform = this->texparam_noisexform[3]->value.getValue();
+  xform[3] += this->elapsedtime * kRate;
+  this->texparam_noisexform[3]->value = xform;
   
   float s = 0.5f / (float(NUM_BUMPS_PER_PASS) + this->texstate_cache.noise);
   SbVec4f rescale(s, s, 1.0f, 1.0f);
   for (i = 0; i < 4; i++) {
     this->texparam_rescale[i]->value = rescale;
   }
-#if 0
-  float scaleBias = 0.5f * m_TexState.m_Noise / (float(kNumBumpPasses) + m_TexState.m_Noise);
-  D3DXVECTOR4 scaleBiasVec(scaleBias, scaleBias, 0.f, 1.f);
-  m_CompCosinesEff->SetVector(m_CompCosineParams.m_ScaleBias, &scaleBiasVec);
   
-  m_CompCosinesEff->SetTexture(m_CompCosineParams.m_CosineLUT, m_CosineLUT);
-  m_CompCosinesEff->SetTexture(m_CompCosineParams.m_BiasNoise, m_BiasNoiseMap);
-#endif
+  float scaleBias = 0.5f * this->texstate_cache.noise / (float(NUM_BUMPS_PER_PASS) + this->texstate_cache.noise);
+  SbVec4f scaleBiasVec(scaleBias, scaleBias, 0.0f, 1.0f);
+  this->texparam_scalebias->value = scaleBiasVec;
 }
 
 void OceanShape::wavefunc(const SbVec3f & in, SbVec3f & v, SbVec3f & n) 
@@ -2117,6 +2120,11 @@ OceanShape::createBiasNoiseBuffer()
     *buf++ = 255;
     *buf++ = 255;
   }
+  if (this->biasnoisetex == NULL) {
+    this->biasnoisetex = new SoTexture2;
+    this->biasnoisetex->ref();
+  }
+  this->biasnoisetex->image.setValue(SbVec2s(BUMPSIZE,BUMPSIZE), 4, this->biasnoisebuf);
 }
 
 void
@@ -2180,7 +2188,17 @@ OceanShape::createTexParameters()
   }
   texparam_scalebias = new SoShaderParameter4f;
   texparam_scalebias->ref();
-  texparam_scalebias->identifier = 4;
+  texparam_scalebias->name = "scaleBias";
+
+
+	SbVec4f init(20.f, 0.f, 0.f, 0.f);
+  this->texparam_noisexform[0]->value = init;
+  this->texparam_noisexform[2]->value = init;
+  
+	init[0] = 0.0;
+	init[1] = 20.0f;
+  this->texparam_noisexform[1]->value = init;
+  this->texparam_noisexform[3]->value = init;
 }
 
 void 
@@ -2215,13 +2233,9 @@ OceanShape::createTexScene()
     SoVertexShader * vshader = new SoVertexShader;
     SoFragmentShader * fshader = new SoFragmentShader;
     
-#ifdef USE_CG
-    vshader->sourceProgram = "smocean_texwavevertex.cg";
-    fshader->sourceProgram = "smocean_texwavefragment.cg";
-#else
     vshader->sourceProgram = "smocean_texwavevertex.glsl";
     fshader->sourceProgram = "smocean_texwavefragment.glsl";
-#endif
+
     int j;
     for (j = 0; j < 4; j++) {
       vshader->parameter.set1Value(j, this->texparam_trans[i*4+j]);
@@ -2229,7 +2243,6 @@ OceanShape::createTexScene()
     }
     fshader->parameter.set1Value(4, this->texparam_rescale[i]);
 
-#ifndef USE_CG
     // needed for GLSL
     SoShaderParameter1i * texunit0 = new SoShaderParameter1i();
     SoShaderParameter1i * texunit1 = new SoShaderParameter1i();
@@ -2248,7 +2261,6 @@ OceanShape::createTexScene()
     fshader->parameter.set1Value(6, texunit1);
     fshader->parameter.set1Value(7, texunit2);
     fshader->parameter.set1Value(8, texunit3);
-#endif
 
     prog->shaderObject.set1Value(0, vshader);
     prog->shaderObject.set1Value(1, fshader);
@@ -2262,6 +2274,52 @@ OceanShape::createTexScene()
 
     sep->addChild(quad);
   }
+  if (1) { // noise
+    SoCallback * cb = new SoCallback;
+    cb->setCallback(OceanShape::enable_blend, this);
+    sep->addChild(cb);
+
+    SoShaderProgram * prog = new SoShaderProgram;
+    SoVertexShader * vshader = new SoVertexShader;
+    SoFragmentShader * fshader = new SoFragmentShader;
+    
+    vshader->sourceProgram = "smocean_texnoisevertex.glsl";
+    fshader->sourceProgram = "smocean_texnoisefragment.glsl";
+
+    int j;
+    for (j = 0; j < 4; j++) {
+      vshader->parameter.set1Value(j, this->texparam_noisexform[j]);
+    }
+    vshader->parameter.set1Value(4, this->texparam_scalebias);
+
+    // needed for GLSL
+    SoShaderParameter1i * texunit0 = new SoShaderParameter1i();
+    texunit0->name = "biasnoisemap0";
+    texunit0->value = 0;
+
+    SoShaderParameter1i * texunit1 = new SoShaderParameter1i();
+    texunit1->name = "biasnoisemap1";
+    texunit1->value = 1;
+    
+    fshader->parameter.set1Value(0, texunit0);
+    fshader->parameter.set1Value(1, texunit1);
+
+    prog->shaderObject.set1Value(0, vshader);
+    prog->shaderObject.set1Value(1, fshader);
+
+    SoTextureUnit * unit1 = new SoTextureUnit;
+    unit1->unit = 1;
+    sep->addChild(unit1);
+    sep->addChild(this->biasnoisetex);
+    SoTextureUnit * unit0 = new SoTextureUnit;
+    unit0->unit = 0;
+    sep->addChild(unit0);
+    sep->addChild(this->biasnoisetex);
+    sep->addChild(prog);
+
+    sep->addChild(quad);
+  }
+
   this->wavetex->scene = sep;
   this->wavetex->size = SbVec2s(BUMPSIZE, BUMPSIZE);
   this->wavetex->wrapS = SoSceneTexture2::REPEAT;
