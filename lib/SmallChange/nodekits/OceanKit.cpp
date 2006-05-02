@@ -1643,7 +1643,6 @@ OceanShape::initGeoWave(const int i)
   this->geowaves[i].freq = 2.0f * float(M_PI) / this->geowaves[i].len;
   this->geowaves[i].fade = 1.0f;
   this->geowaves[i].speedfactor = (2.0f + RandZeroToOne()) / 3.0f;
-  this->geowaves[i].speedfactor = 1.0f;
 
   float rotBase = this->geostate_cache.angleDeviation * float(M_PI) / 180.f;
   
