@@ -4,30 +4,30 @@ Complexity { textureQuality 1.0 }
 LightModel { model BASE_COLOR }
 SmOceanKit { 
 size 10000 10000 
-sharpness 0.2
+sharpness 0.8
 lightDirection 0 -2 -1
 windDirection 0 1
+# distanceAttenuation 1 0.02 0.0002
 distanceAttenuation 1 0.02 0.0002
 angleDeviation 15
-# amplitudeRatio 0.00000001
 
-cubeMap TextureCubeMap {
+#minWaveLength 5
+#maxWaveLength 15
+#amplitudeRatio 0.2
+amplitudeRatio 0.1
+gravConst 5.0
 
-  filenames [
-#"Ocean_diffuse_negx.png",
-#"Ocean_diffuse_posx.png",
-#"Ocean_diffuse_negz.png",
-#"Ocean_diffuse_posz.png",
-#"Ocean_diffuse_negy.png",
-#"Ocean_diffuse_posy.png"
+#cubeMap TextureCubeMap {
+#  filenames [
+#"skybox/negx.jpg.flip.png",
+#"skybox/posx.jpg.flip.png",
+#"skybox/negy.jpg.flip.png",
+#"skybox/posy.jpg.flip.png",
+#"skybox/negz.jpg.flip.png",
+#"skybox/posz.jpg.flip.png",
+#]
+# }
 
-"negx.jpg.flip.png",
-"posx.jpg.flip.png",
-"negy.jpg.flip.png",
-"posy.jpg.flip.png",
-"negz.jpg.flip.png",
-"posz.jpg.flip.png",
-]
- }
+#    envMap Texture2 { filename "water.jpg" }
 
 }

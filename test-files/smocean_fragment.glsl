@@ -1,6 +1,6 @@
 
 uniform sampler2D bumpmap;
-uniform samplerCube envmap;
+uniform sampler2D envmap;
 
 vec3 expand(vec3 v)
 {
@@ -33,8 +33,9 @@ void main(void)
   if (d == 0.0) s = 0.0;
   vec3 speccol = vec3(pow(s, 128.0));
   // vec3 speccol = vec3(pow(intensity, 128.0));
-  vec3 diffuse1 = textureCube(envmap, r).xyz * d;
-  // vec3 diffuse1 = color.xyz * d;
+  // vec3 diffuse1 = textureCube(envmap, vec3(r.x, r.z, r.y)).xyz * d;
+  // vec3 diffuse1 = texture2D(envmap, bumpcoord*0.1).xyz * d;
+  vec3 diffuse1 = color.xyz * d;
   //  vec3 diffuse = color.xyz;
   vec3 diffuse2 = color.xyz * d;
   gl_FragColor = vec4(diffuse1 * 0.2 + diffuse2 * 0.8 + speccol, color.a);

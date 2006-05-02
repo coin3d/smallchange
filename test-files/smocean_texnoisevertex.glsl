@@ -13,7 +13,7 @@ void main(void)
   uvtmp.w = 1.0;
 
   vec4 uvin = gl_MultiTexCoord0;
-
+  
   uvtmp.x = dot(noisexform0, uvin);
   uvtmp.y = dot(noisexform1, uvin);
 
@@ -24,8 +24,8 @@ void main(void)
 
   gl_TexCoord[1] = uvtmp;
 
-  gl_FrontColor = vec4(0.0, 0.5, 1.0, 2.0);
-  gl_FrontSecondaryColor = scaleBias;
+  gl_FrontColor = vec4(scaleBias[0], scaleBias[0], scaleBias[2], scaleBias[2]);
+  gl_FrontSecondaryColor = vec4(scaleBias[1], scaleBias[1], scaleBias[2], scaleBias[2]);
 
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 }

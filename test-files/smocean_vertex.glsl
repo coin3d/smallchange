@@ -201,6 +201,7 @@ void main(void)
 
   // water color
   gl_FrontColor = vec4(0.2, 0.4, 0.7, 1);
+  // gl_FrontColor = vec4(0.1, 0.2, 0.4, 1);
 
   // some parameters
   gl_FrontSecondaryColor = vec4(max(att, 0.05), 0.0, 0.0, 0.0);
