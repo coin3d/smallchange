@@ -2036,7 +2036,7 @@ OceanShape::updateTextureParameters(SoState * state)
   const float kRate = 0.1f;
 
   xform = this->texparam_noisexform[0]->value.getValue();
-  xform[0] += this->elapsedtime * kRate;
+  xform[3] += this->elapsedtime * kRate;
   this->texparam_noisexform[0]->value = xform;
 
   xform = this->texparam_noisexform[3]->value.getValue();
@@ -2350,21 +2350,29 @@ void OceanShape::enable_blend(void * closure, SoAction * action)
 void OceanShape::render_quad(void * closure, SoAction * action)
 {
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
+
+    uint32_t contextid = ((SoGLRenderAction*)action)->getCacheContext();
+    const cc_glglue * glue = cc_glglue_instance(contextid);
+
     SoMaterialBundle mb(action);
     mb.sendFirst(); // just to make sure textures are sent to GL
     glColor3f(1.0f, 1.0f, 1.0f);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST); 
     glBegin(GL_QUADS);
+    cc_glglue_glMultiTexCoord2f(glue, GL_TEXTURE1, 0.0f, 0.0f);
     glTexCoord2f(0.0f, 0.0f);
     glVertex3f(-1.0f, -1.0f, 0.0f);
 
+    cc_glglue_glMultiTexCoord2f(glue, GL_TEXTURE1, 1.0f, 0.0f);
     glTexCoord2f(1.0f, 0.0f);
     glVertex3f(1.0f, -1.0f, 0.0f);
 
+    cc_glglue_glMultiTexCoord2f(glue, GL_TEXTURE1, 1.0f, 1.0f);
     glTexCoord2f(1.0f, 1.0f);
     glVertex3f(1.0f, 1.0f, 0.0f);
 
+    cc_glglue_glMultiTexCoord2f(glue, GL_TEXTURE1, 0.0f, 1.0f);
     glTexCoord2f(0.0f, 1.0f);
     glVertex3f(-1.0f, 1.0f, 0.0f);
     glEnd();
