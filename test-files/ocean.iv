@@ -4,12 +4,12 @@ Complexity { textureQuality 1.0 }
 LightModel { model BASE_COLOR }
 SmOceanKit { 
 size 10000 10000 
-sharpness 0.8
+sharpness 0.5
 lightDirection 0 -2 -1
 windDirection 0 1
 # distanceAttenuation 1 0.02 0.0002
 distanceAttenuation 1 0.02 0.0002
-angleDeviation 15
+angleDeviation 30
 
 #minWaveLength 5
 #maxWaveLength 15
@@ -29,5 +29,5 @@ gravConst 5.0
 # }
 
 #    envMap Texture2 { filename "water.jpg" }
-
+ #  debugTexture Texture2 { filename "normalmap.png" }
 }

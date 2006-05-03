@@ -19,6 +19,7 @@ void main(void)
   // vec3 n = vec3(0,0,1);
   vec3 n = expand(texture2D(bumpmap, bumpcoord).xyz);
   n.xy *= params[0];
+  n.z = 0.8;
   n = normalize(n);
   vec3 l = normalize(lightdir);
   

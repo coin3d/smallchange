@@ -183,7 +183,7 @@ void main(void)
   mat3 rot = mat3(binormal, t, n);
   
   // set bumpmap coordinates
-  gl_TexCoord[0] = vec4(position.xy*0.04, 0.0, 1.0);  
+  gl_TexCoord[0] = vec4(position.xy*0.06, 0.0, 1.0);  
 
   vec3 ldir = rot * lightdir;
 
