@@ -475,7 +475,8 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(programSwitch, SoSwitch, FALSE, topSeparator, envMapSwitch, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, programSwitch, shader, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shader, SoShaderProgram, TRUE, programSwitch, waveTexture, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, programSwitch, debugCube, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(waveTexture, SoSceneTexture2, FALSE, programSwitch, debugTexture, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(debugTexture, SoTexture2, TRUE, programSwitch, debugCube, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(debugCube, SoCube, TRUE, programSwitch, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(envMapSwitch, SoSwitch, FALSE, topSeparator, oceanShape, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(envMapUnit, SoTextureUnit, FALSE, envMapSwitch, envMap, FALSE);
@@ -520,6 +521,9 @@ SmOceanKit::SmOceanKit(void)
 
   SoSceneTexture2 * tex = (SoSceneTexture2*) this->getAnyPart("waveTexture", TRUE);
   shape->initShader(shader, tex);
+
+  // SoTexture2 * tex2 = (SoTexture2*) this->getAnyPart("debugTexture", TRUE);
+  // tex2->filename = "normalmap.png";
 
   SoTextureUnit * emunit = (SoTextureUnit*) this->getAnyPart("envMapUnit", TRUE);
   emunit->unit = 1;
