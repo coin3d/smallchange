@@ -444,6 +444,7 @@ SmOceanKit::SmOceanKit(void)
 
   SO_KIT_CONSTRUCTOR(SmOceanKit);
   
+  SO_KIT_ADD_FIELD(enableEffects, (TRUE));
   SO_KIT_ADD_FIELD(size, (10000.0f, 10000.0f));
   SO_KIT_ADD_FIELD(chop, (2.5f));
   SO_KIT_ADD_FIELD(gravConst, (9.8f));
@@ -558,6 +559,7 @@ SmOceanKit::GLRender(SoGLRenderAction * action)
   const cc_glglue * glue = cc_glglue_instance(contextid);
 
   SbBool cando =
+    this->enableEffects.getValue() &&
     cc_glglue_has_vertex_buffer_object(glue) &&
     cc_glglue_has_arb_fragment_program(glue) &&
     cc_glglue_has_arb_vertex_program(glue);

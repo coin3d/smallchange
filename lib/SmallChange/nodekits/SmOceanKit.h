@@ -32,6 +32,7 @@
 #include <Inventor/fields/SoSFVec2f.h>
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <Inventor/SbVec2f.h>
 #include <SmallChange/basic.h>
 
@@ -64,6 +65,7 @@ public:
   static void initClass(void);
   float getElevation(float x, float y);
 
+  SoSFBool enableEffects;
   SoSFVec2f size;
 
   SoSFFloat gravConst;
