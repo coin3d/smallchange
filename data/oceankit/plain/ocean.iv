@@ -1,0 +1,34 @@
+#Inventor V2.1 ascii
+
+Complexity { textureQuality 1.0 }
+LightModel { model BASE_COLOR }
+SmOceanKit { 
+material Material { diffuseColor 0.1 0.3 0.5 }
+size 10000 10000 
+sharpness 0.5
+lightDirection 0 -2 -1
+windDirection 0 1
+# distanceAttenuation 1 0.02 0.0002
+distanceAttenuation 1 0.02 0.0002
+angleDeviation 30
+
+#minWaveLength 5
+#maxWaveLength 15
+#amplitudeRatio 0.2
+amplitudeRatio 0.1
+gravConst 5.0
+
+#cubeMap TextureCubeMap {
+#  filenames [
+#"skybox/negx.jpg.flip.png",
+#"skybox/posx.jpg.flip.png",
+#"skybox/negy.jpg.flip.png",
+#"skybox/posy.jpg.flip.png",
+#"skybox/negz.jpg.flip.png",
+#"skybox/posz.jpg.flip.png",
+#]
+# }
+
+#    envMap Texture2 { filename "water.jpg" }
+ #  debugTexture Texture2 { filename "normalmap.png" }
+}
