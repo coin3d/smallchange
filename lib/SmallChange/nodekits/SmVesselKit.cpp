@@ -100,24 +100,25 @@ SmVesselKit::initClass(void)
 void 
 SmVesselKit::GLRender(SoGLRenderAction * action)
 {
-  // TODO: update inherited pitch and roll fields based on oceanKit geometry
+  float elevation = 0.0;
+  SbVec3d utmpos = this->position.getValue();
   SmOceanKit * ok = (SmOceanKit*)this->oceanKit.getValue();
   if (ok && ok->isOfType(SmOceanKit::getClassTypeId())) {
-    SbTime now = SbTime::getTimeOfDay();
-    if (now.getValue() - this->lastDatumTime.getValue().getValue() < this->maxExtrapolationTime.getValue() ) {
-      double dt = now.getValue() - PRIVATE(this)->lasttime.getValue();
-      PRIVATE(this)->lasttime = now;
-      SbVec3d utmpos = this->position.getValue();
-      float e1, e2;
-      float pitch = PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue(), this->size.getValue()[0], e1);
-      float roll = -1.0 * PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue()+90.0, this->size.getValue()[1], e2);
-      float elevation = (e1+e2)/2.0;
-      SbVec2f motion  = PRIVATE(this)->getTranslation(this->heading.getValue(), this->speed.getValue(), dt);
-      this->pitch.setValue(pitch);
-      this->roll.setValue(roll);
-      this->position.setValue( SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation) );
-    }
+    float e1, e2;
+    float pitch = PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue(), this->size.getValue()[0], e1);
+    float roll = -1.0 * PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue()+90.0, this->size.getValue()[1], e2);
+    elevation = (e1+e2)/2.0;
+    this->pitch.setValue(pitch);
+    this->roll.setValue(roll);
   }
+  SbTime now = SbTime::getTimeOfDay();
+  SbVec2f motion(0,0);
+  if (now.getValue() - this->lastDatumTime.getValue().getValue() < this->maxExtrapolationTime.getValue() ) {
+    double dt = now.getValue() - PRIVATE(this)->lasttime.getValue();
+    PRIVATE(this)->lasttime = now;
+    motion = PRIVATE(this)->getTranslation(this->heading.getValue(), this->speed.getValue(), dt);
+  }
+  this->position.setValue( SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation) );
   inherited::GLRender(action);
 }
 
