@@ -562,11 +562,13 @@ SmOceanKit::GLRender(SoGLRenderAction * action)
   uint32_t contextid = action->getCacheContext();
   const cc_glglue * glue = cc_glglue_instance(contextid);
 
-  SbBool cando =
-    this->enableEffects.getValue() &&
-    cc_glglue_has_vertex_buffer_object(glue) &&
-    cc_glglue_has_arb_fragment_program(glue) &&
-    cc_glglue_has_arb_vertex_program(glue);
+  SbBool cando =  cc_glglue_has_vertex_buffer_object(glue);
+  // if (!cando) fprintf(stderr,"SmOceanKit WARNING: OpenGL driver does not support vertex buffer objects.\n");
+  cando &= cc_glglue_has_arb_fragment_program(glue);
+  // if (!cando) fprintf(stderr,"SmOceanKit WARNING: OpenGL driver does not support ARB fragment programs.\n");
+  cando &= cc_glglue_has_arb_vertex_program(glue);
+  // if (!cando) fprintf(stderr,"SmOceanKit WARNING: OpenGL driver does not support ARB vertex programs.\n");
+  cando &= this->enableEffects.getValue();
 
   int swval = cando ? -3 : -1;
 
@@ -593,9 +595,13 @@ SmOceanKit::setDefaultOnNonWritingFields(void)
 float
 SmOceanKit::getElevation(float x, float y)
 {
-  OceanShape * shape = (OceanShape*) this->getAnyPart("oceanShape", TRUE);
-  assert(shape);
-  return shape->getElevation(x, y);
+  if (this->enableEffects.getValue()) {
+    OceanShape * shape = (OceanShape*) this->getAnyPart("oceanShape", TRUE);
+    assert(shape);
+    return shape->getElevation(x, y);
+  }
+  else
+    return 0.0;
 }
 
 
@@ -2393,10 +2399,15 @@ void OceanShape::render_quad(void * closure, SoAction * action)
 
 float OceanShape::getElevation(float x, float y)
 {
-  SbVec3f in(x, y, 0.0), v, n;
-  this->lastModelMatrix.inverse().multVecMatrix(in, in);
-  this->wavefunc(in, v, n);
-  return v[2];
+  if (this->invalidstate) {
+    return 0.0;
+  } 
+  else {
+    SbVec3f in(x, y, 0.0), v, n;
+    this->lastModelMatrix.inverse().multVecMatrix(in, in);
+    this->wavefunc(in, v, n);
+    return v[2];
+  }
 }
 
 #undef FLAG_ISSPLIT
