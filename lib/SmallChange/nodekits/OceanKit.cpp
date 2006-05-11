@@ -1752,6 +1752,7 @@ OceanShape::initTexWave(const int i)
   
   float speed = float( 1.0 / sqrt(this->texwaves[i].len / (2.0f * float(M_PI) * this->texstate_cache.gravConst)) ) / 3.0f;
   speed *= 1.0f + RandMinusOneToOne() * this->texstate_cache.speedDeviation;
+
   this->texwaves[i].speed = speed;
 }
 
@@ -1761,7 +1762,7 @@ OceanShape::initTexState()
   this->texstate_cache.noise = 0.2f;
   this->texstate_cache.chop = 1.0f;
   this->texstate_cache.gravConst = this->gravConst.getValue();
-  this->texstate_cache.angleDeviation = 90.0f;
+  this->texstate_cache.angleDeviation = 30.0f;
   this->texstate_cache.windDir = this->windDirection.getValue();
   this->texstate_cache.windDir[1] = 1.0f;
   this->texstate_cache.maxLength = 10.f;
@@ -2225,7 +2226,7 @@ OceanShape::createTexScene()
     this->cosluttex->ref();
   }
 
-  for (i = 0; i < 4; i++) {
+  for (i = 0; i < NUM_BUMP_PASSES; i++) {
     SoCallback * cb = new SoCallback;
     if (i == 0) {
       cb->setCallback(OceanShape::disable_blend, this);
@@ -2279,7 +2280,7 @@ OceanShape::createTexScene()
 
     sep->addChild(quad);
   }
-  if (1) { // noise
+  if (0) { // noise
     SoCallback * cb = new SoCallback;
     cb->setCallback(OceanShape::enable_blend, this);
     sep->addChild(cb);
