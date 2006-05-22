@@ -47,8 +47,6 @@ SmTrackPointKit::updateNumPoints(void)
   SbTime starttime = this->timeStamps[count-1];
   int numpoints = 0;
 
-  printf("tracklength: %f\n", this->trackLength.getValue());
-
   for (int i = count-1; i >= 0; i--, numpoints++) {
     SbTime time = this->timeStamps[i];
     SbTime interval(time - starttime);
