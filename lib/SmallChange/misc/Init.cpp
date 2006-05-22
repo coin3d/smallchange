@@ -80,6 +80,7 @@
 #include <SmallChange/nodekits/SmPopupMenuKit.h>
 #include <SmallChange/nodekits/SmOceanKit.h>
 #include <SmallChange/nodekits/SmVesselKit.h>
+#include <SmallChange/nodekits/SmTrackPointKit.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
 
@@ -148,5 +149,6 @@ smallchange_init(void)
   SmOceanKit::initClass();
   SmDynamicObjectKit::initClass();
   SmVesselKit::initClass();
+  SmTrackPointKit::initClass();
 #endif // temporary compile fix
 }

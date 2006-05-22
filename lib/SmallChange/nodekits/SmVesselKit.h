@@ -46,6 +46,7 @@ public:
   SoSFFloat rollBalance;
 
   static void initClass(void);
+  void savePosition(void);
   
 protected:
   virtual ~SmVesselKit();

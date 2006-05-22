@@ -31,6 +31,7 @@
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/elements/UTMElement.h>
 #include <SmallChange/nodes/AutoFile.h>
+#include <SmallChange/nodekits/SmTrackPointKit.h>
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoRotation.h>
 #include <Inventor/nodes/SoScale.h>
@@ -44,8 +45,16 @@ public:
   float getWaveSlope(SoGLRenderAction * action, SmOceanKit * ok, SbVec3d & pos, float heading, float length, float & avgElevation);
   SbVec2f getTranslation(float heading, float speed, float dt);
   SbTime lasttime;
+  SoFieldSensor * positionsensor;
+  SmTrackPointKit * track;
 };
 
+static void position_cb(void * closure, SoSensor *)
+{
+  SmVesselKit * thisp = (SmVesselKit *) closure;
+  assert(thisp && thisp->isOfType(SmVesselKit::getClassTypeId()));
+  thisp->savePosition();
+}
 
 // convenience define to access private data
 #define PRIVATE(obj) (obj)->pimpl
@@ -75,6 +84,13 @@ SmVesselKit::SmVesselKit(void)
   SO_KIT_ADD_FIELD(rollBalance, (1.0));
   
   SO_KIT_INIT_INSTANCE();
+
+  PRIVATE(this)->track = new SmTrackPointKit;
+  SoSwitch * geo = (SoSwitch*)this->getAnyPart("geometry", TRUE);
+  geo->addChild(PRIVATE(this)->track);
+
+  PRIVATE(this)->positionsensor = new SoFieldSensor(position_cb, this);
+  PRIVATE(this)->positionsensor->attach(&this->position);
 }
 
 /*!
@@ -94,6 +110,13 @@ SmVesselKit::initClass(void)
     first = 0;
     SO_KIT_INIT_CLASS(SmVesselKit, SmDynamicObjectKit, "SmDynamicObjectKit");
   }
+}
+
+void
+SmVesselKit::savePosition(void)
+{
+  SbVec3d pos = this->position.getValue();
+  PRIVATE(this)->track->addTrackPoint(SbVec3f(pos[0], pos[1],pos[2]));
 }
 
 // doc in parent
@@ -118,7 +141,9 @@ SmVesselKit::GLRender(SoGLRenderAction * action)
     PRIVATE(this)->lasttime = now;
     motion = PRIVATE(this)->getTranslation(this->heading.getValue(), this->speed.getValue(), dt);
   }
-  this->position.setValue( SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation) );
+  PRIVATE(this)->positionsensor->detach();
+  this->position.setValue(SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation));
+  PRIVATE(this)->positionsensor->attach(&this->position);
   inherited::GLRender(action);
 }
 

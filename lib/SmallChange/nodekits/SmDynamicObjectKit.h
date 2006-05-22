@@ -80,15 +80,12 @@ public:
 
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void GLRender(SoGLRenderAction * action);
-
   void reset(void);
 
 private:
   
   static void field_change_cb(void * closure, SoSensor *);
-
   void updateScene(void);
-
   SmDynamicObjectKitP * pimpl;
 
 };
