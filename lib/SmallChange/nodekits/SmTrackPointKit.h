@@ -43,7 +43,8 @@ class SMALLCHANGE_DLL_API SmTrackPointKit : public SoBaseKit {
   SO_KIT_CATALOG_ENTRY_HEADER(drawStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(pointSet);
 
-  SoSFFloat interval;
+public:
+  SoSFFloat trackLength;
   SoMFTime timeStamps;
 
 public:

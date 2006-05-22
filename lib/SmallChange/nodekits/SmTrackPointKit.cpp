@@ -25,7 +25,7 @@ SmTrackPointKit::SmTrackPointKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(drawStyle, SoDrawStyle, FALSE, topSeparator, pointSet, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(pointSet, SoPointSet, FALSE, topSeparator, "", FALSE);
 
-  SO_KIT_ADD_FIELD(interval, (22.0f));
+  SO_KIT_ADD_FIELD(trackLength, (22.0f));
   SO_KIT_ADD_FIELD(timeStamps, (SbTime::getTimeOfDay()));
   
   SO_KIT_INIT_INSTANCE();
@@ -47,10 +47,12 @@ SmTrackPointKit::updateNumPoints(void)
   SbTime starttime = this->timeStamps[count-1];
   int numpoints = 0;
 
+  printf("tracklength: %f\n", this->trackLength.getValue());
+
   for (int i = count-1; i >= 0; i--, numpoints++) {
     SbTime time = this->timeStamps[i];
     SbTime interval(time - starttime);
-    if (interval.getValue() > this->interval.getValue()) {
+    if (interval.getValue() > this->trackLength.getValue()) {
       break;
     }
   }

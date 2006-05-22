@@ -82,10 +82,12 @@ SmVesselKit::SmVesselKit(void)
   SO_KIT_ADD_FIELD(rollInertia, (1.0));
   SO_KIT_ADD_FIELD(rollResistance, (1.0));
   SO_KIT_ADD_FIELD(rollBalance, (1.0));
+  SO_KIT_ADD_FIELD(trackLength, (22.0f));
   
   SO_KIT_INIT_INSTANCE();
 
   PRIVATE(this)->track = new SmTrackPointKit;
+  PRIVATE(this)->track->trackLength.connectFrom(&this->trackLength);
   SoSwitch * geo = (SoSwitch*)this->getAnyPart("geometry", TRUE);
   geo->addChild(PRIVATE(this)->track);
 

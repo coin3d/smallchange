@@ -44,6 +44,7 @@ public:
   SoSFFloat rollInertia;
   SoSFFloat rollResistance;
   SoSFFloat rollBalance;
+  SoSFFloat trackLength;
 
   static void initClass(void);
   void savePosition(void);
