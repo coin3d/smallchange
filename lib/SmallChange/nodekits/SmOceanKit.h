@@ -89,6 +89,8 @@ public:
   SoSFFloat sharpness;
   SoSFVec3f lightDirection;
   SoSFVec3f distanceAttenuation;
+  
+  SoSFFloat gridDensity;
 
   virtual void GLRender(SoGLRenderAction * action);
 

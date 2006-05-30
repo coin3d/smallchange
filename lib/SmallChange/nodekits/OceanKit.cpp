@@ -175,6 +175,8 @@ public:
   SoSFVec3f lightDirection;
   SoSFVec3f distanceAttenuation;
 
+  SoSFFloat gridDensity;
+
   void tick(void);
   void initWaveTexture(SoSceneTexture2 * tex);
   void initShader(SoShaderProgram * s, SoSceneTexture2 * tex);
@@ -467,7 +469,9 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_FIELD(sharpness, (0.5f));
   SO_KIT_ADD_FIELD(lightDirection, (1.0f, 1.0f, -1.0f));
   SO_KIT_ADD_FIELD(distanceAttenuation, (1.0f, 0.01f, 0.0001f));
-
+  
+  SO_KIT_ADD_FIELD(gridDensity, (8.0f));
+  
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(utmposition, UTMPosition, FALSE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, FALSE, topSeparator, shapeHints, TRUE);
@@ -499,6 +503,7 @@ SmOceanKit::SmOceanKit(void)
   shape->maxWaveLength.connectFrom(&this->maxWaveLength);
   shape->amplitudeRatio.connectFrom(&this->amplitudeRatio);
   shape->frequency.connectFrom(&this->frequency);
+  shape->gridDensity.connectFrom(&this->gridDensity);
   
   shape->specAttenuation.connectFrom(&this->specAttenuation);
   shape->specEnd.connectFrom(&this->specEnd);
@@ -687,6 +692,7 @@ OceanShape::OceanShape()
   SO_NODE_ADD_FIELD(sharpness, (0.5f));
   SO_NODE_ADD_FIELD(lightDirection, (1.0f, 1.0f, -1.0f));
   SO_NODE_ADD_FIELD(distanceAttenuation, (1.0f, 0.01f, 0.0001f));
+  SO_NODE_ADD_FIELD(gridDensity, (8.0f));
 
   this->shader = NULL;
   this->vertexshader = NULL;
@@ -1796,7 +1802,7 @@ OceanShape::updateWaves(const double dt)
 void 
 OceanShape::initLevels()
 {
-  float minlen = this->geostate_cache.minLength / 4.0f;
+  float minlen = this->geostate_cache.minLength / this->gridDensity.getValue();
   float minsize = SbMin(this->size.getValue()[0], this->size.getValue()[1]);
 
   float vdist = minsize / float(GRIDSIZE-1);
