@@ -226,13 +226,18 @@ void
 SmTooltipKit::GLRender(SoGLRenderAction * action)
 {
   PRIVATE(this)->vp = SoViewportRegionElement::get(action->getState());
+
+  SoState *state = action->getState();
+
+  // ignore when rendering wireframe overlay
+  if (SoDrawStyleElement::get(state) != SoDrawStyleElement::FILLED) return;
+
   if (!this->isActive.getValue()) return;
 
   if (!action->isRenderingDelayedPaths()) {
     action->addDelayedPath(action->getCurPath()->copy());
     return;
   }
-  SoState *state = action->getState();
   state->push();
   SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
   SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
