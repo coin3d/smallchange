@@ -81,6 +81,7 @@
 #include <SmallChange/nodekits/SmOceanKit.h>
 #include <SmallChange/nodekits/SmVesselKit.h>
 #include <SmallChange/nodekits/SmTrackPointKit.h>
+#include <SmallChange/nodes/SmTrack.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
 
@@ -150,5 +151,6 @@ smallchange_init(void)
   SmDynamicObjectKit::initClass();
   SmVesselKit::initClass();
   SmTrackPointKit::initClass();
+  SmTrack::initClass();
 #endif // temporary compile fix
 }

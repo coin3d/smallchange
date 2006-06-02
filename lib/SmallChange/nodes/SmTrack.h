@@ -1,5 +1,5 @@
-#ifndef SMALLCHANGE_TRACKPOINTKIT_H
-#define SMALLCHANGE_TRACKPOINTKIT_H
+#ifndef SMALLCHANGE_TRACK_H
+#define SMALLCHANGE_TRACK_H
 
 /**************************************************************************\
  *
@@ -24,36 +24,41 @@
  *
 \**************************************************************************/
 
-#include <Inventor/SbTime.h>
-#include <Inventor/nodekits/SoBaseKit.h>
+#include <Inventor/nodes/SoShape.h>
+#include <Inventor/fields/SoMFVec3d.h>
+#include <Inventor/fields/SoMFTime.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <SmallChange/basic.h>
 
-class SbVec3d;
+class SoAction;
+class SoGLRenderAction;
 
-class SMALLCHANGE_DLL_API SmTrackPointKit : public SoBaseKit {
-  typedef SoBaseKit inherited;
-  SO_KIT_HEADER(SmTrackPointKit);
-
-  SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
-  SO_KIT_CATALOG_ENTRY_HEADER(utmPosition);
-  SO_KIT_CATALOG_ENTRY_HEADER(drawStyle);
-  SO_KIT_CATALOG_ENTRY_HEADER(track);
-
-public:
-  SoSFFloat trackLength;
+class SMALLCHANGE_DLL_API SmTrack : public SoShape {
+  typedef SoShape inherited;
+  SO_NODE_HEADER(SmTrack);
 
 public:
   static void initClass(void);
-  SmTrackPointKit(void);
+  SmTrack(void);
 
-  void addTrackPoint(const SbVec3d & pos, 
-                     const SbTime & timestamp = SbTime::getTimeOfDay());
+  SoMFTime timeStamps;
+  SoMFVec3d track;
+  SoSFFloat trackLength;
+
+  void append(const SbVec3d & pos, 
+              const SbTime & timestamp);
 
 protected:
-  virtual ~SmTrackPointKit(void);
+  virtual void GLRender(SoGLRenderAction * action);
+  virtual void computeBBox(SoAction * action, SbBox3f & box, 
+                           SbVec3f & center);
+  virtual void generatePrimitives(SoAction * action);
 
+private:
+  virtual ~SmTrack(void);
+
+  class SmTrackP * pimpl;
 };
 
-#endif // SMALLCHANGE_TRACKPOINTKIT_H
+#endif // SMALLCHANGE_TRACK_H
 

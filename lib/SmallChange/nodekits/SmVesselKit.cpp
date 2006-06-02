@@ -117,8 +117,7 @@ SmVesselKit::initClass(void)
 void
 SmVesselKit::savePosition(void)
 {
-  SbVec3d pos = this->position.getValue();
-  PRIVATE(this)->track->addTrackPoint(SbVec3f(pos[0], pos[1],pos[2]));
+  PRIVATE(this)->track->addTrackPoint(this->position.getValue());
 }
 
 // doc in parent

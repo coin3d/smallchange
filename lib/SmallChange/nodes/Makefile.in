@@ -208,7 +208,8 @@ SOURCES = \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h \
 	ViewpointWrapper.cpp SmViewpointWrapper.h \
-        SmShadowText2.cpp SmShadowText2.h
+        SmShadowText2.cpp SmShadowText2.h \
+        SmTrack.cpp SmTrack.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -244,7 +245,8 @@ libnodesinc_HEADERS = \
 	SmCoordinateSystem.h \
 	SmMarkerSet.h \
 	SmViewpointWrapper.h \
-        SmShadowText2.h
+        SmShadowText2.h \
+        SmTrack.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -268,7 +270,8 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	SmHQSphere.$(OBJEXT) SmBillboardClipPlane.$(OBJEXT) \
 	SmHeadlight.$(OBJEXT) VertexArrayShape.$(OBJEXT) \
 	SmCoordinateSystem.$(OBJEXT) SmMarkerSet.$(OBJEXT) \
-	ViewpointWrapper.$(OBJEXT) SmShadowText2.$(OBJEXT)
+	ViewpointWrapper.$(OBJEXT) SmShadowText2.$(OBJEXT) \
+	SmTrack.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -283,7 +286,7 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	UTMCoordinate.lo SmTooltip.lo SmHQSphere.lo \
 	SmBillboardClipPlane.lo SmHeadlight.lo VertexArrayShape.lo \
 	SmCoordinateSystem.lo SmMarkerSet.lo ViewpointWrapper.lo \
-	SmShadowText2.lo
+	SmShadowText2.lo SmTrack.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -318,6 +321,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmShadowText2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmShadowText2.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Plo ./$(DEPDIR)/SmTooltip.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTrack.Plo ./$(DEPDIR)/SmTrack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoPointCloud.Plo \
@@ -388,7 +392,8 @@ SOURCES = \
 	SmCoordinateSystem.cpp SmCoordinateSystem.h \
 	SmMarkerSet.cpp SmMarkerSet.h \
 	ViewpointWrapper.cpp SmViewpointWrapper.h \
-        SmShadowText2.cpp SmShadowText2.h
+        SmShadowText2.cpp SmShadowText2.h \
+        SmTrack.cpp SmTrack.h
 
 
 all: all-am
@@ -453,6 +458,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmShadowText2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTrack.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTrack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoLODExtrusion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoPointCloud.Plo@am__quote@
