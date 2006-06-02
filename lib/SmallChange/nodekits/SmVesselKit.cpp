@@ -125,6 +125,7 @@ void
 SmVesselKit::GLRender(SoGLRenderAction * action)
 {
   float elevation = 0.0;
+  this->enableNotify(FALSE);
   SbVec3d utmpos = this->position.getValue();
   SmOceanKit * ok = (SmOceanKit*)this->oceanKit.getValue();
   if (ok && ok->isOfType(SmOceanKit::getClassTypeId())) {
@@ -145,6 +146,7 @@ SmVesselKit::GLRender(SoGLRenderAction * action)
   PRIVATE(this)->positionsensor->detach();
   this->position.setValue(SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation));
   PRIVATE(this)->positionsensor->attach(&this->position);
+  this->enableNotify(TRUE);
   inherited::GLRender(action);
 }
 

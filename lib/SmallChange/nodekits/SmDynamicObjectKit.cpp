@@ -30,6 +30,7 @@
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodekits/SoNodeKitListPart.h>
 
+
 // Application must set this cb (for relative elevation to work)
 static dok_elevation_cb_type dok_elevation_cb = NULL;
 
@@ -237,21 +238,29 @@ SmDynamicObjectKit::updateScene(void)
   if (!PRIVATE(this)->needupdate) return;
   if (this->hasRelativePosition.getValue()) {
     // Relative position, use relativePosition part
+    this->enableNotify(FALSE);
     this->setAnyPart("utmPosition", NULL, TRUE);
+    this->enableNotify(TRUE);
     SoTranslation * pos = (SoTranslation *)this->getAnyPart("relativePosition", TRUE);
     assert(pos);
     SbVec3f posvec;
     posvec[0] = thispos[0];
     posvec[1] = thispos[1];
     posvec[2] = thispos[2];
+    pos->enableNotify(FALSE);
     pos->translation.setValue(posvec);
+    pos->enableNotify(TRUE);
   }
   else {
     // Absolute position, use utmPosition part
+    this->enableNotify(FALSE);
     this->setAnyPart("relativePosition", NULL, TRUE);
+    this->enableNotify(TRUE);
     UTMPosition * pos = (UTMPosition *)this->getAnyPart("utmPosition", TRUE);
     assert(pos);
+    pos->enableNotify(FALSE);
     pos->utmposition.setValue(thispos);
+    pos->enableNotify(TRUE);
   }
   // Set rotation from heading, pitch, roll fields
   SbRotation h(SbVec3f(0,0,1), -1 * (M_PI * this->heading.getValue() / 180.0));
@@ -260,7 +269,9 @@ SmDynamicObjectKit::updateScene(void)
   SbRotation newrot = r*p*h;
   SoRotation * rot = (SoRotation *)this->getAnyPart("rotation", TRUE);
   assert(rot);
+  rot->enableNotify(FALSE);
   rot->rotation.setValue(newrot);
+  rot->enableNotify(TRUE);
   PRIVATE(this)->needupdate = FALSE;
 }
 
