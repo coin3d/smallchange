@@ -113,7 +113,13 @@ void
 SmTrack::computeBBox(SoAction * action, SbBox3f & box, 
                      SbVec3f & center)
 {
-  // FIXME: implement! (20060602 frodo)
+  box.makeEmpty();
+
+  for (int i = PRIVATE(this)->startix; i < this->track.getNum(); i++) {
+    SbVec3d coord = this->track[i].getValue();
+    box.extendBy(SbVec3f(coord[0], coord[1], coord[2]));
+  }
+  if (!box.isEmpty()) center = box.getCenter();
 }
 
 void 
