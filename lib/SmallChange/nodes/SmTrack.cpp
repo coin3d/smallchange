@@ -32,14 +32,16 @@ public:
     int i = n-1;
     SbTime starttime = PUBLIC(this)->timeStamps[i];
 
+    this->startix = -1;
     for (; i >= 0; i--) {
       SbTime tracktime = PUBLIC(this)->timeStamps[i];
       SbTime interval(starttime - tracktime);
-      if (interval.getValue() > PUBLIC(this)->trackLength.getValue()) {
+      if (interval.getValue() >= PUBLIC(this)->trackLength.getValue()) {
         this->startix = i;
         break;
       }
     }
+    if (this->startix<0) this->startix = 0;
   }
 
   static void updateIntervalCB(void * closure, SoSensor *)
@@ -85,6 +87,7 @@ void
 SmTrack::GLRender(SoGLRenderAction * action)
 {
   if (!this->shouldGLRender(action)) return;
+  if (this->trackLength.getValue() == 0.0) return;
 
   SoMaterialBundle mb(action);
   mb.sendFirst();
