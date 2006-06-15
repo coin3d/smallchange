@@ -4,7 +4,7 @@
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
- *  Copyright (C) 1998-2003 by Systems in Motion.  All rights reserved.
+ *  Copyright (C) 1998-2006 by Systems in Motion.  All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
