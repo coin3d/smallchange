@@ -37,7 +37,7 @@ class SMALLCHANGE_DLL_API SmTrackPointKit : public SoBaseKit {
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(utmPosition);
-  SO_KIT_CATALOG_ENTRY_HEADER(drawStyle);
+  SO_KIT_CATALOG_ENTRY_HEADER(appearanceKit);
   SO_KIT_CATALOG_ENTRY_HEADER(track);
 
 public:

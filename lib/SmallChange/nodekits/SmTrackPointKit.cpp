@@ -4,6 +4,7 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoDrawStyle.h>
+#include <Inventor/nodekits/SoAppearanceKit.h>
 #include <Inventor/nodes/SoPointSet.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/SmTrack.h>
@@ -21,16 +22,17 @@ SmTrackPointKit::SmTrackPointKit(void)
   SO_KIT_CONSTRUCTOR(SmTrackPointKit);
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(utmPosition, UTMPosition, FALSE, topSeparator, drawStyle, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(drawStyle, SoDrawStyle, FALSE, topSeparator, track, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(utmPosition, UTMPosition, FALSE, topSeparator, appearanceKit, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(appearanceKit, SoAppearanceKit, FALSE, topSeparator, track, FALSE); 
   SO_KIT_ADD_CATALOG_ENTRY(track, SmTrack, FALSE, topSeparator, "", FALSE);
-
+  
   SO_KIT_ADD_FIELD(trackLength, (22.0f));
   SO_KIT_INIT_INSTANCE();
-
+  
   SmTrack * track = (SmTrack *)this->getAnyPart("track", TRUE);
   track->trackLength.connectFrom(&this->trackLength);
-  this->set("drawStyle { pointSize 3 }");
+
+  this->set("appearanceKit.drawStyle { pointSize 3 }");
 }
 
 SmTrackPointKit::~SmTrackPointKit()
