@@ -125,7 +125,6 @@ void
 SmVesselKit::GLRender(SoGLRenderAction * action)
 {
   float elevation = 0.0;
-  this->enableNotify(FALSE);
   SbVec3d utmpos = this->position.getValue();
   SmOceanKit * ok = (SmOceanKit*)this->oceanKit.getValue();
   if (ok && ok->isOfType(SmOceanKit::getClassTypeId())) {
@@ -133,8 +132,12 @@ SmVesselKit::GLRender(SoGLRenderAction * action)
     float pitch = PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue(), this->size.getValue()[0], e1);
     float roll = -1.0 * PRIVATE(this)->getWaveSlope(action, ok, utmpos, this->heading.getValue()+90.0, this->size.getValue()[1], e2);
     elevation = (e1+e2)/2.0;
+    this->pitch.enableNotify(FALSE);
+    this->roll.enableNotify(FALSE);
     this->pitch.setValue(pitch);
     this->roll.setValue(roll);
+    this->pitch.enableNotify(TRUE);
+    this->roll.enableNotify(TRUE);
   }
   SbTime now = SbTime::getTimeOfDay();
   SbVec2f motion(0,0);
@@ -143,10 +146,10 @@ SmVesselKit::GLRender(SoGLRenderAction * action)
     PRIVATE(this)->lasttime = now;
     motion = PRIVATE(this)->getTranslation(this->heading.getValue(), this->speed.getValue(), dt);
   }
-  PRIVATE(this)->positionsensor->detach();
+
+  this->position.enableNotify(FALSE);
   this->position.setValue(SbVec3d(utmpos[0]+motion[0], utmpos[1]+motion[1], elevation));
-  PRIVATE(this)->positionsensor->attach(&this->position);
-  this->enableNotify(TRUE);
+  this->position.enableNotify(TRUE);
   inherited::GLRender(action);
 }
 
