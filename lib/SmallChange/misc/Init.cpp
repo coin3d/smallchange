@@ -82,6 +82,7 @@
 #include <SmallChange/nodekits/SmVesselKit.h>
 #include <SmallChange/nodekits/SmTrackPointKit.h>
 #include <SmallChange/nodes/SmTrack.h>
+#include <SmallChange/nodes/SmLazyFile.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
 
@@ -144,6 +145,7 @@ smallchange_init(void)
   SmCoordinateSystem::initClass();
   SmViewpointWrapper::initClass();
   SmPopupMenuKit::initClass();
+  SmLazyFile::initClass();
 
   SmPieChart::initClass();
 #if defined(__COIN__) && COIN_MAJOR_VERSION >= 3
