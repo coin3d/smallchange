@@ -3,6 +3,7 @@
 #include <Inventor/SoInput.h>
 #include <Inventor/actions/SoAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoGetBoundingBoxAction.h>
 
 #define PRIVATE(obj) (obj)->pimpl
 #define PUBLIC(obj) (obj)->master
@@ -10,7 +11,8 @@
 class SmLazyFileP {
 public:
   SbBool loaded;
-  SbString name;
+  SbBool isloading;
+  SoInput * input;
 };
 
 SO_NODE_SOURCE(SmLazyFile);
@@ -26,6 +28,8 @@ SmLazyFile::SmLazyFile(void)
   SO_NODE_CONSTRUCTOR(SmLazyFile);
   PRIVATE(this) = new SmLazyFileP;
   PRIVATE(this)->loaded = FALSE;
+  PRIVATE(this)->isloading = FALSE;
+  PRIVATE(this)->input = NULL;
 }
 
 SmLazyFile::~SmLazyFile()
@@ -33,23 +37,41 @@ SmLazyFile::~SmLazyFile()
   delete PRIVATE(this);
 }
 
+// Doc from superclass.
+void
+SmLazyFile::getBoundingBox(SoGetBoundingBoxAction * action)
+{
+  if (!PRIVATE(this)->loaded) {
+    SbBox3f bbox(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    action->setCenter(SbVec3f(0.0f, 0.0f, 0.0f), FALSE);  
+    action->extendBy(bbox);
+  } else {
+    inherited::getBoundingBox(action);
+  }
+}
+
 void 
 SmLazyFile::GLRender(SoGLRenderAction * action)
 {
-  if (!PRIVATE(this)->loaded || strcmp(this->name.getValue().getString(), 
-                                       PRIVATE(this)->name.getString()) != 0) {
+  if (!PRIVATE(this)->loaded && !PRIVATE(this)->isloading) {
+    PRIVATE(this)->isloading = TRUE;
     SoInput in;
-    inherited::readNamedFile(&in);
-    PRIVATE(this)->loaded = TRUE;
-    PRIVATE(this)->name = this->name.getValue();
+    PRIVATE(this)->loaded = inherited::readNamedFile(&in);
+    PRIVATE(this)->isloading = FALSE;
   }
-  inherited::doAction((SoAction *)action);
+  SoFile::doAction((SoAction *)action);
+}
+
+// Doc from superclass.
+SbBool
+SmLazyFile::readInstance(SoInput * in, unsigned short flags)
+{
+  return inherited::readInstance(in, flags);
 }
 
 SbBool 
 SmLazyFile::readNamedFile(SoInput * in)
 {
-  PRIVATE(this)->name = this->name.getValue();
   return TRUE;
 }
 

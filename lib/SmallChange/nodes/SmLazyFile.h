@@ -3,6 +3,7 @@
 
 #include <Inventor/nodes/SoFile.h>
 #include <SmallChange/basic.h>
+#include <Inventor/SbBox3f.h>
 
 class SoInput;
 class SoAction;
@@ -19,9 +20,11 @@ public:
   SmLazyFile(void);
 
   virtual void GLRender(SoGLRenderAction * action);
+  virtual void getBoundingBox(SoGetBoundingBoxAction * action);
 
 protected:
   virtual SbBool readNamedFile(SoInput *);
+  virtual SbBool readInstance(SoInput * in, unsigned short flags);
 
 private:
   virtual ~SmLazyFile(void);
