@@ -458,7 +458,8 @@ SoText2Set::GLRender(SoGLRenderAction * action)
           RENDER_TEXT(0,1);
           RENDER_TEXT(-1,1);
           RENDER_TEXT(-1,0);
-          glColor3f(1.0f, 1.0f, 1.0f);
+          // use current state color
+          mb.forceSend(0);
           RENDER_TEXT(0,0);
         }
         else {
