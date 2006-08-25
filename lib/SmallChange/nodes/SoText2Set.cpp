@@ -413,7 +413,6 @@ SoText2Set::GLRender(SoGLRenderAction * action)
         break;
       case SoText2Set::RIGHT:
         xpos -= PRIVATE(this)->stringwidth[index];
-        ypos -= PRIVATE(this)->positions[index][charcnt-1][1];
         break;
       case SoText2Set::CENTER:
         xpos -= PRIVATE(this)->stringwidth[index]/2.0f;
@@ -915,9 +914,8 @@ SoText2SetP::buildGlyphCache(SoState * state)
         SbVec2s pos = penpos +
           SbVec2s((short) thispos[0], (short) thispos[1]) +
           SbVec2s(0, (short) -thissize[1]);
-        
-        stringbox.extendBy(pos);
-        stringbox.extendBy(pos + SbVec2s(advance[0] + kerning[0] + thissize[0], thissize[1]));
+
+        stringbox.extendBy(pos + thissize);
 
         this->positions[i][j] = pos;
 
