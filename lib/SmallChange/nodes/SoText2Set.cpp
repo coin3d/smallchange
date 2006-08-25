@@ -894,11 +894,21 @@ SoText2SetP::buildGlyphCache(SoState * state)
 
         this->glyphs[i][j]->getBitmap(thissize, thispos, FALSE);
         SbVec2s advance(this->glyphs[i][j]->getAdvance());
+
+        // FIXME: The following line is needed when using the internal
+        // bitmap-font. It will however not work with TrueType fonts.
+        // The obsolete SoGlyph class which SoText2Set depends on does
+        // not work properly with TrueType fonts anyway. (20060825
+        // handegar)
+        advance[1] -= thissize[1];
+
         if (outline) advance[0] += 1;
 
         SbVec2s kerning;
-        if (j > 0) kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)*this->glyphs[i][j-1]);
-        else kerning = SbVec2s(0,0);
+        if (j > 0) 
+          kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)* this->glyphs[i][j-1]);       
+        else 
+          kerning = SbVec2s(0,0);
         
         this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
         
