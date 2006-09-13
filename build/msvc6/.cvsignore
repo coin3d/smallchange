@@ -1,5 +1,7 @@
 Debug
 Release
+StaticDebug
+StaticRelease
 Makefile
 bin
 cfg
