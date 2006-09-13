@@ -11,7 +11,177 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
+			Name="DLL (Release)|Win32"
+			OutputDirectory=".\Release"
+			IntermediateDirectory=".\Release"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="1"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\Release/smallchange1.pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib"
+				OutputFile="smallchange1.dll"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				ProgramDatabaseFile=".\Release/smallchange1.pdb"
+				OptimizeForWindows98="1"
+				ImportLibrary=".\Release/smallchange1.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/smallchange1.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="install-dll-release.bat"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="LIB (Release)|Win32"
+			OutputDirectory=".\StaticRelease"
+			IntermediateDirectory=".\StaticRelease"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\StaticRelease/smallchange1.pch"
+				AssemblerListingLocation=".\StaticRelease/"
+				ObjectFile=".\StaticRelease/"
+				ProgramDataBaseFileName=".\StaticRelease/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="smallchange1s.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="install-lib-release.bat"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1044"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="LIB (Debug)|Win32"
+			OutputDirectory=".\StaticDebug"
+			IntermediateDirectory=".\StaticDebug"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\StaticDebug/smallchange1.pch"
+				AssemblerListingLocation=".\StaticDebug/"
+				ObjectFile=".\StaticDebug/"
+				ProgramDataBaseFileName=".\StaticDebug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="smallchange1sd.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="install-lib-debug.bat"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1044"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="DLL (Debug)|Win32"
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="2"
@@ -55,7 +225,7 @@
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="installsmallchange.bat"/>
+				CommandLine="install-dll-debug.bat"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -63,72 +233,6 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="1"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/smallchange1.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				CompileAs="0"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib"
-				OutputFile="smallchange1.dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile=".\Release/smallchange1.pdb"
-				OptimizeForWindows98="1"
-				ImportLibrary=".\Release/smallchange1.lib"
-				TargetMachine="1"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Release/smallchange1.tlb"
-				HeaderFileName=""/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="installsmallchange.bat"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -151,7 +255,37 @@
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\AutoFile.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -160,22 +294,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\Coinboard.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -184,22 +338,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\CoinEnvironment.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -208,22 +382,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\engines\CubicSplineEngine.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\engines/"
+						ProgramDataBaseFileName="Release\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\engines/"
+						ProgramDataBaseFileName="StaticRelease\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\engines/"
+						ProgramDataBaseFileName="StaticDebug\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -232,22 +426,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\engines/"
 						ProgramDataBaseFileName="Debug\engines/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\engines/"
-						ProgramDataBaseFileName="Release\engines/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\DepthBuffer.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -256,22 +470,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\FrustumCamera.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -280,22 +514,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\GeoMarkerKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -304,22 +558,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\elements\GLDepthBufferElement.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\elements/"
+						ProgramDataBaseFileName="Release\elements/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\elements/"
+						ProgramDataBaseFileName="StaticRelease\elements/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\elements/"
+						ProgramDataBaseFileName="StaticDebug\elements/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -328,22 +602,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\elements/"
 						ProgramDataBaseFileName="Debug\elements/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\elements/"
-						ProgramDataBaseFileName="Release\elements/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\misc\Init.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\misc/"
+						ProgramDataBaseFileName="Release\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\misc/"
+						ProgramDataBaseFileName="StaticRelease\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\misc/"
+						ProgramDataBaseFileName="StaticDebug\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -352,22 +646,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\misc/"
 						ProgramDataBaseFileName="Debug\misc/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\misc/"
-						ProgramDataBaseFileName="Release\misc/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\LegendKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -376,22 +690,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\NormalsKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -401,8 +735,11 @@
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\OceanKit.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
@@ -410,12 +747,73 @@
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 						ObjectFile=".\Release\nodekits/"
 						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodekits/"
+						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\PickCallback.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -424,22 +822,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\PickSwitch.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -448,22 +866,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\PopupMenuKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -472,22 +910,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\engines\Rot2Heading.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\engines/"
+						ProgramDataBaseFileName="Release\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\engines/"
+						ProgramDataBaseFileName="StaticRelease\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\engines/"
+						ProgramDataBaseFileName="StaticDebug\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -496,22 +954,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\engines/"
 						ProgramDataBaseFileName="Debug\engines/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\engines/"
-						ProgramDataBaseFileName="Release\engines/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\misc\SbCubicSpline.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\misc/"
+						ProgramDataBaseFileName="Release\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\misc/"
+						ProgramDataBaseFileName="StaticRelease\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\misc/"
+						ProgramDataBaseFileName="StaticDebug\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -520,22 +998,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\misc/"
 						ProgramDataBaseFileName="Debug\misc/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\misc/"
-						ProgramDataBaseFileName="Release\misc/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\misc\SceneManager.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\misc/"
+						ProgramDataBaseFileName="Release\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\misc/"
+						ProgramDataBaseFileName="StaticRelease\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\misc/"
+						ProgramDataBaseFileName="StaticDebug\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -545,21 +1043,41 @@
 						ObjectFile=".\Debug\misc/"
 						ProgramDataBaseFileName="Debug\misc/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\ShapeScale.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\misc/"
-						ProgramDataBaseFileName="Release\misc/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\ShapeScale.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -568,22 +1086,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SkyDome.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -592,22 +1130,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmAxisDisplayKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -616,22 +1174,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmAxisKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -640,22 +1218,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SmBillboardClipPlane.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -665,21 +1263,41 @@
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmCameraControlKit.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodekits\SmCameraControlKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -689,8 +1307,55 @@
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmCoordinateSystem.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodes/"
+						ProgramDataBaseFileName="Debug\nodes/"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.cpp">
+				<FileConfiguration
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
@@ -699,35 +1364,72 @@
 						ObjectFile=".\Release\nodekits/"
 						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\SmCoordinateSystem.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 						BasicRuntimeChecks="3"
-						ObjectFile=".\Debug\nodes/"
-						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
+						ObjectFile=".\Debug\nodekits/"
+						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmEventHandler.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\eventhandlers/"
+						ProgramDataBaseFileName="Release\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\eventhandlers/"
+						ProgramDataBaseFileName="StaticRelease\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\eventhandlers/"
+						ProgramDataBaseFileName="StaticDebug\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -736,22 +1438,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\eventhandlers/"
 						ProgramDataBaseFileName="Debug\eventhandlers/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\eventhandlers/"
-						ProgramDataBaseFileName="Release\eventhandlers/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmExaminerEventHandler.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\eventhandlers/"
+						ProgramDataBaseFileName="Release\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\eventhandlers/"
+						ProgramDataBaseFileName="StaticRelease\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\eventhandlers/"
+						ProgramDataBaseFileName="StaticDebug\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -760,22 +1482,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\eventhandlers/"
 						ProgramDataBaseFileName="Debug\eventhandlers/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\eventhandlers/"
-						ProgramDataBaseFileName="Release\eventhandlers/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SmHeadlight.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -785,21 +1527,41 @@
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\eventhandlers\SmHelicopterEventHandler.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
+						ObjectFile=".\Release\eventhandlers/"
+						ProgramDataBaseFileName="Release\eventhandlers/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\eventhandlers\SmHelicopterEventHandler.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\eventhandlers/"
+						ProgramDataBaseFileName="StaticRelease\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\eventhandlers/"
+						ProgramDataBaseFileName="StaticDebug\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -809,21 +1571,41 @@
 						ObjectFile=".\Debug\eventhandlers/"
 						ProgramDataBaseFileName="Debug\eventhandlers/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmHQSphere.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\eventhandlers/"
-						ProgramDataBaseFileName="Release\eventhandlers/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\SmHQSphere.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -833,21 +1615,41 @@
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\engines\SmInverseRotation.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
+						ObjectFile=".\Release\engines/"
+						ProgramDataBaseFileName="Release\engines/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\engines\SmInverseRotation.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\engines/"
+						ProgramDataBaseFileName="StaticRelease\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\engines/"
+						ProgramDataBaseFileName="StaticDebug\engines/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -857,21 +1659,41 @@
 						ObjectFile=".\Debug\engines/"
 						ProgramDataBaseFileName="Debug\engines/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmLazyFile.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\engines/"
-						ProgramDataBaseFileName="Release\engines/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\SmMarkerSet.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -881,8 +1703,11 @@
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmMarkerSet.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
@@ -891,11 +1716,116 @@
 						ObjectFile=".\Release\nodes/"
 						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodes/"
+						ProgramDataBaseFileName="Debug\nodes/"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmPieChart.cpp">
+				<FileConfiguration
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodekits/"
+						ProgramDataBaseFileName="Debug\nodekits/"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\draggers\SmRangeTranslate1Dragger.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\draggers/"
+						ProgramDataBaseFileName="Release\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\draggers/"
+						ProgramDataBaseFileName="StaticRelease\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\draggers/"
+						ProgramDataBaseFileName="StaticDebug\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -905,21 +1835,85 @@
 						ObjectFile=".\Debug\draggers/"
 						ProgramDataBaseFileName="Debug\draggers/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmShadowText2.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\draggers/"
-						ProgramDataBaseFileName="Release\draggers/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodes/"
+						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\eventhandlers/"
+						ProgramDataBaseFileName="Release\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\eventhandlers/"
+						ProgramDataBaseFileName="StaticRelease\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\eventhandlers/"
+						ProgramDataBaseFileName="StaticDebug\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -929,21 +1923,41 @@
 						ObjectFile=".\Debug\eventhandlers/"
 						ProgramDataBaseFileName="Debug\eventhandlers/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmTooltip.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\eventhandlers/"
-						ProgramDataBaseFileName="Release\eventhandlers/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\SmTooltip.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -952,22 +1966,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmTooltipKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -977,8 +2011,55 @@
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmTrack.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodes/"
+						ProgramDataBaseFileName="Debug\nodes/"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmTrackPointKit.cpp">
+				<FileConfiguration
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
@@ -986,12 +2067,117 @@
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 						ObjectFile=".\Release\nodekits/"
 						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodekits/"
+						ProgramDataBaseFileName="Debug\nodekits/"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmVesselKit.cpp">
+				<FileConfiguration
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\nodekits/"
+						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmWellLogKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1000,22 +2186,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\draggers\SoAngle1Dragger.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\draggers/"
+						ProgramDataBaseFileName="Release\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\draggers/"
+						ProgramDataBaseFileName="StaticRelease\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\draggers/"
+						ProgramDataBaseFileName="StaticDebug\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1024,22 +2230,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\draggers/"
 						ProgramDataBaseFileName="Debug\draggers/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\draggers/"
-						ProgramDataBaseFileName="Release\draggers/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\draggers\SoAngle1Manip.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\draggers/"
+						ProgramDataBaseFileName="Release\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\draggers/"
+						ProgramDataBaseFileName="StaticRelease\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\draggers/"
+						ProgramDataBaseFileName="StaticDebug\draggers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1049,21 +2275,41 @@
 						ObjectFile=".\Debug\draggers/"
 						ProgramDataBaseFileName="Debug\draggers/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SoFEMKit.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\draggers/"
-						ProgramDataBaseFileName="Release\draggers/"/>
+						ObjectFile=".\Release\nodekits/"
+						ProgramDataBaseFileName="Release\nodekits/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodekits\SoFEMKit.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodekits/"
+						ProgramDataBaseFileName="StaticRelease\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodekits/"
+						ProgramDataBaseFileName="StaticDebug\nodekits/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1073,21 +2319,41 @@
 						ObjectFile=".\Debug\nodekits/"
 						ProgramDataBaseFileName="Debug\nodekits/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\actions\SoGenerateSceneGraphAction.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodekits/"
-						ProgramDataBaseFileName="Release\nodekits/"/>
+						ObjectFile=".\Release\actions/"
+						ProgramDataBaseFileName="Release\actions/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\actions\SoGenerateSceneGraphAction.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\actions/"
+						ProgramDataBaseFileName="StaticRelease\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\actions/"
+						ProgramDataBaseFileName="StaticDebug\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1096,22 +2362,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\actions/"
 						ProgramDataBaseFileName="Debug\actions/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\actions/"
-						ProgramDataBaseFileName="Release\actions/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SoLODExtrusion.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1120,22 +2406,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SoPointCloud.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1144,22 +2450,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SoTCBCurve.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1168,22 +2494,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SoText2Set.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1192,22 +2538,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\actions\SoTweakAction.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\actions/"
+						ProgramDataBaseFileName="Release\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\actions/"
+						ProgramDataBaseFileName="StaticRelease\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\actions/"
+						ProgramDataBaseFileName="StaticDebug\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1216,22 +2582,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\actions/"
 						ProgramDataBaseFileName="Debug\actions/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\actions/"
-						ProgramDataBaseFileName="Release\actions/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\Switchboard.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1240,22 +2626,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SwitchboardOperator.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1265,21 +2671,41 @@
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\actions\ToVertexArrayShapeAction.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
+						ObjectFile=".\Release\actions/"
+						ProgramDataBaseFileName="Release\actions/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\actions\ToVertexArrayShapeAction.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\actions/"
+						ProgramDataBaseFileName="StaticRelease\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\actions/"
+						ProgramDataBaseFileName="StaticDebug\actions/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1289,21 +2715,41 @@
 						ObjectFile=".\Debug\actions/"
 						ProgramDataBaseFileName="Debug\actions/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\UTMCamera.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\actions/"
-						ProgramDataBaseFileName="Release\actions/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\UTMCamera.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1312,22 +2758,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\UTMCoordinate.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1337,21 +2803,41 @@
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\elements\UTMElement.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
+						ObjectFile=".\Release\elements/"
+						ProgramDataBaseFileName="Release\elements/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\elements\UTMElement.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\elements/"
+						ProgramDataBaseFileName="StaticRelease\elements/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\elements/"
+						ProgramDataBaseFileName="StaticDebug\elements/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1361,21 +2847,41 @@
 						ObjectFile=".\Debug\elements/"
 						ProgramDataBaseFileName="Debug\elements/"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\UTMPosition.cpp">
 				<FileConfiguration
-					Name="Release|Win32">
+					Name="DLL (Release)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\elements/"
-						ProgramDataBaseFileName="Release\elements/"/>
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\lib\SmallChange\nodes\UTMPosition.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1384,22 +2890,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\VertexArrayShape.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1408,22 +2934,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\ViewpointWrapper.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1432,22 +2978,42 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\ViewportRegion.cpp">
 				<FileConfiguration
-					Name="Debug|Win32">
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\nodes/"
+						ProgramDataBaseFileName="Release\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\nodes/"
+						ProgramDataBaseFileName="StaticRelease\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\nodes/"
+						ProgramDataBaseFileName="StaticDebug\nodes/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
@@ -1456,16 +3022,6 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-						ObjectFile=".\Release\nodes/"
-						ProgramDataBaseFileName="Release\nodes/"/>
 				</FileConfiguration>
 			</File>
 		</Filter>
@@ -1536,6 +3092,9 @@
 				RelativePath="..\..\lib\SmallChange\nodes\SmCoordinateSystem.h">
 			</File>
 			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.h">
+			</File>
+			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmEventHandler.h">
 			</File>
 			<File
@@ -1557,10 +3116,19 @@
 				RelativePath="..\..\lib\SmallChange\engines\SmInverseRotation.h">
 			</File>
 			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmLazyFile.h">
+			</File>
+			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SmMarkerSet.h">
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmNormalsKit.h">
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmOceanKit.h">
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmPieChart.h">
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmPopupMenuKit.h">
@@ -1570,6 +3138,9 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\misc\SmSceneManager.h">
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmShadowText2.h">
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.h">
@@ -1590,7 +3161,16 @@
 				RelativePath="..\..\lib\SmallChange\actions\SmToVertexArrayShapeAction.h">
 			</File>
 			<File
+				RelativePath="..\..\lib\SmallChange\nodes\SmTrack.h">
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmTrackPointKit.h">
+			</File>
+			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SmVertexArrayShape.h">
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\nodekits\SmVesselKit.h">
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodes\SmViewpointWrapper.h">
