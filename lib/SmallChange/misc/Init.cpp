@@ -51,6 +51,7 @@
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
+#include <SmallChange/eventhandlers/SmPanEventHandler.h>
 
 #include <SmallChange/nodes/CoinEnvironment.h>
 #include <SmallChange/nodes/PickCallback.h>
@@ -127,6 +128,7 @@ smallchange_init(void)
   SmExaminerEventHandler::initClass();
   SmSphereEventHandler::initClass();
   SmHelicopterEventHandler::initClass();
+  SmPanEventHandler::initClass();
 
   SmWellLogKit::initClass();
   SmHQSphere::initClass();

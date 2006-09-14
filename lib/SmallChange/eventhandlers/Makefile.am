@@ -10,7 +10,8 @@ SOURCES = \
 	SmEventHandler.cpp SmEventHandler.h \
 	SmExaminerEventHandler.cpp SmExaminerEventHandler.h \
 	SmSphereEventHandler.cpp SmSphereEventHandler.h \
-	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h
+	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h \
+        SmPanEventHandler.cpp SmPanEventHandler.h 
 
 libeventhandlers_la_SOURCES = $(SOURCES)
 
@@ -21,7 +22,8 @@ libeventhandlersinc_HEADERS = \
 	SmEventHandler.h \
 	SmExaminerEventHandler.h \
 	SmHelicopterEventHandler.h \
-	SmSphereEventHandler.h
+	SmSphereEventHandler.h \
+        SmPanEventHandler.h
 
 eventhandlers.lst: $(eventhandlers_lst_OBJECTS)
 	@echo "Linking $@..."; \

@@ -184,7 +184,8 @@ SOURCES = \
 	SmEventHandler.cpp SmEventHandler.h \
 	SmExaminerEventHandler.cpp SmExaminerEventHandler.h \
 	SmSphereEventHandler.cpp SmSphereEventHandler.h \
-	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h
+	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h \
+        SmPanEventHandler.cpp SmPanEventHandler.h 
 
 
 libeventhandlers_la_SOURCES = $(SOURCES)
@@ -196,7 +197,8 @@ libeventhandlersinc_HEADERS = \
 	SmEventHandler.h \
 	SmExaminerEventHandler.h \
 	SmHelicopterEventHandler.h \
-	SmSphereEventHandler.h
+	SmSphereEventHandler.h \
+        SmPanEventHandler.h
 
 subdir = lib/SmallChange/eventhandlers
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -209,7 +211,7 @@ eventhandlers_lst_AR = $(AR) cru
 eventhandlers_lst_LIBADD =
 am__objects_1 = SmEventHandler.$(OBJEXT) \
 	SmExaminerEventHandler.$(OBJEXT) SmSphereEventHandler.$(OBJEXT) \
-	SmHelicopterEventHandler.$(OBJEXT)
+	SmHelicopterEventHandler.$(OBJEXT) SmPanEventHandler.$(OBJEXT)
 am_eventhandlers_lst_OBJECTS = $(am__objects_1)
 eventhandlers_lst_OBJECTS = $(am_eventhandlers_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -217,7 +219,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libeventhandlers_la_LDFLAGS =
 libeventhandlers_la_LIBADD =
 am__objects_2 = SmEventHandler.lo SmExaminerEventHandler.lo \
-	SmSphereEventHandler.lo SmHelicopterEventHandler.lo
+	SmSphereEventHandler.lo SmHelicopterEventHandler.lo \
+	SmPanEventHandler.lo
 am_libeventhandlers_la_OBJECTS = $(am__objects_2)
 libeventhandlers_la_OBJECTS = $(am_libeventhandlers_la_OBJECTS)
 
@@ -230,6 +233,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmExaminerEventHandler.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHelicopterEventHandler.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHelicopterEventHandler.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmPanEventHandler.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmPanEventHandler.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmSphereEventHandler.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmSphereEventHandler.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -256,7 +261,8 @@ SOURCES = \
 	SmEventHandler.cpp SmEventHandler.h \
 	SmExaminerEventHandler.cpp SmExaminerEventHandler.h \
 	SmSphereEventHandler.cpp SmSphereEventHandler.h \
-	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h
+	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h \
+        SmPanEventHandler.cpp SmPanEventHandler.h 
 
 
 all: all-am
@@ -295,6 +301,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmExaminerEventHandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHelicopterEventHandler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHelicopterEventHandler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmPanEventHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmPanEventHandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmSphereEventHandler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmSphereEventHandler.Po@am__quote@
 
