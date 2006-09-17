@@ -235,7 +235,7 @@ SmDynamicObjectKit::updateScene(void)
       }
     }
   }
-  if (!PRIVATE(this)->needupdate) return;
+  // if (!PRIVATE(this)->needupdate) return;  // FIXME: remove this test to support per-frame update of pitch/roll
   if (this->hasRelativePosition.getValue()) {
     // Relative position, use relativePosition part
     this->enableNotify(FALSE);
