@@ -74,6 +74,7 @@ SmPanEventHandler::initClass(void)
 SmPanEventHandler::SmPanEventHandler(void)
 {
   SO_NODE_CONSTRUCTOR(SmPanEventHandler);
+  SO_NODE_ADD_FIELD(zoomSpeed, (0.2f));
 
   PRIVATE(this) = new SmPanEventHandlerP;
 
@@ -116,16 +117,15 @@ SmPanEventHandler::handleEvent(SoHandleEventAction * action)
       PRIVATE(this)->zoomenabled = press;
       break;
     case SoMouseButtonEvent::BUTTON4:
-      this->zoom(SbVec2f(0.005f, 0.005f), SbVec2f(0.0f, 0.0f));
+      this->zoom(1.0f + this->zoomSpeed.getValue());
       break;
     case SoMouseButtonEvent::BUTTON5:
-      this->zoom(SbVec2f(0.0f, 0.0f), SbVec2f(0.005f, 0.005f));
+      this->zoom(1.0f - this->zoomSpeed.getValue());
       break;
     default:
       break;
     }
   }
-
 
   // Mouse Movement handling
   if (type.isDerivedFrom(SoLocation2Event::getClassTypeId())) {
@@ -155,18 +155,23 @@ void
 SmPanEventHandler::zoom(const SbVec2f & currpos,
                         const SbVec2f & prevpos)
 {
+  float delta = float(exp((currpos[1] - prevpos[1]) * 20.0f));
+  this->zoom(delta);
+}
+
+void
+SmPanEventHandler::zoom(const float delta)
+{
   SoCamera * cam = this->getCamera();
   if (!cam->isOfType(UTMCamera::getClassTypeId())) {
     return;
   }
 
-  float multiplicator = float(exp((currpos[1] - prevpos[1]) * 20.0f));
-
   UTMCamera * utm = (UTMCamera*) cam;
   SbVec3d utmpos = utm->utmposition.getValue();
   
   const float oldfocaldist = cam->focalDistance.getValue();
-  const float newfocaldist = oldfocaldist * multiplicator;
+  const float newfocaldist = oldfocaldist * delta;
 
   SbVec3f direction;
   cam->orientation.getValue().multVec(SbVec3f(0, 0, -1), direction);

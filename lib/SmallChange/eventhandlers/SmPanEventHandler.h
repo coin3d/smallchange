@@ -25,6 +25,8 @@
  *
 \**************************************************************************/
 
+#include <Inventor/fields/SoSFFloat.h>
+
 #include <SmallChange/eventhandlers/SmEventHandler.h>
 #include <SmallChange/basic.h>
 
@@ -40,9 +42,12 @@ public:
   SmPanEventHandler(void);
   virtual void handleEvent(SoHandleEventAction * action);
   static void initClass(void);
+  
+  SoSFFloat zoomSpeed;
 
 protected:
   virtual ~SmPanEventHandler();
+
   void pan(const SbVec2f & currpos, 
            const SbVec2f & prevpos);
 
@@ -51,6 +56,8 @@ protected:
 
   void zoom(const SbVec2f & currpos,
             const SbVec2f & prevpos);
+
+  void zoom(const float delta);
 
 private:
   SmPanEventHandlerP * pimpl;
