@@ -115,6 +115,12 @@ SmPanEventHandler::handleEvent(SoHandleEventAction * action)
     case SoMouseButtonEvent::BUTTON3:
       PRIVATE(this)->zoomenabled = press;
       break;
+    case SoMouseButtonEvent::BUTTON4:
+      this->zoom(SbVec2f(0.005f, 0.005f), SbVec2f(0.0f, 0.0f));
+      break;
+    case SoMouseButtonEvent::BUTTON5:
+      this->zoom(SbVec2f(0.0f, 0.0f), SbVec2f(0.005f, 0.005f));
+      break;
     default:
       break;
     }
