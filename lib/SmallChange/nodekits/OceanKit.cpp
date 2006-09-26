@@ -318,6 +318,7 @@ private:
   texstate texstate_cache;
 
   SbBool invalidstate;
+  SbBool timerTrigged;
 
   typedef struct {
     float phase;
@@ -459,7 +460,7 @@ SmOceanKit::SmOceanKit(void)
   SO_KIT_ADD_FIELD(minWaveLength, (15.f));
   SO_KIT_ADD_FIELD(maxWaveLength, (25.f));
   SO_KIT_ADD_FIELD(amplitudeRatio, (0.1f));
-  SO_KIT_ADD_FIELD(frequency, (60.0f));
+  SO_KIT_ADD_FIELD(frequency, (40.0f));
   
   SO_KIT_ADD_FIELD(envHeight, (-50.f));
   SO_KIT_ADD_FIELD(envRadius, (100.f));
@@ -742,6 +743,7 @@ OceanShape::OceanShape()
   this->geostate_cache.transIdx = 0;
   this->texstate_cache.transIdx = 0;
   this->invalidstate = TRUE;
+  this->timerTrigged = TRUE;
   this->minlevel = 4;
   this->maxlevel = 12;
   this->currtime = SbTime::zero();
@@ -829,6 +831,7 @@ OceanShape::initClass()
 void 
 OceanShape::timerCB(void * closure, SoSensor * s)
 {
+  ((OceanShape*)closure)->timerTrigged = TRUE;
   ((OceanShape*)closure)->touch(); // force a redraw
 }
 
@@ -950,18 +953,22 @@ void
 OceanShape::preShaderCB(void * closure, SoAction * action)
 {
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
-    SoState * state = action->getState();
     OceanShape * thisp = (OceanShape*)closure;
-    thisp->tick();
-    thisp->updateParameters(state);
-    thisp->updateTextureParameters(state);
-
-    // need to force the texture update here before the new shader is activated
-    if (thisp->wavetex) thisp->wavetex->GLRender((SoGLRenderAction*)action);
-    
-    // invalidate texture state so that texture is reloaded after the Cg program is loaded
-    SoGLLazyElement::getInstance(state)->send(state, SoLazyElement::GLIMAGE_MASK);
-    SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
+    if (thisp->timerTrigged) {
+      thisp->timerTrigged = FALSE;
+      SoState * state = action->getState();
+      
+      thisp->tick();
+      thisp->updateParameters(state);
+      thisp->updateTextureParameters(state);
+      
+      // need to force the texture update here before the new shader is activated
+      if (thisp->wavetex) thisp->wavetex->GLRender((SoGLRenderAction*)action);
+      
+      // invalidate texture state so that texture is reloaded after the Cg program is loaded
+      SoGLLazyElement::getInstance(state)->send(state, SoLazyElement::GLIMAGE_MASK);
+      SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::GLIMAGE_MASK);
+    }
   }
 }
 
