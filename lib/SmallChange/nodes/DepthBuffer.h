@@ -70,4 +70,4 @@ protected:
 #include <SoWinEnterScope.h>
 #endif // win
 
-#endif // !SMALLCHANGE_SODRAWSTYLE_H
+#endif // !SMALLCHANGE_SODEPTHBUFFER_H
