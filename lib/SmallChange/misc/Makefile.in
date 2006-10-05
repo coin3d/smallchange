@@ -192,7 +192,8 @@ EXTRA_DIST = \
 libmisc_la_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
-	SceneManager.cpp SmSceneManager.h
+	SceneManager.cpp SmSceneManager.h \
+	Envelope.cpp SmEnvelope.h
 
 
 misc_lst_SOURCES = \
@@ -223,14 +224,15 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libmisc_la_LDFLAGS =
 libmisc_la_LIBADD =
-am_libmisc_la_OBJECTS = Init.lo SbCubicSpline.lo SceneManager.lo
+am_libmisc_la_OBJECTS = Init.lo SbCubicSpline.lo SceneManager.lo \
+	Envelope.lo
 libmisc_la_OBJECTS = $(am_libmisc_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Init.Plo ./$(DEPDIR)/Init.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Plo \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Envelope.Plo ./$(DEPDIR)/Init.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Init.Po ./$(DEPDIR)/SbCubicSpline.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Po
@@ -285,6 +287,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Envelope.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SbCubicSpline.Plo@am__quote@

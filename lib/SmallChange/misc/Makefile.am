@@ -17,7 +17,8 @@ endif
 libmisc_la_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
-	SceneManager.cpp SmSceneManager.h
+	SceneManager.cpp SmSceneManager.h \
+	Envelope.cpp SmEnvelope.h
 
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
