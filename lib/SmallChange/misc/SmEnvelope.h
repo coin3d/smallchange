@@ -5,15 +5,16 @@ class SmEnvelopeP;
 class SoNode;
 
 #include <Inventor/SbBasic.h>
+#include <SmallChange/basic.h>
 
-class SmEnvelope {
+class SMALLCHANGE_DLL_API SmEnvelope {
 public:
 
   SmEnvelope(void);
   ~SmEnvelope();
 
   SbBool importFile(const char * infile);
-  // void importScene(SoNode * node);
+  void importScene(SoNode * node);
   
   SbBool exportGeometry(const char * outfile, 
                         const int octtreelevels = 0,

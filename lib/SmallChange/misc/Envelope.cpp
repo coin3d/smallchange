@@ -112,6 +112,7 @@ public:
     this->vrmlifs = NULL;
   }
 
+  SbBox3f bbox;
   
   SmHash <sm_mesh *, sm_meshattrib> hash;
   SbList <sm_mesh*> meshlist;
@@ -408,20 +409,17 @@ public:
     }
   }
   
-
-  SbBool importFile(const char * filename) {    
+  void importScene(SoNode * root) {
     alltextures.append(NULL); // important!
 
     if (search == NULL) {
       search = new SoSearchAction;
     }
-    SoInput input;
-    if (!input.openFile(filename)) { return FALSE; } 
-    
-    SoSeparator * root = SoDB::readAll(&input); 
-    if (root == NULL) { return FALSE; } // err msg from SoDB::readAll()
+    SbViewportRegion vp(640, 480);
+    SoGetBoundingBoxAction bba(vp);
+    bba.apply(root);
 
-    root->ref();
+    this->bbox.extendBy(bba.getBoundingBox());
     
     // just use the first child from each SoLOD node. We'll use RR to
     // create LODs if we need them
@@ -447,26 +445,34 @@ public:
     fprintf(stderr,"About to extract all triangles...");
     SoCallbackAction ca;
     ca.addPreCallback(SoShape::getClassTypeId(),
-                      pre_shape_cb, NULL);
-    ca.addTriangleCallback(SoShape::getClassTypeId(), triangle_cb, NULL);
-    ca.addLineSegmentCallback(SoShape::getClassTypeId(), line_segment_cb, NULL);
+                      pre_shape_cb, this);
+    ca.addTriangleCallback(SoShape::getClassTypeId(), triangle_cb, this);
+    ca.addLineSegmentCallback(SoShape::getClassTypeId(), line_segment_cb, this);
     ca.apply(root);
     fprintf(stderr,"done\n");
 
+  }
+  
+  SbBool importFile(const char * filename) {    
+    
+    SoInput input;
+    if (!input.openFile(filename)) { return FALSE; } 
+    
+    SoSeparator * root = SoDB::readAll(&input); 
+    if (root == NULL) { return FALSE; } // err msg from SoDB::readAll()
+
+    root->ref();
+    this->importScene(root);
+    root->unref();
 
     return TRUE;
   }
 
   SbBool exportGeometry(const char * outfile, const int level, const SbBool vrml2) {
     fprintf(stderr,"About to write envelope(s)\n");
-    
-    SbViewportRegion vp(640, 480);
-    SoGetBoundingBoxAction bba(vp);
-    // bba.apply(root);
-    
-    SbBox3f bbox = bba.getBoundingBox();
-    SbVec3f bmin = bbox.getMin();
-    SbVec3f bd = bbox.getMax() - bmin;
+        
+    SbVec3f bmin = this->bbox.getMin();
+    SbVec3f bd = this->bbox.getMax() - bmin;
     bd *= 1.0001f; // to make sure all points are _inside_ the box
     
     int numsplit = 1 << level;
@@ -490,8 +496,8 @@ public:
         }
       }
     }
-    
-    for (int l = 0; l <= numboxes; l++) {
+
+    for (int l = 0; l < numboxes; l++) {
       SbBox3f b = bboxes[l];
       fprintf(stderr,"bbox: %g %g %g, %g %g %g\n",
               b.getMin()[0],
@@ -810,6 +816,12 @@ SbBool
 SmEnvelope::importFile(const char * infile)
 {
   return this->pimpl->importFile(infile);
+}
+
+void 
+SmEnvelope::importScene(SoNode * node)
+{
+  this->pimpl->importScene(node);
 }
 
 SbBool 
