@@ -476,15 +476,14 @@ public:
     return TRUE;
   }
 
-  SbBool exportGeometry(const char * outfile, const int level, const SbBool vrml2) {
-    fprintf(stderr,"About to write envelope(s)\n");
-        
+  SbBox3f * getBBoxes(int & numboxes, int level) {
+    
     SbVec3f bmin = this->bbox.getMin();
     SbVec3f bd = this->bbox.getMax() - bmin;
     bd *= 1.0001f; // to make sure all points are _inside_ the box
     
     int numsplit = 1 << level;
-    int numboxes = numsplit*numsplit*numsplit;
+    numboxes = numsplit*numsplit*numsplit;
     SbBox3f *bboxes = new SbBox3f[numboxes];
     
     bd *= float(1) / float(numsplit);
@@ -504,7 +503,15 @@ public:
         }
       }
     }
+    return bboxes;
+  }
 
+  SbBool exportGeometry(const char * outfile, const int level, const SbBool vrml2) {
+    fprintf(stderr,"About to write envelope(s)\n");
+
+    int numboxes;
+    SbBox3f * bboxes = this->getBBoxes(numboxes, level);
+        
     for (int l = 0; l < numboxes; l++) {
       SbBox3f b = bboxes[l];
       fprintf(stderr,"bbox: %g %g %g, %g %g %g\n",
@@ -564,7 +571,63 @@ public:
       wa.apply(triroot);
       triroot->unref();
     }
+    delete[] bboxes;
     return TRUE;
+  }
+
+  SoNode * getConvertedScene(const int level, const SbBool vrml2) {
+
+    int numboxes;
+    SbBox3f * bboxes = this->getBBoxes(numboxes, level);
+
+    SoGroup * root = vrml2 ? ((SoGroup*)new SoVRMLGroup) : ((SoGroup*)new SoSeparator);
+
+    for (int l = 0; l < numboxes; l++) {
+      SbBox3f b = bboxes[l];
+      fprintf(stderr,"bbox: %g %g %g, %g %g %g\n",
+              b.getMin()[0],
+              b.getMin()[1],
+              b.getMin()[2],
+              b.getMax()[0],
+              b.getMax()[1],
+              b.getMax()[2]);
+      
+      SoGroup * triroot = vrml2 ? ((SoGroup*)new SoVRMLGroup) : ((SoGroup*)new SoSeparator);
+      triroot->ref();
+      
+      for (int j = 0; j < alltextures.getLength(); j++) {
+        const char * name = alltextures[j];
+        SoVRMLImageTexture * t2 = NULL;
+        if (name) {
+          t2 = new SoVRMLImageTexture;
+          t2->url = name;
+          
+          if (!vrml2) {
+            triroot->addChild(t2);
+          }
+        }
+        for (int i = 0; i < meshlist.getLength(); i++) {
+          if (meshlist[i]->attrib.texturename == name) {
+            if (numboxes > 1) {
+              sm_mesh * mesh = meshlist[i]->split_mesh(bboxes[l]);
+              if (mesh) {
+                triroot->addChild(vrml2 ? ((SoNode*)mesh->create_vrml_mesh(t2)) : ((SoNode*)mesh->create_iv_mesh()));
+                delete mesh;
+              }
+            }
+            else {
+              triroot->addChild(vrml2 ? ((SoNode*)meshlist[i]->create_vrml_mesh(t2)) : 
+                                ((SoNode*)meshlist[i]->create_iv_mesh()));
+            }
+          }
+        }
+      }
+
+      root->addChild(triroot);
+      triroot->unref();
+    }
+    delete[] bboxes;
+    return root;
   }
 };
 
@@ -990,6 +1053,5 @@ SoNode *
 SmEnvelope::getConvertedScene(const int octtreelevels,
                               const SbBool vrml2)
 {
-  // return this->pimpl->getConvertedScene(octreelevels, vrml2);
-  return NULL;
+  return this->pimpl->getConvertedScene(octtreelevels, vrml2);
 }
