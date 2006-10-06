@@ -23,13 +23,15 @@ libmisc_la_SOURCES = \
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
-	SceneManager.cpp SmSceneManager.h
+	SceneManager.cpp SmSceneManager.h \
+	Envelope.cpp SmEnvelope.h
 
 libmiscincdir = $(includedir)/SmallChange/misc
 libmiscinc_HEADERS = \
 	Init.h \
 	SbCubicSpline.h \
-	SmSceneManager.h
+	SmSceneManager.h \
+	SmEnvelope.h
 
 misc.lst: $(misc_lst_OBJECTS)
 	@echo "Linking $@..."; \
