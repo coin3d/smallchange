@@ -20,6 +20,9 @@ public:
                         const int octtreelevels = 0,
                         const SbBool vrml2 = FALSE);
 
+  SoNode * getConvertedScene(const int octtreelevels = 0,
+                             const SbBool vrml2 = FALSE);
+
 private:
   SmEnvelopeP * pimpl;
 

@@ -26,8 +26,15 @@
 #include <Inventor/SbBSPTree.h>
 #include "SmHash.h"
 #include <Inventor/VRMLnodes/SoVRMLIndexedFaceSet.h>
+#include <Inventor/VRMLnodes/SoVRMLIndexedLineSet.h>
 #include <Inventor/VRMLnodes/SoVRMLImageTexture.h>
 #include <Inventor/VRMLnodes/SoVRMLShape.h>
+#include <Inventor/VRMLnodes/SoVRMLGroup.h>
+#include <Inventor/VRMLnodes/SoVRMLMaterial.h>
+#include <Inventor/VRMLnodes/SoVRMLCoordinate.h>
+#include <Inventor/VRMLnodes/SoVRMLTextureCoordinate.h>
+#include <Inventor/VRMLnodes/SoVRMLNormal.h>
+#include <Inventor/VRMLnodes/SoVRMLColor.h>
 #include <Inventor/VRMLnodes/SoVRMLAppearance.h>
 #include <Inventor/elements/SoTextureEnabledElement.h>
 #include <Inventor/SoInteraction.h>
@@ -95,6 +102,7 @@ public:
 
   sm_mesh * split_mesh(const SbBox3f & bbox);
   SoSeparator * create_iv_mesh(void);
+  SoVRMLGroup * create_vrml_mesh(SoVRMLImageTexture * tex);
 
 };
 
@@ -507,36 +515,32 @@ public:
               b.getMax()[1],
               b.getMax()[2]);
       
-      SoSeparator * triroot = new SoSeparator;
+      SoGroup * triroot = vrml2 ? ((SoGroup*)new SoVRMLGroup) : ((SoGroup*)new SoSeparator);
       triroot->ref();
       
       for (int j = 0; j < alltextures.getLength(); j++) {
         const char * name = alltextures[j];
+        SoVRMLImageTexture * t2 = NULL;
         if (name) {
-#if 1
-          SoVRMLImageTexture * t2 = new SoVRMLImageTexture;
+          t2 = new SoVRMLImageTexture;
           t2->url = name;
           
-          triroot->addChild(t2);
-#else
-          SoTexture2 * t = new SoTexture2;
-          t->filename = name;
-          t->image.setDefault(TRUE);
-          t->filename.setDefault(FALSE);
-          triroot->addChild(t);
-#endif
+          if (!vrml2) {
+            triroot->addChild(t2);
+          }
         }
         for (int i = 0; i < meshlist.getLength(); i++) {
           if (meshlist[i]->attrib.texturename == name) {
             if (numboxes > 1) {
               sm_mesh * mesh = meshlist[i]->split_mesh(bboxes[l]);
               if (mesh) {
-                triroot->addChild(mesh->create_iv_mesh());
+                triroot->addChild(vrml2 ? ((SoNode*)mesh->create_vrml_mesh(t2)) : ((SoNode*)mesh->create_iv_mesh()));
                 delete mesh;
               }
             }
             else {
-              triroot->addChild(meshlist[i]->create_iv_mesh());
+              triroot->addChild(vrml2 ? ((SoNode*)meshlist[i]->create_vrml_mesh(t2)) : 
+                                ((SoNode*)meshlist[i]->create_iv_mesh()));
             }
           }
         }
@@ -554,8 +558,7 @@ public:
         fprintf(stderr,"Unable to open output file: %s\n", outfile);
         return -1;
       }
-      out.setHeaderString("#VRML V1.0 ascii");
-      //  out.setBinary(TRUE);
+      out.setHeaderString(vrml2 ? "#VRML V2.0 utf8" : "#VRML V1.0 ascii");
 
       SoWriteAction wa(&out);
       wa.apply(triroot);
@@ -747,6 +750,157 @@ sm_mesh::create_iv_mesh()
   return sep;
 }
 
+SoVRMLGroup *
+sm_mesh::create_vrml_mesh(SoVRMLImageTexture * tex)
+{
+  SoVRMLGroup * grp = new SoVRMLGroup;
+  grp->ref();
+  const sm_meshattrib & a = this->attrib;
+  
+  SoVRMLAppearance * app = new SoVRMLAppearance;
+  
+  SoVRMLMaterial * mat = new SoVRMLMaterial;
+  mat->diffuseColor = a.diffuse;
+  mat->emissiveColor = a.emissive;
+  mat->specularColor = a.specular;
+  mat->shininess = a.shininess;
+  mat->transparency = a.transparency;
+  
+  app->material = mat;
+
+  SoVRMLCoordinate * c = new SoVRMLCoordinate;
+  c->point.setValues(0, this->bsp.numPoints(),
+                     this->bsp.getPointsArrayPtr());
+  
+  if (this->vidx.getLength()) {
+    SoVRMLShape * shape = new SoVRMLShape;
+    SoVRMLIndexedFaceSet * ifs = new SoVRMLIndexedFaceSet;
+    ifs->coord = c;
+
+    ifs->creaseAngle = 0.5f;
+    ifs->convex = TRUE;
+    ifs->ccw = a.vordering == SoShapeHints::CLOCKWISE ? FALSE : TRUE;
+      
+    ifs->colorPerVertex = this->colorpervertex;
+    if (this->colorpervertex) {
+      SoVRMLColor * color = new SoVRMLColor;
+      color->color.setValues(0, this->cbsp.numPoints(), 
+                             (SbColor*) this->cbsp.getPointsArrayPtr());
+
+      ifs->color = color;
+    }
+    
+    SoVRMLNormal * n = new SoVRMLNormal;
+    n->vector.setValues(0, this->nbsp.numPoints(), 
+                        this->nbsp.getPointsArrayPtr());
+    ifs->normal = n;
+    ifs->normalPerVertex = TRUE;
+    
+    if (this->attrib.texturename != NULL) {
+      SoVRMLTextureCoordinate * tc = new SoVRMLTextureCoordinate;
+      tc->point.setNum(this->tbsp.numPoints());
+      SbVec2f * dst = tc->point.startEditing();
+      const int num = this->tbsp.numPoints();
+      const SbVec3f * src = this->tbsp.getPointsArrayPtr(); 
+      for (int i = 0; i < num; i++) {
+        dst[i] = SbVec2f(src[i][0], src[i][1]);
+      }
+      tc->point.finishEditing();
+      ifs->texCoord = tc;
+    }
+    
+    int numtri = this->vidx.getLength() / 3;
+    
+    fprintf(stderr,"mesh triangles: %d\n", numtri);
+    
+
+    ifs->coordIndex.setNum(numtri*4);
+    ifs->normalIndex.setNum(numtri*4);
+    if (this->colorpervertex) {
+      ifs->colorIndex.setNum(numtri*4);
+    }
+    if (this->attrib.texturename) {
+      ifs->texCoordIndex.setNum(numtri*4);
+    }
+    
+    int32_t * cptr = ifs->coordIndex.startEditing();
+    int32_t * nptr = ifs->normalIndex.startEditing();
+    int32_t * mptr = NULL;
+    int32_t * tptr = NULL;
+    
+    if (this->colorpervertex) {
+      mptr = ifs->colorIndex.startEditing();
+    }
+    if (this->attrib.texturename) {
+      tptr = ifs->texCoordIndex.startEditing();
+    }
+    
+    for (int i = 0; i < numtri; i++) {
+      *cptr++ = this->vidx[i*3];
+      *cptr++ = this->vidx[i*3+1];
+      *cptr++ = this->vidx[i*3+2];
+      *cptr++ = -1;
+      
+      *nptr++ = this->nidx[i*3];
+      *nptr++ = this->nidx[i*3+1];
+      *nptr++ = this->nidx[i*3+2];
+      *nptr++ = -1;
+      
+      if (mptr) {
+        *mptr++ = this->cidx[i*3];
+        *mptr++ = this->cidx[i*3+1];
+        *mptr++ = this->cidx[i*3+2];
+        *mptr++ = -1;
+      }
+      if (tptr) {
+        *tptr++ = this->tidx[i*3];
+        *tptr++ = this->tidx[i*3+1];
+        *tptr++ = this->tidx[i*3+2];
+        *tptr++ = -1; 
+      }
+    }
+    
+    ifs->coordIndex.finishEditing();
+    ifs->normalIndex.finishEditing();
+    if (mptr) {
+      ifs->colorIndex.finishEditing();
+    }
+    if (tptr) {
+      ifs->texCoordIndex.finishEditing();
+    }
+
+    shape->geometry = ifs;
+    shape->appearance = app;
+    
+    grp->addChild(shape);
+  }
+  if (this->lidx.getLength()) {
+    
+    SoVRMLShape * shape = new SoVRMLShape;
+    SoVRMLIndexedLineSet * ils = new SoVRMLIndexedLineSet;
+    int numlines = this->lidx.getLength() / 2;
+    ils->coord = c;
+
+    fprintf(stderr,"mesh lines: %d\n", numlines);
+    
+    ils->coordIndex.setNum(numlines*3);
+    int32_t * cptr = ils->coordIndex.startEditing();
+    
+    for (int i = 0; i < numlines; i++) {
+      *cptr++ = this->lidx[i*2];
+      *cptr++ = this->lidx[i*2+1];
+      *cptr++ = -1;
+    }
+    ils->coordIndex.finishEditing();
+    shape->geometry = ils;
+    shape->appearance = app;
+    grp->addChild(shape);
+  }
+
+  grp->unrefNoDelete();
+  return grp;
+}
+
 sm_mesh * 
 sm_mesh::split_mesh(const SbBox3f & bbox)
 {
@@ -830,4 +984,12 @@ SmEnvelope::exportGeometry(const char * outfile,
                            const SbBool vrml2)
 {
   return this->pimpl->exportGeometry(outfile, octtreelevels, vrml2);
+}
+
+SoNode * 
+SmEnvelope::getConvertedScene(const int octtreelevels,
+                              const SbBool vrml2)
+{
+  // return this->pimpl->getConvertedScene(octreelevels, vrml2);
+  return NULL;
 }
