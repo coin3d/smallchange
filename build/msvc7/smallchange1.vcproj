@@ -38,7 +38,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib"
 				OutputFile="smallchange1.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -470,6 +470,50 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\misc\Envelope.cpp">
+				<FileConfiguration
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\misc/"
+						ProgramDataBaseFileName="Release\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\misc/"
+						ProgramDataBaseFileName="StaticRelease\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\misc/"
+						ProgramDataBaseFileName="StaticDebug\misc/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\misc/"
+						ProgramDataBaseFileName="Debug\misc/"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -1746,6 +1790,50 @@
 						BasicRuntimeChecks="3"
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.cpp">
+				<FileConfiguration
+					Name="DLL (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						ObjectFile=".\Release\eventhandlers/"
+						ProgramDataBaseFileName="Release\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\eventhandlers/"
+						ProgramDataBaseFileName="StaticRelease\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\eventhandlers/"
+						ProgramDataBaseFileName="StaticDebug\eventhandlers/"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						ObjectFile=".\Debug\eventhandlers/"
+						ProgramDataBaseFileName="Debug\eventhandlers/"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -3095,6 +3183,9 @@
 				RelativePath="..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.h">
 			</File>
 			<File
+				RelativePath="..\..\lib\SmallChange\misc\SmEnvelope.h">
+			</File>
+			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmEventHandler.h">
 			</File>
 			<File
@@ -3126,6 +3217,9 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmOceanKit.h">
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.h">
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmPieChart.h">

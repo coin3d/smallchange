@@ -54,6 +54,7 @@ copy /Y ..\..\lib\SmallChange\actions\SmToVertexArrayShapeAction.h %COINDIR%\inc
 copy /Y ..\..\lib\SmallChange\misc\Init.h %COINDIR%\include\SmallChange\misc\Init.h >nul:
 copy /Y ..\..\lib\SmallChange\misc\SbCubicSpline.h %COINDIR%\include\SmallChange\misc\SbCubicSpline.h >nul:
 copy /Y ..\..\lib\SmallChange\misc\SmSceneManager.h %COINDIR%\include\SmallChange\misc\SmSceneManager.h >nul:
+copy /Y ..\..\lib\SmallChange\misc\SmEnvelope.h %COINDIR%\include\SmallChange\misc\SmEnvelope.h >nul:
 copy /Y ..\..\lib\SmallChange\draggers\SoAngle1Dragger.h %COINDIR%\include\SmallChange\draggers\SoAngle1Dragger.h >nul:
 copy /Y ..\..\lib\SmallChange\draggers\SoAngle1Manip.h %COINDIR%\include\SmallChange\draggers\SoAngle1Manip.h >nul:
 copy /Y ..\..\lib\SmallChange\draggers\SmRangeTranslate1Dragger.h %COINDIR%\include\SmallChange\draggers\SmRangeTranslate1Dragger.h >nul:
@@ -61,4 +62,5 @@ copy /Y ..\..\lib\SmallChange\eventhandlers\SmEventHandler.h %COINDIR%\include\S
 copy /Y ..\..\lib\SmallChange\eventhandlers\SmExaminerEventHandler.h %COINDIR%\include\SmallChange\eventhandlers\SmExaminerEventHandler.h >nul:
 copy /Y ..\..\lib\SmallChange\eventhandlers\SmHelicopterEventHandler.h %COINDIR%\include\SmallChange\eventhandlers\SmHelicopterEventHandler.h >nul:
 copy /Y ..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.h %COINDIR%\include\SmallChange\eventhandlers\SmSphereEventHandler.h >nul:
+copy /Y ..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.h %COINDIR%\include\SmallChange\eventhandlers\SmPanEventHandler.h >nul:
 copy /Y lib\SmallChange\basic.h %COINDIR%\include\SmallChange\basic.h >nul:

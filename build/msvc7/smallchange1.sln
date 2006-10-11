@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smallchange1", "smallchange1.vcproj", "{F20001CE-0B6B-4358-91E7-ECD18829F529}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smallchange1", "smallchange1.vcproj", "{ECA4ECCB-2C53-464E-AE42-C2C732678305}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -11,14 +11,14 @@ Global
 		LIB (Release) = LIB (Release)
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.DLL (Debug).ActiveCfg = DLL (Debug)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.DLL (Debug).Build.0 = DLL (Debug)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.DLL (Release).ActiveCfg = DLL (Release)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.DLL (Release).Build.0 = DLL (Release)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.LIB (Debug).ActiveCfg = LIB (Debug)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.LIB (Debug).Build.0 = LIB (Debug)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.LIB (Release).ActiveCfg = LIB (Release)|Win32
-		{F20001CE-0B6B-4358-91E7-ECD18829F529}.LIB (Release).Build.0 = LIB (Release)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.DLL (Debug).ActiveCfg = DLL (Debug)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.DLL (Debug).Build.0 = DLL (Debug)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.DLL (Release).ActiveCfg = DLL (Release)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.DLL (Release).Build.0 = DLL (Release)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.LIB (Debug).ActiveCfg = LIB (Debug)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.LIB (Debug).Build.0 = LIB (Debug)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.LIB (Release).ActiveCfg = LIB (Release)|Win32
+		{ECA4ECCB-2C53-464E-AE42-C2C732678305}.LIB (Release).Build.0 = LIB (Release)|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

@@ -885,6 +885,19 @@ SOURCE=..\..\lib\SmallChange\misc\SceneManager.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\SmallChange\misc\Envelope.cpp
+!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
+# PROP Intermediate_Dir "Release\misc"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
+# PROP Intermediate_Dir "Debug\misc"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
+# PROP Intermediate_Dir "StaticRelease\misc"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
+# PROP Intermediate_Dir "StaticDebug\misc"
+!ENDIF 
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\SmallChange\draggers\SoAngle1Dragger.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
 # PROP Intermediate_Dir "Release\draggers"
@@ -964,6 +977,19 @@ SOURCE=..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.cpp
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmHelicopterEventHandler.cpp
+!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
+# PROP Intermediate_Dir "Release\eventhandlers"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
+# PROP Intermediate_Dir "Debug\eventhandlers"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
+# PROP Intermediate_Dir "StaticRelease\eventhandlers"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
+# PROP Intermediate_Dir "StaticDebug\eventhandlers"
+!ENDIF 
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
 # PROP Intermediate_Dir "Release\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
@@ -1204,6 +1230,10 @@ SOURCE=..\..\lib\SmallChange\misc\SmSceneManager.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\SmallChange\misc\SmEnvelope.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\SmallChange\draggers\SoAngle1Dragger.h
 # End Source File
 # Begin Source File
@@ -1229,6 +1259,10 @@ SOURCE=..\..\lib\SmallChange\eventhandlers\SmHelicopterEventHandler.h
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.h
 # End Source File
 # Begin Source File
 

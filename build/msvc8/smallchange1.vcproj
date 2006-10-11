@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="smallchange1"
-	ProjectGUID="{190C7A3A-7B9A-4FD0-BFD1-52A41706F15B}"
+	ProjectGUID="{6D7E6704-A52C-4FAC-8A9B-1432EEA9DFF0}"
 	>
 	<Platforms>
 		<Platform
@@ -47,7 +47,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -72,7 +72,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib"
 				OutputFile="smallchange1.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -137,7 +137,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -212,7 +212,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -292,7 +292,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories=".\lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -318,7 +318,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib"
 				OutputFile="smallchange1d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -600,6 +600,54 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\misc\Envelope.cpp"
+				>
+				<FileConfiguration
+					Name="DLL (Release)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\misc/"
+						ProgramDataBaseFileName="Release\misc/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\misc/"
+						ProgramDataBaseFileName="StaticRelease\misc/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\misc/"
+						ProgramDataBaseFileName="StaticDebug\misc/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\misc/"
+						ProgramDataBaseFileName="Debug\misc/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1992,6 +2040,54 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Debug\nodes/"
 						ProgramDataBaseFileName="Debug\nodes/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.cpp"
+				>
+				<FileConfiguration
+					Name="DLL (Release)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\eventhandlers/"
+						ProgramDataBaseFileName="Release\eventhandlers/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Release)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticRelease\eventhandlers/"
+						ProgramDataBaseFileName="StaticRelease\eventhandlers/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="LIB (Debug)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\StaticDebug\eventhandlers/"
+						ProgramDataBaseFileName="StaticDebug\eventhandlers/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DLL (Debug)|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\eventhandlers/"
+						ProgramDataBaseFileName="Debug\eventhandlers/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3481,6 +3577,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\lib\SmallChange\misc\SmEnvelope.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\lib\SmallChange\eventhandlers\SmEventHandler.h"
 				>
 			</File>
@@ -3522,6 +3622,10 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\SmallChange\nodekits\SmOceanKit.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.h"
 				>
 			</File>
 			<File
