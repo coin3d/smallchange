@@ -120,7 +120,7 @@ SmTrack::computeBBox(SoAction * action, SbBox3f & box,
 
   for (int i = PRIVATE(this)->startix; i < this->track.getNum(); i++) {
     SbVec3d coord = this->track[i].getValue();
-    box.extendBy(SbVec3f(coord[0], coord[1], coord[2]));
+    box.extendBy(SbVec3f(float(coord[0]), float(coord[1]), float(coord[2])));
   }
   if (!box.isEmpty()) center = box.getCenter();
 }

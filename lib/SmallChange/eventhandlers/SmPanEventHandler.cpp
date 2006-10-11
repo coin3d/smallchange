@@ -244,7 +244,7 @@ SmPanEventHandler::pan(const SbVec2f & currpos,
   vv.projectPointToLine(currpos, line);
   SbVec3f current_planept;
   
-  SbPlane panningplane = SbPlane(SbVec3f(0, 0, 1), utmpos[2]);
+  SbPlane panningplane = SbPlane(SbVec3f(0, 0, 1), float(utmpos[2]));
   panningplane.intersect(line, current_planept);
   vv.projectPointToLine(prevpos, line);
   SbVec3f old_planept;

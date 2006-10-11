@@ -357,7 +357,7 @@ SmWellLogKit::SmWellLogKit(void)
   SO_KIT_ADD_FIELD(undefVal, (-999.25));
   SO_KIT_ADD_FIELD(name,(""));
   SO_KIT_ADD_FIELD(wellCoord, (0.0, 0.0, 0.0));
-  SO_KIT_ADD_FIELD(wellColor, (0.8, 0.8, 0.8));
+  SO_KIT_ADD_FIELD(wellColor, (0.8f, 0.8f, 0.8f));
 
   SO_KIT_ADD_FIELD(curveNames, (""));
   SO_KIT_ADD_FIELD(curveDescription, (""));
@@ -1429,7 +1429,7 @@ SmWellLogKitP::updateList(void)
     t -= origin;
 
     pos.pos = SbVec3f((float) t[0], (float) t[1], (float) t[2]);
-    pos.col = SbColor(0.8, 0.8, 0.8);
+    pos.col = SbColor(0.8f, 0.8f, 0.8f);
     if (colorpersegment) {
       pos.col = colptr[i];
     }

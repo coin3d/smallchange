@@ -233,8 +233,8 @@ SmPieChart::generateGeometry(void)
   vecs[1].setValue(0.0, 0.0, 0.0); // center bottom
   
   for ( i = 0; i < numpoints; i++ ) {
-    float x = cosf(points[i] * 2.0f * M_PI) * radius;
-    float y = cosf((points[i] + 0.25f) * 2.0f * M_PI) * radius;
+    float x = cosf(float(points[i] * 2.0f * M_PI)) * radius;
+    float y = cosf(float((points[i] + 0.25f) * 2.0f * M_PI)) * radius;
     vecs[2 + i * 2].setValue(x, y, height);
     vecs[2 + i * 2 + 1].setValue(x, y, 0);
   }
