@@ -843,6 +843,8 @@ sm_mesh::create_vrml_mesh(SoVRMLImageTexture * tex)
     ifs->creaseAngle = 0.5f;
     ifs->convex = TRUE;
     ifs->ccw = a.vordering == SoShapeHints::CLOCKWISE ? FALSE : TRUE;
+    ifs->solid = a.shapetype == SoShapeHints::SOLID ? TRUE : FALSE;
+
       
     ifs->colorPerVertex = this->colorpervertex;
     if (this->colorpervertex) {
