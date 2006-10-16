@@ -76,7 +76,7 @@ GLDepthBufferElement::init(SoState * state)
 {
   inherited::init(state);
   this->enable = TRUE;
-  this->func = LESS;
+  this->func = LEQUAL;
   this->updategl();
 }
 
