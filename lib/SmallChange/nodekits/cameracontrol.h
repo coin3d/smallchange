@@ -24,10 +24,17 @@
  *
 \**************************************************************************/
 
+#include <Inventor/SbBasic.h>
 
 class SoCamera;
 class SbVec3f;
+class SbVec3d;
+class SbRotation;
 
 void resetRoll(SoCamera * camera, const SbVec3f & viewup);
+void seekToPoint(SoCamera * camera,
+                 const SbVec3d & point,
+                 const SbRotation & orientation);
+SbBool isSeeking(void);
 
 #endif // SMALLCHANGE_CAMERACONTROL_H

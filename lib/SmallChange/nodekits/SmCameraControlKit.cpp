@@ -86,20 +86,6 @@ public:
   SoSearchAction * searchaction;
   SoGetMatrixAction * matrixaction;
   SoGetBoundingBoxAction * autoclipbboxaction;
-
-  struct SeekData {
-    SbVec3d camerastartposition;
-    SbRotation camerastartorient;
-    SbVec3d cameraendposition;
-    SbRotation cameraendorient;
-
-    float distance;
-    float period;
-    SoTimerSensor * sensor;
-    SbBool seeking;
-  } seek;
-
-  static void seeksensorCB(void * userdata, SoSensor * sensor);
 };
 
 SbBool
@@ -124,11 +110,6 @@ SmCameraControlKit::SmCameraControlKit(void)
 {
   PRIVATE(this) = new SmCameraControlKitP(this);
   PRIVATE(this)->depth_bits = -1; // < 0 means that depth bits is unknown
-
-  PRIVATE(this)->seek.seeking = FALSE;
-  PRIVATE(this)->seek.distance = 50.0f;
-  PRIVATE(this)->seek.period = 2.0f;
-  PRIVATE(this)->seek.sensor = new SoTimerSensor(SmCameraControlKitP::seeksensorCB, PRIVATE(this));
 
   PRIVATE(this)->autoclipbboxaction = new SoGetBoundingBoxAction(SbViewportRegion(100,100));
   PRIVATE(this)->searchaction = new SoSearchAction;
@@ -174,7 +155,6 @@ SmCameraControlKit::SmCameraControlKit(void)
 */
 SmCameraControlKit::~SmCameraControlKit(void)
 {
-  delete PRIVATE(this)->seek.sensor;
   delete PRIVATE(this)->autoclipbboxaction;
   delete PRIVATE(this)->searchaction;
   delete PRIVATE(this)->matrixaction;
@@ -536,7 +516,7 @@ SmCameraControlKit::getCameraCoordinateSystem(SoCamera * camera,
 SbBool 
 SmCameraControlKit::isAnimating(void)
 {
-  if (PRIVATE(this)->seek.seeking) return TRUE;
+  if (::isSeeking()) return TRUE;
   
   SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
   if (eh) {
@@ -548,7 +528,7 @@ SmCameraControlKit::isAnimating(void)
 SbBool 
 SmCameraControlKit::isBusy(void) const
 {
-  return PRIVATE(this)->seek.seeking;
+  return ::isSeeking();
 }
 
 SbBool
@@ -558,39 +538,15 @@ SmCameraControlKit::seekToPoint(const SbVec3d & point,
 {
   SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
   if (!camera) return FALSE;
-
-  UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
-    (UTMCamera *)camera : NULL;
-
-  if (utmcamera) {
-    PRIVATE(this)->seek.camerastartposition = utmcamera->utmposition.getValue();
-  }
-  else {
-    PRIVATE(this)->seek.camerastartposition.setValue(camera->position.getValue());
-  }
-  PRIVATE(this)->seek.camerastartorient = camera->orientation.getValue();
   
-  float fd = PRIVATE(this)->seek.distance / 100.0f;
-  fd *= (float) ((point - PRIVATE(this)->seek.camerastartposition).length());
-  camera->focalDistance = fd;
-
-  PRIVATE(this)->seek.cameraendposition = point;
-  PRIVATE(this)->seek.cameraendorient = orientation.getValue();
-
-  if (PRIVATE(this)->seek.sensor->isScheduled()) {
-    PRIVATE(this)->seek.sensor->unschedule();
-  }
-
-  PRIVATE(this)->seek.seeking = TRUE;
-  PRIVATE(this)->seek.sensor->setBaseTime(SbTime::getTimeOfDay());
-  PRIVATE(this)->seek.sensor->schedule();
-
+  ::seekToPoint(camera, point, orientation);
   return TRUE;
 }
 
 SbBool 
 SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
 {
+#if 0 // # FIXME: disabled, does not work. fix if needed. (20061018 frodo)
   SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
   if (!camera) return FALSE;
 
@@ -641,6 +597,7 @@ SmCameraControlKit::seek(const SoEvent * event, const SbViewportRegion & vp)
   SbRotation cameraendorient = camera->orientation.getValue() * diffrot;
 
   this->seekToPoint(cameraendposition, cameraendorient, vp);
+#endif
 
   return TRUE;
 }
@@ -689,44 +646,6 @@ SmCameraControlKitP::eventhandlersensor_cb(void * closure, SoSensor * sensor)
   assert(node && node->isOfType(SmEventHandler::getClassTypeId()));
   SmEventHandler * eventhandler = (SmEventHandler *) node;
   eventhandler->setCameraControlKit(thisp);
-}
-
-void 
-SmCameraControlKitP::seeksensorCB(void * closure, SoSensor * s)
-{
-  SmCameraControlKitP * thisp = (SmCameraControlKitP*) closure;
-  SbTime currenttime = SbTime::getTimeOfDay();
-  SoTimerSensor * sensor = (SoTimerSensor *)s;
-
-  double t =
-    double((currenttime - sensor->getBaseTime()).getValue()) / thisp->seek.period;
-  if ((t > 1.0f) || (t + sensor->getInterval().getValue() > 1.0f)) t = 1.0f;
-  SbBool end = (t == 1.0f);
-  
-  t = (1.0 - cos(M_PI*t)) * 0.5;
-  
-  SoCamera * camera = (SoCamera*) PUBLIC(thisp)->getPart("camera", TRUE);
-  camera->orientation = 
-    SbRotation::slerp(thisp->seek.camerastartorient,
-                      thisp->seek.cameraendorient, 
-                      (float) t);
-  UTMCamera * utmcamera = camera->isOfType(UTMCamera::getClassTypeId()) ?
-    (UTMCamera*) camera : NULL;
-  
-  SbVec3d newpos = thisp->seek.camerastartposition +
-    (thisp->seek.cameraendposition - thisp->seek.camerastartposition) * t;
-
-  if (utmcamera) { utmcamera->utmposition = newpos; }
-  else { 
-    SbVec3f tmp;
-    tmp.setValue(newpos);
-    camera->position = tmp; 
-  }
-
-  if (end) {
-    thisp->seek.seeking = FALSE;
-    thisp->seek.sensor->unschedule();
-  }
 }
 
 #undef PUBLIC
