@@ -42,7 +42,7 @@ public:
     SbVec3d newpos = thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t;
 
     thisp->camera->isOfType(UTMCamera::getClassTypeId()) ?
-      ((UTMCamera *)thisp->camera)->utmposition = newpos :
+      ((UTMCamera *)thisp->camera)->utmposition.setValue(newpos) :
       thisp->camera->position.setValue(SbVec3f(newpos[0], newpos[1], newpos[2]));
     
     if (end) {
