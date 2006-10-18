@@ -723,7 +723,6 @@ SmExaminerEventHandler::zoom(SoCamera * cam, const float diffvalue)
 void
 SmExaminerEventHandler::resetCameraFocalDistance(const SbViewportRegion & vpr)
 {
-  printf("SmExaminerEventHandler::resetCameraFocalDistance\n");
   SoNode * root = this->kit->getPart("scene", TRUE);
   assert(root);
   SoCamera * const camera = this->getCamera();
