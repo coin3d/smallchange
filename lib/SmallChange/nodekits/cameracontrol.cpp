@@ -12,7 +12,7 @@ public:
   SeekData() {
     this->seeking = FALSE;
     this->distance = 50.0f;
-    this->period = 2.0f;
+    this->seektime= 2.0f;
     this->sensor = new SoTimerSensor(SeekData::seeksensorCB, this);
   }
   
@@ -27,7 +27,7 @@ public:
     SoTimerSensor * timersensor = (SoTimerSensor *) sensor;
     
     SbTime dt = currenttime - timersensor->getBaseTime();
-    double t = double(dt.getValue()) / thisp->period;
+    double t = double(dt.getValue()) / thisp->seektime;
     
     if (t > 1.0f) t = 1.0f;
     if (t + timersensor->getInterval().getValue() > 1.0f) t = 1.0f;
@@ -59,7 +59,7 @@ public:
   SbRotation endorient;
   
   float distance;
-  float period;
+  float seektime;
   SoTimerSensor * sensor;
   SbBool seeking;
 };
@@ -106,11 +106,13 @@ void resetRoll(SoCamera * camera, const SbVec3f & viewup)
 
 void seekToPoint(SoCamera * camera,
                  const SbVec3d & endpoint,
-                 const SbRotation & endorient)
+                 const SbRotation & endorient,
+                 const float seektime)
 {
   seekdata.camera = camera;
   seekdata.endpoint = endpoint;
   seekdata.endorient = endorient;
+  seekdata.seektime = seektime;
   
   camera->isOfType(UTMCamera::getClassTypeId()) ?
     seekdata.startpoint = ((UTMCamera *)camera)->utmposition.getValue() :

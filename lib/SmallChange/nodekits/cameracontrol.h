@@ -34,7 +34,8 @@ class SbRotation;
 void resetRoll(SoCamera * camera, const SbVec3f & viewup);
 void seekToPoint(SoCamera * camera,
                  const SbVec3d & point,
-                 const SbRotation & orientation);
+                 const SbRotation & orientation,
+                 const float seektime = 2.0f);
 SbBool isSeeking(void);
 
 #endif // SMALLCHANGE_CAMERACONTROL_H
