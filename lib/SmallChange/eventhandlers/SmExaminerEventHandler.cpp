@@ -34,6 +34,7 @@
 #include <SmallChange/nodes/UTMCamera.h>
 #include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/events/SoLocation2Event.h>
 #include <Inventor/events/SoMotion3Event.h>
@@ -43,6 +44,7 @@
 #include <Inventor/nodes/SoPerspectiveCamera.h>
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/errors/SoDebugError.h>
+#include <Inventor/SoPickedPoint.h>
 #include <float.h>
 #include <assert.h>
 
@@ -715,6 +717,55 @@ SmExaminerEventHandler::zoom(SoCamera * cam, const float diffvalue)
     }
   }
 }
+
+// Will set up a decent, best-guess focal distance for the camera,
+// based e.g. on what is in the scene.
+void
+SmExaminerEventHandler::resetCameraFocalDistance(const SbViewportRegion & vpr)
+{
+  printf("SmExaminerEventHandler::resetCameraFocalDistance\n");
+  SoNode * root = this->kit->getPart("scene", TRUE);
+  assert(root);
+  SoCamera * const camera = this->getCamera();
+
+  UTMCamera * utmcamera = NULL;
+  SbVec3f cameraposition;
+  if (camera->isOfType(UTMCamera::getClassTypeId())) {
+    utmcamera = (UTMCamera *)camera;
+    cameraposition.setValue(utmcamera->utmposition.getValue());
+  }
+  else {
+    cameraposition = camera->position.getValue();
+  }
+  
+  // raypick-intersection attempt
+  SoRayPickAction raypick(vpr);
+  raypick.setPoint(vpr.getViewportSizePixels() / 2);
+  raypick.apply(root);
+  
+  const SoPickedPoint * pp = raypick.getPickedPoint();
+  if (pp) {
+    SbVec3f hitpoint = pp->getPoint();
+    if (utmcamera) { 
+      SbVec3f tmp;
+      tmp.setValue(utmcamera->utmposition.getValue());
+      hitpoint += tmp; 
+    }
+    camera->focalDistance = (cameraposition - hitpoint).length();
+    return;
+  }
+    
+  // failed raypick-intersection attempt, try with bounding box
+  SoGetBoundingBoxAction bba(vpr);
+  bba.apply(root);
+  const SbBox3f bbox = bba.getBoundingBox();
+  if (bbox.hasVolume()) {
+    SbSphere boundingsphere;
+    boundingsphere.circumscribe(bbox);
+    camera->focalDistance = boundingsphere.getRadius();
+  }
+}
+
 
 // ************************************************************************
 

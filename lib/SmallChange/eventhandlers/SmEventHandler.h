@@ -32,7 +32,6 @@
 #include <Inventor/nodes/SoNode.h>
 
 class SoHandleEventAction;
-class SmCameraControlKit;
 class SoCamera;
 class SoSensor;
 class SoTimerSensor;
@@ -43,6 +42,7 @@ class SMALLCHANGE_DLL_API SmEventHandler : public SoNode {
   typedef SoNode inherited;
 
   SO_NODE_ABSTRACT_HEADER(SmEventHandler);  
+
 public:
   static void initClass(void);
   
@@ -56,6 +56,7 @@ public:
   virtual void preRender(SoGLRenderAction * action);
   virtual void pulse(void);
   virtual SbBool isAnimating(void);
+  virtual void resetCameraFocalDistance(const SbViewportRegion & vpr);
   void enablePulse(const SbBool onoff);
 
 protected:
@@ -76,6 +77,7 @@ protected:
 
   SmCameraControlKit * kit;
   SoTimerSensor * pulser;
+
 private:
   static void pulse_cb(void * closure, SoSensor * s);
   

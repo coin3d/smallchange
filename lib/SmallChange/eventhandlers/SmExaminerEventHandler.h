@@ -50,6 +50,7 @@ public:
   virtual void handleEvent(SoHandleEventAction * action);
   virtual SbBool isAnimating(void);
   virtual void preRender(SoGLRenderAction * action);
+  virtual void resetCameraFocalDistance(const SbViewportRegion & vpr);
 
 protected:
   virtual ~SmExaminerEventHandler();

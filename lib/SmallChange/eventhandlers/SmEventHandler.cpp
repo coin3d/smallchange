@@ -134,6 +134,13 @@ SmEventHandler::isAnimating(void)
   return FALSE;
 }
 
+void
+SmEventHandler::resetCameraFocalDistance(const SbViewportRegion & vpr)
+{
+  // do nothing by default
+}
+
+
 void 
 SmEventHandler::enablePulse(const SbBool onoff)
 {
