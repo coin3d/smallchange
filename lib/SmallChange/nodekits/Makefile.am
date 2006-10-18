@@ -21,7 +21,8 @@ SOURCES = \
 	OceanKit.cpp SmOceanKit.h \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
         SmVesselKit.cpp SmVesselKit.h \
-        SmTrackPointKit.cpp SmTrackPointKit.h
+        SmTrackPointKit.cpp SmTrackPointKit.h \
+        cameracontrol.cpp cameracontrol.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
