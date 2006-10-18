@@ -44,7 +44,8 @@ libnodekitsinc_HEADERS = \
 	SmOceanKit.h \
         SmDynamicObjectKit.h \
         SmVesselKit.h \
-        SmTrackPointKit.h
+        SmTrackPointKit.h \
+        cameracontrol.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \

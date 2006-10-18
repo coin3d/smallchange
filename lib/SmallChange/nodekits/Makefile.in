@@ -219,7 +219,8 @@ libnodekitsinc_HEADERS = \
 	SmOceanKit.h \
         SmDynamicObjectKit.h \
         SmVesselKit.h \
-        SmTrackPointKit.h
+        SmTrackPointKit.h \
+        cameracontrol.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
