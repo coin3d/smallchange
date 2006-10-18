@@ -37,6 +37,8 @@ void resetRoll(SoCamera * camera, const SbVec3f & viewup)
   camerarot[1][0] = newy[0];
   camerarot[1][1] = newy[1];
   camerarot[1][2] = newy[2];
-  
+
+  camera->orientation.enableNotify(FALSE);  
   camera->orientation = SbRotation(camerarot);
+  camera->orientation.enableNotify(TRUE);
 }
