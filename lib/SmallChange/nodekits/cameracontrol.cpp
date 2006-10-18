@@ -9,9 +9,10 @@
 
 class SeekData {
 public:
-  SeekData() 
-    : seeking(FALSE), distance(50.0f), period(2.0f)
-  {
+  SeekData() {
+    this->seeking = FALSE;
+    this->distance = 50.0f;
+    this->period = 2.0f;
     this->sensor = new SoTimerSensor(SeekData::seeksensorCB, this);
   }
   
