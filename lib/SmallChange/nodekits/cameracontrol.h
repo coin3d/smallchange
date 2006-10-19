@@ -32,10 +32,15 @@ class SbVec3d;
 class SbRotation;
 
 void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup);
+
 void cam_seek_to_point(SoCamera * camera,
                        const SbVec3d & point,
                        const SbRotation & orientation,
                        const float seektime = 2.0f);
+
+void cam_seek_to_node(SoCamera * camera,
+                      const float seektime = 2.0f);
+
 SbBool cam_is_seeking(void);
 
 #endif // SMALLCHANGE_CAMERACONTROL_H

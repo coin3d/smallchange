@@ -7,6 +7,14 @@
 #include <SmallChange/nodes/UTMCamera.h>
 #include <Inventor/sensors/SoTimerSensor.h>
 
+static void cam_set_pos(SoCamera * camera, 
+                        const SbVec3d & position)
+{
+  camera->isOfType(UTMCamera::getClassTypeId()) ?
+    ((UTMCamera *)camera)->utmposition.setValue(position) :
+    camera->position.setValue(SbVec3f(position[0], position[1], position[2]));
+}
+
 class SeekData {
 public:
   SeekData() {
@@ -40,11 +48,7 @@ public:
                                                    thisp->endorient,
                                                    (float) t);
 
-    SbVec3d newpos = thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t;
-
-    thisp->camera->isOfType(UTMCamera::getClassTypeId()) ?
-      ((UTMCamera *)thisp->camera)->utmposition.setValue(newpos) :
-      thisp->camera->position.setValue(SbVec3f(newpos[0], newpos[1], newpos[2]));
+    cam_set_pos(thisp->camera, thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t);
     
     if (end) {
       thisp->seeking = FALSE;
@@ -109,6 +113,12 @@ void cam_seek_to_point(SoCamera * camera,
                        const SbRotation & endorient,
                        const float seektime)
 {
+  if (seektime == 0.0f) {
+    cam_set_pos(camera, endpoint);
+    camera->orientation.setValue(endorient);
+    return;
+  }
+
   seekdata.camera = camera;
   seekdata.endpoint = endpoint;
   seekdata.endorient = endorient;
@@ -127,6 +137,12 @@ void cam_seek_to_point(SoCamera * camera,
   seekdata.seeking = TRUE;
   seekdata.sensor->setBaseTime(SbTime::getTimeOfDay());
   seekdata.sensor->schedule();
+}
+
+void cam_seek_to_node(SoCamera * camera,
+                      const float seektime)
+{
+  
 }
 
 SbBool cam_is_seeking(void)
