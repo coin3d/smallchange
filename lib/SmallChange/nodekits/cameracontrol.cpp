@@ -76,7 +76,6 @@ public:
   SbVec3d endpoint;
   SbRotation endorient;
 
-  float focaldistance;
   float distance;
   float seektime;
   SoTimerSensor * sensor;
@@ -162,7 +161,6 @@ void cam_seek_to_node(SoCamera * camera,
   // save camera values
   seekdata.startpoint = cam_get_pos(camera);
   seekdata.startorient = camera->orientation.getValue();
-  seekdata.focaldistance = camera->focalDistance.getValue();
   
   // use camera to calculate an appropriate viewpoint
   SbBool searchchildren = SoBaseKit::isSearchingChildren();
@@ -177,7 +175,7 @@ void cam_seek_to_node(SoCamera * camera,
   SoGetBoundingBoxAction ba(vp);
   SoFullPath * path = (SoFullPath *) sa.getPath();
   ba.apply(path);
-  
+
   camera->viewAll(sa.getPath(), vp);
   camera->pointAt(ba.getCenter());
 
@@ -185,7 +183,6 @@ void cam_seek_to_node(SoCamera * camera,
   SbRotation endorient = camera->orientation.getValue();
 
   // restore camera values before seeking
-  camera->focalDistance.setValue(seekdata.focaldistance);
   camera->orientation = seekdata.startorient;
   cam_set_pos(camera, seekdata.startpoint);
   
