@@ -66,7 +66,7 @@ public:
 
 static SeekData seekdata;
 
-void resetRoll(SoCamera * camera, const SbVec3f & viewup)
+void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup)
 {
   assert(camera);
 
@@ -104,10 +104,10 @@ void resetRoll(SoCamera * camera, const SbVec3f & viewup)
   camera->orientation.enableNotify(TRUE);
 }
 
-void seekToPoint(SoCamera * camera,
-                 const SbVec3d & endpoint,
-                 const SbRotation & endorient,
-                 const float seektime)
+void cam_seek_to_point(SoCamera * camera,
+                       const SbVec3d & endpoint,
+                       const SbRotation & endorient,
+                       const float seektime)
 {
   seekdata.camera = camera;
   seekdata.endpoint = endpoint;
@@ -129,7 +129,7 @@ void seekToPoint(SoCamera * camera,
   seekdata.sensor->schedule();
 }
 
-SbBool isSeeking(void)
+SbBool cam_is_seeking(void)
 {
   return seekdata.seeking;
 }

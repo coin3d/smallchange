@@ -516,7 +516,7 @@ SmCameraControlKit::getCameraCoordinateSystem(SoCamera * camera,
 SbBool 
 SmCameraControlKit::isAnimating(void)
 {
-  if (::isSeeking()) return TRUE;
+  if (cam_is_seeking()) return TRUE;
   
   SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
   if (eh) {
@@ -528,7 +528,7 @@ SmCameraControlKit::isAnimating(void)
 SbBool 
 SmCameraControlKit::isBusy(void) const
 {
-  return ::isSeeking();
+  return cam_is_seeking();
 }
 
 SbBool
@@ -539,7 +539,7 @@ SmCameraControlKit::seekToPoint(const SbVec3d & point,
   SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
   if (!camera) return FALSE;
   
-  ::seekToPoint(camera, point, orientation);
+  cam_seek_to_point(camera, point, orientation);
   return TRUE;
 }
 
@@ -610,7 +610,7 @@ void
 SmCameraControlKit::resetCameraRoll(void)
 {
   SoCamera * camera = (SoCamera*) this->getPart("camera", TRUE);
-  resetRoll(camera, this->viewUp.getValue());
+  cam_reset_roll(camera, this->viewUp.getValue());
 }
 
 
