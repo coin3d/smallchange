@@ -29,7 +29,9 @@
 class SoCamera;
 class SbVec3f;
 class SbVec3d;
+class SoNode;
 class SbRotation;
+class SbViewportRegion;
 
 void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup);
 
@@ -39,6 +41,9 @@ void cam_seek_to_point(SoCamera * camera,
                        const float seektime = 2.0f);
 
 void cam_seek_to_node(SoCamera * camera,
+                      SoNode * node,
+                      SoNode * root,
+                      const SbViewportRegion & vp,
                       const float seektime = 2.0f);
 
 SbBool cam_is_seeking(void);
