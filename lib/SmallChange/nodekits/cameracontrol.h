@@ -46,6 +46,6 @@ void cam_seek_to_node(SoCamera * camera,
                       const SbViewportRegion & vp,
                       const float seektime = 2.0f);
 
-SbBool cam_is_seeking(void);
+SbBool cam_is_seeking(SoCamera * camera);
 
 #endif // SMALLCHANGE_CAMERACONTROL_H

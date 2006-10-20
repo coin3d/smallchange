@@ -516,7 +516,8 @@ SmCameraControlKit::getCameraCoordinateSystem(SoCamera * camera,
 SbBool 
 SmCameraControlKit::isAnimating(void)
 {
-  if (cam_is_seeking()) return TRUE;
+  SoCamera * camera = (SoCamera*) this->getAnyPart("camera", TRUE);
+  if (cam_is_seeking(camera)) return TRUE;
   
   SmEventHandler * eh = (SmEventHandler*) this->eventHandler.getValue();
   if (eh) {
@@ -528,7 +529,11 @@ SmCameraControlKit::isAnimating(void)
 SbBool 
 SmCameraControlKit::isBusy(void) const
 {
-  return cam_is_seeking();
+  // FIXME: is there a better solution than casting away the const on
+  // the this pointer to get a hold of the camera here? (20061020
+  // frodo)
+  SoCamera * camera = (SoCamera*) ((SmCameraControlKit*)this)->getAnyPart("camera", TRUE);
+  return cam_is_seeking(camera);
 }
 
 SbBool

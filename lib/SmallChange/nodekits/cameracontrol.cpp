@@ -11,6 +11,27 @@
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/sensors/SoTimerSensor.h>
+#include <Inventor/SbDict.h>
+
+static SbDict * cameradict = NULL;
+
+class SeekData {
+public:
+  SeekData(void);
+  ~SeekData();
+
+  SoCamera * camera;
+  SbVec3d startpoint;
+  SbRotation startorient;
+  SbVec3d endpoint;
+  SbRotation endorient;
+
+  float seektime;
+  SoTimerSensor * sensor;
+
+private:
+  static void seeksensorCB(void * closure, SoSensor * sensor);
+};
 
 static void cam_set_pos(SoCamera * camera, 
                         const SbVec3d & position)
@@ -30,59 +51,45 @@ static SbVec3d cam_get_pos(SoCamera * camera)
   return pos;
 }
 
-class SeekData {
-public:
-  SeekData() {
-    this->seeking = FALSE;
-    this->distance = 50.0f;
-    this->seektime= 2.0f;
-    this->sensor = new SoTimerSensor(SeekData::seeksensorCB, this);
-  }
+SeekData::SeekData() 
+{
+  this->seektime= 2.0f;
+  this->sensor = new SoTimerSensor(SeekData::seeksensorCB, this);
+}
   
-  ~SeekData() {
-    delete this->sensor;
+SeekData::~SeekData() 
+{
+  delete this->sensor;
+}
+
+void 
+SeekData::seeksensorCB(void * closure, SoSensor * sensor)
+{
+  SeekData * thisp = (SeekData *) closure;
+  SoTimerSensor * timersensor = (SoTimerSensor *) sensor;
+  
+  SbTime dt = SbTime::getTimeOfDay() - timersensor->getBaseTime();
+  double t = double(dt.getValue()) / thisp->seektime;
+  
+  if (t > 1.0f) t = 1.0f;
+  if (t + timersensor->getInterval().getValue() > 1.0f) t = 1.0f;
+  
+  SbBool end = (t == 1.0f);
+  
+  t = (1.0 - cos(M_PI*t)) * 0.5;
+  
+  thisp->camera->orientation = SbRotation::slerp(thisp->startorient,
+                                                 thisp->endorient,
+                                                 (float) t);
+  
+  cam_set_pos(thisp->camera, thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t);
+  
+  if (end) {
+    thisp->sensor->unschedule();
+    cameradict->remove((unsigned long)thisp->camera);
+    delete thisp;
   }
-
-  static void seeksensorCB(void * closure, SoSensor * sensor)
-  {
-    SeekData * thisp = (SeekData *) closure;
-    SoTimerSensor * timersensor = (SoTimerSensor *) sensor;
-    
-    SbTime dt = SbTime::getTimeOfDay() - timersensor->getBaseTime();
-    double t = double(dt.getValue()) / thisp->seektime;
-    
-    if (t > 1.0f) t = 1.0f;
-    if (t + timersensor->getInterval().getValue() > 1.0f) t = 1.0f;
-    
-    SbBool end = (t == 1.0f);
-    
-    t = (1.0 - cos(M_PI*t)) * 0.5;
-    
-    thisp->camera->orientation = SbRotation::slerp(thisp->startorient,
-                                                   thisp->endorient,
-                                                   (float) t);
-
-    cam_set_pos(thisp->camera, thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t);
-    
-    if (end) {
-      thisp->seeking = FALSE;
-      thisp->sensor->unschedule();
-    }
-  }
-
-  SoCamera * camera;
-  SbVec3d startpoint;
-  SbRotation startorient;
-  SbVec3d endpoint;
-  SbRotation endorient;
-
-  float distance;
-  float seektime;
-  SoTimerSensor * sensor;
-  SbBool seeking;
-};
-
-static SeekData seekdata;
+}
 
 void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup)
 {
@@ -127,27 +134,36 @@ void cam_seek_to_point(SoCamera * camera,
                        const SbRotation & endorient,
                        const float seektime)
 {
+  // if seektime is zero, get straight to the point
   if (seektime == 0.0f) {
     cam_set_pos(camera, endpoint);
     camera->orientation.setValue(endorient);
     return;
   }
 
-  seekdata.camera = camera;
-  seekdata.startpoint = cam_get_pos(camera);
-  seekdata.startorient = camera->orientation.getValue();
-
-  seekdata.endpoint = endpoint;
-  seekdata.endorient = endorient;
-  seekdata.seektime = seektime;
-  
-  if (seekdata.sensor->isScheduled()) {
-    seekdata.sensor->unschedule();
+  if (!cameradict) {
+    cameradict = new SbDict;
   }
   
-  seekdata.seeking = TRUE;
-  seekdata.sensor->setBaseTime(SbTime::getTimeOfDay());
-  seekdata.sensor->schedule();
+  SeekData * seekdata;
+  if (!cameradict->find((unsigned long) camera, (void*&) seekdata)) {
+    seekdata = new SeekData;
+    seekdata->camera = camera;
+    cameradict->enter((unsigned long) camera, seekdata);
+  }
+
+  seekdata->startpoint = cam_get_pos(camera);
+  seekdata->startorient = camera->orientation.getValue();
+
+  seekdata->endpoint = endpoint;
+  seekdata->endorient = endorient;
+  seekdata->seektime = seektime;
+  
+  if (seekdata->sensor->isScheduled()) {
+    seekdata->sensor->unschedule();
+  }
+  seekdata->sensor->setBaseTime(SbTime::getTimeOfDay());
+  seekdata->sensor->schedule();
 }
 
 void cam_seek_to_node(SoCamera * camera,
@@ -157,10 +173,10 @@ void cam_seek_to_node(SoCamera * camera,
                       const float seektime)
 {
   assert(camera && node && root);
-
+  
   // save camera values
-  seekdata.startpoint = cam_get_pos(camera);
-  seekdata.startorient = camera->orientation.getValue();
+  SbVec3d startpoint = cam_get_pos(camera);
+  SbRotation startorient = camera->orientation.getValue();
   
   // use camera to calculate an appropriate viewpoint
   SbBool searchchildren = SoBaseKit::isSearchingChildren();
@@ -182,15 +198,16 @@ void cam_seek_to_node(SoCamera * camera,
   SbVec3d endpoint = cam_get_pos(camera);
   SbRotation endorient = camera->orientation.getValue();
 
-  // restore camera values before seeking
-  camera->orientation = seekdata.startorient;
-  cam_set_pos(camera, seekdata.startpoint);
+  // restore camera values
+  camera->orientation = startorient;
+  cam_set_pos(camera, startpoint);
   
   // seek to the computed point
   cam_seek_to_point(camera, endpoint, endorient, seektime);
 }
 
-SbBool cam_is_seeking(void)
+SbBool cam_is_seeking(SoCamera * camera)
 {
-  return seekdata.seeking;
+  void * dummy = NULL;
+  return cameradict->find((unsigned long) camera, dummy);
 }
