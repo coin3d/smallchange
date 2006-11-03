@@ -190,37 +190,43 @@ SmPanEventHandler::spin(const SbVec2f & currpos,
                         const SbVec2f & prevpos)
 {
   SoCamera * cam = this->getCamera();
-  if (!cam->isOfType(UTMCamera::getClassTypeId())) {
+  if (cam == NULL || !cam->isOfType(UTMCamera::getClassTypeId())) {
     return;
   }
 
+  // find the rotation from prevpos to currpos
   SbVec3f to = PRIVATE(this)->spinprojector->project(prevpos);
   SbVec3f from = PRIVATE(this)->spinprojector->project(currpos);
-
   SbRotation rot = PRIVATE(this)->spinprojector->getRotation(from, to);
 
-  SbVec3f axis;
-  float radians;
-  rot.getValue(axis, radians);
+  // find the matrices for current rotation and new rotation
+  SbMatrix camerarot, newrot;
+  camerarot.setRotate(cam->orientation.getValue());
+  newrot.setRotate(rot * cam->orientation.getValue());
 
-  UTMCamera * utm = (UTMCamera*) cam;
-  SbVec3d utmpos = utm->utmposition.getValue();
+  SbVec3f lookat(camerarot[2]);
+  SbVec3f newlookat(newrot[2]);
+  SbVec3f camup(newrot[1]);
 
-  if (cam == NULL) return;
+  // Do not allow the camera up vector to cross the plane defined by
+  // the world up vector.
+  if (camup.dot(this->kit->viewUp.getValue()) < 0.0f) {
+    return;
+  }
+
+  cam->orientation.setValue(SbRotation(newrot));
       
-  // Find global coordinates of focal point.
-  SbVec3f direction;
-  cam->orientation.getValue().multVec(SbVec3f(0, 0, -1), direction);
-  SbVec3f focalpoint = cam->position.getValue() +
-    cam->focalDistance.getValue() * direction;
-      
-  // Set new orientation value by accumulating the new rotation.
-  cam->orientation = rot * cam->orientation.getValue();
-      
-  // Reposition camera so we are still pointing at the same old focal point.
-  cam->orientation.getValue().multVec(SbVec3f(0, 0, -1), direction);
-  SbVec3f val((focalpoint-cam->focalDistance.getValue()*direction)-cam->position.getValue());
-  utm->utmposition = utmpos + SbVec3d(val[0], val[1], val[2]);
+  // Reposition camera so we are still pointing at the same old focal
+  // point.
+  SbVec3f campos = cam->position.getValue();
+  float focaldist = cam->focalDistance.getValue();
+
+  SbVec3f focalpoint = campos - focaldist * lookat;
+  SbVec3f val = (focalpoint + focaldist * newlookat) - campos;
+
+  UTMCamera * utmcamera = (UTMCamera*) cam;  
+  utmcamera->utmposition =
+    utmcamera->utmposition.getValue() + SbVec3d(val[0], val[1], val[2]);
 }
 
 
