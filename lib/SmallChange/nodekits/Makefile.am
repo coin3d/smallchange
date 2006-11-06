@@ -21,8 +21,7 @@ SOURCES = \
 	OceanKit.cpp SmOceanKit.h \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
         SmVesselKit.cpp SmVesselKit.h \
-        SmTrackPointKit.cpp SmTrackPointKit.h \
-        cameracontrol.cpp cameracontrol.h
+        SmTrackPointKit.cpp SmTrackPointKit.h
 
 libnodekits_la_SOURCES = $(SOURCES)
 
@@ -44,8 +43,7 @@ libnodekitsinc_HEADERS = \
 	SmOceanKit.h \
         SmDynamicObjectKit.h \
         SmVesselKit.h \
-        SmTrackPointKit.h \
-        cameracontrol.h
+        SmTrackPointKit.h
 
 nodekits.lst: $(nodekits_lst_OBJECTS)
 	@echo "Linking $@..."; \

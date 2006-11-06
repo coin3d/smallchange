@@ -195,8 +195,7 @@ SOURCES = \
 	OceanKit.cpp SmOceanKit.h \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
         SmVesselKit.cpp SmVesselKit.h \
-        SmTrackPointKit.cpp SmTrackPointKit.h \
-        cameracontrol.cpp cameracontrol.h
+        SmTrackPointKit.cpp SmTrackPointKit.h
 
 
 libnodekits_la_SOURCES = $(SOURCES)
@@ -219,8 +218,7 @@ libnodekitsinc_HEADERS = \
 	SmOceanKit.h \
         SmDynamicObjectKit.h \
         SmVesselKit.h \
-        SmTrackPointKit.h \
-        cameracontrol.h
+        SmTrackPointKit.h
 
 subdir = lib/SmallChange/nodekits
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -237,8 +235,7 @@ am__objects_1 = LegendKit.$(OBJEXT) SoFEMKit.$(OBJEXT) \
 	NormalsKit.$(OBJEXT) SmAxisDisplayKit.$(OBJEXT) \
 	SmAxisKit.$(OBJEXT) SmPieChart.$(OBJEXT) PopupMenuKit.$(OBJEXT) \
 	OceanKit.$(OBJEXT) SmDynamicObjectKit.$(OBJEXT) \
-	SmVesselKit.$(OBJEXT) SmTrackPointKit.$(OBJEXT) \
-	cameracontrol.$(OBJEXT)
+	SmVesselKit.$(OBJEXT) SmTrackPointKit.$(OBJEXT)
 am_nodekits_lst_OBJECTS = $(am__objects_1)
 nodekits_lst_OBJECTS = $(am_nodekits_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -249,7 +246,7 @@ am__objects_2 = LegendKit.lo SoFEMKit.lo SmTooltipKit.lo SmWellLogKit.lo \
 	SmCameraControlKit.lo GeoMarkerKit.lo NormalsKit.lo \
 	SmAxisDisplayKit.lo SmAxisKit.lo SmPieChart.lo PopupMenuKit.lo \
 	OceanKit.lo SmDynamicObjectKit.lo SmVesselKit.lo \
-	SmTrackPointKit.lo cameracontrol.lo
+	SmTrackPointKit.lo
 am_libnodekits_la_OBJECTS = $(am__objects_2)
 libnodekits_la_OBJECTS = $(am_libnodekits_la_OBJECTS)
 
@@ -281,9 +278,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmVesselKit.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmWellLogKit.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmWellLogKit.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/SoFEMKit.Plo ./$(DEPDIR)/SoFEMKit.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/cameracontrol.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/cameracontrol.Po
+@AMDEP_TRUE@	./$(DEPDIR)/SoFEMKit.Plo ./$(DEPDIR)/SoFEMKit.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -318,8 +313,7 @@ SOURCES = \
 	OceanKit.cpp SmOceanKit.h \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
         SmVesselKit.cpp SmVesselKit.h \
-        SmTrackPointKit.cpp SmTrackPointKit.h \
-        cameracontrol.cpp cameracontrol.h
+        SmTrackPointKit.cpp SmTrackPointKit.h
 
 
 all: all-am
@@ -382,8 +376,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmWellLogKit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoFEMKit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoFEMKit.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cameracontrol.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cameracontrol.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)

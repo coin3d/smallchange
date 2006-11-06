@@ -66,7 +66,7 @@
 #include <SmallChange/nodes/UTMCamera.h>
 #include <SmallChange/nodes/SmHeadlight.h>
 
-#include "cameracontrol.h"
+#include "../misc/cameracontrol.h"
 
 // *************************************************************************
 

@@ -193,14 +193,16 @@ libmisc_la_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
 	SceneManager.cpp SmSceneManager.h \
-	Envelope.cpp SmEnvelope.h
+	Envelope.cpp SmEnvelope.h \
+        cameracontrol.cpp cameracontrol.h
 
 
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
 	SceneManager.cpp SmSceneManager.h \
-	Envelope.cpp SmEnvelope.h
+	Envelope.cpp SmEnvelope.h \
+        cameracontrol.cpp cameracontrol.h
 
 
 libmiscincdir = $(includedir)/SmallChange/misc
@@ -220,14 +222,15 @@ LIBRARIES = $(noinst_LIBRARIES)
 misc_lst_AR = $(AR) cru
 misc_lst_LIBADD =
 am_misc_lst_OBJECTS = Init.$(OBJEXT) SbCubicSpline.$(OBJEXT) \
-	SceneManager.$(OBJEXT) Envelope.$(OBJEXT)
+	SceneManager.$(OBJEXT) Envelope.$(OBJEXT) \
+	cameracontrol.$(OBJEXT)
 misc_lst_OBJECTS = $(am_misc_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libmisc_la_LDFLAGS =
 libmisc_la_LIBADD =
 am_libmisc_la_OBJECTS = Init.lo SbCubicSpline.lo SceneManager.lo \
-	Envelope.lo
+	Envelope.lo cameracontrol.lo
 libmisc_la_OBJECTS = $(am_libmisc_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -238,7 +241,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SbCubicSpline.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Po
+@AMDEP_TRUE@	./$(DEPDIR)/SceneManager.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/cameracontrol.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/cameracontrol.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -298,6 +303,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SbCubicSpline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SceneManager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cameracontrol.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cameracontrol.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)

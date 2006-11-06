@@ -18,13 +18,15 @@ libmisc_la_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
 	SceneManager.cpp SmSceneManager.h \
-	Envelope.cpp SmEnvelope.h
+	Envelope.cpp SmEnvelope.h \
+        cameracontrol.cpp cameracontrol.h
 
 misc_lst_SOURCES = \
 	Init.cpp Init.h \
 	SbCubicSpline.cpp SbCubicSpline.h \
 	SceneManager.cpp SmSceneManager.h \
-	Envelope.cpp SmEnvelope.h
+	Envelope.cpp SmEnvelope.h \
+        cameracontrol.cpp cameracontrol.h
 
 libmiscincdir = $(includedir)/SmallChange/misc
 libmiscinc_HEADERS = \
