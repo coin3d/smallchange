@@ -25,15 +25,20 @@
 \**************************************************************************/
 
 #include <Inventor/SbBasic.h>
+#include <Inventor/SbLinear.h>
 
 class SoCamera;
-class SbVec3f;
 class SbVec3d;
+class SbVec2f;
+class SbVec3f;
 class SoNode;
-class SbRotation;
 class SbViewportRegion;
 
 void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup);
+
+void cam_spin(SoCamera * camera,
+              const SbVec2f & dp,
+              const SbVec3f & up);
 
 void cam_seek_to_point(SoCamera * camera,
                        const SbVec3d & point,

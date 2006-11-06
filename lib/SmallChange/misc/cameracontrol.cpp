@@ -11,9 +11,11 @@
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/sensors/SoTimerSensor.h>
+#include <Inventor/projectors/SbSphereSheetProjector.h>
 #include <Inventor/SbDict.h>
 
 static SbDict * cameradict = NULL;
+static SbSphereSheetProjector * spinprojector = NULL;
 
 class SeekData {
 public:
@@ -33,12 +35,18 @@ private:
   static void seeksensorCB(void * closure, SoSensor * sensor);
 };
 
-static void cam_set_pos(SoCamera * camera, 
-                        const SbVec3d & position)
+static void set_pos(SoCamera * camera, 
+                    const SbVec3d & position)
 {
   camera->isOfType(UTMCamera::getClassTypeId()) ?
     ((UTMCamera *)camera)->utmposition.setValue(position) :
     camera->position.setValue(SbVec3f(position[0], position[1], position[2]));
+}
+
+static void set_pos(SoCamera * camera, 
+                    const SbVec3f & position)
+{
+  set_pos(camera, SbVec3d(position[0], position[1], position[2]));
 }
 
 static SbVec3d cam_get_pos(SoCamera * camera)
@@ -82,7 +90,7 @@ SeekData::seeksensorCB(void * closure, SoSensor * sensor)
                                                  thisp->endorient,
                                                  (float) t);
   
-  cam_set_pos(thisp->camera, thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t);
+  set_pos(thisp->camera, thisp->startpoint + (thisp->endpoint - thisp->startpoint) * t);
   
   if (end) {
     thisp->sensor->unschedule();
@@ -129,6 +137,58 @@ void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup)
   camera->orientation.enableNotify(TRUE);
 }
 
+void cam_spin(SoCamera * camera,
+              const SbVec2f & dp,
+              const SbVec3f & up)
+{
+  if (!spinprojector) {
+    spinprojector = new SbSphereSheetProjector(SbSphere(SbVec3f(0, 0, 0), 0.8f));
+    SbViewVolume volume;
+    volume.ortho(-1, 1, -1, 1, -1, 1);
+    spinprojector->setViewVolume(volume);
+  }
+
+  assert(camera != NULL);
+  
+  SbVec2f prevpos(0.5f, 0.5f);
+  SbVec2f currpos = prevpos + dp;
+
+  // find the rotation from prevpos to currpos
+  SbVec3f to = spinprojector->project(prevpos);
+  SbVec3f from = spinprojector->project(currpos);
+  SbRotation rot = spinprojector->getRotation(from, to);
+
+  // find the matrices for current rotation and new rotation
+  SbMatrix matrix, newmatrix;
+  matrix.setRotate(camera->orientation.getValue());
+  newmatrix.setRotate(rot * camera->orientation.getValue());
+
+  SbVec3f lookat(matrix[2]);
+  SbVec3f newlookat(newmatrix[2]);
+  SbVec3f camup(newmatrix[1]);
+
+  // Do not allow the camera up vector to cross the plane defined by
+  // the world up vector by returning the old values
+  if (camup.dot(up) < 0.0f) {
+    return;
+  }
+
+  // calculate new camera position and orientation
+  SbVec3f campos = camera->position.getValue();
+  float focaldist = camera->focalDistance.getValue();
+  SbVec3f focalpoint = campos - focaldist * lookat;
+  SbVec3f newpos = (focalpoint + focaldist * newlookat) - campos;
+
+  if (camera->isOfType(UTMCamera::getClassTypeId())) {
+    UTMCamera * utmcamera = (UTMCamera *) camera;
+    SbVec3d utmpos = utmcamera->utmposition.getValue();
+    newpos += SbVec3f(utmpos[0], utmpos[1], utmpos[2]);
+  }
+
+  set_pos(camera, newpos);
+  camera->orientation = SbRotation(newmatrix);
+}
+
 void cam_seek_to_point(SoCamera * camera,
                        const SbVec3d & endpoint,
                        const SbRotation & endorient,
@@ -136,7 +196,7 @@ void cam_seek_to_point(SoCamera * camera,
 {
   // if seektime is zero, get straight to the point
   if (seektime == 0.0f) {
-    cam_set_pos(camera, endpoint);
+    set_pos(camera, endpoint);
     camera->orientation.setValue(endorient);
     return;
   }
@@ -200,7 +260,7 @@ void cam_seek_to_node(SoCamera * camera,
 
   // restore camera values
   camera->orientation = startorient;
-  cam_set_pos(camera, startpoint);
+  set_pos(camera, startpoint);
   
   // seek to the computed point
   cam_seek_to_point(camera, endpoint, endorient, seektime);
