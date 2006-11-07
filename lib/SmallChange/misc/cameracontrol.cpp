@@ -99,41 +99,35 @@ SeekData::seeksensorCB(void * closure, SoSensor * sensor)
   }
 }
 
-void cam_reset_roll(SoCamera * camera, const SbVec3f & viewup)
+void cam_reset_roll(SoCamera * camera, const SbVec3f & up)
 {
-  assert(camera);
+  assert(camera != NULL && up != SbVec3f(0.0f, 0.0f, 0.0f));
 
-  SbVec3f newy = viewup;
-  if (newy == SbVec3f(0.0f, 0.0f, 0.0f)) return;
+  SbMatrix matrix;
+  matrix.setRotate(camera->orientation.getValue());
+  SbVec3f lookat(matrix[2]);
 
-  SbMatrix camerarot;
-  camerarot.setRotate(camera->orientation.getValue());
-  
-  SbVec3f Z;
-  Z[0] = camerarot[2][0];
-  Z[1] = camerarot[2][1];
-  Z[2] = camerarot[2][2];
-  
-  if (fabs(Z.dot(newy)) > 0.99f) {
+  if (fabs(lookat.dot(up)) > 0.99f) {
     // just give up
     return;
   }
-  SbVec3f newx = newy.cross(Z);
-  newy = Z.cross(newx);
   
-  newx.normalize();
-  newy.normalize();
-
-  camerarot[0][0] = newx[0];
-  camerarot[0][1] = newx[1];
-  camerarot[0][2] = newx[2];
+  SbVec3f side = up.cross(lookat);
+  SbVec3f camup = lookat.cross(side);
   
-  camerarot[1][0] = newy[0];
-  camerarot[1][1] = newy[1];
-  camerarot[1][2] = newy[2];
+  side.normalize();
+  camup.normalize();
 
+  matrix[0][0] = side[0];
+  matrix[0][1] = side[1];
+  matrix[0][2] = side[2];
+  
+  matrix[1][0] = camup[0];
+  matrix[1][1] = camup[1];
+  matrix[1][2] = camup[2];
+  
   camera->orientation.enableNotify(FALSE);  
-  camera->orientation = SbRotation(camerarot);
+  camera->orientation = SbRotation(matrix);
   camera->orientation.enableNotify(TRUE);
 }
 
@@ -163,14 +157,15 @@ void cam_spin(SoCamera * camera,
   matrix.setRotate(camera->orientation.getValue());
   newmatrix.setRotate(rot * camera->orientation.getValue());
 
+  SbVec3f camup(matrix[1]);
   SbVec3f lookat(matrix[2]);
+  SbVec3f newcamup(newmatrix[1]);
   SbVec3f newlookat(newmatrix[2]);
-  SbVec3f camup(newmatrix[1]);
 
   // Do not allow the camera up vector to cross the plane defined by
   // the world up vector by returning the old values
-  if (camup.dot(up) < 0.0f) {
-    return;
+  if (newcamup.dot(up) < 0.0f) {
+      return;
   }
 
   // calculate new camera position and orientation
@@ -184,7 +179,7 @@ void cam_spin(SoCamera * camera,
     SbVec3d utmpos = utmcamera->utmposition.getValue();
     newpos += SbVec3f(utmpos[0], utmpos[1], utmpos[2]);
   }
-
+  
   set_pos(camera, newpos);
   camera->orientation = SbRotation(newmatrix);
 }
