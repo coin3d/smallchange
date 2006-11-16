@@ -21,16 +21,9 @@
  *
 \**************************************************************************/
 
-// FIXME: this code does not compile as it is. I'm not sure whether
-// that is due to bit-rot or if it was just never completed. It
-// /looks/ fairly complete, but check with Torbjørn Vik before
-// attempting to fix. 20030109 mortene.
-
 #include <Inventor/SoDB.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
-#include "../nodes/SoTCBCurve.h"
-#include "SoCameraPathEditKit.h"
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoDrawStyle.h>
 #include <Inventor/nodes/SoCoordinate3.h>
@@ -43,7 +36,6 @@
 #include <Inventor/details/SoLineDetail.h>
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/nodekits/SoBaseKit.h>
-#include "../SoText2Set/SoText2Set.h"
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
@@ -51,18 +43,20 @@
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/SbTime.h>
 #include <Inventor/nodes/SoFile.h>
-#include "SoAngle1Manip.h"
-#include "SoAngle1Dragger.h"
 #include <Inventor/nodes/SoTransform.h>
 #include <Inventor/nodes/SoRotation.h>
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoLightModel.h>
 
+#include <SmallChange/draggers/SoAngle1Manip.h>
+#include <SmallChange/draggers/SoAngle1Dragger.h>
+#include <SmallChange/nodes/SoTCBCurve.h>
+#include <SmallChange/nodes/SoText2Set.h>
 
+#include "SoCameraPathEditKit.h"
 
 SO_KIT_SOURCE(SoCameraPathEditKit);
-
 
 void
 SoCameraPathEditKit::initClass()
@@ -76,8 +70,6 @@ SoCameraPathEditKit::initClass()
 }
 
 
-
-
 SoCameraPathEditKit::SoCameraPathEditKit()
 {
 
@@ -89,8 +81,8 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   SO_NODE_ADD_FIELD(timeScale, (1));
   SO_NODE_ADD_FIELD(activePoint, (0));
 
-  SO_NODE_ADD_FIELD(position, ((0, 0, 0)));
-  SO_NODE_ADD_FIELD(orientation, ((0, 0, 0)));
+  SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(orientation, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(timestamp, (0.0));
   SO_NODE_ADD_FIELD(editMode, (POSITION));
 
@@ -109,7 +101,7 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   // Sub draggerSeparator
   SO_KIT_ADD_CATALOG_ENTRY(draggerPick, SoPickStyle, TRUE, draggerSeparator, draggerDraw, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(draggerDraw, SoDrawStyle, TRUE, draggerSeparator, draggerTransform, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(draggerTransform, SoTransform, FALSE, draggerSeparator, draggerSwitch, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(draggerTransform, SoTransform, FALSE, draggerSeparator, draggerSwitch, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(draggerSwitch, SoSwitch, FALSE, draggerSeparator, "", FALSE);
 
   // Sub draggerSwitch
@@ -129,7 +121,7 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   SO_KIT_ADD_CATALOG_ENTRY(bank, SoAngle1Manip, TRUE, orDragger, "", TRUE);
 
   // Sub feedbackSeparator
-  SO_KIT_ADD_CATALOG_ENTRY(coordinates, SoCoordinate3, TRUE, feedbackSeparator, tagSeparator, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(coordinates, SoCoordinate3, TRUE, feedbackSeparator, tagSeparator, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(tagSeparator, SoSeparator, FALSE, feedbackSeparator, curveSeparator, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(curveSeparator, SoSeparator, FALSE, feedbackSeparator, objectSeparator, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(objectSeparator, SoSeparator, FALSE, feedbackSeparator, "", FALSE);
@@ -144,7 +136,7 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   SO_KIT_ADD_CATALOG_ENTRY(curve, SoTCBCurve, TRUE, curveSeparator, "", TRUE);
 
   // Sub objectSeparator
-  SO_KIT_ADD_CATALOG_ENTRY(objectTransform, SoTransform, TRUE, objectSeparator, objectDrawStyle, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(objectTransform, SoTransform, TRUE, objectSeparator, objectDrawStyle, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(objectDrawStyle, SoDrawStyle, TRUE, objectSeparator, objectModel, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(objectModel, SoFile, TRUE, objectSeparator, "", TRUE);
 
@@ -161,17 +153,14 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   drawStyle->lineWidth = 1;
   setPart("curveDrawStyle", drawStyle);
 
-
   insertPosition(SbVec3f(-10, -10, -10), SbTime(0.0));
   insertPosition(SbVec3f(10, 10, 10), SbTime(10.0));
-  SoCoordinate3 * coordinates = (SoCoordinate3 *)this->getAnyPart("coordinates", TRUE);
-
 
   SoPointSet * controlpoints = (SoPointSet *)this->getAnyPart("controlpoints", TRUE);
   setPart("controlpoints", controlpoints);
 
   SoTCBCurve * curve = (SoTCBCurve *)this->getAnyPart("curve", TRUE);
-  curve->setTimestampSrc(&timestamp);
+  curve->timestamp.connectFrom(&timestamp);
 
 
   //---- Setting up draggers... 
@@ -215,11 +204,11 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   SoRotation * bankRotate = (SoRotation *)this->getAnyPart("bankRotate", TRUE);
   bankRotate->rotation.setValue(SbVec3f(1, 0, 0), 0.5*3.1459);
 
+  SoCoordinate3 * coordinates = (SoCoordinate3 *)this->getAnyPart("coordinates", TRUE);
   draggerTransform->translation = coordinates->point[activePoint.getValue()];
 
   SoText2Set * tags = (SoText2Set *)this->getAnyPart("tags", TRUE);
   tags->justification = SoText2Set::CENTER;
-  tags->displacement = SbVec2f(0.0, 20.0);
   buildTags();
   activePoint = 0;
 
@@ -430,7 +419,6 @@ void SoCameraPathEditKit::pickCallback(void * data, SoEventCallback * eventCallb
 
   if (SoMouseButtonEvent::isButtonPressEvent(eventCallback->getEvent(), SoMouseButtonEvent::BUTTON2))
     {
-
       for (i = 0; i < plist.getLength(); i++)
         {
           pick = plist[i];
@@ -457,7 +445,6 @@ SoCameraPathEditKit::~SoCameraPathEditKit()
 
 
 
-
 void SoCameraPathEditKit::buildTag(int tagidx)
 {
   SoText2Set * tags = SO_GET_PART(this, "tags", SoText2Set);
@@ -470,7 +457,9 @@ void SoCameraPathEditKit::buildTag(int tagidx)
   else
     s = timestamp[tagidx].format("%h:%m:%s:%i");
 
-  tags->strings.setValues(tagidx, 1, &s);
+  tags->string.setValues(tagidx, 1, &s);
+  SoCoordinate3 * coordinates = (SoCoordinate3 *)this->getAnyPart("coordinates", TRUE);
+  tags->position.set1Value(tagidx, coordinates->point[tagidx]);
 }
 
 
@@ -482,8 +471,8 @@ void SoCameraPathEditKit::buildTags()
   SoTCBCurve * curve = SO_GET_PART(this, "curve", SoTCBCurve);
   SoText2Set * tags = SO_GET_PART(this, "tags", SoText2Set);
 
-  tags->strings.deleteValues(0);
-  tags->strings.insertSpace(0, curve->numControlpoints.getValue());
+  tags->string.deleteValues(0);
+  tags->string.insertSpace(0, curve->numControlpoints.getValue());
 
   for (int i = curve->numControlpoints.getValue() - 1; i >= 0; i--)
     buildTag(i);
@@ -527,6 +516,7 @@ void SoCameraPathEditKit::flipEditmode()
 void SoCameraPathEditKit::setEditmode(Editmode mode)
 {
   SoSwitch *draggerSwitch = (SoSwitch *)this->getAnyPart("draggerSwitch", TRUE);
+  this->editMode = mode;
 
   switch (editMode.getValue())
     {
@@ -540,7 +530,6 @@ void SoCameraPathEditKit::setEditmode(Editmode mode)
       draggerSwitch->whichChild = 1;
       break;
     }
-  editMode = mode;
 }
 
 
@@ -621,9 +610,9 @@ void SoCameraPathEditKit::updateDraggers()
       (pitchDragger->angle.getValue() != orientation[activePoint.getValue()][1]) ||
       (bankDragger->angle.getValue() != orientation[activePoint.getValue()][2]))
     {
-      headingDragger->setAngle(orientation[activePoint.getValue()][0]);
-      pitchDragger->setAngle(orientation[activePoint.getValue()][1]);
-      bankDragger->setAngle(orientation[activePoint.getValue()][2]);
+      headingDragger->angle.setValue(orientation[activePoint.getValue()][0]);
+      pitchDragger->angle.setValue(orientation[activePoint.getValue()][1]);
+      bankDragger->angle.setValue(orientation[activePoint.getValue()][2]);
 
       SbRotation headingRot = heading->rotation.getValue();
       SbRotation pitchRot = pitch->rotation.getValue();
@@ -682,16 +671,17 @@ void SoCameraPathEditKit::insertPosition(int idx, const SbVec3f &pos)
   }
 
   // Calculate interpolated orientation
-  SbVec3f or;
-  SoTCBCurve::TCB(orientation, timestamp, t, or);
+  SbVec3f orient;
 
-  insertControlpoint(idx, pos, or);
+  SoTCBCurve::TCB(orientation.getValues(0), this->timestamp, this->orientation.getNum(), t, orient);
+
+  insertControlpoint(idx, pos, orient);
 }
 
 
 
 // pushes the element at position [idx] down
-void SoCameraPathEditKit::insertOrientation(int idx, const SbVec3f &or)
+void SoCameraPathEditKit::insertOrientation(int idx, const SbVec3f &orient)
 {
   //Avoid inserting beyond scope of array
   assert(idx >= 0 && idx <= numControlpoints);
@@ -715,15 +705,16 @@ void SoCameraPathEditKit::insertOrientation(int idx, const SbVec3f &or)
 
   // Calculate interpolated position
   SbVec3f pos;
-  SoTCBCurve::TCB(position, timestamp, t, pos);
 
-  insertControlpoint(idx, pos, or);
+  SoTCBCurve::TCB(position.getValues(0), this->timestamp, this->position.getNum(), t, pos);
+
+  insertControlpoint(idx, pos, orient);
 }
 
 
 
 
-void SoCameraPathEditKit::insertControlpoint(int idx, const SbVec3f &pos, const SbVec3f &or)
+void SoCameraPathEditKit::insertControlpoint(int idx, const SbVec3f &pos, const SbVec3f &orient)
 {
   SoCoordinate3 * coordinates = (SoCoordinate3 *)this->getAnyPart("coordinates", TRUE);
   SoPointSet * controlpoints = (SoPointSet *)this->getAnyPart("controlpoints", TRUE);
@@ -773,7 +764,7 @@ void SoCameraPathEditKit::insertControlpoint(int idx, const SbVec3f &pos, const 
 
 
   // Save the values
-  setControlpoint(idx, pos, or, t);
+  setControlpoint(idx, pos, orient, t);
   numControlpoints++;
   curve->numControlpoints = numControlpoints;
   controlpoints->numPoints = numControlpoints;
@@ -785,7 +776,7 @@ void SoCameraPathEditKit::insertControlpoint(int idx, const SbVec3f &pos, const 
 
 
 
-int SoCameraPathEditKit::insertControlpoint(const SbVec3f &pos, const SbVec3f &or, const SbTime &time)
+int SoCameraPathEditKit::insertControlpoint(const SbVec3f &pos, const SbVec3f &orient, const SbTime &time)
 {
   SoCoordinate3 * coordinates = (SoCoordinate3 *)this->getAnyPart("coordinates", TRUE);
   SoPointSet * controlpoints = (SoPointSet *)this->getAnyPart("controlpoints", TRUE);
@@ -802,7 +793,7 @@ int SoCameraPathEditKit::insertControlpoint(const SbVec3f &pos, const SbVec3f &o
 
   int idx = setTimestamp(0, time);
   setPosition(idx, pos);
-  setOrientation(idx, or);
+  setOrientation(idx, orient);
 
   return idx;
 }
@@ -812,37 +803,43 @@ int SoCameraPathEditKit::insertControlpoint(const SbVec3f &pos, const SbVec3f &o
 
 int SoCameraPathEditKit::insertControlpoint(const SbTime &time)
 {
-  // Calculating interpolated orientation
-  SbVec3f or;
-  SoTCBCurve::TCB(orientation, timestamp, time, or);
+  SbVec3f orient(0.0f, 0.0f, 0.0f);
+  if (this->orientation.getNum() > 0) {
+    SoTCBCurve::TCB(this->orientation.getValues(0), this->timestamp, this->orientation.getNum(), time, orient);
+  }
 
-  // Calculating interpolated position
-  SbVec3f pos;
-  SoTCBCurve::TCB(position, timestamp, time, pos);
+  SbVec3f pos(0.0f, 0.0f, 0.0f);
+  if (this->position.getNum() > 0) {
+    SoTCBCurve::TCB(this->position.getValues(0), this->timestamp, this->position.getNum(), time, pos);
+  }
 
-  return insertControlpoint(pos, or, time);
+  return insertControlpoint(pos, orient, time);
 }
 
 
 
 int SoCameraPathEditKit::insertPosition(const SbVec3f &pos, const SbTime &time)
 {
-  // Calculating interpolated orientation
-  SbVec3f or;
-  SoTCBCurve::TCB(orientation, timestamp, time, or);
+  SbVec3f orient(0.0f, 0.0f, 0.0f);
 
-  return insertControlpoint(pos, or, time);
+  if (this->orientation.getNum() > 0) {
+    // calculating interpolated orientation
+    SoTCBCurve::TCB(orientation.getValues(0), this->timestamp, this->orientation.getNum(), time, orient);
+  }
+  return insertControlpoint(pos, orient, time);
 }
 
 
 
-int SoCameraPathEditKit::insertOrientation(const SbVec3f &or, const SbTime &time)
+int SoCameraPathEditKit::insertOrientation(const SbVec3f &orient, const SbTime &time)
 {
-  // Calculating interpolated position
-  SbVec3f pos;
-  SoTCBCurve::TCB(position, timestamp, time, pos);
+  SbVec3f pos(0.0f, 0.0f, 0.0f);
 
-  return insertControlpoint(pos, or, time);
+  if (this->position.getNum() > 0) {
+    // calculating interpolated position
+    SoTCBCurve::TCB(position.getValues(0), this->timestamp, this->position.getNum(), time, pos);
+  }
+  return insertControlpoint(pos, orient, time);
 }
 
 
@@ -883,9 +880,9 @@ void SoCameraPathEditKit::setPosition(int idx, const SbVec3f &pos)
 
 
 
-void SoCameraPathEditKit::setOrientation(int idx, const SbVec3f &or)
+void SoCameraPathEditKit::setOrientation(int idx, const SbVec3f &orient)
 {
-  orientation.set1Value(idx, or);
+  orientation.set1Value(idx, orient);
 
   if (idx == activePoint.getValue())
     updateDraggers();
@@ -898,10 +895,10 @@ void SoCameraPathEditKit::setOrientation(int idx, const SbVec3f &or)
 
 
 // Be aware that this fx does not sort the controlpoints! 
-void SoCameraPathEditKit::setControlpoint(int idx, const SbVec3f &pos, const SbVec3f &or, const SbTime &time)
+void SoCameraPathEditKit::setControlpoint(int idx, const SbVec3f &pos, const SbVec3f &orient, const SbTime &time)
 {
   position.set1Value(idx, pos);
-  orientation.set1Value(idx, or);
+  orientation.set1Value(idx, orient);
   timestamp.set1Value(idx, time);
 }
 
@@ -918,7 +915,9 @@ int SoCameraPathEditKit::setTimestamp(int idx, const SbTime &time)
   SbVec3f tmpPos = position[idx];
   SbVec3f tmpOr = orientation[idx];
 
-  for (int i = 0; (i < timestamp.getNum()) && (time > timestamp[i]); i++);
+  int i; 
+
+  for (i = 0; (i < timestamp.getNum()) && (time > timestamp[i]); i++);
 
   if (i != idx) {
     timestamp.insertSpace(i, 1);

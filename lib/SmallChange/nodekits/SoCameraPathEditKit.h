@@ -32,6 +32,7 @@
 #include <Inventor/draggers/SoDragPointDragger.h>
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/fields/SoSFInt32.h>
+#include <Inventor/fields/SoMFTime.h>
 
 #include <SmallChange/basic.h>
 
@@ -80,7 +81,6 @@ class SMALLCHANGE_DLL_API SoCameraPathEditKit : public SoBaseKit
   SO_KIT_CATALOG_ENTRY_HEADER(objectDrawStyle);
   SO_KIT_CATALOG_ENTRY_HEADER(objectModel);
 
-
   enum Editmode {
     POSITION = 1,
     ORIENTATION,
@@ -102,7 +102,6 @@ class SMALLCHANGE_DLL_API SoCameraPathEditKit : public SoBaseKit
 
 public:
 
-
   SoCameraPathEditKit(void);
   static void initClass(void);
 
@@ -113,17 +112,17 @@ public:
   int setTimestamp(int idx, const SbTime &time);
   int setTimestamp(int idx, float time);
   void setPosition(int idx, const SbVec3f &pos);
-  void setOrientation(int idx, const SbVec3f &or);
+  void setOrientation(int idx, const SbVec3f &orientation);
   int setActiveTimestamp(const SbTime &time);
   void setActivePosition(const SbVec3f &pos);
-  void setActiveOrientation(const SbVec3f &or);
+  void setActiveOrientation(const SbVec3f &orientation);
 
-  void insertControlpoint(int idx, const SbVec3f &pos, const SbVec3f &or);
-  int insertControlpoint(const SbVec3f &pos, const SbVec3f &or, const SbTime &time);
+  void insertControlpoint(int idx, const SbVec3f &pos, const SbVec3f &orientation);
+  int insertControlpoint(const SbVec3f &pos, const SbVec3f &orientation, const SbTime &time);
   void insertPosition(int idx, const SbVec3f &pos);
   int insertPosition(const SbVec3f &pos, const SbTime &time);
-  void insertOrientation(int idx, const SbVec3f &or);
-  int insertOrientation(const SbVec3f &or, const SbTime &time);
+  void insertOrientation(int idx, const SbVec3f &orientation);
+  int insertOrientation(const SbVec3f &orientation, const SbTime &time);
   int insertControlpoint(const SbTime &time);
 
   void deleteControlpoint(int idx);
@@ -145,7 +144,7 @@ private:
   static void dragposFinishCB(void *, SoDragger *);
   static void dragposStartCB(void *, SoDragger *);
 
-  void setControlpoint(int idx, const SbVec3f &pos, const SbVec3f &or, const SbTime &time);
+  void setControlpoint(int idx, const SbVec3f &pos, const SbVec3f &orient, const SbTime &time);
 
   static void activePointCB(void *, SoSensor *);
 
