@@ -255,8 +255,8 @@ SoText2Set::SoText2Set(void)
 SoText2Set::~SoText2Set()
 {
   PRIVATE(this)->flushGlyphCache(TRUE);
-  if (PRIVATE(this)->textdistancelist != NULL)
-    delete PRIVATE(this)->textdistancelist;
+  if (PRIVATE(this)->textdistancelist)
+    delete [] PRIVATE(this)->textdistancelist;
   delete PRIVATE(this);
 }
 
