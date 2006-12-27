@@ -48,6 +48,7 @@
 #include <SmallChange/nodekits/SoFEMKit.h>
 #include <SmallChange/nodekits/SmTooltipKit.h>
 #include <SmallChange/nodekits/SmCameraControlKit.h>
+#include <SmallChange/nodekits/SmDynamicObjectKit.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
@@ -79,8 +80,6 @@
 #include <SmallChange/nodes/SmCoordinateSystem.h>
 #include <SmallChange/nodes/SmViewpointWrapper.h>
 #include <SmallChange/nodekits/SmPopupMenuKit.h>
-#include <SmallChange/nodekits/SmOceanKit.h>
-#include <SmallChange/nodekits/SmVesselKit.h>
 #include <SmallChange/nodekits/SmTrackPointKit.h>
 #include <SmallChange/nodes/SmTrack.h>
 #include <SmallChange/nodes/SmLazyFile.h>
@@ -151,9 +150,7 @@ smallchange_init(void)
 
   SmPieChart::initClass();
 #if defined(__COIN__) && COIN_MAJOR_VERSION >= 3
-  SmOceanKit::initClass();
   SmDynamicObjectKit::initClass();
-  SmVesselKit::initClass();
   SmTrackPointKit::initClass();
   SmTrack::initClass();
 #endif // temporary compile fix
