@@ -14,6 +14,7 @@
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/system/gl.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoDrawStyleElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoFontNameElement.h>
@@ -209,6 +210,10 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
   if (!this->shouldGLRender(action)) return;
 
   SoState * state = action->getState();
+
+  // ignore when rendering wireframe overlay
+  if (SoDrawStyleElement::get(state) != SoDrawStyleElement::FILLED) return;
+
   state->push();
 
   SoLightModelElement::set(state, this, SoLightModelElement::BASE_COLOR);
