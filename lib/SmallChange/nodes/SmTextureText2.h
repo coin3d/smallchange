@@ -32,6 +32,9 @@
 
 #include <SmallChange/basic.h>
 
+class SbViewVolume;
+class SbViewportRegion;
+class SbMatrix;
 
 class SMALLCHANGE_DLL_API SmTextureText2 : public SoShape {
   typedef SoShape inherited;

@@ -59,6 +59,7 @@
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/misc/SoGLImage.h>
+#include <Inventor/SbPlane.h>
 
 #if COIN_DEBUG
 #include <Inventor/errors/SoDebugError.h>
