@@ -160,7 +160,7 @@ sub SubstFile {
   open(IN, "$backup");
   while(<IN>) {
     $line = $_;
-    if ( $line =~ m/@([^@]*)@/ ) {
+    if ($line =~ m/@([^@]*)@/) {
       if (defined($dict{$1})) {
         # does the (g)lobal tag enable multi-substs-per-line?
         # does @ occur naturally in Visual Studio project files?
@@ -168,10 +168,21 @@ sub SubstFile {
       }
     }
     for $var (@reversevars) {
-      if ( $line =~ m%$envvars{$var}% ) {
+      if ($line =~ m%$envvars{$var}%) {
         $line =~ s%$envvars{$var}%\$(${var})%g;
       }
     }
+
+    if ($line =~ m%${build_dir_win}\\%o) {
+      $line =~ s%${build_dir_win}\\%%g;
+    }
+    if ($line =~ m%${build_dir_win}%o) {
+      $line =~ s%${build_dir_win}%.%g;
+    }
+    if ($line =~ m%${src_dir_win}[\\]?%o) {
+      $line =~ s%${src_dir_win}([\\]?)%${sim_ac_relative_src_dir_win}$1%g;
+    }
+
     print OUT $line;
   }
   close(IN);
@@ -229,7 +240,7 @@ $build_dir = "@abs_top_builddir@";
 while ( $build_dir =~ m%[\\/][^\\/]*[^\\/.][\\/]\.\.% ) {
   $build_dir =~ s%[\\/][^\\/]*[^\\/\.][\\/]\.\.%%g;
 }
-$build_dir =~ s%[\\/]\.$%%;
+$build_dir =~ s%[\\/]\.$%%g;
 $src_dir = "@abs_top_srcdir@";
 while ( $src_dir =~ m%[\\/][^\\/]*[^\\/.][\\/]\.\.% ) {
   $src_dir =~ s%[\\/][^\\/]*[^\\/\.][\\/]\.\.%%g;
@@ -246,7 +257,7 @@ $src_dir_win =~ s/\\/\\\\/g;
 $build_dir_win =~ s/\\/\\\\/g;
 # print "SOURCE DIR:     ${src_dir}\n";
 # print "SOURCE DIR WIN: ${src_dir_win}\n";
-# print "BUILD DIR:  ${build_dir_win}\n";
+# print "BUILD DIR WIN:  ${build_dir_win}\n";
 
 $me_u = Dos2Unix($me);
 $medir_u = $me;
@@ -307,12 +318,13 @@ if ( $ARGV[0] eq "--register-public-header" ) {
 
   $headerfile = Cygpath2Win($headerfile);
 
-  if ($sim_ac_relative_src_dir_p) {
-    $headerfile =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir}\\%;
-    $headerfile =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir}\\%;
-  }
   $headerfile =~ s%^${build_dir}[\\/]?%.\\%;
   $headerfile =~ s%^${build_dir_win}[\\/]?%.\\%;
+  if ($sim_ac_relative_src_dir_p) {
+    $sim_ac_relative_src_dir_win = Unix2Dos($sim_ac_relative_src_dir);
+    $headerfile =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+    $headerfile =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+  }
 
   if ( ! $tested ) {
     die "untested case - manual inspection required";
@@ -658,6 +670,7 @@ if ( $sourcefile ne "" ) {
   $targetdir =~ s%^${sourcefiledirdirdir}[/\\]?%%g;
   $targetdir =~ s%.*src[/\\]?%%g;
   $group = $targetdir;
+  $targetdir = Unix2Dos($targetdir);
   SaveVars();
 
   if ($group ne $prev_group) {
@@ -674,12 +687,13 @@ _EODSP
 
   $sourcefile = Cygpath2Win($sourcefile);
 
-  if ($sim_ac_relative_src_dir_p) {
-    $sourcefile =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir}\\%;
-    $sourcefile =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir}\\%;
-  }
   $sourcefile =~ s%^${build_dir}[\\/]?%.\\%;
   $sourcefile =~ s%^${build_dir_win}[\\/]?%.\\%;
+  if ($sim_ac_relative_src_dir_p) {
+    $sim_ac_relative_src_dir_win = Unix2Dos($sim_ac_relative_src_dir);
+    $sourcefile =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+    $sourcefile =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+  }
 
   print DSP <<"_EODSP";
 # Begin Source File
@@ -748,12 +762,13 @@ _EODSP
 
     $headerfile = Cygpath2Win($headerfile);
 
-    if ($sim_ac_relative_src_dir_p) {
-      $headerfile =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir}\\%;
-      $headerfile =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir}\\%;
-    }
     $headerfile =~ s%^${build_dir}[\\/]?%.\\%;
     $headerfile =~ s%^${build_dir_win}[\\/]?%.\\%;
+    if ($sim_ac_relative_src_dir_p) {
+      $sim_ac_relative_src_dir_win = Unix2Dos($sim_ac_relative_src_dir);
+      $headerfile =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+      $headerfile =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+    }
 
     print DSP <<"_EODSP";
 # Begin Source File
@@ -869,32 +884,47 @@ if ( $outputfile =~ /\.so\./ ) {
   print DSP "# Begin Group \"Private Headers\"\n";
   print DSP "\n";
   print DSP "# PROP Default_Filter \"h;ic;icc\"\n";
-  open(FIND, "find ${sourcedir_unix}/src ${sourcedir_unix}/include ${sourcedir_unix}/data ${builddir_unix} -name \"*.h\" | xargs grep -l \"_INTERNAL\\\$\" | xargs grep -i -l \"#error.*private\" | sort | uniq |");
+  open(FIND, "(find ${src_dir}/src ${src_dir}/include ${src_dir}/data ${build_dir} -name \"*.h\" | xargs grep -l \"_INTERNAL\\\$\" | xargs grep -i -l \"#error.*private\"; find ${src_dir}/src ${build_dir} -name \"*.ic\" -o -name \"*.icc\" ) | sort | uniq |");
   @files = <FIND>;
   close(FIND);
   
   $prev_group = "";
   for $file (@files) {
     LoadVars();
+    # $filename = Basename($file, "");
+    next if ($file =~ m/config-wrapper.h/o);
+    next if ($file =~ m/discard.h/o);
+
     $group = Dirname($file);
     $group =~ s%^.*[\\/]%%g;
-    if ($group eq "include") { $group = "[setup]"; }
+    if ($group eq "include") {
+      if ($file =~ m/${build_dir}/) {
+        $group = "[setup]";
+      } else {
+        $group = "root";
+      }
+    }
     SaveVars();
 
     $filepath = Cygpath2Win($file);
 
-    if ($sim_ac_relative_src_dir_p) {
-      $filepath =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir}\\%;
-      $filepath =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir}\\%;
-    }
     $filepath =~ s%^${build_dir}[\\/]?%.\\%;
     $filepath =~ s%^${build_dir_win}[\\/]?%.\\%;
+    if ($sim_ac_relative_src_dir_p) {
+      $sim_ac_relative_src_dir_win = Unix2Dos($sim_ac_relative_src_dir);
+      $filepath =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+      $filepath =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+    }
 
     if ( $group ne $prev_group ) {
       if ($prev_group ne "") {
         print DSP "# End Group\n";
       }
-      print DSP "# Begin Group \"${group} headers\"\n";
+      if ($filepath =~ m/include/o) {
+        print DSP "# Begin Group \"${group} headers\"\n";
+      } else {
+        print DSP "# Begin Group \"${group} local includes\"\n";
+      }
       print DSP "\n";
       print DSP "# PROP Default_Filter \"h;ic;icc\"\n";
     }
@@ -907,30 +937,32 @@ SOURCE=${filepath}
 _EODSP
   }
 
-  open(FIND, "find ${sourcedir_unix}/src ${builddir_unix} -name \"*.ic\" -o -name \"*.icc\" |");
-  @files = <FIND>;
-  close(FIND);
-  for $file (@files) {
+#  open(FIND, "find ${src_dir}/src ${build_dir} -name \"*.ic\" -o -name \"*.icc\" |");
+#  @files = <FIND>;
+#  close(FIND);
+#  for $file (@files) {
+#
+#    $filepath = $file;
+#
+#    $filepath = Cygpath2Win($filepath);
+#
+#    $filepath =~ s%^${build_dir}[\\/]?%.\\%;
+#    $filepath =~ s%^${build_dir_win}[\\/]?%.\\%;
+#    if ($sim_ac_relative_src_dir_p) {
+#      $sim_ac_relative_src_dir_win = Unix2Dos($sim_ac_relative_src_dir);
+#      $filepath =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+#      $filepath =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir_win}\\%;
+#    }
+#
+#    print DSP <<"_EODSP";
+## Begin Source File
+#
+#SOURCE=${filepath}
+## PROP Exclude_From_Build 1
+## End Source File
+#_EODSP
+#  }
 
-    $filepath = $file;
-
-    $filepath = Cygpath2Win($filepath);
-
-    if ($sim_ac_relative_src_dir_p) {
-      $filepath =~ s%^${src_dir}[\\/]?%${sim_ac_relative_src_dir}\\%;
-      $filepath =~ s%^${src_dir_win}[\\/]?%${sim_ac_relative_src_dir}\\%;
-    }
-    $filepath =~ s%^${build_dir}[\\/]?%.\\%;
-    $filepath =~ s%^${build_dir_win}[\\/]?%.\\%;
-
-    print DSP <<"_EODSP";
-# Begin Source File
-
-SOURCE=${filepath}
-# PROP Exclude_From_Build 1
-# End Source File
-_EODSP
-  }
   if ($group ne "") {
     print DSP "# End Group\n";
   }
