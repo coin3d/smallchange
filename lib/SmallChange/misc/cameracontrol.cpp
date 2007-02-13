@@ -199,9 +199,12 @@ void cam_seek_to_point(SoCamera * camera,
   if (!cameradict) {
     cameradict = new SbDict;
   }
-  
+
+  void * seekdata_ptr = NULL;
   SeekData * seekdata;
-  if (!cameradict->find((unsigned long) camera, (void*&) seekdata)) {
+  if (cameradict->find((unsigned long) camera, seekdata_ptr)) {
+    seekdata = (SeekData*) seekdata_ptr;
+  } else {
     seekdata = new SeekData;
     seekdata->camera = camera;
     cameradict->enter((unsigned long) camera, seekdata);
