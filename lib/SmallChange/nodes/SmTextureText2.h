@@ -27,6 +27,7 @@
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoMFVec3f.h>
+#include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFEnum.h>
 
@@ -54,6 +55,7 @@ public:
   SoMFString string;
   SoSFEnum justification;
   SoMFVec3f position;
+  SoSFFloat maxRange;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void rayPick(SoRayPickAction * action);
@@ -68,6 +70,15 @@ protected:
 private:
 
   void renderString(const SbString * s, 
+                    const int numstring,
+                    const SbVec3f & pos,
+                    const SbViewVolume & vv,
+                    const SbViewportRegion & vp,
+                    const SbMatrix & projmatrix,
+                    const SbMatrix & modelmatrix,
+                    const SbMatrix & invmodelmatrix);
+
+  void renderBorder(const SbString * s, 
                     const int numstring,
                     const SbVec3f & pos,
                     const SbViewVolume & vv,

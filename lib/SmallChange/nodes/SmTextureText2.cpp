@@ -236,6 +236,7 @@ SmTextureText2::SmTextureText2()
 
   SO_NODE_ADD_FIELD(string, (""));
   SO_NODE_ADD_FIELD(justification, (CENTER));
+  SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
@@ -353,6 +354,24 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     SoMaterialBindingElement::OVERALL;
 
   if (num > 1) {
+    SbBool render_border = FALSE; // just for testing
+    if (render_border) {
+      glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_POLYGON_BIT);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glDisable(GL_TEXTURE_2D);
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+      for (int i = 0; i < num; i++) {
+        this->renderBorder(&s[SbMin(i, numstring-1)], 1, 
+                           pos[i],
+                           vv,
+                           vp,
+                           projmatrix,
+                           modelmatrix,
+                           inv);
+      }
+      glPopAttrib();
+    }
+
     for (int i = 0; i < num; i++) {
       if (perpart) {
         mb.send(i, FALSE);
@@ -406,7 +425,7 @@ SmTextureText2::generatePrimitives(SoAction *action)
 }
 
 void 
-SmTextureText2::renderString(const SbString * s, 
+SmTextureText2::renderBorder(const SbString * s, 
                              const int numstring,
                              const SbVec3f & pos,
                              const SbViewVolume & vv,
@@ -427,22 +446,109 @@ SmTextureText2::renderString(const SbString * s,
   SbVec3f screenpoint;
   projmatrix.multVecMatrix(pos, screenpoint);
 
-  // FIXME: set up an orthographic view volume and do the rendering
-  // there instead of projecting back to the current object space.
   glBegin(GL_QUADS);
   for (i = 0; i < numstring; i++) {
     int len = s[i].getLength();
     if (len == 0) continue;
     
     const unsigned char * sptr = (const unsigned char *) s[i].getString();
-
-    int xmin = 0;
-    int xmax = len * 8 + 2;
+    
+    int xmin = -4;
+    int xmax = len * 8 + 4;
     int ymin = -i*14;
-    int ymax = -i*14 + 14;
+    int ymax = -i*14 + 16;
     
     if (xmin >= vpsize[0] ||
-        xmax <= 0 ||
+        xmax < 0 ||
+        ymin >= vpsize[0] ||
+        ymax < 0) continue;
+    
+    SbVec2s n0,n1,n2,n3;
+    SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
+    
+    n0 = SbVec2s(sp[0] + xmin,
+                 sp[1] + ymax);
+    n1 = SbVec2s(sp[0] + xmax,
+                 sp[1] + ymax);
+    n2 = SbVec2s(sp[0] + xmax,
+                 sp[1] + ymin);
+    n3 = SbVec2s(sp[0] + xmin,
+                 sp[1] + ymin);
+    
+    short w = n1[0]-n0[0];
+    short halfw = w / 2;
+
+    switch (this->justification.getValue()) {
+    case SmTextureText2::LEFT:
+      break;
+    case SmTextureText2::RIGHT:
+      n0[0] -= w;
+      n1[0] -= w;
+      n2[0] -= w;
+      n3[0] -= w;
+      break;
+    case SmTextureText2::CENTER:
+      n0[0] -= halfw;
+      n1[0] -= halfw;
+      n2[0] -= halfw;
+      n3[0] -= halfw;
+      break;
+    default:
+      assert(0 && "unknown alignment");
+      break;
+    }
+    SbVec3f c0(n0[0], n0[1], -screenpoint[2]);
+    SbVec3f c1(n1[0], n1[1], -screenpoint[2]);
+    SbVec3f c2(n2[0], n2[1], -screenpoint[2]);
+    SbVec3f c3(n3[0], n3[1], -screenpoint[2]);
+
+    glVertex3fv(c0.getValue());
+    glVertex3fv(c1.getValue());
+    glVertex3fv(c2.getValue());
+    glVertex3fv(c3.getValue());    
+  }
+  glEnd();
+}
+
+void 
+SmTextureText2::renderString(const SbString * s, 
+                            const int numstring,
+                             const SbVec3f & pos,
+                             const SbViewVolume & vv,
+                             const SbViewportRegion & vp,
+                             const SbMatrix & projmatrix,
+                             const SbMatrix & modelmatrix,
+                             const SbMatrix & invmodelmatrix)
+{
+  // get distance from pos to camera plane
+  SbVec3f tmp;
+  modelmatrix.multVecMatrix(pos, tmp);
+  float dist = -vv.getPlane(0.0f).getDistance(tmp);
+  if (dist < vv.getNearDist()) return;
+  
+  float maxr = this->maxRange.getValue();
+  if (maxr > 0.0f && dist > maxr) return; 
+
+  int i;
+  SbVec2s vpsize = vp.getViewportSizePixels();
+  
+  SbVec3f screenpoint;
+  projmatrix.multVecMatrix(pos, screenpoint);
+
+  glBegin(GL_QUADS);
+  for (i = 0; i < numstring; i++) {
+    int len = s[i].getLength();
+    if (len == 0) continue;
+    
+    const unsigned char * sptr = (const unsigned char *) s[i].getString();
+    
+    int xmin = -4;
+    int xmax = len * 8 + 4;
+    int ymin = -i*14;
+    int ymax = -i*14 + 16;
+    
+    if (xmin >= vpsize[0] ||
+        xmax < 0 ||
         ymin >= vpsize[0] ||
         ymax < 0) continue;
     
@@ -484,10 +590,10 @@ SmTextureText2::renderString(const SbString * s,
     for (int j = 0; j < len; j++) {
       const int gidx = texturetext_isolatin1_mapping[sptr[j]] * 4;
       
-      SbVec3f c0(n0[0] + j*8, n0[1], -screenpoint[2]);
-      SbVec3f c1(n0[0] + (j+1)*8+2, n1[1], -screenpoint[2]);
-      SbVec3f c2(n0[0] + (j+1)*8+2, n2[1], -screenpoint[2]);
-      SbVec3f c3(n0[0] + j*8, n3[1], -screenpoint[2]);
+      SbVec3f c0(n0[0] + j*8-4, n0[1], -screenpoint[2]);
+      SbVec3f c1(n0[0] + (j+1)*8+4, n1[1], -screenpoint[2]);
+      SbVec3f c2(n0[0] + (j+1)*8+4, n2[1], -screenpoint[2]);
+      SbVec3f c3(n0[0] + j*8-4, n3[1], -screenpoint[2]);
 
       glTexCoord2fv(texturetext_glyphcoords[gidx].getValue());
       glVertex3fv(c0.getValue());
@@ -631,27 +737,104 @@ SmTextureText2::create_texture(void)
   unsigned char * ptr = new unsigned char[256*128*2];
   memset(ptr, 0, 256*128*2);
 
+  enum Effect { NORMAL, BORDER, DROP_SHADOW, BOLD, BOLD_DROPSHADOW, ANTIALIAS };
+
+  Effect effect = BORDER;
+  //Effect effect = DROP_SHADOW;
+  //Effect effect = BOLD_DROPSHADOW;
+  //Effect effect = ANTIALIAS;
+
+  const int DROP_SHADOW_DIST = 2;
+
   int x,y;
   for (int i = 0; i < num; i++) {
     get_text_pixmap_position(i, x, y);
-    render_text(ptr, i, x-1, y, 0, 255);
-    render_text(ptr, i, x+1, y, 0, 255);
-    render_text(ptr, i, x, y-1, 0, 255);
-    render_text(ptr, i, x, y+1, 0, 255);
 
-    render_text(ptr, i, x-1, y+1, 0, 255);
-    render_text(ptr, i, x+1, y+1, 0, 255);
-    render_text(ptr, i, x-1, y-1, 0, 255);
-    render_text(ptr, i, x+1, y-1, 0, 255);
+    if (effect == NORMAL) {
+      render_text(ptr, i, x+4, y+2, 255, 255);
+    }
+    else if (effect == BORDER) {
+      // move text to the middle of the block
+      x += 4;
+      y += 2;
+
+      render_text(ptr, i, x-1, y, 0, 255);
+      render_text(ptr, i, x+1, y, 0, 255);
+      render_text(ptr, i, x, y-1, 0, 255);
+      render_text(ptr, i, x, y+1, 0, 255);
+      
+      render_text(ptr, i, x-1, y+1, 0, 255);
+      render_text(ptr, i, x+1, y+1, 0, 255);
+      render_text(ptr, i, x-1, y-1, 0, 255);
+      render_text(ptr, i, x+1, y-1, 0, 255);
+      
+      render_text(ptr, i, x, y, 255, 255);
+
+      // move it back for texture coords
+      x -= 4;
+      y -= 2;
+
+    }
+    else if (effect == ANTIALIAS) { // not very impressive effect :)
+      // move text to the middle of the block
+      x += 4;
+      y += 2;
+
+      render_text(ptr, i, x-1, y, 255, 64);
+      render_text(ptr, i, x+1, y, 255, 64);
+      render_text(ptr, i, x, y-1, 255, 64);
+      render_text(ptr, i, x, y+1, 255, 64);
+      
+      render_text(ptr, i, x-1, y+1, 255, 64);
+      render_text(ptr, i, x+1, y+1, 255, 64);
+      render_text(ptr, i, x-1, y-1, 255, 64);
+      render_text(ptr, i, x+1, y-1, 255, 64);
+      
+      render_text(ptr, i, x, y, 255, 255);
+
+      // move it back for texture coords
+      x -= 4;
+      y -= 2;
+
+    }
+    else if (effect == DROP_SHADOW) {
+      x += 2;
+
+      render_text(ptr, i, x+DROP_SHADOW_DIST, y+DROP_SHADOW_DIST, 0, 255);
+      render_text(ptr, i, x, y, 255, 255);
+
+      x -= 2;
+    }
+    else if (effect == BOLD) {
+      x += 4;
+      y += 2;
+
+      render_text(ptr, i, x, y, 255, 255);
+      render_text(ptr, i, x+1, y, 255, 255);
+
+
+      x -= 4;
+      y -= 2;      
+    }
+
+    else if (effect == BOLD_DROPSHADOW) {
+      x += 2;
+      
+      render_text(ptr, i, x+DROP_SHADOW_DIST, y+DROP_SHADOW_DIST, 0, 255);
+      render_text(ptr, i, x+DROP_SHADOW_DIST+1, y+DROP_SHADOW_DIST, 0, 255);
+
+      render_text(ptr, i, x, y, 255, 255);
+      render_text(ptr, i, x+1, y, 255, 255);
+
+      x -= 2;
+    }
+
+    float x0 = float(x) / float(256);
+    float y0 = float(y) / float(128);
     
-    render_text(ptr, i, x, y, 255, 255);
+    float x1 = float(x+16) / float(256);
+    float y1 = float(y+16) / float(128);
     
-    float x0 = float(x-1) / float(256);
-    float y0 = float(y-1) / float(128);
-    
-    float x1 = float(x+9) / float(256);
-    float y1 = float(y+13) / float(128);
-   
     *tc++ = SbVec2f(x0, y0);
     *tc++ = SbVec2f(x1, y0);
     *tc++ = SbVec2f(x1, y1);
@@ -671,10 +854,6 @@ SmTextureText2::get_text_pixmap_position(const int idx, int & x, int & y)
   // each char uses 16x16 pixels
   x *= 16;
   y *= 16;
-
-  // move it to the middle of the 16x16 block
-  x += 4;
-  y += 2;
 }
 
 void
