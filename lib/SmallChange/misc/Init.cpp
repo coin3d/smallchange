@@ -85,6 +85,8 @@
 #include <SmallChange/nodes/SmLazyFile.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
+#include <SmallChange/nodes/SmTextureText2.h>
+#include <SmallChange/nodes/SmShadowText2.h>
 
 void
 smallchange_init(void)
@@ -154,4 +156,7 @@ smallchange_init(void)
   SmTrackPointKit::initClass();
   SmTrack::initClass();
 #endif // temporary compile fix
+
+  SmTextureText2::initClass();
+  SmShadowText2::initClass();
 }
