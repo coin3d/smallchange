@@ -40,7 +40,7 @@ static void set_pos(SoCamera * camera,
 {
   camera->isOfType(UTMCamera::getClassTypeId()) ?
     ((UTMCamera *)camera)->utmposition.setValue(position) :
-    camera->position.setValue(SbVec3f(position[0], position[1], position[2]));
+    camera->position.setValue(SbVec3f(float(position[0]), float(position[1]), float(position[2])));
 }
 
 static void set_pos(SoCamera * camera, 
@@ -177,7 +177,7 @@ void cam_spin(SoCamera * camera,
   if (camera->isOfType(UTMCamera::getClassTypeId())) {
     UTMCamera * utmcamera = (UTMCamera *) camera;
     SbVec3d utmpos = utmcamera->utmposition.getValue();
-    newpos += SbVec3f(utmpos[0], utmpos[1], utmpos[2]);
+    newpos += SbVec3f(float(utmpos[0]), float(utmpos[1]), float(utmpos[2]));
   }
   
   set_pos(camera, newpos);

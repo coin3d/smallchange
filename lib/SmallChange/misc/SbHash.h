@@ -56,6 +56,10 @@ public:
     SbHashEntry<Type, Key> * entry = (SbHashEntry<Type, Key> *) ptr;
     cc_memalloc_deallocate(entry->memhandler, ptr);
   }
+  void operator delete(void * ptr, cc_memalloc * memhandler) {
+    SbHashEntry<Type, Key> * entry = (SbHashEntry<Type, Key> *) ptr;
+    cc_memalloc_deallocate(entry->memhandler, ptr);
+  }
   
   Key key;
   Type obj;
