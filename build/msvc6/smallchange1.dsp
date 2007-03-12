@@ -44,8 +44,8 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -59,7 +59,7 @@ LINK32=link.exe
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=../misc/install-sdk.bat dll release
+PostBuild_Cmds=..\misc\install-sdk.bat dll release
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
@@ -74,8 +74,8 @@ PostBuild_Cmds=../misc/install-sdk.bat dll release
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /GZ /c
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -88,7 +88,7 @@ LINK32=link.exe
 # ADD LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /out:"smallchange1d.dll"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=../misc/install-sdk.bat dll debug
+PostBuild_Cmds=..\misc\install-sdk.bat dll debug
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
@@ -103,8 +103,8 @@ PostBuild_Cmds=../misc/install-sdk.bat dll debug
 # PROP Output_Dir "StaticRelease"
 # PROP Intermediate_Dir "StaticRelease"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
 # ADD BASE RSC /l 0x414 /d "NDEBUG"
 # ADD RSC /l 0x414 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -115,7 +115,7 @@ LIB32=link.exe -lib
 # ADD LIB32 /nologo /machine:I386 /out:"smallchange1s.lib"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=../misc/install-sdk.bat lib release
+PostBuild_Cmds=..\misc\install-sdk.bat lib release
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
@@ -130,8 +130,8 @@ PostBuild_Cmds=../misc/install-sdk.bat lib release
 # PROP Output_Dir "StaticDebug"
 # PROP Intermediate_Dir "StaticDebug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
 # ADD RSC /l 0x414 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -142,7 +142,7 @@ LIB32=link.exe -lib
 # ADD LIB32 /nologo /machine:I386 /out:"smallchange1sd.lib"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=../misc/install-sdk.bat lib debug
+PostBuild_Cmds=..\misc\install-sdk.bat lib debug
 # End Special Build Tool
 
 !ENDIF
@@ -1323,6 +1323,16 @@ SOURCE=lib\SmallChange\basic.h
 # Begin Group "Private Headers"
 
 # PROP Default_Filter "h;ic;icc"
+# Begin Group "nodes local includes"
+
+# PROP Default_Filter "h;ic;icc"
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\nodes\SceneryRender.icc
+
+# PROP Exclude_From_Build 1
+# End Source File
+# End Group
 # End Group
 # End Target
 # End Project

@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="lib,\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -56,7 +56,7 @@
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="../misc/install-sdk.bat dll release"/>
+				CommandLine="..\misc\install-sdk.bat dll release"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -87,7 +87,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="lib,\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -110,7 +110,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="../misc/install-sdk.bat lib release"/>
+				CommandLine="..\misc\install-sdk.bat lib release"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -139,7 +139,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="lib,\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -162,7 +162,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="../misc/install-sdk.bat lib debug"/>
+				CommandLine="..\misc\install-sdk.bat lib debug"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -190,7 +190,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="lib,\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -225,7 +225,7 @@
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="../misc/install-sdk.bat dll debug"/>
+				CommandLine="..\misc\install-sdk.bat dll debug"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -3381,12 +3381,43 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="Documents"
-			Filter=";txt">
-		</Filter>
-		<Filter
 			Name="Private Headers"
 			Filter="h;ic;icc">
+			<Filter
+				Name="nodes local includes"
+				Filter="h;ic;icc">
+				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SceneryRender.icc">
+					<FileConfiguration
+						Name="DLL (Release)|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Documents"
+			Filter=";txt">
 		</Filter>
 	</Files>
 	<Globals>
