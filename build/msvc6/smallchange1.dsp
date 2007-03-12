@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=smallchange1 - Win32 DLL (Debug)
+CFG=smallchange1 - Win32 DLL (Release)
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE
@@ -44,8 +44,8 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=0" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -54,12 +54,12 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 $(COINDIR)\lib\coin2.lib opengl32.lib /nologo /dll /machine:I386
-# ADD LINK32 $(COINDIR)\lib\coin2.lib opengl32.lib /nologo /dll /machine:I386 /out:"smallchange1.dll" /opt:nowin98
+# ADD BASE LINK32 $(COINDIR)\lib\coin2.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /machine:I386
+# ADD LINK32 $(COINDIR)\lib\coin2.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /machine:I386 /out:"smallchange1.dll" /opt:nowin98
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=install-dll-release.bat
+PostBuild_Cmds=../misc/install-sdk.bat dll release
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
@@ -74,8 +74,8 @@ PostBuild_Cmds=install-dll-release.bat
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /GZ /c
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "SMALLCHANGE_DEBUG=1" /D "HAVE_CONFIG_H" /D "SMALLCHANGE_MAKE_DLL" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -84,11 +84,11 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /out:"smallchange1d.dll"
+# ADD BASE LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /out:"smallchange1d.dll"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=install-dll-debug.bat
+PostBuild_Cmds=../misc/install-sdk.bat dll debug
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
@@ -103,8 +103,8 @@ PostBuild_Cmds=install-dll-debug.bat
 # PROP Output_Dir "StaticRelease"
 # PROP Intermediate_Dir "StaticRelease"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=0"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
 # ADD BASE RSC /l 0x414 /d "NDEBUG"
 # ADD RSC /l 0x414 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -115,7 +115,7 @@ LIB32=link.exe -lib
 # ADD LIB32 /nologo /machine:I386 /out:"smallchange1s.lib"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=install-lib-release.bat
+PostBuild_Cmds=../misc/install-sdk.bat lib release
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
@@ -130,8 +130,8 @@ PostBuild_Cmds=install-lib-release.bat
 # PROP Output_Dir "StaticDebug"
 # PROP Intermediate_Dir "StaticDebug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I ".\lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D "SMALLCHANGE_DEBUG=1"  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /I "lib" /I "\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /YX /FD /c
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
 # ADD RSC /l 0x414 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -142,8 +142,9 @@ LIB32=link.exe -lib
 # ADD LIB32 /nologo /machine:I386 /out:"smallchange1sd.lib"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=install-lib-debug.bat
+PostBuild_Cmds=../misc/install-sdk.bat lib debug
 # End Special Build Tool
+
 !ENDIF
 
 # Begin Target
@@ -152,858 +153,887 @@ PostBuild_Cmds=install-lib-debug.bat
 # Name "smallchange1 - Win32 DLL (Debug)"
 # Name "smallchange1 - Win32 LIB (Release)"
 # Name "smallchange1 - Win32 LIB (Debug)"
+# Begin Group "Documents"
+# PROP Default_Filter ";txt"
+# End Group
 # Begin Group "Source Files"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 
-# PROP Default_Filter "cpp;c;ic;icc"
+# Begin Group "SmallChange/nodekits sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\LegendKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SoFEMKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmTooltipKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmWellLogKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmCameraControlKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\GeoMarkerKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\NormalsKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmAxisDisplayKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmAxisKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmPieChart.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\PopupMenuKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\lib\SmallChange\nodekits\OceanKit.cpp
-!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
-!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
-!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
-!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\lib\SmallChange\nodekits\SmVesselKit.cpp
-!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
-!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
-!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
-!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmTrackPointKit.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodekits"
+# PROP Intermediate_Dir "Release\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodekits"
+# PROP Intermediate_Dir "Debug\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodekits"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodekits"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodekits"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodekits"
+!ENDIF
 # End Source File
+# End Group
+# Begin Group "SmallChange/nodes sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\AutoFile.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\DepthBuffer.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\ViewportRegion.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\Coinboard.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\Switchboard.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SwitchboardOperator.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\CoinEnvironment.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SkyDome.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\ShapeScale.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\PickSwitch.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\PickCallback.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SoTCBCurve.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SoText2Set.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SoPointCloud.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SoLODExtrusion.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\FrustumCamera.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\UTMCamera.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\UTMPosition.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\UTMCoordinate.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmTooltip.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmHQSphere.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmBillboardClipPlane.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmHeadlight.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\VertexArrayShape.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmCoordinateSystem.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmMarkerSet.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\ViewpointWrapper.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmShadowText2.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmTrack.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmLazyFile.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\nodes"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\nodes"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\nodes"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\nodes"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2.cpp
+!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
+# End Source File
+# End Group
+# Begin Group "SmallChange/elements sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\elements\GLDepthBufferElement.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\elements"
+# PROP Intermediate_Dir "Release\SmallChange\elements"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\elements"
+# PROP Intermediate_Dir "Debug\SmallChange\elements"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\elements"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\elements"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\elements"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\elements"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\elements\UTMElement.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\elements"
+# PROP Intermediate_Dir "Release\SmallChange\elements"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\elements"
+# PROP Intermediate_Dir "Debug\SmallChange\elements"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\elements"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\elements"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\elements"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\elements"
+!ENDIF
 # End Source File
+# End Group
+# Begin Group "SmallChange/engines sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\engines\Rot2Heading.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\engines"
+# PROP Intermediate_Dir "Release\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\engines"
+# PROP Intermediate_Dir "Debug\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\engines"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\engines"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\engines"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\engines\CubicSplineEngine.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\engines"
+# PROP Intermediate_Dir "Release\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\engines"
+# PROP Intermediate_Dir "Debug\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\engines"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\engines"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\engines"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\engines\SmInverseRotation.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\engines"
+# PROP Intermediate_Dir "Release\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\engines"
+# PROP Intermediate_Dir "Debug\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\engines"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\engines"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\engines"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\engines"
+!ENDIF
 # End Source File
+# End Group
+# Begin Group "SmallChange/actions sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\actions\SoGenerateSceneGraphAction.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\actions"
+# PROP Intermediate_Dir "Release\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\actions"
+# PROP Intermediate_Dir "Debug\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\actions"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\actions"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\actions"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\actions\SoTweakAction.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\actions"
+# PROP Intermediate_Dir "Release\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\actions"
+# PROP Intermediate_Dir "Debug\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\actions"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\actions"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\actions"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\actions\ToVertexArrayShapeAction.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\actions"
+# PROP Intermediate_Dir "Release\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\actions"
+# PROP Intermediate_Dir "Debug\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\actions"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\actions"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\actions"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\actions"
+!ENDIF
 # End Source File
+# End Group
+# Begin Group "SmallChange/misc sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\misc\Init.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\misc"
+# PROP Intermediate_Dir "Release\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\misc"
+# PROP Intermediate_Dir "Debug\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\misc"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\misc"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\misc"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\misc\SbCubicSpline.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\misc"
+# PROP Intermediate_Dir "Release\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\misc"
+# PROP Intermediate_Dir "Debug\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\misc"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\misc"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\misc"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\misc\SceneManager.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\misc"
+# PROP Intermediate_Dir "Release\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\misc"
+# PROP Intermediate_Dir "Debug\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\misc"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\misc"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\misc"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\misc\Envelope.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\misc"
+# PROP Intermediate_Dir "Release\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\misc"
+# PROP Intermediate_Dir "Debug\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\misc"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\misc"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\misc"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\misc"
+!ENDIF
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\misc\cameracontrol.cpp
+!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
+# PROP Intermediate_Dir "Release\SmallChange\misc"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
+# PROP Intermediate_Dir "Debug\SmallChange\misc"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\misc"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
+# PROP Intermediate_Dir "StaticDebug\SmallChange\misc"
+!ENDIF
+# End Source File
+# End Group
+# Begin Group "SmallChange/draggers sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\draggers\SoAngle1Dragger.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\draggers"
+# PROP Intermediate_Dir "Release\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\draggers"
+# PROP Intermediate_Dir "Debug\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\draggers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\draggers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\draggers"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\draggers\SoAngle1Manip.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\draggers"
+# PROP Intermediate_Dir "Release\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\draggers"
+# PROP Intermediate_Dir "Debug\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\draggers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\draggers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\draggers"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\draggers\SmRangeTranslate1Dragger.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\draggers"
+# PROP Intermediate_Dir "Release\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\draggers"
+# PROP Intermediate_Dir "Debug\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\draggers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\draggers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\draggers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\draggers"
+!ENDIF
 # End Source File
+# End Group
+# Begin Group "SmallChange/eventhandlers sources"
+# PROP Default_Filter "c;cpp;ic;icc;h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmEventHandler.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\eventhandlers"
+# PROP Intermediate_Dir "Release\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\eventhandlers"
+# PROP Intermediate_Dir "Debug\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\eventhandlers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\eventhandlers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\eventhandlers"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmExaminerEventHandler.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\eventhandlers"
+# PROP Intermediate_Dir "Release\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\eventhandlers"
+# PROP Intermediate_Dir "Debug\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\eventhandlers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\eventhandlers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\eventhandlers"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\eventhandlers"
+# PROP Intermediate_Dir "Release\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\eventhandlers"
+# PROP Intermediate_Dir "Debug\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\eventhandlers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\eventhandlers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\eventhandlers"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmHelicopterEventHandler.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\eventhandlers"
+# PROP Intermediate_Dir "Release\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\eventhandlers"
+# PROP Intermediate_Dir "Debug\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\eventhandlers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\eventhandlers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\eventhandlers"
+!ENDIF
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
-# PROP Intermediate_Dir "Release\eventhandlers"
+# PROP Intermediate_Dir "Release\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
-# PROP Intermediate_Dir "Debug\eventhandlers"
+# PROP Intermediate_Dir "Debug\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
-# PROP Intermediate_Dir "StaticRelease\eventhandlers"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\eventhandlers"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
-# PROP Intermediate_Dir "StaticDebug\eventhandlers"
-!ENDIF 
+# PROP Intermediate_Dir "StaticDebug\SmallChange\eventhandlers"
+!ENDIF
 # End Source File
+# End Group
 # End Group
 # Begin Group "Public Headers"
 
-# PROP Default_Filter "h"
+# PROP Default_Filter "h;ic;icc"
+# Begin Group "SmallChange\nodekits headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\LegendKit.h
@@ -1050,20 +1080,15 @@ SOURCE=..\..\lib\SmallChange\nodekits\SmPopupMenuKit.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\lib\SmallChange\nodekits\SmOceanKit.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\lib\SmallChange\nodekits\SmVesselKit.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodekits\SmTrackPointKit.h
 # End Source File
+# End Group
+# Begin Group "SmallChange\nodes headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\AutoFile.h
@@ -1186,12 +1211,22 @@ SOURCE=..\..\lib\SmallChange\nodes\SmLazyFile.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2.h
+# End Source File
+# End Group
+# Begin Group "SmallChange\elements headers"
+# Set Default_Filter "h"
+# Begin Source File
+
 SOURCE=..\..\lib\SmallChange\elements\UTMElement.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\elements\GLDepthBufferElement.h
 # End Source File
+# End Group
+# Begin Group "SmallChange\engines headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\engines\Rot2Heading.h
@@ -1204,6 +1239,9 @@ SOURCE=..\..\lib\SmallChange\engines\CubicSplineEngine.h
 
 SOURCE=..\..\lib\SmallChange\engines\SmInverseRotation.h
 # End Source File
+# End Group
+# Begin Group "SmallChange\actions headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\actions\SoGenerateSceneGraphAction.h
@@ -1216,6 +1254,9 @@ SOURCE=..\..\lib\SmallChange\actions\SoTweakAction.h
 
 SOURCE=..\..\lib\SmallChange\actions\SmToVertexArrayShapeAction.h
 # End Source File
+# End Group
+# Begin Group "SmallChange\misc headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\misc\Init.h
@@ -1232,6 +1273,9 @@ SOURCE=..\..\lib\SmallChange\misc\SmSceneManager.h
 
 SOURCE=..\..\lib\SmallChange\misc\SmEnvelope.h
 # End Source File
+# End Group
+# Begin Group "SmallChange\draggers headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\draggers\SoAngle1Dragger.h
@@ -1244,6 +1288,9 @@ SOURCE=..\..\lib\SmallChange\draggers\SoAngle1Manip.h
 
 SOURCE=..\..\lib\SmallChange\draggers\SmRangeTranslate1Dragger.h
 # End Source File
+# End Group
+# Begin Group "SmallChange\eventhandlers headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmEventHandler.h
@@ -1264,10 +1311,14 @@ SOURCE=..\..\lib\SmallChange\eventhandlers\SmSphereEventHandler.h
 
 SOURCE=..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.h
 # End Source File
+# End Group
+# Begin Group "SmallChange headers"
+# Set Default_Filter "h"
 # Begin Source File
 
 SOURCE=lib\SmallChange\basic.h
 # End Source File
+# End Group
 # End Group
 # Begin Group "Private Headers"
 

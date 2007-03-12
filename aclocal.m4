@@ -469,19 +469,19 @@ if $sim_ac_make_dsp; then
     esac
   done
 
-  CC=[$]$3_build_dir/cfg/gendsp.sh
-  CXX=[$]$3_build_dir/cfg/gendsp.sh
-  CXXLD=[$]$3_build_dir/cfg/gendsp.sh
+  CC=[$]$3_build_dir/cfg/gendsp.pl
+  CXX=[$]$3_build_dir/cfg/gendsp.pl
+  CXXLD=[$]$3_build_dir/cfg/gendsp.pl
   # Yes, this is totally bogus stuff, but don't worry about it.  As long
-  # as gendsp.sh recognizes it...  20030219 larsa
+  # as gendsp.pl recognizes it...  20030219 larsa
   CPPFLAGS="$CPPFLAGS -Ddspfile=[$]$3_build_dir/$3[$]$1_MAJOR_VERSION.dsp"
   LDFLAGS="$LDFLAGS -Wl,-Ddspfile=[$]$3_build_dir/$3[$]$1_MAJOR_VERSION.dsp"
   LIBFLAGS="$LIBFLAGS -o $3[$]$1_MAJOR_VERSION.so.0"
 
   # this can't be set up at the point the libtool script is generated
   mv libtool libtool.bak
-  sed -e "s%^CC=\"gcc\"%CC=\"[$]$3_build_dir/cfg/gendsp.sh\"%" \
-      -e "s%^CC=\".*/wrapmsvc.exe\"%CC=\"[$]$3_build_dir/cfg/gendsp.sh\"%" \
+  sed -e "s%^CC=\"gcc\"%CC=\"[$]$3_build_dir/cfg/gendsp.pl\"%" \
+      -e "s%^CC=\".*/wrapmsvc.exe\"%CC=\"[$]$3_build_dir/cfg/gendsp.pl\"%" \
       <libtool.bak >libtool
   rm -f libtool.bak
   chmod 755 libtool
@@ -8059,8 +8059,8 @@ ifelse($1, [], :, $1)
 AC_DEFUN([SIM_AC_COMPILER_NOBOOL], [
 sim_ac_nobool_CXXFLAGS=
 sim_ac_have_nobool=false
+AC_MSG_CHECKING([whether $CXX accepts /noBool])
 if $BUILD_WITH_MSVC && test x$sim_ac_msvc_version = x6; then
-  AC_MSG_CHECKING([whether $CXX accepts /noBool])
   SIM_AC_CXX_COMPILER_BEHAVIOR_OPTION_QUIET(
     [/noBool],
     [int temp],

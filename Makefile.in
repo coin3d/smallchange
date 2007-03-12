@@ -204,13 +204,20 @@ cfgdatadir = $(datadir)/Coin/conf
 cfgdata_DATA = smallchange-@CONFIG@.cfg
 
 EXTRA_DIST = \
-	smallchange.cfg.in
+	smallchange.cfg.in \
+	cfg/gendsp.sh.in \
+	cfg/gendsp.pl.in \
+	build/misc/generate.sh \
+	build/misc/install-sdk.bat \
+	build/misc/create-directories.bat \
+	build/misc/config-wrapper.h \
+	build/msvc6/install-headers.bat
 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = cfg/gendsp.sh
+CONFIG_CLEAN_FILES = cfg/gendsp.sh cfg/gendsp.pl
 DIST_SOURCES =
 DATA = $(cfgdata_DATA) $(dist_m4data_DATA)
 
@@ -264,6 +271,8 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(top_srcdir)/configure.ac $(ACLOC
 distclean-hdr:
 	-rm -f config.h stamp-h1
 cfg/gendsp.sh: $(top_builddir)/config.status $(top_srcdir)/cfg/gendsp.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+cfg/gendsp.pl: $(top_builddir)/config.status $(top_srcdir)/cfg/gendsp.pl.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -452,7 +461,7 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/cfg $(distdir)/lib/SmallChange
+	$(mkinstalldirs) $(distdir)/build/misc $(distdir)/build/msvc6 $(distdir)/cfg $(distdir)/lib/SmallChange
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -666,6 +675,23 @@ uninstall-info: uninstall-info-recursive
 	uninstall-dist_m4dataDATA uninstall-info-am \
 	uninstall-info-recursive uninstall-recursive
 
+	build/msvc6/smallchange1.dsp \
+	build/msvc6/smallchange1.dsw \
+	build/msvc6/lib/config-debug.h \
+	build/msvc6/lib/config-release.h \
+	build/msvc6/lib/config.h \
+	build/msvc7/install-headers.bat
+	build/msvc7/smallchange1.vcproj \
+	build/msvc7/smallchange1.sln \
+	build/msvc7/lib/config-debug.h \
+	build/msvc7/lib/config-release.h \
+	build/msvc7/lib/config.h \
+	build/msvc8/install-headers.bat
+	build/msvc8/smallchange1.vcproj \
+	build/msvc8/smallchange1.sln \
+	build/msvc8/lib/config-debug.h \
+	build/msvc8/lib/config-release.h \
+	build/msvc8/lib/config.h
 
 smallchange-@CONFIG@.cfg: config.status $(srcdir)/smallchange.cfg.in
 	@$(SHELL) config.status --file=$@:smallchange.cfg.in

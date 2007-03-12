@@ -9,9 +9,7 @@ copy /Y ..\..\lib\SmallChange\nodekits\SmAxisDisplayKit.h %COINDIR%\include\Smal
 copy /Y ..\..\lib\SmallChange\nodekits\SmAxisKit.h %COINDIR%\include\SmallChange\nodekits\SmAxisKit.h >nul:
 copy /Y ..\..\lib\SmallChange\nodekits\SmPieChart.h %COINDIR%\include\SmallChange\nodekits\SmPieChart.h >nul:
 copy /Y ..\..\lib\SmallChange\nodekits\SmPopupMenuKit.h %COINDIR%\include\SmallChange\nodekits\SmPopupMenuKit.h >nul:
-copy /Y ..\..\lib\SmallChange\nodekits\SmOceanKit.h %COINDIR%\include\SmallChange\nodekits\SmOceanKit.h >nul:
 copy /Y ..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.h %COINDIR%\include\SmallChange\nodekits\SmDynamicObjectKit.h >nul:
-copy /Y ..\..\lib\SmallChange\nodekits\SmVesselKit.h %COINDIR%\include\SmallChange\nodekits\SmVesselKit.h >nul:
 copy /Y ..\..\lib\SmallChange\nodekits\SmTrackPointKit.h %COINDIR%\include\SmallChange\nodekits\SmTrackPointKit.h >nul:
 copy /Y ..\..\lib\SmallChange\nodes\AutoFile.h %COINDIR%\include\SmallChange\nodes\AutoFile.h >nul:
 copy /Y ..\..\lib\SmallChange\nodes\ViewportRegion.h %COINDIR%\include\SmallChange\nodes\ViewportRegion.h >nul:
@@ -43,6 +41,7 @@ copy /Y ..\..\lib\SmallChange\nodes\SmViewpointWrapper.h %COINDIR%\include\Small
 copy /Y ..\..\lib\SmallChange\nodes\SmShadowText2.h %COINDIR%\include\SmallChange\nodes\SmShadowText2.h >nul:
 copy /Y ..\..\lib\SmallChange\nodes\SmTrack.h %COINDIR%\include\SmallChange\nodes\SmTrack.h >nul:
 copy /Y ..\..\lib\SmallChange\nodes\SmLazyFile.h %COINDIR%\include\SmallChange\nodes\SmLazyFile.h >nul:
+copy /Y ..\..\lib\SmallChange\nodes\SmTextureText2.h %COINDIR%\include\SmallChange\nodes\SmTextureText2.h >nul:
 copy /Y ..\..\lib\SmallChange\elements\UTMElement.h %COINDIR%\include\SmallChange\elements\UTMElement.h >nul:
 copy /Y ..\..\lib\SmallChange\elements\GLDepthBufferElement.h %COINDIR%\include\SmallChange\elements\GLDepthBufferElement.h >nul:
 copy /Y ..\..\lib\SmallChange\engines\Rot2Heading.h %COINDIR%\include\SmallChange\engines\Rot2Heading.h >nul:

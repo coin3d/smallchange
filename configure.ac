@@ -396,6 +396,7 @@ AC_CONFIG_FILES([
         lib/SmallChange/eventhandlers/Makefile
         lib/SmallChange/basic.h
         cfg/gendsp.sh
+        cfg/gendsp.pl
 ])
 
 # MKS will have "\c" as $ECHO_C, but that string in the config.status
@@ -414,6 +415,9 @@ ECHO_C=$sim_ac_ECHO_C
 
 if test -f cfg/gendsp.sh; then
   chmod +x cfg/gendsp.sh
+fi
+if test -f cfg/gendsp.pl; then
+  chmod +x cfg/gendsp.pl
 fi
 
 # **************************************************************************
