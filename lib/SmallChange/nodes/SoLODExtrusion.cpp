@@ -99,6 +99,13 @@
   locked.
 */
 
+/*! \var SoSFBool SoLODExtrusion::pickLines
+
+  If \e pickLines is TRUE, picking is enabled for the parts of the
+  geometry rendered as lines. Picking is always enabled for the parts
+  rendered as extrusions. Default value for \e pickLines is FALSE.
+ */
+
 #include "SoLODExtrusion.h"
 // #include <Inventor/nodes/SoSubNodeP.h>
 #include <Inventor/misc/SoNormalGenerator.h>
