@@ -66,7 +66,7 @@ SmTrack::initClass(void)
 SmTrack::SmTrack(void)
 {
   SO_NODE_CONSTRUCTOR(SmTrack);
-  SO_NODE_ADD_FIELD(track, (SbVec3d()));
+  SO_NODE_ADD_FIELD(track, (SbVec3d(0.0, 0.0, 0.0)));
   SO_NODE_ADD_FIELD(timeStamps, (SbTime::getTimeOfDay()));
   SO_NODE_ADD_FIELD(trackLength, (22.0f));
 
@@ -109,6 +109,14 @@ SmTrack::append(const SbVec3d & pos,
   this->track.set1Value(index, pos);
 
   PRIVATE(this)->updateInterval();
+}
+
+
+void 
+SmTrack::deleteValues()
+{
+	this->track.deleteValues(0, this->track.getNum());
+	this->timeStamps.deleteValues(0, this->timeStamps.getNum());
 }
 
 

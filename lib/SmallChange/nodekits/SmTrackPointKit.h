@@ -49,7 +49,11 @@ public:
 
   void addTrackPoint(const SbVec3d & pos, 
                      const SbTime & timestamp = SbTime::getTimeOfDay());
+  void addTrackPoints(int n, const SbVec3d * positions, const SbTime * timestamps = 0 ); 
+  void setTrackPoints(int n, const SbVec3d * positions, const SbTime * timestamps = 0 ); 
 
+
+	
 protected:
   virtual ~SmTrackPointKit(void);
 

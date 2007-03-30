@@ -48,6 +48,11 @@ public:
   void append(const SbVec3d & pos, 
               const SbTime & timestamp);
 
+  /*!
+	Convenience: Clears timeStamps, track and reset trackLength
+  */
+  void deleteValues();
+
 protected:
   virtual void GLRender(SoGLRenderAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, 

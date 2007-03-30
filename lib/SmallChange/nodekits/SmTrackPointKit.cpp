@@ -35,10 +35,13 @@ SmTrackPointKit::SmTrackPointKit(void)
   this->set("appearanceKit.drawStyle { pointSize 3 }");
 }
 
+
 SmTrackPointKit::~SmTrackPointKit()
 {
   
 }
+
+
 
 void
 SmTrackPointKit::addTrackPoint(const SbVec3d & pos, 
@@ -48,3 +51,30 @@ SmTrackPointKit::addTrackPoint(const SbVec3d & pos,
   track->append(pos, timestamp);
 }
 
+
+void 
+SmTrackPointKit::addTrackPoints( int n, const SbVec3d * positions, const SbTime * timestamps )
+{
+	SmTrack * track = (SmTrack*)this->getAnyPart("track", TRUE); 
+	track->track.startEditing(); 
+	track->timeStamps.startEditing(); 
+	for(int i = 0; i<n; i++){
+		if( timestamps ){
+			addTrackPoint( positions[i], timestamps[i] ); 
+		}
+		else{
+			addTrackPoint( positions[i] );
+		}
+	}
+	track->timeStamps.finishEditing(); 
+	track->track.finishEditing();
+}
+
+
+void
+SmTrackPointKit::setTrackPoints( int n, const SbVec3d * positions, const SbTime * timestamps )
+{
+	SmTrack * track = (SmTrack*)this->getAnyPart("track", TRUE ); 
+	track->deleteValues();
+	this->addTrackPoints(n, positions, timestamps );
+}
