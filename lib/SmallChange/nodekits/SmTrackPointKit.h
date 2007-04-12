@@ -30,6 +30,9 @@
 #include <SmallChange/basic.h>
 
 class SbVec3d;
+class SmTrack;
+class SoMFVec3d; 
+class SoMFTime;
 
 class SMALLCHANGE_DLL_API SmTrackPointKit : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -49,10 +52,10 @@ public:
 
   void addTrackPoint(const SbVec3d & pos, 
                      const SbTime & timestamp = SbTime::getTimeOfDay());
-  void addTrackPoints(int n, const SbVec3d * positions, const SbTime * timestamps = 0 ); 
-  void setTrackPoints(int n, const SbVec3d * positions, const SbTime * timestamps = 0 ); 
+  void addTrackPoints(const SoMFVec3d & positions, const SoMFTime & timestamps ); 
+  void setTrackPoints(const SoMFVec3d & positions, const SoMFTime & timestamps );
 
-
+  SmTrack * getTrack();
 	
 protected:
   virtual ~SmTrackPointKit(void);
