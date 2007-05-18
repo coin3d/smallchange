@@ -589,11 +589,11 @@ SmTextureText2::renderString(const SbString * s,
     
     for (int j = 0; j < len; j++) {
       const int gidx = texturetext_isolatin1_mapping[sptr[j]] * 4;
-      
-      SbVec3f c0(float(n0[0] + j*8-4), float(n0[1]), -screenpoint[2]);
-      SbVec3f c1(float(n0[0] + (j+1)*8+4), float(n1[1]), -screenpoint[2]);
-      SbVec3f c2(float(n0[0] + (j+1)*8+4), float(n2[1]), -screenpoint[2]);
-      SbVec3f c3(float(n0[0] + j*8-4), float(n3[1]), -screenpoint[2]);
+      float n00 = n0[0]; // compile fix for gcc 3.2.3 (20070518 frodo)
+      SbVec3f c0(float(n00 + j*8-4),     float(n0[1]), -screenpoint[2]);
+      SbVec3f c1(float(n00 + (j+1)*8+4), float(n1[1]), -screenpoint[2]);
+      SbVec3f c2(float(n00 + (j+1)*8+4), float(n2[1]), -screenpoint[2]);
+      SbVec3f c3(float(n00 + j*8-4),     float(n3[1]), -screenpoint[2]);
 
       glTexCoord2fv(texturetext_glyphcoords[gidx].getValue());
       glVertex3fv(c0.getValue());
