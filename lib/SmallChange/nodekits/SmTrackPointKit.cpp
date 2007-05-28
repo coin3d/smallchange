@@ -1,4 +1,3 @@
-
 #include <SmallChange/nodekits/SmTrackPointKit.h>
 
 #include <Inventor/nodes/SoSeparator.h>
@@ -35,18 +34,12 @@ SmTrackPointKit::SmTrackPointKit(void)
   this->set("appearanceKit.drawStyle { pointSize 3 }");
 }
 
-
 SmTrackPointKit::~SmTrackPointKit()
-{
-  
-}
-
-
-
+{}
 
 SmTrack * SmTrackPointKit::getTrack()
 {
-	return (SmTrack *)this->getAnyPart("track", TRUE);
+  return (SmTrack *)this->getAnyPart("track", TRUE);
 }
 
 void
@@ -56,27 +49,25 @@ SmTrackPointKit::addTrackPoint(const SbVec3d & pos,
   getTrack()->append(pos, timestamp);
 }
 
-
 void 
 SmTrackPointKit::addTrackPoints( const SoMFVec3d & positions, const SoMFTime & timestamps )
 {
-	assert( positions.getNum() == timestamps.getNum() && "Size of positions and timestamps fields must be equal");
+  assert( positions.getNum() == timestamps.getNum() && "Size of positions and timestamps fields must be equal");
 
-	SmTrack * track = getTrack();
-	track->track.startEditing(); 
-	track->timeStamps.startEditing(); 
+  SmTrack * track = getTrack();
+  track->track.startEditing(); 
+  track->timeStamps.startEditing(); 
 
-	for(int i = 0; i<positions.getNum(); i++)
-		addTrackPoint( positions[i], timestamps[i] ); 
+  for(int i = 0; i<positions.getNum(); i++)
+    addTrackPoint( positions[i], timestamps[i] ); 
 
-	track->timeStamps.finishEditing(); 
-	track->track.finishEditing();
+  track->timeStamps.finishEditing(); 
+  track->track.finishEditing();
 }
-
 
 void
 SmTrackPointKit::setTrackPoints( const SoMFVec3d & positions, const SoMFTime & timestamps )
 {
-	getTrack()->deleteValues();
-	addTrackPoints(positions, timestamps);
+  getTrack()->deleteValues();
+  addTrackPoints(positions, timestamps);
 }
