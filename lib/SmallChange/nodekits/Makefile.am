@@ -6,6 +6,9 @@ else
 noinst_LTLIBRARIES = libnodekits.la
 endif
 
+EXTRA_DIST = \
+        bitmapfont.cpp
+
 SOURCES = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \

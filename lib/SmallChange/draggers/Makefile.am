@@ -18,8 +18,6 @@ draggers_lst_SOURCES = \
 
 libdraggersincdir = $(includedir)/SmallChange/draggers
 libdraggersinc_HEADERS = \
-	SoAngle1Dragger.h \
-	SoAngle1Manip.h \
 	SmRangeTranslate1Dragger.h
 
 draggers.lst: $(draggers_lst_OBJECTS)

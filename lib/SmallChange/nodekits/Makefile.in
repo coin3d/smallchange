@@ -180,6 +180,10 @@ INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 @BUILD_WITH_MSVC_TRUE@noinst_LIBRARIES = nodekits.lst
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libnodekits.la
 
+EXTRA_DIST = \
+        bitmapfont.cpp
+
+
 SOURCES = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \

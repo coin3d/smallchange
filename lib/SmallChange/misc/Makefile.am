@@ -4,6 +4,7 @@ INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 EXTRA_DIST = \
 	SbList.h \
 	SbHash.h \
+	SmHash.h \
 	SbVec3.h \
 	SbBox3.h \
 	SbPlane.h
