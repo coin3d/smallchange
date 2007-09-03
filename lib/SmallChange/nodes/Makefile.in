@@ -196,7 +196,6 @@ SOURCES = \
 	SoText2Set.cpp SoText2Set.h \
 	SoPointCloud.cpp SoPointCloud.h \
 	SoLODExtrusion.cpp SoLODExtrusion.h \
-	FrustumCamera.cpp FrustumCamera.h \
 	UTMCamera.cpp UTMCamera.h \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
@@ -235,7 +234,6 @@ libnodesinc_HEADERS = \
 	SoTCBCurve.h \
 	SoPointCloud.h \
 	SoLODExtrusion.h \
-	FrustumCamera.h \
 	UTMCamera.h \
 	UTMPosition.h \
 	UTMCoordinate.h \
@@ -268,14 +266,14 @@ am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
 	ShapeScale.$(OBJEXT) PickSwitch.$(OBJEXT) \
 	PickCallback.$(OBJEXT) SoTCBCurve.$(OBJEXT) \
 	SoText2Set.$(OBJEXT) SoPointCloud.$(OBJEXT) \
-	SoLODExtrusion.$(OBJEXT) FrustumCamera.$(OBJEXT) \
-	UTMCamera.$(OBJEXT) UTMPosition.$(OBJEXT) \
-	UTMCoordinate.$(OBJEXT) SmTooltip.$(OBJEXT) \
-	SmHQSphere.$(OBJEXT) SmBillboardClipPlane.$(OBJEXT) \
-	SmHeadlight.$(OBJEXT) VertexArrayShape.$(OBJEXT) \
-	SmCoordinateSystem.$(OBJEXT) SmMarkerSet.$(OBJEXT) \
-	ViewpointWrapper.$(OBJEXT) SmShadowText2.$(OBJEXT) \
-	SmTrack.$(OBJEXT) SmLazyFile.$(OBJEXT) SmTextureText2.$(OBJEXT)
+	SoLODExtrusion.$(OBJEXT) UTMCamera.$(OBJEXT) \
+	UTMPosition.$(OBJEXT) UTMCoordinate.$(OBJEXT) \
+	SmTooltip.$(OBJEXT) SmHQSphere.$(OBJEXT) \
+	SmBillboardClipPlane.$(OBJEXT) SmHeadlight.$(OBJEXT) \
+	VertexArrayShape.$(OBJEXT) SmCoordinateSystem.$(OBJEXT) \
+	SmMarkerSet.$(OBJEXT) ViewpointWrapper.$(OBJEXT) \
+	SmShadowText2.$(OBJEXT) SmTrack.$(OBJEXT) SmLazyFile.$(OBJEXT) \
+	SmTextureText2.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -286,11 +284,11 @@ am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
 	Coinboard.lo Switchboard.lo SwitchboardOperator.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
-	SoLODExtrusion.lo FrustumCamera.lo UTMCamera.lo UTMPosition.lo \
-	UTMCoordinate.lo SmTooltip.lo SmHQSphere.lo \
-	SmBillboardClipPlane.lo SmHeadlight.lo VertexArrayShape.lo \
-	SmCoordinateSystem.lo SmMarkerSet.lo ViewpointWrapper.lo \
-	SmShadowText2.lo SmTrack.lo SmLazyFile.lo SmTextureText2.lo
+	SoLODExtrusion.lo UTMCamera.lo UTMPosition.lo UTMCoordinate.lo \
+	SmTooltip.lo SmHQSphere.lo SmBillboardClipPlane.lo \
+	SmHeadlight.lo VertexArrayShape.lo SmCoordinateSystem.lo \
+	SmMarkerSet.lo ViewpointWrapper.lo SmShadowText2.lo SmTrack.lo \
+	SmLazyFile.lo SmTextureText2.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -303,8 +301,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/FrustumCamera.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/FrustumCamera.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
@@ -388,7 +384,6 @@ SOURCES = \
 	SoText2Set.cpp SoText2Set.h \
 	SoPointCloud.cpp SoPointCloud.h \
 	SoLODExtrusion.cpp SoLODExtrusion.h \
-	FrustumCamera.cpp FrustumCamera.h \
 	UTMCamera.cpp UTMCamera.h \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
@@ -444,8 +439,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrustumCamera.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrustumCamera.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@

@@ -37,7 +37,6 @@
 #include <SmallChange/nodes/SoPointCloud.h>
 #include <SmallChange/nodes/SoTCBCurve.h>
 #include <SmallChange/nodes/SoText2Set.h>
-#include <SmallChange/nodes/FrustumCamera.h>
 #include <SmallChange/nodes/SmVertexArrayShape.h>
 #include <SmallChange/actions/SmToVertexArrayShapeAction.h>
 #include <SmallChange/actions/SoTweakAction.h>
@@ -117,7 +116,6 @@ smallchange_init(void)
   SmTooltip::initClass();
 
   CubicSplineEngine::initClass();
-  FrustumCamera::initClass();
 
   UTMElement::initClass();
   UTMPosition::initClass();

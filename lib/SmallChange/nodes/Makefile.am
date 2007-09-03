@@ -22,7 +22,6 @@ SOURCES = \
 	SoText2Set.cpp SoText2Set.h \
 	SoPointCloud.cpp SoPointCloud.h \
 	SoLODExtrusion.cpp SoLODExtrusion.h \
-	FrustumCamera.cpp FrustumCamera.h \
 	UTMCamera.cpp UTMCamera.h \
 	UTMPosition.cpp UTMPosition.h \
 	UTMCoordinate.cpp UTMCoordinate.h \
@@ -61,7 +60,6 @@ libnodesinc_HEADERS = \
 	SoTCBCurve.h \
 	SoPointCloud.h \
 	SoLODExtrusion.h \
-	FrustumCamera.h \
 	UTMCamera.h \
 	UTMPosition.h \
 	UTMCoordinate.h \
