@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="smallchange1"
-	ProjectGUID="{CAB62215-235C-4567-B283-F28B8E01569F}"
-	RootNamespace="smallchange1"
+	ProjectGUID="{7B9E1E3F-6551-4B77-AE90-E84C254395EC}"
 	>
 	<Platforms>
 		<Platform
@@ -46,11 +45,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="1"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalOptions="/Gs "
+				Optimization="4"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
-				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release/smallchange1.pch"
@@ -73,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib"
 				OutputFile="smallchange1.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -107,7 +108,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="..\misc\install-sdk.bat dll release"
 			/>
 		</Configuration>
 		<Configuration
@@ -136,11 +136,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalOptions="/Gs "
+				Optimization="4"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
-				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\StaticRelease/smallchange1.pch"
@@ -182,7 +184,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="..\misc\install-sdk.bat lib release"
 			/>
 		</Configuration>
 		<Configuration
@@ -211,13 +212,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				Optimization="0"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
-				StringPooling="true"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\StaticDebug/smallchange1.pch"
 				AssemblerListingLocation=".\StaticDebug/"
 				ObjectFile=".\StaticDebug/"
@@ -257,7 +255,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="..\misc\install-sdk.bat lib debug"
 			/>
 		</Configuration>
 		<Configuration
@@ -293,7 +290,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -319,7 +316,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib"
 				OutputFile="smallchange1d.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -353,13 +350,41 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="..\misc\install-sdk.bat dll debug"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="Documents"
+			Filter=";txt"
+			>
+			<File
+				RelativePath="..\..\ChangeLog"
+				>
+			</File>
+			<File
+				RelativePath="..\..\COPYING"
+				>
+			</File>
+			<File
+				RelativePath="..\..\LICENSE.GPL"
+				>
+			</File>
+			<File
+				RelativePath="..\..\NEWS"
+				>
+			</File>
+			<File
+				RelativePath="..\..\README"
+				>
+			</File>
+			<File
+				RelativePath="..\..\THANKS"
+				>
+			</File>
+		</Filter>
 		<Filter
 			Name="Source Files"
 			Filter="c;cpp;ic;icc;h"
@@ -1143,54 +1168,6 @@
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\DepthBuffer.cpp"
-					>
-					<FileConfiguration
-						Name="DLL (Release)|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\Release\SmallChange\nodes/"
-							ProgramDataBaseFileName="Release\SmallChange\nodes/"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="LIB (Release)|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\StaticRelease\SmallChange\nodes/"
-							ProgramDataBaseFileName="StaticRelease\SmallChange\nodes/"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="LIB (Debug)|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\StaticDebug\SmallChange\nodes/"
-							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DLL (Debug)|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\Debug\SmallChange\nodes/"
-							ProgramDataBaseFileName="Debug\SmallChange\nodes/"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\lib\SmallChange\nodes\FrustumCamera.cpp"
 					>
 					<FileConfiguration
 						Name="DLL (Release)|Win32"
@@ -3605,10 +3582,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\lib\SmallChange\nodes\FrustumCamera.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\lib\SmallChange\nodes\PickCallback.h"
 					>
 				</File>
@@ -3784,14 +3757,6 @@
 					RelativePath="..\..\lib\SmallChange\draggers\SmRangeTranslate1Dragger.h"
 					>
 				</File>
-				<File
-					RelativePath="..\..\lib\SmallChange\draggers\SoAngle1Dragger.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\lib\SmallChange\draggers\SoAngle1Manip.h"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="SmallChange\eventhandlers headers"
@@ -3873,8 +3838,8 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="Documents"
-			Filter=";txt"
+			Name="Template Files"
+			Filter="in"
 			>
 		</Filter>
 	</Files>

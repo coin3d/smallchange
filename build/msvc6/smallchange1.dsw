@@ -15,6 +15,45 @@ Package=<4>
 
 ###############################################################################
 
+Project: "smallchange1_install"=.\smallchange1_install.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name smallchange1
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "smallchange1_uninstall"=.\smallchange1_uninstall.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "smallchange1_docs"=.\smallchange1_docs.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Global:
 
 Package=<5>

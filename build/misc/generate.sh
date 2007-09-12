@@ -6,7 +6,10 @@
 
 projname=smallchange1
 
-rm -f ${projname}.dsp ${projname}.dsw ${projname}.vcproj ${projname}.sln install-headers.bat
+rm -f ${projname}.dsp ${projname}.dsw ${projname}.vcproj ${projname}.sln install-headers.bat uninstall-headers.bat
+rm -f ${projname}_docs.dsp ${projname}_docs.vcproj
+rm -f ${projname}_install.dsp ${projname}_install.vcproj
+rm -f ${projname}_uninstalldocs.dsp ${projname}_uninstall.vcproj
 
 build_pwd=`pwd`
 build="`cygpath -w $build_pwd | sed -e 's/\\\\/\\\\\\\\/g'`"
@@ -45,7 +48,16 @@ sed \
   -e "s/$source_pwd/..\\\\../g" \
   -e 's/$/\r/g' \
   <install-headers.bat >new.bat
-mv new.bat install-headers.bat
+mv -f new.bat ../misc/install-headers.bat
+
+sed \
+  -e "s/$build/./g" \
+  -e "s/$build_pwd//g" \
+  -e "s/$source/..\\\\../g" \
+  -e "s/$source_pwd/..\\\\../g" \
+  -e 's/$/\r/g' \
+  <uninstall-headers.bat >new.bat
+mv -f new.bat ../misc/uninstall-headers.bat
 
 # How can I avoid the modal upgrade prompt-dialog for MSVC7.1 here???
 # devenv /command "File.OpenProject $build\\smallchange1.dsp"
