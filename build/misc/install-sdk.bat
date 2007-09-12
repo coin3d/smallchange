@@ -52,7 +52,7 @@ rem **********************************************************************
 rem * Copy files
 
 echo Installing header files...
-call install-headers.bat
+call ..\misc\install-headers.bat
 
 echo Installing binaries...
 
