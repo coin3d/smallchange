@@ -1,6 +1,7 @@
 @echo off
 
 set libname=smallchange1
+set msvc=%3
 
 rem ************************************************************************
 rem * check script arguments
@@ -52,7 +53,7 @@ rem **********************************************************************
 rem * Copy files
 
 echo Installing header files...
-call ..\misc\install-headers.bat
+call ..\misc\install-headers.bat %msvc%
 
 echo Installing binaries...
 
