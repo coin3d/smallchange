@@ -26,8 +26,9 @@
   \brief The SoPointCloud class is used to display a set of 3D points.
   \ingroup nodes
 
-  When a point is closer to the camera than a specified distance,
-  it will be rendered as a quad.
+  When a point is closer to the camera than a specified distance, it
+  will be rendered as a cube/sphere/diamond (specified by the 'shape'
+  field).
 
   This node either uses the coordinates currently on the state
   (typically set up by a leading SoCoordinate3 node in the scenegraph)
@@ -386,6 +387,8 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
       v = coords->get3(idx+i);
       float dist = - nearplane.getDistance(v);
       if (dist <= distlimit) {
+        if (mbind == PER_VERTEX) mb.send(idx+i, TRUE);
+        
         glPushMatrix();
         glTranslatef(v[0], v[1], v[2]);
         glScalef(r, r, r);
