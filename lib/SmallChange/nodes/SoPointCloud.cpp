@@ -40,10 +40,13 @@
 */
 
 #include "SoPointCloud.h"
+#include "SmHQSphere.h"
 
 #include <Inventor/misc/SoState.h>
 #include <Inventor/bundles/SoTextureCoordinateBundle.h>
 #include <Inventor/SoPrimitiveVertex.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
+#include <Inventor/C/glue/gl.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #if HAVE_CONFIG_H
@@ -75,6 +78,7 @@
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/SbPlane.h>
+#include <Inventor/SbBSPTree.h>
 
 #if COIN_DEBUG
 #include <Inventor/errors/SoDebugError.h>
@@ -113,23 +117,38 @@
 
 SO_NODE_SOURCE(SoPointCloud);
 
+
+class SoPointCloudP {
+public:
+  HQSphereGenerator spheregenerator;
+  SbBSPTree spherebsp;
+  SbList <int32_t> sphereidx;
+
+  void genSphereGeom(const int level) {
+    this->spheregenerator.generate(SbClamp(level, 1, 12), this->spherebsp, this->sphereidx);  
+  }
+};
+
+#define PRIVATE(obj) obj->pimpl
+
 /*!
   Constructor.
 */
 SoPointCloud::SoPointCloud()
 {
+  PRIVATE(this) = new SoPointCloudP;
+
   SO_NODE_CONSTRUCTOR(SoPointCloud);
 
   SO_NODE_ADD_FIELD(numPoints, (-1));
-  SO_NODE_ADD_FIELD(detailDistance, (10.0f));
-  SO_NODE_ADD_FIELD(xSize, (0.1f));
-  SO_NODE_ADD_FIELD(ySize, (0.1f));
-  SO_NODE_ADD_FIELD(zSize, (0.1f));
-  SO_NODE_ADD_FIELD(shape, (CUBE));
+  SO_NODE_ADD_FIELD(detailDistance, (100.0f));
+  SO_NODE_ADD_FIELD(itemSize, (1.0f));
   SO_NODE_ADD_FIELD(mode, (DISTANCE_BASED));
+  SO_NODE_ADD_FIELD(shape, (CUBE));
 
   SO_NODE_DEFINE_ENUM_VALUE(Shape, BILLBOARD_DIAMOND);
   SO_NODE_DEFINE_ENUM_VALUE(Shape, CUBE);
+  SO_NODE_DEFINE_ENUM_VALUE(Shape, SPHERE);
 
   SO_NODE_DEFINE_ENUM_VALUE(Mode, ALWAYS_POINTS);
   SO_NODE_DEFINE_ENUM_VALUE(Mode, DISTANCE_BASED);
@@ -137,6 +156,7 @@ SoPointCloud::SoPointCloud()
 
   SO_NODE_SET_SF_ENUM_TYPE(mode, Mode);
   SO_NODE_SET_SF_ENUM_TYPE(shape, Shape);
+
 }
 
 /*!
@@ -144,6 +164,7 @@ SoPointCloud::SoPointCloud()
 */
 SoPointCloud::~SoPointCloud()
 {
+  delete PRIVATE(this);
 }
 
 // doc from parent
@@ -163,20 +184,18 @@ SoPointCloud::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
   inherited::computeCoordBBox(action, this->numPoints.getValue(), box, center);
 
-  const float rx = this->xSize.getValue() * 0.5f;
-  const float ry = this->ySize.getValue() * 0.5f;
-  const float rz = this->zSize.getValue() * 0.5f;
+  const float size = this->itemSize.getValue() * 0.5f;
 
   SbVec3f & bmin = box.getMin();
   SbVec3f & bmax = box.getMax();
   
-  bmin[0] -= rx;
-  bmin[1] -= ry;
-  bmin[2] -= rz;
+  bmin[0] -= size;
+  bmin[1] -= size;
+  bmin[2] -= size;
 
-  bmax[0] += rx;
-  bmax[1] += ry;
-  bmax[2] += rz;
+  bmax[0] += size;
+  bmax[1] += size;
+  bmax[2] += size;
 }
 
 // Internal method which translates the current material binding
@@ -279,11 +298,14 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
     state->pop();
     return;
   }
-  
+
   SbBool waslightingenabled = glIsEnabled(GL_LIGHTING);
   SbBool wascullingenabled = glIsEnabled(GL_CULL_FACE);
   SbBool islightingenabled = waslightingenabled;
   SbBool iscullingenabled = wascullingenabled;
+
+  SbVec3f spherecoords[129];
+  SbVec3f spherenormals[129];
 
   const SbMatrix & mm = SoModelMatrixElement::get(state);
   SbMatrix inversemm = mm.inverse();
@@ -313,20 +335,16 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   if (numpts < 0) numpts = coords->getNum() - idx;
   
   float distlimit = this->detailDistance.getValue();
-
-  float r = this->xSize.getValue() * 0.5f;
+  
+  float r = this->itemSize.getValue() * 0.5f;
   xaxis *= r;
   yaxis *= r;
   zaxis *= r;
   
-  float dx = this->xSize.getValue();
-  float dy = this->ySize.getValue();
-  float dz = this->zSize.getValue();
-
   // render in two loops to avoid frequent OpenGL state changes
 
   // FIXME: add test here when adding more shapes
-  if (rendershape == CUBE) {
+  if (rendershape == CUBE || rendershape == SPHERE) {
     if (!islightingenabled) {
       glEnable(GL_LIGHTING);
       islightingenabled = TRUE;
@@ -345,28 +363,67 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   }
 
   int i;
-  glBegin(GL_QUADS);
   SbVec3f v;
-  
-  for (i = 0; i < numpts; i++) {
-    v = coords->get3(idx+i);
-    float dist = - nearplane.getDistance(v);
-    if (dist <= distlimit) {
-      if (rendershape == CUBE) {
-        if (mbind == PER_VERTEX) mb.send(i, TRUE);
-        render_cube(v, dx, dy, dz);
-      }
-      else if (rendershape == BILLBOARD_DIAMOND) {
-        glVertex3fv((v - yaxis).getValue());
-        glVertex3fv((v + xaxis).getValue());
-        glVertex3fv((v + yaxis).getValue());
-        if (mbind == PER_VERTEX) mb.send(i, TRUE);
-        glVertex3fv((v - xaxis).getValue());
+
+  if (rendershape == SPHERE) {
+    const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));  
+    
+    if (PRIVATE(this)->sphereidx.getLength() == 0) {
+      PRIVATE(this)->genSphereGeom(3);
+    }
+    const SbVec3f * pts = PRIVATE(this)->spherebsp.getPointsArrayPtr();
+    const SbVec3f * nptr = pts;
+    const int32_t * iptr = PRIVATE(this)->sphereidx.getArrayPtr();
+    const int numidx = PRIVATE(this)->sphereidx.getLength();
+
+    cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, (GLvoid*) nptr);
+    cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
+    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 
+                              (GLvoid*) pts);
+    cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
+
+    for (i = 0; i < numpts; i++) {
+      v = coords->get3(idx+i);
+      float dist = - nearplane.getDistance(v);
+      if (dist <= distlimit) {
+        glPushMatrix();
+        glTranslatef(v[0], v[1], v[2]);
+        glScalef(r, r, r);
+
+        cc_glglue_glDrawElements(glue, GL_TRIANGLES, numidx, GL_UNSIGNED_INT, iptr);
+
+        glPopMatrix();
       }
     }
+    cc_glglue_glDisableClientState(glue, GL_NORMAL_ARRAY);
+    cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
   }
-  glEnd();
-
+  else {
+    glBegin(GL_QUADS);
+    
+    for (i = 0; i < numpts; i++) {
+      v = coords->get3(idx+i);
+      float dist = - nearplane.getDistance(v);
+      if (dist <= distlimit) {
+        switch (rendershape) {
+        case CUBE:
+          if (mbind == PER_VERTEX) mb.send(i, TRUE);
+          render_cube(v, r*2.0f, r*2.0f, r*2.0f);
+          break;
+        case BILLBOARD_DIAMOND:
+          glVertex3fv((v - yaxis).getValue());
+          glVertex3fv((v + xaxis).getValue());
+          glVertex3fv((v + yaxis).getValue());
+          if (mbind == PER_VERTEX) mb.send(i, TRUE);
+          glVertex3fv((v - xaxis).getValue());
+          break;
+        default:
+          break;
+        }
+      }
+    }
+    glEnd();
+  }    
   if (islightingenabled) {
     glDisable(GL_LIGHTING);
     islightingenabled = FALSE;

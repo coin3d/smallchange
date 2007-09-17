@@ -28,11 +28,13 @@
 #include <Inventor/nodes/SoNonIndexedShape.h>
 #include <Inventor/fields/SoSFInt32.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/fields/SoMFFloat.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFEnum.h>
 
 #include <SmallChange/basic.h>
 
+class SoPointCloudP;
 
 class SMALLCHANGE_DLL_API SoPointCloud : public SoNonIndexedShape {
   typedef SoNonIndexedShape inherited;
@@ -45,9 +47,7 @@ public:
 
   SoSFInt32 numPoints;
   SoSFFloat detailDistance;
-  SoSFFloat xSize;
-  SoSFFloat ySize;
-  SoSFFloat zSize;
+  SoSFFloat itemSize;
 
   enum Mode {
     ALWAYS_POINTS,
@@ -58,7 +58,8 @@ public:
 
   enum Shape {
     BILLBOARD_DIAMOND,
-    CUBE
+    CUBE,
+    SPHERE
   };
   SoSFEnum shape;
 
@@ -82,6 +83,8 @@ private:
   };
 
   Binding findMaterialBinding(SoState * const state) const;
+
+  SoPointCloudP * pimpl;
 };
 
 #endif // !SMALLCHANGE_SOPOINTSET_H

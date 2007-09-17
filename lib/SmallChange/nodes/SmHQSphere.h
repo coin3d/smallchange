@@ -28,10 +28,11 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoSFInt32.h>
-
+#include <Inventor/SbLinear.h>
 #include <SmallChange/basic.h>
 
 class SmHQSphereP;
+class SbBSPTree;
 
 class SMALLCHANGE_DLL_API SmHQSphere : public SoShape {
   typedef SoShape inherited;
@@ -56,6 +57,56 @@ protected:
   
 private:
   SmHQSphereP * pimpl;
+};
+
+class SMALLCHANGE_DLL_API HQSphereGenerator {
+public:
+  HQSphereGenerator(void) {
+    this->orgobject = NULL;
+    this->init();
+  }
+  ~HQSphereGenerator(void) {
+    delete this->orgobject;
+  }
+  
+  class triangle {
+  public:
+    triangle(void) { }
+    triangle(const SbVec3f & p0, const SbVec3f & p1, const SbVec3f & p2) {
+      pt[0] = p0;
+      pt[1] = p1;
+      pt[2] = p2;
+    } 
+  public:
+    SbVec3f pt[3];
+  };
+  
+  class object {
+  public:
+    object(int npoly, const triangle * poly) {
+      this->npoly = npoly;
+      this->poly = new triangle[npoly];
+      if (poly) {
+        memcpy(this->poly, poly, npoly*sizeof(triangle));
+      }
+    }
+    ~object() {
+      delete[] this->poly;
+    }
+  public:
+    int npoly;    /* # of triangles in object */
+    triangle * poly;     /* Triangles */
+  };
+
+  void generate(const int level, SbBSPTree & bsp, SbList <int> & idx);
+  
+  SbVec3f normalize(const SbVec3f & p);
+  SbVec3f midpoint(const SbVec3f & a, const SbVec3f & b);
+
+private:
+  void convert(object * obj, SbBSPTree & bsp, SbList <int> & idx);
+  void init(void);
+  object * orgobject;
 };
 
 #endif // COIN_SMHQSPHERE_H
