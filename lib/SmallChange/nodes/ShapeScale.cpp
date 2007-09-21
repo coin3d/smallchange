@@ -164,6 +164,7 @@ void
 ShapeScale::GLRender(SoGLRenderAction * action)
 {
   this->preRender(action);
+  SoCacheElement::addCacheDependency(action->getState(), this->cache);
   inherited::GLRender(action);
   SoGLCacheContextElement::shouldAutoCache(action->getState(),
                                            SoGLCacheContextElement::DONT_AUTO_CACHE);
