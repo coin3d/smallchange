@@ -52,12 +52,16 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/nodes/SoScale.h>
 #include <Inventor/nodes/SoCube.h>
+#include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoCullElement.h>
+#include <Inventor/elements/SoCacheElement.h>
+#include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/SbRotation.h>
+#include <Inventor/caches/SoCache.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -71,7 +75,6 @@ ShapeScale::ShapeScale(void)
 
   SO_KIT_ADD_FIELD(active, (TRUE));
   SO_KIT_ADD_FIELD(projectedSize, (5.0f));  
-  SO_KIT_ADD_FIELD(threadSafe, (FALSE));
 
 #ifndef __COIN__
 #error catalog setup probably not compatible with non-Coin Inventor implementation
@@ -82,10 +85,13 @@ ShapeScale::ShapeScale(void)
   SO_KIT_ADD_CATALOG_ABSTRACT_ENTRY(shape, SoNode, SoCube, TRUE, topSeparator, "", TRUE);
 
   SO_KIT_INIT_INSTANCE();
+  this->didrender = FALSE;
+  this->cache = NULL;
 }
 
 ShapeScale::~ShapeScale()
 {
+  if (this->cache) this->cache->unref();
 }
 
 // doc in superclass
@@ -108,7 +114,17 @@ void
 ShapeScale::preRender(SoAction * action)
 {
   SoState * state = action->getState();
+  if (this->cache && this->cache->isValid(state)) return;
 
+  if (this->cache) this->cache->unref();
+  
+  SbBool storedinvalid = SoCacheElement::setInvalid(FALSE);
+
+  state->push();
+  this->cache = new SoCache(state);
+  this->cache->ref();
+  SoCacheElement::set(state, this->cache);
+  
   SoNode * shape = (SoNode*) this->getAnyPart(SbName("shape"), FALSE);
   assert(shape);
 
@@ -118,36 +134,60 @@ ShapeScale::preRender(SoAction * action)
   }
   else {
     SbBox3f bbox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
-    if (!SoCullElement::cullTest(state, bbox, TRUE)) {
-      const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-      const SbViewVolume & vv = SoViewVolumeElement::get(state);
-      SbVec3f center(0.0f, 0.0f, 0.0f);
-      const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[0]);
-      const SbMatrix & mm = SoModelMatrixElement::get(state);
-      mm.multVecMatrix(center, center);
-      const float scalefactor = vv.getWorldToScreenScale(center, nsize);
-
+    const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+    const SbViewVolume & vv = SoViewVolumeElement::get(state);
+    SbVec3f center(0.0f, 0.0f, 0.0f);
+    const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[0]);
+    const SbMatrix & mm = SoModelMatrixElement::get(state);
+    mm.multVecMatrix(center, center);
+    const float scalefactor = vv.getWorldToScreenScale(center, nsize);
+    
 #if 1 // new version that considers the current model-matrix scale
-      SbVec3f t;
-      SbRotation r;
-      SbVec3f s;
-      SbRotation so;
-      mm.getTransform(t, r, s, so);
-      
-      update_scale(scale, SbVec3f(scalefactor/s[0], scalefactor/s[1], scalefactor/s[2]));
+    SbVec3f t;
+    SbRotation r;
+    SbVec3f s;
+    SbRotation so;
+    mm.getTransform(t, r, s, so);
+    
+    update_scale(scale, SbVec3f(scalefactor/s[0], scalefactor/s[1], scalefactor/s[2]));
 #else
-      update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
-
+    update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
+    
 #endif
-
-    }
   }
+  state->pop();
+  SoCacheElement::setInvalid(storedinvalid);
 }
 
 // Overridden to (re)initialize image and other data before rendering.
 void 
 ShapeScale::GLRender(SoGLRenderAction * action)
 {
-  if (!this->threadSafe.getValue()) this->preRender(action);
+  this->preRender(action);
   inherited::GLRender(action);
+  SoGLCacheContextElement::shouldAutoCache(action->getState(),
+                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
 }
+
+void 
+ShapeScale::getBoundingBox(SoGetBoundingBoxAction * action)
+{
+  if (this->cache) {
+    SoCacheElement::addCacheDependency(action->getState(), this->cache);
+  }
+  else {
+    SoCacheElement::invalidate(action->getState());
+  }
+  inherited::getBoundingBox(action);
+}
+
+void
+ShapeScale::notify(SoNotList * l)
+{
+  SoField * f = l->getLastField();
+  if (f == &this->active) {
+    if (this->cache) this->cache->invalidate();
+  }
+  inherited::notify(l);
+}
+

@@ -35,7 +35,7 @@ class SbViewport;
 class SoState;
 class SbColor;
 class SbVec2s;
-
+class SoCache;
 
 class SMALLCHANGE_DLL_API ShapeScale : public SoBaseKit {
   typedef SoBaseKit inherited;
@@ -52,16 +52,18 @@ public:
 
   SoSFFloat active;
   SoSFFloat projectedSize;
-  SoSFBool threadSafe;
 
   void preRender(SoAction * action);
 
 protected:
   virtual void GLRender(SoGLRenderAction * action);
+  virtual void getBoundingBox(SoGetBoundingBoxAction * action);
+  virtual void notify(SoNotList * nl);
   virtual ~ShapeScale();
   
 private:
-
+  SbBool didrender;
+  SoCache * cache;
 };
 
 #endif // ! SHAPESCALE_H
