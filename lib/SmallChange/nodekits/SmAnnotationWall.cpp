@@ -121,67 +121,75 @@ void
 SmAnnotationWall::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
-  if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
 
-    SbBool storedinvalid = SoCacheElement::setInvalid(FALSE);
+  SbBool createcache = FALSE;
+  SbBool render = TRUE;
+
+  SbBool storedinvalid = FALSE;
+  if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
+    storedinvalid = SoCacheElement::setInvalid(FALSE);
     state->push();
     PRIVATE(this)->cache = new SoCache(state);
     PRIVATE(this)->cache->ref();
     SoCacheElement::set(state, PRIVATE(this)->cache);
+    createcache = TRUE;
+  }
 
-    int i;
-    
-    SbVec3f p[5];
-    
-    p[0] = this->bottomLeft.getValue();
-    p[1] = this->bottomRight.getValue();
-    p[2] = this->topRight.getValue();
-    p[3] = this->topLeft.getValue();
-    p[4] = p[0];
-    
-    SbMatrix projmatrix;
-    projmatrix = (SoModelMatrixElement::get(state) *
-                  SoViewingMatrixElement::get(state) *
-                  SoProjectionMatrixElement::get(state));
-    
-    SbVec2s vpsize = SoViewportRegionElement::get(state).getViewportSizePixels();
-    
-    SbVec3f projp[4];
-    for (i = 0; i < 4; i++) {
-      projmatrix.multVecMatrix(p[i], projp[i]);
-    }
-    SbVec3f v0 = projp[1] - projp[0];
-    SbVec3f v1 = projp[3] - projp[0];
-    
-    // do backface culling
-    float crossz = v0[0]*v1[1] - v0[1]*v1[0];
-    if (crossz < 0.0f && this->ccw.getValue()) return;
-    if (crossz >= 0.0f && !this->ccw.getValue()) return;
-    
-    SoLineSet * ls = dynamic_cast<SoLineSet*> (this->getAnyPart("lineSet", TRUE));
-    SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
-    if (vp == NULL) {
-      vp = new SoVertexProperty;
-      ls->vertexProperty = vp;
-    }
-    if (ls->numVertices.getNum() != 1 || ls->numVertices[0] != 5) {
-      ls->numVertices = 5;
-    }
-    SbBool needupdate = TRUE;
-    if (vp->vertex.getNum() == 5) {
-      needupdate = FALSE;
-      if (memcmp(p, vp->vertex.getValues(0), 5*sizeof(SbVec3f))) needupdate = TRUE;
-    }
-    if (needupdate) {
-      vp->vertex.setNum(5);
-      SbVec3f * dst = vp->vertex.startEditing();
-      memcpy(dst, p, 5*sizeof(SbVec3f));
-      vp->vertex.finishEditing();
-    }
+  int i;
+  
+  SbVec3f p[5];
+  
+  p[0] = this->bottomLeft.getValue();
+  p[1] = this->bottomRight.getValue();
+  p[2] = this->topRight.getValue();
+  p[3] = this->topLeft.getValue();
+  p[4] = p[0];
+  
+  SbMatrix projmatrix;
+  projmatrix = (SoModelMatrixElement::get(state) *
+                SoViewingMatrixElement::get(state) *
+                SoProjectionMatrixElement::get(state));
+  
+  SbVec2s vpsize = SoViewportRegionElement::get(state).getViewportSizePixels();
+  
+  SbVec3f projp[4];
+  for (i = 0; i < 4; i++) {
+    projmatrix.multVecMatrix(p[i], projp[i]);
+  }
+  SbVec3f v0 = projp[1] - projp[0];
+  SbVec3f v1 = projp[3] - projp[0];
+  
+  // do backface culling
+  float crossz = v0[0]*v1[1] - v0[1]*v1[0];
+  if (crossz < 0.0f && this->ccw.getValue()) render = FALSE;
+  else if (crossz >= 0.0f && !this->ccw.getValue()) render = FALSE;
+  
+  SoLineSet * ls = dynamic_cast<SoLineSet*> (this->getAnyPart("lineSet", TRUE));
+  SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
+  if (vp == NULL) {
+    vp = new SoVertexProperty;
+    ls->vertexProperty = vp;
+  }
+  if (ls->numVertices.getNum() != 1 || ls->numVertices[0] != 5) {
+    ls->numVertices = 5;
+  }
+  SbBool needupdate = TRUE;
+  if (vp->vertex.getNum() == 5) {
+    needupdate = FALSE;
+    if (memcmp(p, vp->vertex.getValues(0), 5*sizeof(SbVec3f))) needupdate = TRUE;
+  }
+  if (needupdate) {
+    vp->vertex.setNum(5);
+    SbVec3f * dst = vp->vertex.startEditing();
+    memcpy(dst, p, 5*sizeof(SbVec3f));
+    vp->vertex.finishEditing();
+  }
+
+  if (createcache) {
     state->pop();
     (void) SoCacheElement::setInvalid(storedinvalid);
   }
-  inherited::GLRender(action);
+  if (render) inherited::GLRender(action);
 }
 
 void 
