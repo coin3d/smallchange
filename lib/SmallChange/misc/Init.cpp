@@ -82,6 +82,7 @@
 #include <SmallChange/nodekits/SmTrackPointKit.h>
 #include <SmallChange/nodes/SmTrack.h>
 #include <SmallChange/nodes/SmLazyFile.h>
+#include <SmallChange/nodekits/SmAnnotationWall.h>
 
 #include <SmallChange/nodekits/SmPieChart.h>
 #include <SmallChange/nodes/SmTextureText2.h>
@@ -157,4 +158,6 @@ smallchange_init(void)
 
   SmTextureText2::initClass();
   SmShadowText2::initClass();
+
+  SmAnnotationWall::initClass();
 }

@@ -19,6 +19,7 @@ SOURCES = \
 	NormalsKit.cpp SmNormalsKit.h \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
 	SmAxisKit.cpp SmAxisKit.h \
+	SmAnnotationWall.cpp SmAnnotationWall.h \
 	SmPieChart.cpp SmPieChart.h \
 	PopupMenuKit.cpp SmPopupMenuKit.h \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
