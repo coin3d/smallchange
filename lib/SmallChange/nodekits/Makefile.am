@@ -40,6 +40,7 @@ libnodekitsinc_HEADERS = \
 	SmNormalsKit.h \
 	SmAxisDisplayKit.h \
 	SmAxisKit.h \
+	SmAnnotationWall.h \
 	SmPieChart.h \
 	SmPopupMenuKit.h \
         SmDynamicObjectKit.h \
