@@ -238,11 +238,11 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
         SbString * text = t->string.startEditing();
         for (i = 0; i < l1.getLength(); i++) {
           pos[i] = this->axis1AnnotationPos[l1[i]];
-          text[i] = this->axis1Annotation.getValues(0)[i];
+          text[i] = this->axis1Annotation.getValues(0)[l1[i]];
         }
         for (i = 0; i < l2.getLength(); i++) {
           pos[i+l1.getLength()] = this->axis2AnnotationPos[l2[i]];
-          text[i+l2.getLength()] = this->axis2Annotation.getValues(0)[i];
+          text[i+l2.getLength()] = this->axis2Annotation.getValues(0)[l2[i]];
         }
         t->position.finishEditing();
         t->string.finishEditing();
