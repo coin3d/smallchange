@@ -25,7 +25,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="TRUE"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -41,7 +41,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib winmm.lib"
 				OutputFile="smallchange1.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -93,7 +93,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="TRUE"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -190,7 +190,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include"
+				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -207,7 +207,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib winmm.lib"
 				OutputFile="smallchange1d.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -404,6 +404,48 @@
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodekits\PopupMenuKit.cpp">
+					<FileConfiguration
+						Name="DLL (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							ObjectFile=".\Release\SmallChange\nodekits/"
+							ProgramDataBaseFileName="Release\SmallChange\nodekits/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
+							ProgramDataBaseFileName="StaticRelease\SmallChange\nodekits/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
+							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							ObjectFile=".\Debug\SmallChange\nodekits/"
+							ProgramDataBaseFileName="Debug\SmallChange\nodekits/"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodekits\SmAnnotationWall.cpp">
 					<FileConfiguration
 						Name="DLL (Release)|Win32">
 						<Tool
@@ -3002,6 +3044,9 @@
 				Filter="">
 				<File
 					RelativePath="..\..\lib\SmallChange\nodekits\LegendKit.h">
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodekits\SmAnnotationWall.h">
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodekits\SmAxisDisplayKit.h">

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="smallchange1_uninstall"
-	ProjectGUID="{79AB5C8A-FC40-4608-A8EA-C199FF8836D9}"
+	ProjectGUID="{E2C7AB3E-F18C-4987-AF68-6B0F09C61C1A}"
 	Keyword="MakeFileProj"
 	>
 	<Platforms>
