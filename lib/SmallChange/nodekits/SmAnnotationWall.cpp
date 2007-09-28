@@ -23,9 +23,6 @@
 
 #include "SmAnnotationWall.h"
 #include <Inventor/nodes/SoSeparator.h>
-#include <Inventor/nodes/SoLineSet.h>
-#include <Inventor/nodes/SoVertexProperty.h>
-#include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoProjectionMatrixElement.h>
 #include <Inventor/elements/SoViewingMatrixElement.h>
@@ -77,9 +74,7 @@ SmAnnotationWall::SmAnnotationWall()
 
   SO_KIT_CONSTRUCTOR(SmAnnotationWall);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(extraGeom, SoSeparator, TRUE, topSeparator, material, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, TRUE, topSeparator, lineSet, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(lineSet, SoLineSet, FALSE, topSeparator, text, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(extraGeom, SoSeparator, TRUE, topSeparator, text, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_ADD_FIELD(ccw, (TRUE));
@@ -264,26 +259,6 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
       if ((crossz < 0.0f && !this->ccw.getValue()) || 
           (crossz >= 0.0f && this->ccw.getValue())) {
         render = TRUE;
-        SoLineSet * ls = dynamic_cast<SoLineSet*> (this->getAnyPart("lineSet", TRUE));
-        SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
-        if (vp == NULL) {
-          vp = new SoVertexProperty;
-          ls->vertexProperty = vp;
-        }
-        if (ls->numVertices.getNum() != 1 || ls->numVertices[0] != 5) {
-          ls->numVertices = 5;
-        }
-        SbBool needupdate = TRUE;
-        if (vp->vertex.getNum() == 5) {
-          needupdate = FALSE;
-          if (memcmp(p, vp->vertex.getValues(0), 5*sizeof(SbVec3f))) needupdate = TRUE;
-        }
-        if (needupdate) {
-          vp->vertex.setNum(5);
-          SbVec3f * dst = vp->vertex.startEditing();
-          memcpy(dst, p, 5*sizeof(SbVec3f));
-          vp->vertex.finishEditing();
-        }
       }
     }
   }
