@@ -36,9 +36,11 @@ class SMALLCHANGE_DLL_API SmAnnotationWall : public SoBaseKit {
   typedef SoBaseKit inherited;
   SO_KIT_HEADER(SmAnnotationWall);
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(extraGeom);
   SO_KIT_CATALOG_ENTRY_HEADER(material);
   SO_KIT_CATALOG_ENTRY_HEADER(lineSet);
   SO_KIT_CATALOG_ENTRY_HEADER(text);
+
 public:
 
   SmAnnotationWall(void);

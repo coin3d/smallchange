@@ -32,11 +32,13 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
+#include <Inventor/elements/SoCullElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/caches/SoCache.h>
 #include <SmallChange/nodes/SmTextureText2.h>
 #include <string.h>
+#include <Inventor/SbClip.h>
 
 // *************************************************************************
 
@@ -53,6 +55,7 @@ public:
 
   SmAnnotationWall * master;
   SoCache * cache;
+  SbClip clipper;
 };
 
 #define PRIVATE(p) ((p)->pimpl)
@@ -67,9 +70,10 @@ SmAnnotationWall::SmAnnotationWall()
 
   SO_KIT_CONSTRUCTOR(SmAnnotationWall);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(extraGeom, SoSeparator, TRUE, topSeparator, material, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(material, SoMaterial, TRUE, topSeparator, lineSet, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(lineSet, SoLineSet, FALSE, topSeparator, text, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(lineSet, SoLineSet, FALSE, topSeparator, text, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_ADD_FIELD(ccw, (TRUE));
   SO_KIT_ADD_FIELD(bottomLeft, (0.0f, 0.0f, 0.0f));
@@ -144,6 +148,13 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
   p[2] = this->topRight.getValue();
   p[3] = this->topLeft.getValue();
   p[4] = p[0];
+
+  // FIXME: consider using the actual bbox
+  SbBox3f bbox;
+  bbox.makeEmpty();
+  for (i = 0; i < 4; i++) {
+    bbox.extendBy(p[i]);
+  }
   
   SbMatrix projmatrix;
   projmatrix = (SoModelMatrixElement::get(state) *
@@ -151,40 +162,62 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
                 SoProjectionMatrixElement::get(state));
   
   SbVec2s vpsize = SoViewportRegionElement::get(state).getViewportSizePixels();
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
   
-  SbVec3f projp[4];
-  for (i = 0; i < 4; i++) {
-    projmatrix.multVecMatrix(p[i], projp[i]);
-  }
-  SbVec3f v0 = projp[1] - projp[0];
-  SbVec3f v1 = projp[3] - projp[0];
-  
-  // do backface culling
-  float crossz = v0[0]*v1[1] - v0[1]*v1[0];
-  if (crossz < 0.0f && this->ccw.getValue()) render = FALSE;
-  else if (crossz >= 0.0f && !this->ccw.getValue()) render = FALSE;
-  
-  SoLineSet * ls = dynamic_cast<SoLineSet*> (this->getAnyPart("lineSet", TRUE));
-  SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
-  if (vp == NULL) {
-    vp = new SoVertexProperty;
-    ls->vertexProperty = vp;
-  }
-  if (ls->numVertices.getNum() != 1 || ls->numVertices[0] != 5) {
-    ls->numVertices = 5;
-  }
-  SbBool needupdate = TRUE;
-  if (vp->vertex.getNum() == 5) {
-    needupdate = FALSE;
-    if (memcmp(p, vp->vertex.getValues(0), 5*sizeof(SbVec3f))) needupdate = TRUE;
-  }
-  if (needupdate) {
-    vp->vertex.setNum(5);
-    SbVec3f * dst = vp->vertex.startEditing();
-    memcpy(dst, p, 5*sizeof(SbVec3f));
-    vp->vertex.finishEditing();
-  }
+  render = FALSE;
+  if (!SoCullElement::cullBox(state, bbox, TRUE)) {
+    SbClip & clipper = PRIVATE(this)->clipper;
+    
+    SbPlane vvplane[6];
+    vv.getViewVolumePlanes(vvplane);
+    SbMatrix toobj = SoModelMatrixElement::get(state).inverse();
+    clipper.reset();
 
+    for (i = 0; i < 4; i++) {
+      clipper.addVertex(p[i]);
+    }
+    for (i =0; i < 6; i++) {
+      vvplane[i].transform(toobj);
+      clipper.clip(vvplane[i]);
+    }
+    if (clipper.getNumVertices() >= 3) {
+      SbVec3f projp[3];
+      for (i = 0; i < 3; i++) {
+        SbVec3f v;
+        clipper.getVertex(i, v);
+        projmatrix.multVecMatrix(v, projp[i]);
+      }
+      SbVec3f v0 = projp[1] - projp[0];
+      SbVec3f v1 = projp[2] - projp[0];
+    
+      // do backface culling
+      float crossz = v0[0]*v1[1] - v0[1]*v1[0];
+      if ((crossz < 0.0f && !this->ccw.getValue()) || 
+          (crossz >= 0.0f && this->ccw.getValue())) {
+        render = TRUE;
+        SoLineSet * ls = dynamic_cast<SoLineSet*> (this->getAnyPart("lineSet", TRUE));
+        SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
+        if (vp == NULL) {
+          vp = new SoVertexProperty;
+          ls->vertexProperty = vp;
+        }
+        if (ls->numVertices.getNum() != 1 || ls->numVertices[0] != 5) {
+          ls->numVertices = 5;
+        }
+        SbBool needupdate = TRUE;
+        if (vp->vertex.getNum() == 5) {
+          needupdate = FALSE;
+          if (memcmp(p, vp->vertex.getValues(0), 5*sizeof(SbVec3f))) needupdate = TRUE;
+        }
+        if (needupdate) {
+          vp->vertex.setNum(5);
+          SbVec3f * dst = vp->vertex.startEditing();
+          memcpy(dst, p, 5*sizeof(SbVec3f));
+          vp->vertex.finishEditing();
+        }
+      }
+    }
+  }
   if (createcache) {
     state->pop();
     (void) SoCacheElement::setInvalid(storedinvalid);
