@@ -29,6 +29,9 @@ class SmAnnotationWallP;
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFBool.h>
+#include <Inventor/fields/SoMFString.h>
+#include <Inventor/fields/SoMFVec3f.h>
+#include <Inventor/fields/SoSFFloat.h>
 #include <SmallChange/basic.h>
 
 class SMALLCHANGE_DLL_API SmAnnotationWall : public SoBaseKit {
@@ -52,7 +55,15 @@ public:
   SoSFVec3f bottomRight;
   SoSFVec3f topRight;
   SoSFVec3f topLeft;
+
+  SoMFString axis1Annotation;
+  SoMFVec3f axis1AnnotationPos;
+
+  SoMFString axis2Annotation;
+  SoMFVec3f axis2AnnotationPos;
   
+  SoSFFloat annotationGap;
+
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   
