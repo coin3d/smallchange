@@ -53,13 +53,6 @@ public:
   SmAnnotationWall * master;
   SoCache * cache;
   SbClip clipper;
-  SbList <int> axis1idx;
-  SbList <int> axis2idx;
-
-  void add_anno_text(SbList <int> & list,
-                     const SbMatrix & projm, 
-                     const float maxdist,
-                     const SbVec3f * pos, int i0, int i1);
 };
 
 #define PRIVATE(p) ((p)->pimpl)
@@ -74,29 +67,13 @@ SmAnnotationWall::SmAnnotationWall()
 
   SO_KIT_CONSTRUCTOR(SmAnnotationWall);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(extraGeom, SoSeparator, TRUE, topSeparator, text, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(geometry, SoSeparator, TRUE, topSeparator, "", TRUE);
 
   SO_KIT_ADD_FIELD(ccw, (TRUE));
   SO_KIT_ADD_FIELD(bottomLeft, (0.0f, 0.0f, 0.0f));
   SO_KIT_ADD_FIELD(bottomRight, (1.0f, 0.0f, 0.0f));
   SO_KIT_ADD_FIELD(topRight, (1.0f, 1.0f, 0.0f));
   SO_KIT_ADD_FIELD(topLeft, (0.0f, 1.0f, 0.0f));
-  SO_KIT_ADD_FIELD(axis1Annotation, (""));
-  SO_KIT_ADD_FIELD(axis1AnnotationPos, (0.0f, 0.0f, 0.0f));
-  SO_KIT_ADD_FIELD(axis2Annotation, (""));
-  SO_KIT_ADD_FIELD(axis2AnnotationPos, (0.0f, 0.0f, 0.0f));
-  SO_KIT_ADD_FIELD(annotationGap, (30.0f));
-
-  this->axis1Annotation.setNum(0);
-  this->axis1AnnotationPos.setNum(0);
-  this->axis2Annotation.setNum(0);
-  this->axis2AnnotationPos.setNum(0);
-
-  this->axis1Annotation.setDefault(TRUE);
-  this->axis1AnnotationPos.setDefault(TRUE);
-  this->axis2Annotation.setDefault(TRUE);
-  this->axis2AnnotationPos.setDefault(TRUE);
 
   SO_KIT_INIT_INSTANCE();
 }
@@ -111,30 +88,6 @@ void
 SmAnnotationWall::initClass(void)
 {
   SO_KIT_INIT_CLASS(SmAnnotationWall, SoBaseKit, "BaseKit");
-}
-
-void 
-SmAnnotationWall::getBoundingBox(SoGetBoundingBoxAction * action)
-{
-  SoState * state = action->getState();
-
-  if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
-    // supply an approximate bbox and always invalidate the bbox cache
-    SoCacheElement::invalidate(state);
-    
-    SbBox3f bbox;
-    bbox.makeEmpty();
-    bbox.extendBy(this->bottomLeft.getValue());
-    bbox.extendBy(this->bottomRight.getValue());
-    bbox.extendBy(this->topLeft.getValue());
-    bbox.extendBy(this->topRight.getValue());
-    
-    action->extendBy(bbox);
-    action->setCenter(bbox.getCenter(), TRUE);
-  }
-  else {
-    inherited::getBoundingBox(action);
-  }
 }
 
 void 
@@ -165,7 +118,7 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
   p[3] = this->topLeft.getValue();
   p[4] = p[0];
 
-  // FIXME: consider using the actual bbox
+  // FIXME: consider using the actual "geometry" bbox
   SbBox3f bbox;
   bbox.makeEmpty();
   for (i = 0; i < 4; i++) {
@@ -199,52 +152,6 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
       clipper.clip(vvplane[i]);
     }
     if (clipper.getNumVertices() >= 3) {
-      SbList <int> l1;
-      SbList <int> l2;
-
-      if (this->axis1AnnotationPos.getNum() >= 2) {
-        l1.truncate(0);
-        l1.append(0);
-        l1.append(this->axis1AnnotationPos.getNum()-1);
-        PRIVATE(this)->add_anno_text(l1, projmatrix,
-                                     (this->annotationGap.getValue() * 2.0f) / maxsize, 
-                                     this->axis1AnnotationPos.getValues(0), 
-                                     0, this->axis1Annotation.getNum() - 1); 
-
-      }
-
-      if (this->axis2AnnotationPos.getNum() >= 2) {
-        l2.truncate(0);
-        l2.append(0);
-        l2.append(this->axis2AnnotationPos.getNum()-1);
-        PRIVATE(this)->add_anno_text(l2, projmatrix,
-                                     (this->annotationGap.getValue() * 2.0f) / maxsize, 
-                                     this->axis2AnnotationPos.getValues(0), 
-                                     0, this->axis2Annotation.getNum() - 1); 
-      }
-      
-      if (l1 != PRIVATE(this)->axis1idx || l2 != PRIVATE(this)->axis2idx) {
-        SmTextureText2 * t = dynamic_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
-        assert(t);
-        t->justification = SmTextureText2::CENTER;
-        t->position.setNum(l1.getLength() + l2.getLength());
-        t->string.setNum(l1.getLength() + l2.getLength());
-        SbVec3f * pos = t->position.startEditing();
-        SbString * text = t->string.startEditing();
-        for (i = 0; i < l1.getLength(); i++) {
-          pos[i] = this->axis1AnnotationPos[l1[i]];
-          text[i] = this->axis1Annotation.getValues(0)[l1[i]];
-        }
-        for (i = 0; i < l2.getLength(); i++) {
-          pos[i+l1.getLength()] = this->axis2AnnotationPos[l2[i]];
-          text[i+l2.getLength()] = this->axis2Annotation.getValues(0)[l2[i]];
-        }
-        t->position.finishEditing();
-        t->string.finishEditing();
-
-        PRIVATE(this)->axis1idx = l1;
-        PRIVATE(this)->axis2idx = l2;        
-      }
       SbVec3f projp[3];
       for (i = 0; i < 3; i++) {
         SbVec3f v;
@@ -273,52 +180,7 @@ void
 SmAnnotationWall::notify(SoNotList * list)
 {
   if (PRIVATE(this)->cache) PRIVATE(this)->cache->invalidate();
-  PRIVATE(this)->axis1idx.truncate(0);
-  PRIVATE(this)->axis2idx.truncate(1);
   inherited::notify(list);
-}
-
-// *************************************************************************
-
-void 
-SmAnnotationWallP::add_anno_text(SbList <int> & list,
-                                 const SbMatrix & projm, 
-                                 const float maxdist,
-                                 const SbVec3f * pos, int i0, int i1)
-{
-  if ((i1-i0) <= 1) return;
-  int mid = (i0 + i1) / 2;
-  assert(mid != i0 && mid != i1);
-
-  SbVec3f p[3];
-  p[0] = pos[i0];
-  p[1] = pos[mid];
-  p[2] = pos[i1];
-  
-  int i;
-
-  for (i = 0; i < 3; i++) {
-    projm.multVecMatrix(p[i], p[i]);
-  }
-  if (pos[1][2] < 1.0f) {
-    SbBool add = FALSE;
-    float len = 0.0f;
-    if (pos[0][2] < 1.0f) {
-      p[0][2] = 0.0f;
-      p[1][2] = 0.0f;
-      len = (p[1]-p[0]).length();
-    }
-    else if (pos[2][2] < 1.0f) {
-      p[2][2] = 0.0f;
-      p[1][2] = 0.0f;
-      len = (p[1]-p[2]).length();
-    }
-    if (len > maxdist) {
-      list.append(mid);
-    }
-  }
-  add_anno_text(list, projm, maxdist, pos, i0, mid);
-  add_anno_text(list, projm, maxdist, pos, mid, i1);
 }
 
 // *************************************************************************
