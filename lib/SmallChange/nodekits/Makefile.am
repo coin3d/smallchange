@@ -20,6 +20,7 @@ SOURCES = \
 	SmAxisDisplayKit.cpp SmAxisDisplayKit.h \
 	SmAxisKit.cpp SmAxisKit.h \
 	SmAnnotationWall.cpp SmAnnotationWall.h \
+	SmAnnotationAxis.cpp SmAnnotationAxis.h \
 	SmPieChart.cpp SmPieChart.h \
 	PopupMenuKit.cpp SmPopupMenuKit.h \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
@@ -41,6 +42,7 @@ libnodekitsinc_HEADERS = \
 	SmAxisDisplayKit.h \
 	SmAxisKit.h \
 	SmAnnotationWall.h \
+	SmAnnotationAxis.h \
 	SmPieChart.h \
 	SmPopupMenuKit.h \
         SmDynamicObjectKit.h \
