@@ -215,15 +215,15 @@ SmAnnotationAxisP::add_anno_text(SbList <int> & list,
   for (i = 0; i < 3; i++) {
     projm.multVecMatrix(p[i], p[i]);
   }
-  if (pos[1][2] < 1.0f) {
+  if (p[1][2] < 1.0f) {
     SbBool add = FALSE;
     float len = 0.0f;
-    if (pos[0][2] < 1.0f) {
+    if (p[0][2] < 1.0f) {
       p[0][2] = 0.0f;
       p[1][2] = 0.0f;
       len = (p[1]-p[0]).length();
     }
-    else if (pos[2][2] < 1.0f) {
+    else if (p[2][2] < 1.0f) {
       p[2][2] = 0.0f;
       p[1][2] = 0.0f;
       len = (p[1]-p[2]).length();
