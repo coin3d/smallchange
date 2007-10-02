@@ -53,7 +53,8 @@ public:
   SoCache * cache;
   SbList <int> axisidx;
 
-  void add_anno_text(SbList <int> & list,
+  void add_anno_text(const int level,
+                     SbList <int> & list,
                      const SbMatrix & projm, 
                      const float maxdist,
                      const SbVec3f * pos, int i0, int i1);
@@ -152,9 +153,7 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
   SbList <int> l1;
   if (this->annotationPos.getNum() >= 2) {
     l1.truncate(0);
-    l1.append(0);
-    l1.append(this->annotationPos.getNum()-1);
-    PRIVATE(this)->add_anno_text(l1, projmatrix,
+    PRIVATE(this)->add_anno_text(0, l1, projmatrix,
                                  (this->annotationGap.getValue() * 2.0f) / maxsize, 
                                  this->annotationPos.getValues(0), 
                                  0, this->annotationPos.getNum() - 1); 
@@ -196,7 +195,8 @@ SmAnnotationAxis::notify(SoNotList * list)
 // *************************************************************************
 
 void 
-SmAnnotationAxisP::add_anno_text(SbList <int> & list,
+SmAnnotationAxisP::add_anno_text(const int level,
+                                 SbList <int> & list,
                                  const SbMatrix & projm, 
                                  const float maxdist,
                                  const SbVec3f * pos, int i0, int i1)
@@ -215,6 +215,24 @@ SmAnnotationAxisP::add_anno_text(SbList <int> & list,
   for (i = 0; i < 3; i++) {
     projm.multVecMatrix(p[i], p[i]);
   }
+
+  if (level == 0) { // special case to handle the corner points
+    if ((p[0][2] < 1.0f) && (p[2][2] < 1.0f)) {
+      SbVec3f d = p[2]-p[0];
+      d[2] = 0.0f;
+      float len = d.length();
+      if (len > maxdist) {
+        list.append(i0);
+        list.append(i1);
+      }
+    }
+    else if (p[0][2] < 1.0f) {
+      list.append(i0);
+    }
+    else if (p[2][2] < 1.0f) {
+      list.append(i1);
+    }
+  }
   if (p[1][2] < 1.0f) {
     SbBool add = FALSE;
     float len = 0.0f;
@@ -232,8 +250,8 @@ SmAnnotationAxisP::add_anno_text(SbList <int> & list,
       list.append(mid);
     }
   }
-  add_anno_text(list, projm, maxdist, pos, i0, mid);
-  add_anno_text(list, projm, maxdist, pos, mid, i1);
+  add_anno_text(level+1, list, projm, maxdist, pos, i0, mid);
+  add_anno_text(level+1, list, projm, maxdist, pos, mid, i1);
 }
 
 // *************************************************************************
