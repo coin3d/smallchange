@@ -71,7 +71,7 @@ SmAnnotationAxis::SmAnnotationAxis()
 
   SO_KIT_CONSTRUCTOR(SmAnnotationAxis);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", TRUE);
 
   SO_KIT_ADD_FIELD(annotation, (""));
   SO_KIT_ADD_FIELD(annotationPos, (0.0f, 0.0f, 0.0f));
