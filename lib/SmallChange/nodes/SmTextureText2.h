@@ -52,8 +52,15 @@ public:
     CENTER
   };
 
+  enum VerticalJustification {
+    BOTTOM = 1,
+    TOP,
+    VCENTER
+  };
+
   SoMFString string;
   SoSFEnum justification;
+  SoSFEnum verticalJustification;
   SoMFVec3f position;
   SoSFFloat maxRange;
 

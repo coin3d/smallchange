@@ -236,6 +236,7 @@ SmTextureText2::SmTextureText2()
 
   SO_NODE_ADD_FIELD(string, (""));
   SO_NODE_ADD_FIELD(justification, (CENTER));
+  SO_NODE_ADD_FIELD(verticalJustification, (BOTTOM));
   SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
 
@@ -243,7 +244,12 @@ SmTextureText2::SmTextureText2()
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, RIGHT);
 
+  SO_NODE_DEFINE_ENUM_VALUE(VerticalJustification, TOP);
+  SO_NODE_DEFINE_ENUM_VALUE(VerticalJustification, BOTTOM);
+  SO_NODE_DEFINE_ENUM_VALUE(VerticalJustification, VCENTER);
+
   SO_NODE_SET_SF_ENUM_TYPE(justification, Justification);
+  SO_NODE_SET_SF_ENUM_TYPE(verticalJustification, VerticalJustification);
 }
 
 /*!
@@ -497,6 +503,30 @@ SmTextureText2::renderBorder(const SbString * s,
       assert(0 && "unknown alignment");
       break;
     }
+
+    short h = n0[1] - n3[1];
+    short halfh = h / 2;
+
+    switch (this->verticalJustification.getValue()) {
+    case SmTextureText2::BOTTOM:
+      break;
+    case SmTextureText2::TOP:
+      n0[1] -= h;
+      n1[1] -= h;
+      n2[1] -= h;
+      n3[1] -= h;
+      break;
+    case SmTextureText2::VCENTER:
+      n0[1] -= halfh;
+      n1[1] -= halfh;
+      n2[1] -= halfh;
+      n3[1] -= halfh;
+      break;
+    default:
+      assert(0 && "unknown alignment");
+      break;
+    }
+
     SbVec3f c0(n0[0], n0[1], -screenpoint[2]);
     SbVec3f c1(n1[0], n1[1], -screenpoint[2]);
     SbVec3f c2(n2[0], n2[1], -screenpoint[2]);
@@ -586,6 +616,29 @@ SmTextureText2::renderString(const SbString * s,
       assert(0 && "unknown alignment");
       break;
     }
+    short h = n0[1] - n3[1];
+    short halfh = h / 2;
+
+    switch (this->verticalJustification.getValue()) {
+    case SmTextureText2::BOTTOM:
+      break;
+    case SmTextureText2::TOP:
+      n0[1] -= h;
+      n1[1] -= h;
+      n2[1] -= h;
+      n3[1] -= h;
+      break;
+    case SmTextureText2::VCENTER:
+      n0[1] -= halfh;
+      n1[1] -= halfh;
+      n2[1] -= halfh;
+      n3[1] -= halfh;
+      break;
+    default:
+      assert(0 && "unknown alignment");
+      break;
+    }
+
     
     for (int j = 0; j < len; j++) {
       const int gidx = texturetext_isolatin1_mapping[sptr[j]] * 4;
