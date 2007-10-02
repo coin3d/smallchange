@@ -87,6 +87,10 @@ ShapeScale::ShapeScale(void)
   SO_KIT_INIT_INSTANCE();
   this->didrender = FALSE;
   this->cache = NULL;
+
+  SoSeparator * sep = dynamic_cast<SoSeparator*> (this->getAnyPart("topSeparator", TRUE));
+  sep->renderCaching = SoSeparator::OFF;
+  sep->boundingBoxCaching = SoSeparator::OFF;
 }
 
 ShapeScale::~ShapeScale()
@@ -101,13 +105,17 @@ ShapeScale::initClass(void)
   SO_KIT_INIT_CLASS(ShapeScale, SoBaseKit, "BaseKit");
 }
 
-static void
+static SbBool
 update_scale(SoScale * scale, const SbVec3f & v)
 {
   // only write to field when scaling has changed.
-  if (!scale->scaleFactor.getValue().equals(v, 0.000001f)) {
+  if (!scale->scaleFactor.getValue().equals(v, 0.001f)) {
+    scale->scaleFactor.enableNotify(FALSE);
     scale->scaleFactor = v;
+    scale->scaleFactor.enableNotify(TRUE);
+    return TRUE;
   }
+  return FALSE;
 }
 
 void
@@ -130,7 +138,10 @@ ShapeScale::preRender(SoAction * action)
 
   SoScale * scale = (SoScale*) this->getAnyPart(SbName("scale"), TRUE);
   if (!this->active.getValue()) {
-    update_scale(scale, SbVec3f(1.0f, 1.0f, 1.0f));
+    if (update_scale(scale, SbVec3f(1.0f, 1.0f, 1.0f))) {
+      SoCacheElement::invalidate(state);
+      this->cache->invalidate();
+    }
   }
   else {
     SbBox3f bbox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
@@ -148,11 +159,15 @@ ShapeScale::preRender(SoAction * action)
     SbVec3f s;
     SbRotation so;
     mm.getTransform(t, r, s, so);
-    
-    update_scale(scale, SbVec3f(scalefactor/s[0], scalefactor/s[1], scalefactor/s[2]));
+
+    if (update_scale(scale, SbVec3f(scalefactor/s[0], scalefactor/s[1], scalefactor/s[2]))) {
+      SoCacheElement::invalidate(state);
+      this->cache->invalidate();
+    }
 #else
-    update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor));
-    
+    if (update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor))) {
+      SoCacheElement::invalidate(state);
+    }
 #endif
   }
   state->pop();
