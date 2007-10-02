@@ -201,21 +201,19 @@ SmAnnotationAxisP::add_anno_text(const int level,
                                  const float maxdist,
                                  const SbVec3f * pos, int i0, int i1)
 {
-  if ((i1-i0) <= 1) return;
-  int mid = (i0 + i1) / 2;
-  assert(mid != i0 && mid != i1);
+  if (i0 == i1) return;
 
+  int mid = (i0 + i1) / 2;
   SbVec3f p[3];
   p[0] = pos[i0];
   p[1] = pos[mid];
   p[2] = pos[i1];
   
   int i;
-
   for (i = 0; i < 3; i++) {
     projm.multVecMatrix(p[i], p[i]);
   }
-
+  
   if (level == 0) { // special case to handle the corner points
     if ((p[0][2] < 1.0f) && (p[2][2] < 1.0f)) {
       SbVec3f d = p[2]-p[0];
@@ -233,6 +231,9 @@ SmAnnotationAxisP::add_anno_text(const int level,
       list.append(i1);
     }
   }
+
+  if ((mid == i0) || (mid == i1)) return;
+
   if (p[1][2] < 1.0f) {
     SbBool add = FALSE;
     float len = 0.0f;
