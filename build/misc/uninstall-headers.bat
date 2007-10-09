@@ -12,6 +12,7 @@ del %COINDIR%\include\SmallChange\nodekits\SmNormalsKit.h
 del %COINDIR%\include\SmallChange\nodekits\SmAxisDisplayKit.h
 del %COINDIR%\include\SmallChange\nodekits\SmAxisKit.h
 del %COINDIR%\include\SmallChange\nodekits\SmAnnotationWall.h
+del %COINDIR%\include\SmallChange\nodekits\SmAnnotationAxis.h
 del %COINDIR%\include\SmallChange\nodekits\SmPieChart.h
 del %COINDIR%\include\SmallChange\nodekits\SmPopupMenuKit.h
 del %COINDIR%\include\SmallChange\nodekits\SmDynamicObjectKit.h

@@ -12,6 +12,7 @@ copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmNormalsKit.h %COINDIR%\includ
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmAxisDisplayKit.h %COINDIR%\include\SmallChange\nodekits\SmAxisDisplayKit.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmAxisKit.h %COINDIR%\include\SmallChange\nodekits\SmAxisKit.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmAnnotationWall.h %COINDIR%\include\SmallChange\nodekits\SmAnnotationWall.h >nul:
+copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmAnnotationAxis.h %COINDIR%\include\SmallChange\nodekits\SmAnnotationAxis.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmPieChart.h %COINDIR%\include\SmallChange\nodekits\SmPieChart.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmPopupMenuKit.h %COINDIR%\include\SmallChange\nodekits\SmPopupMenuKit.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.h %COINDIR%\include\SmallChange\nodekits\SmDynamicObjectKit.h >nul:

@@ -59,6 +59,10 @@ sed \
   <uninstall-headers.bat >new.bat
 mv -f new.bat ../misc/uninstall-headers.bat
 
+echo "* Update smallchange1.dsp to have 2x 'End Group' over 'Public Headers'."
+echo "* Update Coin link library for DLL Debug to use coin2d.lib."
+echo "* Upgrade project files with devenv if necessary."
+
 # How can I avoid the modal upgrade prompt-dialog for MSVC7.1 here???
 # devenv /command "File.OpenProject $build\\smallchange1.dsp"
 

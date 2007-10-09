@@ -19,23 +19,19 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Gs "
-				Optimization="4"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				OmitFramePointers="TRUE"
+				Optimization="3"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Release/smallchange1.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -45,6 +41,7 @@
 				OutputFile="smallchange1.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Release/smallchange1.pdb"
 				OptimizeForWindows98="1"
 				ImportLibrary=".\Release/smallchange1.lib"
@@ -87,23 +84,19 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Gs "
-				Optimization="4"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				OmitFramePointers="TRUE"
+				Optimization="3"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\StaticRelease/smallchange1.pch"
 				AssemblerListingLocation=".\StaticRelease/"
 				ObjectFile=".\StaticRelease/"
 				ProgramDataBaseFileName=".\StaticRelease/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -144,14 +137,15 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\StaticDebug/smallchange1.pch"
 				AssemblerListingLocation=".\StaticDebug/"
 				ObjectFile=".\StaticDebug/"
 				ProgramDataBaseFileName=".\StaticDebug/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -194,25 +188,25 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Debug/smallchange1.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib winmm.lib"
 				OutputFile="smallchange1d.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/smallchange1d.pdb"
+				OptimizeForWindows98="1"
 				ImportLibrary=".\Debug/smallchange1d.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -282,6 +276,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -291,6 +286,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -303,6 +299,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -324,6 +321,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -333,6 +331,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -345,6 +344,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -366,6 +366,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -375,6 +376,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -387,6 +389,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -408,6 +411,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -417,6 +421,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -429,6 +434,52 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
+							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
+							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							ObjectFile=".\Debug\SmallChange\nodekits/"
+							ProgramDataBaseFileName="Debug\SmallChange\nodekits/"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodekits\SmAnnotationAxis.cpp">
+					<FileConfiguration
+						Name="DLL (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="3"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							ObjectFile=".\Release\SmallChange\nodekits/"
+							ProgramDataBaseFileName="Release\SmallChange\nodekits/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="3"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
+							ProgramDataBaseFileName="StaticRelease\SmallChange\nodekits/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -450,6 +501,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -459,6 +511,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -471,6 +524,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -492,6 +546,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -501,6 +556,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -513,6 +569,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -534,6 +591,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -543,6 +601,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -555,6 +614,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -576,6 +636,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -585,6 +646,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -597,6 +659,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -618,6 +681,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -627,6 +691,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -639,6 +704,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -660,6 +726,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -669,6 +736,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -681,6 +749,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -702,6 +771,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -711,6 +781,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -723,6 +794,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -744,6 +816,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -753,6 +826,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -765,6 +839,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -786,6 +861,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -795,6 +871,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -807,6 +884,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -828,6 +906,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodekits/"
@@ -837,6 +916,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodekits/"
@@ -849,6 +929,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodekits/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodekits/"/>
 					</FileConfiguration>
@@ -874,6 +955,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -883,6 +965,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -895,6 +978,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -916,6 +1000,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -925,6 +1010,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -937,6 +1023,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -958,6 +1045,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -967,6 +1055,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -979,6 +1068,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1000,6 +1090,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1009,6 +1100,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1021,6 +1113,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1042,6 +1135,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1051,6 +1145,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1063,6 +1158,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1084,6 +1180,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1093,6 +1190,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1105,6 +1203,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1126,6 +1225,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1135,6 +1235,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1147,6 +1248,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1168,6 +1270,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1177,6 +1280,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1189,6 +1293,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1210,6 +1315,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1219,6 +1325,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1231,6 +1338,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1252,6 +1360,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1261,6 +1370,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1273,6 +1383,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1294,6 +1405,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1303,6 +1415,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1315,6 +1428,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1336,6 +1450,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1345,6 +1460,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1357,6 +1473,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1378,6 +1495,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1387,6 +1505,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1399,6 +1518,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1420,6 +1540,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1429,6 +1550,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1441,6 +1563,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1462,6 +1585,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1471,6 +1595,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1483,6 +1608,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1504,6 +1630,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1513,6 +1640,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1525,6 +1653,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1546,6 +1675,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1555,6 +1685,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1567,6 +1698,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1588,6 +1720,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1597,6 +1730,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1609,6 +1743,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1630,6 +1765,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1639,6 +1775,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1651,6 +1788,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1672,6 +1810,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1681,6 +1820,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1693,6 +1833,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1714,6 +1855,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1723,6 +1865,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1735,6 +1878,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1756,6 +1900,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1765,6 +1910,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1777,6 +1923,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1798,6 +1945,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1807,6 +1955,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1819,6 +1968,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1840,6 +1990,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1849,6 +2000,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1861,6 +2013,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1882,6 +2035,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1891,6 +2045,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1903,6 +2058,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1924,6 +2080,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1933,6 +2090,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1945,6 +2103,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -1966,6 +2125,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -1975,6 +2135,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -1987,6 +2148,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -2008,6 +2170,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -2017,6 +2180,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -2029,6 +2193,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -2050,6 +2215,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -2059,6 +2225,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -2071,6 +2238,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -2092,6 +2260,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\nodes/"
@@ -2101,6 +2270,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\nodes/"
@@ -2113,6 +2283,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\nodes/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
 					</FileConfiguration>
@@ -2138,6 +2309,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\elements/"
@@ -2147,6 +2319,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\elements/"
@@ -2159,6 +2332,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\elements/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\elements/"/>
 					</FileConfiguration>
@@ -2180,6 +2354,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\elements/"
@@ -2189,6 +2364,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\elements/"
@@ -2201,6 +2377,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\elements/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\elements/"/>
 					</FileConfiguration>
@@ -2226,6 +2403,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\engines/"
@@ -2235,6 +2413,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\engines/"
@@ -2247,6 +2426,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\engines/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\engines/"/>
 					</FileConfiguration>
@@ -2268,6 +2448,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\engines/"
@@ -2277,6 +2458,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\engines/"
@@ -2289,6 +2471,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\engines/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\engines/"/>
 					</FileConfiguration>
@@ -2310,6 +2493,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\engines/"
@@ -2319,6 +2503,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\engines/"
@@ -2331,6 +2516,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\engines/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\engines/"/>
 					</FileConfiguration>
@@ -2356,6 +2542,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\actions/"
@@ -2365,6 +2552,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\actions/"
@@ -2377,6 +2565,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\actions/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\actions/"/>
 					</FileConfiguration>
@@ -2398,6 +2587,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\actions/"
@@ -2407,6 +2597,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\actions/"
@@ -2419,6 +2610,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\actions/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\actions/"/>
 					</FileConfiguration>
@@ -2440,6 +2632,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\actions/"
@@ -2449,6 +2642,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\actions/"
@@ -2461,6 +2655,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\actions/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\actions/"/>
 					</FileConfiguration>
@@ -2486,6 +2681,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\misc/"
@@ -2495,6 +2691,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\misc/"
@@ -2507,6 +2704,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\misc/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\misc/"/>
 					</FileConfiguration>
@@ -2528,6 +2726,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\misc/"
@@ -2537,6 +2736,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\misc/"
@@ -2549,6 +2749,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\misc/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\misc/"/>
 					</FileConfiguration>
@@ -2570,6 +2771,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\misc/"
@@ -2579,6 +2781,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\misc/"
@@ -2591,6 +2794,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\misc/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\misc/"/>
 					</FileConfiguration>
@@ -2612,6 +2816,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\misc/"
@@ -2621,6 +2826,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\misc/"
@@ -2633,6 +2839,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\misc/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\misc/"/>
 					</FileConfiguration>
@@ -2654,6 +2861,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\misc/"
@@ -2663,6 +2871,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\misc/"
@@ -2675,6 +2884,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\misc/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\misc/"/>
 					</FileConfiguration>
@@ -2700,6 +2910,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\draggers/"
@@ -2709,6 +2920,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\draggers/"
@@ -2721,6 +2933,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\draggers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\draggers/"/>
 					</FileConfiguration>
@@ -2742,6 +2955,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\draggers/"
@@ -2751,6 +2965,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\draggers/"
@@ -2763,6 +2978,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\draggers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\draggers/"/>
 					</FileConfiguration>
@@ -2784,6 +3000,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\draggers/"
@@ -2793,6 +3010,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\draggers/"
@@ -2805,6 +3023,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\draggers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\draggers/"/>
 					</FileConfiguration>
@@ -2830,6 +3049,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\eventhandlers/"
@@ -2839,6 +3059,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\eventhandlers/"
@@ -2851,6 +3072,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\eventhandlers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\eventhandlers/"/>
 					</FileConfiguration>
@@ -2872,6 +3094,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\eventhandlers/"
@@ -2881,6 +3104,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\eventhandlers/"
@@ -2893,6 +3117,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\eventhandlers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\eventhandlers/"/>
 					</FileConfiguration>
@@ -2914,6 +3139,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\eventhandlers/"
@@ -2923,6 +3149,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\eventhandlers/"
@@ -2935,6 +3162,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\eventhandlers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\eventhandlers/"/>
 					</FileConfiguration>
@@ -2956,6 +3184,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\eventhandlers/"
@@ -2965,6 +3194,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\eventhandlers/"
@@ -2977,6 +3207,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\eventhandlers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\eventhandlers/"/>
 					</FileConfiguration>
@@ -2998,6 +3229,7 @@
 						Name="DLL (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
 							ObjectFile=".\Release\SmallChange\eventhandlers/"
@@ -3007,6 +3239,7 @@
 						Name="LIB (Release)|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
+							Optimization="3"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							ObjectFile=".\StaticRelease\SmallChange\eventhandlers/"
@@ -3019,6 +3252,7 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
 							ObjectFile=".\StaticDebug\SmallChange\eventhandlers/"
 							ProgramDataBaseFileName="StaticDebug\SmallChange\eventhandlers/"/>
 					</FileConfiguration>
@@ -3044,6 +3278,9 @@
 				Filter="">
 				<File
 					RelativePath="..\..\lib\SmallChange\nodekits\LegendKit.h">
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodekits\SmAnnotationAxis.h">
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodekits\SmAnnotationWall.h">
