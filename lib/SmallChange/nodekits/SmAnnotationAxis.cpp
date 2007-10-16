@@ -33,6 +33,13 @@
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/caches/SoCache.h>
+#include <Inventor/nodes/SoSwitch.h>
+#include <Inventor/nodes/SoInfo.h>
+#include <Inventor/nodes/SoMaterial.h>
+#include <Inventor/nodes/SoLineSet.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoVertexProperty.h>
+#include <Inventor/sensors/SoOneShotSensor.h>
 #include <SmallChange/nodes/SmTextureText2.h>
 #include <string.h>
 
@@ -52,6 +59,7 @@ public:
   SmAnnotationAxis * master;
   SoCache * cache;
   SbList <int> axisidx;
+  SoOneShotSensor * regen_sensor;
 
   void add_anno_text(const int level,
                      SbList <int> & list,
@@ -69,14 +77,23 @@ SmAnnotationAxis::SmAnnotationAxis()
 {
   PRIVATE(this) = new SmAnnotationAxisP(this);
   PRIVATE(this)->cache = NULL;
+  PRIVATE(this)->regen_sensor = NULL;
 
   SO_KIT_CONSTRUCTOR(SmAnnotationAxis);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, "", TRUE);
-
+  SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, axisSwitch, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(axisSwitch, SoSwitch, FALSE, topSeparator, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(noAxis, SoInfo, FALSE, axisSwitch, axisSep, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(axisSep, SoSeparator, FALSE, axisSwitch, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(axisMaterial, SoMaterial, FALSE, axisSep, axisLineSet, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(axisLineSet, SoLineSet, FALSE, axisSep, "", FALSE);
+  
   SO_KIT_ADD_FIELD(annotation, (""));
   SO_KIT_ADD_FIELD(annotationPos, (0.0f, 0.0f, 0.0f));
   SO_KIT_ADD_FIELD(annotationGap, (30.0f));
+  SO_KIT_ADD_FIELD(renderAxis, (FALSE));
+  SO_KIT_ADD_FIELD(axisTickSize, (0.0f, 0.0f, 0.0f));
+  SO_KIT_ADD_FIELD(annotationOffset, (0.0f, 0.0f, 0.0f));
 
   this->annotation.setNum(0);
   this->annotationPos.setNum(0);
@@ -84,10 +101,16 @@ SmAnnotationAxis::SmAnnotationAxis()
   this->annotationPos.setDefault(TRUE);
 
   SO_KIT_INIT_INSTANCE();
+
+  SoSwitch * sw = dynamic_cast<SoSwitch*>(this->getAnyPart("axisSwitch", TRUE));
+  sw->whichChild.connectFrom(&this->renderAxis);
+
+  PRIVATE(this)->regen_sensor = new SoOneShotSensor(regen_geometry, this);
 }
 
 SmAnnotationAxis::~SmAnnotationAxis()
 {
+  delete PRIVATE(this)->regen_sensor;
   if (PRIVATE(this)->cache) PRIVATE(this)->cache->unref();
   delete PRIVATE(this);
 }
@@ -169,7 +192,7 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
     SbVec3f * pos = t->position.startEditing();
     SbString * text = t->string.startEditing();
     for (int i = 0; i < l1.getLength(); i++) {
-      pos[i] = this->annotationPos[l1[i]];
+      pos[i] = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
       text[i] = this->annotation.getValues(0)[l1[i]];
     }
     t->position.finishEditing();
@@ -189,7 +212,60 @@ SmAnnotationAxis::notify(SoNotList * list)
 {
   if (PRIVATE(this)->cache) PRIVATE(this)->cache->invalidate();
   PRIVATE(this)->axisidx.truncate(0);
+
+  if (PRIVATE(this)->regen_sensor) {
+    SoField * f = list->getLastField();
+    if ((f == &this->annotationPos) ||
+        (f == &this->renderAxis) ||
+        (f == &this->axisTickSize)) {
+      PRIVATE(this)->regen_sensor->schedule();
+    }
+  }
   inherited::notify(list);
+}
+
+void
+SmAnnotationAxis::regen_geometry(void * userdata, SoSensor * s)
+{
+  SmAnnotationAxis * thisp = (SmAnnotationAxis*) userdata;
+  if (thisp->renderAxis.getValue()) {
+    SoLineSet * ls = dynamic_cast<SoLineSet*>(thisp->getAnyPart("axisLineSet", TRUE));
+    SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
+    if (vp == NULL) {
+      vp = new SoVertexProperty;
+      ls->vertexProperty = vp;
+    }
+    SbVec3f ticksize = thisp->axisTickSize.getValue();
+
+    const int numanno = thisp->annotationPos.getNum();
+    const int numlines = 1 + ((ticksize.length() > 0.0f) ? numanno : 0); 
+    const int numcoords = numanno + ((ticksize.length() > 0.0f) ? numanno*2 : 0);
+    
+    vp->vertex.setNum(numcoords);
+    ls->numVertices.setNum(numlines);
+    
+    const SbVec3f * src = thisp->annotationPos.getValues(0);
+    SbVec3f * pts = vp->vertex.startEditing();
+    int32_t * v = ls->numVertices.startEditing();
+
+    v[0] = numanno;
+    
+    int i;
+    
+    for (i = 0; i < numanno; i++) {
+      pts[i] = thisp->annotationPos[i];
+    }
+    if (ticksize.length() > 0.0f) {
+      for (i = 0; i < numanno; i++) {
+        v[i+1] = 2;
+        pts[i*2+numanno] = src[i];
+        pts[i*2+1+numanno] = src[i] + ticksize;
+      }
+    }
+    
+    vp->vertex.finishEditing();
+    ls->numVertices.finishEditing();
+  }
 }
 
 // *************************************************************************

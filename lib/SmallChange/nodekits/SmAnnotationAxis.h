@@ -29,8 +29,12 @@ class SmAnnotationAxisP;
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoMFVec3f.h>
+#include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <SmallChange/basic.h>
+
+class SoSensor;
 
 class SMALLCHANGE_DLL_API SmAnnotationAxis : public SoBaseKit {
   
@@ -38,7 +42,12 @@ class SMALLCHANGE_DLL_API SmAnnotationAxis : public SoBaseKit {
   SO_KIT_HEADER(SmAnnotationAxis);
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
   SO_KIT_CATALOG_ENTRY_HEADER(text);
-
+  SO_KIT_CATALOG_ENTRY_HEADER(axisSwitch);
+  SO_KIT_CATALOG_ENTRY_HEADER(noAxis);
+  SO_KIT_CATALOG_ENTRY_HEADER(axisSep);
+  SO_KIT_CATALOG_ENTRY_HEADER(axisMaterial);
+  SO_KIT_CATALOG_ENTRY_HEADER(axisLineSet);
+  
 public:
 
   SmAnnotationAxis(void);
@@ -47,6 +56,10 @@ public:
   SoMFString annotation;
   SoMFVec3f annotationPos;
   SoSFFloat annotationGap;
+  SoSFVec3f annotationOffset;
+
+  SoSFBool renderAxis;
+  SoSFVec3f axisTickSize;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
@@ -56,6 +69,7 @@ protected:
   virtual ~SmAnnotationAxis();
 
 private:
+  static void regen_geometry(void * userdata, SoSensor * s);
   SmAnnotationAxisP * pimpl;
 };
 
