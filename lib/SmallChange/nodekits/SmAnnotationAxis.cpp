@@ -81,6 +81,7 @@ SmAnnotationAxis::SmAnnotationAxis()
 
   SO_KIT_CONSTRUCTOR(SmAnnotationAxis);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(textMaterial, SoMaterial, FALSE, topSeparator, text, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(text, SmTextureText2, FALSE, topSeparator, axisSwitch, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(axisSwitch, SoSwitch, FALSE, topSeparator, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(noAxis, SoInfo, FALSE, axisSwitch, axisSep, FALSE);

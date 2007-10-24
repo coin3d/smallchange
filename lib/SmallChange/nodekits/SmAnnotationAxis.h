@@ -41,6 +41,7 @@ class SMALLCHANGE_DLL_API SmAnnotationAxis : public SoBaseKit {
   typedef SoBaseKit inherited;
   SO_KIT_HEADER(SmAnnotationAxis);
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
+  SO_KIT_CATALOG_ENTRY_HEADER(textMaterial);
   SO_KIT_CATALOG_ENTRY_HEADER(text);
   SO_KIT_CATALOG_ENTRY_HEADER(axisSwitch);
   SO_KIT_CATALOG_ENTRY_HEADER(noAxis);
