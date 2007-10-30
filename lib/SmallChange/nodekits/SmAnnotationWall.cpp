@@ -100,6 +100,7 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
 
   SbBool storedinvalid = FALSE;
   if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
+    if (PRIVATE(this)->cache) PRIVATE(this)->cache->unref();
     storedinvalid = SoCacheElement::setInvalid(FALSE);
     state->push();
     PRIVATE(this)->cache = new SoCache(state);
