@@ -26078,7 +26078,7 @@ fi
 
 # **************************************************************************
 
-                                                                                                                                                      ac_config_files="$ac_config_files Makefile bin/Makefile lib/Makefile lib/SmallChange/Makefile lib/SmallChange/actions/Makefile lib/SmallChange/misc/Makefile lib/SmallChange/nodekits/Makefile lib/SmallChange/nodes/Makefile lib/SmallChange/elements/Makefile lib/SmallChange/engines/Makefile lib/SmallChange/draggers/Makefile lib/SmallChange/eventhandlers/Makefile lib/SmallChange/basic.h cfg/gendsp.sh cfg/gendsp.pl"
+                                                                                                                                                                ac_config_files="$ac_config_files SmallChange.pc Makefile bin/Makefile lib/Makefile lib/SmallChange/Makefile lib/SmallChange/actions/Makefile lib/SmallChange/misc/Makefile lib/SmallChange/nodekits/Makefile lib/SmallChange/nodes/Makefile lib/SmallChange/elements/Makefile lib/SmallChange/engines/Makefile lib/SmallChange/draggers/Makefile lib/SmallChange/eventhandlers/Makefile lib/SmallChange/basic.h cfg/gendsp.sh cfg/gendsp.pl"
 
 
 # MKS will have "\c" as $ECHO_C, but that string in the config.status
@@ -26661,6 +26661,7 @@ for ac_config_target in $ac_config_targets
 do
   case "$ac_config_target" in
   # Handling of arguments.
+  "SmallChange.pc" ) CONFIG_FILES="$CONFIG_FILES SmallChange.pc" ;;
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "bin/Makefile" ) CONFIG_FILES="$CONFIG_FILES bin/Makefile" ;;
   "lib/Makefile" ) CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
