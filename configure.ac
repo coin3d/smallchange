@@ -384,6 +384,7 @@ SIM_AC_MSVC_DSP_SETUP([SMALLCHANGE], [SmallChange], [smallchange], [-I$smallchan
 # **************************************************************************
 
 AC_CONFIG_FILES([
+        SmallChange.pc
         Makefile
         bin/Makefile
         lib/Makefile

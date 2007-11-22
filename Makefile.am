@@ -25,8 +25,12 @@ dist_m4data_DATA = cfg/smallchange.m4
 cfgdatadir = $(datadir)/Coin/conf
 cfgdata_DATA = smallchange-@CONFIG@.cfg
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA= SmallChange.pc
+
 EXTRA_DIST = \
 	smallchange.cfg.in \
+	SmallChange.pc.in \
 	cfg/gendsp.sh.in \
 	cfg/gendsp.pl.in \
 	build/misc/generate.sh \
