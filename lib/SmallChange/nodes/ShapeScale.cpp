@@ -88,7 +88,7 @@ ShapeScale::ShapeScale(void)
   this->didrender = FALSE;
   this->cache = NULL;
 
-  SoSeparator * sep = dynamic_cast<SoSeparator*> (this->getAnyPart("topSeparator", TRUE));
+  SoSeparator * sep = static_cast<SoSeparator*> (this->getAnyPart("topSeparator", TRUE));
   sep->renderCaching = SoSeparator::OFF;
   sep->boundingBoxCaching = SoSeparator::OFF;
 }
