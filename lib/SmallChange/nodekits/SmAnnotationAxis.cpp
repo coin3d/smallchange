@@ -103,7 +103,7 @@ SmAnnotationAxis::SmAnnotationAxis()
 
   SO_KIT_INIT_INSTANCE();
 
-  SoSwitch * sw = dynamic_cast<SoSwitch*>(this->getAnyPart("axisSwitch", TRUE));
+  SoSwitch * sw = static_cast<SoSwitch*>(this->getAnyPart("axisSwitch", TRUE));
   sw->whichChild.connectFrom(&this->renderAxis);
 
   PRIVATE(this)->regen_sensor = new SoOneShotSensor(regen_geometry, this);
@@ -186,7 +186,7 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
   }
   
   if (l1 != PRIVATE(this)->axisidx) {
-    SmTextureText2 * t = dynamic_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
+    SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
     assert(t);
     t->justification = SmTextureText2::CENTER;
     t->position.setNum(l1.getLength());
@@ -231,8 +231,8 @@ SmAnnotationAxis::regen_geometry(void * userdata, SoSensor * s)
 {
   SmAnnotationAxis * thisp = (SmAnnotationAxis*) userdata;
   if (thisp->renderAxis.getValue()) {
-    SoLineSet * ls = dynamic_cast<SoLineSet*>(thisp->getAnyPart("axisLineSet", TRUE));
-    SoVertexProperty * vp = dynamic_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
+    SoLineSet * ls = static_cast<SoLineSet*>(thisp->getAnyPart("axisLineSet", TRUE));
+    SoVertexProperty * vp = static_cast<SoVertexProperty*> (ls->vertexProperty.getValue());
     if (vp == NULL) {
       vp = new SoVertexProperty;
       ls->vertexProperty = vp;
