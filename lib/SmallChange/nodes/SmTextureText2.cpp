@@ -582,17 +582,13 @@ SmTextureText2::renderString(const SbString * s,
         ymin >= vpsize[0] ||
         ymax < 0) continue;
     
-    SbVec2s n0,n1,n2,n3;
+    SbVec2s n0,n1;
     SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
     
     n0 = SbVec2s(sp[0] + xmin,
-                 sp[1] + ymax);
+                 sp[1] + ymin);
     n1 = SbVec2s(sp[0] + xmax,
                  sp[1] + ymax);
-    n2 = SbVec2s(sp[0] + xmax,
-                 sp[1] + ymin);
-    n3 = SbVec2s(sp[0] + xmin,
-                 sp[1] + ymin);
     
     short w = n1[0]-n0[0];
     short halfw = w / 2;
@@ -601,22 +597,18 @@ SmTextureText2::renderString(const SbString * s,
     case SmTextureText2::LEFT:
       break;
     case SmTextureText2::RIGHT:
-      n0[0] -= w;
-      n1[0] -= w;
-      n2[0] -= w;
-      n3[0] -= w;
+      n0[0] -= (w - 8);
+      n1[0] -= (w - 8);
       break;
     case SmTextureText2::CENTER:
-      n0[0] -= halfw;
-      n1[0] -= halfw;
-      n2[0] -= halfw;
-      n3[0] -= halfw;
+      n0[0] -= (halfw - 4);
+      n1[0] -= (halfw - 4);
       break;
     default:
       assert(0 && "unknown alignment");
       break;
     }
-    short h = n0[1] - n3[1];
+    short h = n0[1] - n1[1];
     short halfh = h / 2;
 
     switch (this->verticalJustification.getValue()) {
@@ -625,14 +617,10 @@ SmTextureText2::renderString(const SbString * s,
     case SmTextureText2::TOP:
       n0[1] -= h;
       n1[1] -= h;
-      n2[1] -= h;
-      n3[1] -= h;
       break;
     case SmTextureText2::VCENTER:
       n0[1] -= halfh;
       n1[1] -= halfh;
-      n2[1] -= halfh;
-      n3[1] -= halfh;
       break;
     default:
       assert(0 && "unknown alignment");
@@ -643,10 +631,10 @@ SmTextureText2::renderString(const SbString * s,
     for (int j = 0; j < len; j++) {
       const int gidx = texturetext_isolatin1_mapping[sptr[j]] * 4;
       float n00 = n0[0]; // compile fix for gcc 3.2.3 (20070518 frodo)
-      SbVec3f c0(float(n00 + j*8-4),     float(n0[1]), -screenpoint[2]);
-      SbVec3f c1(float(n00 + (j+1)*8+4), float(n1[1]), -screenpoint[2]);
-      SbVec3f c2(float(n00 + (j+1)*8+4), float(n2[1]), -screenpoint[2]);
-      SbVec3f c3(float(n00 + j*8-4),     float(n3[1]), -screenpoint[2]);
+      SbVec3f c0(float(n00 + j*8),     float(n1[1]), -screenpoint[2]);
+      SbVec3f c1(float(n00 + (j+2)*8), float(n1[1]), -screenpoint[2]);
+      SbVec3f c2(float(n00 + (j+2)*8), float(n0[1]), -screenpoint[2]);
+      SbVec3f c3(float(n00 + j*8),     float(n0[1]), -screenpoint[2]);
 
       glTexCoord2fv(texturetext_glyphcoords[gidx].getValue());
       glVertex3fv(c0.getValue());
