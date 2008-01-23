@@ -457,8 +457,6 @@ SmTextureText2::renderBorder(const SbString * s,
     int len = s[i].getLength();
     if (len == 0) continue;
     
-    const unsigned char * sptr = (const unsigned char *) s[i].getString();
-    
     int xmin = -4;
     int xmax = len * 8 + 4;
     int ymin = -i*14;
