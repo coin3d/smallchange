@@ -606,7 +606,7 @@ SmTextureText2::renderString(const SbString * s,
       assert(0 && "unknown alignment");
       break;
     }
-    short h = n0[1] - n1[1];
+    short h = n1[1] - n0[1];
     short halfh = h / 2;
 
     switch (this->verticalJustification.getValue()) {
