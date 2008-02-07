@@ -74,7 +74,7 @@ struct SmVertexArrayShape_vboidx {
 
 class SmVertexArrayShapeP {
 public:
-  SmVertexArrayShapeP(SmVertexArrayShape * master) : 
+  SmVertexArrayShapeP(SmVertexArrayShape * master) :
     master(master),
     vbodict(4)
   { }
@@ -106,7 +106,7 @@ public:
   GLuint texcoord3vbo;
   GLuint indexvbo;
 
-  unsigned long prevcontextid; 
+  unsigned long prevcontextid;
   int numtriangles;
 
   void updateIndexList(void);
@@ -147,12 +147,12 @@ SmVertexArrayShape::SmVertexArrayShape()
   SO_NODE_ADD_FIELD(vertexNormal, (NULL));
   SO_NODE_ADD_FIELD(vertexTexCoord, (NULL));
   SO_NODE_ADD_FIELD(vertexColor, (NULL));
-  SO_NODE_ADD_FIELD(renderAsVertexBufferObject, (SmVertexArrayShape::AUTO));  
+  SO_NODE_ADD_FIELD(renderAsVertexBufferObject, (SmVertexArrayShape::AUTO));
   SO_NODE_DEFINE_ENUM_VALUE(RenderAsVertexBufferObjects, ON);
   SO_NODE_DEFINE_ENUM_VALUE(RenderAsVertexBufferObjects, OFF);
   SO_NODE_DEFINE_ENUM_VALUE(RenderAsVertexBufferObjects, AUTO);
   SO_NODE_SET_SF_ENUM_TYPE(renderAsVertexBufferObject, RenderAsVertexBufferObjects);
- 
+
   this->vertexIndex.setNum(0);
   this->vertexIndex.setDefault(TRUE);
 
@@ -177,7 +177,7 @@ SmVertexArrayShape::~SmVertexArrayShape()
 // doc from parent
 void
 SmVertexArrayShape::initClass(void)
-{  
+{
   static int first = 1;
   if (first) {
     first = 0;
@@ -190,14 +190,14 @@ SmVertexArrayShape::initClass(void)
     va_endiantest test;
     test.test = 1;
     SmVertexArrayShapeP::is_little_endian = test.bytes[0] == 1;
-  } 
+  }
 }
 
 // doc from parent
 void
 SmVertexArrayShape::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
-  
+
   SoNode * node = this->vertexCoord.getValue();
   if (node == NULL) return;
   const int n = this->vertexIndex.getNum();
@@ -220,7 +220,7 @@ SmVertexArrayShape::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & cent
   }
   else if (node->isOfType(SoCoordinate4::getClassTypeId())) {
     SbVec3f tmp;
-    
+
     const SbVec4f * v = ((SoCoordinate4*)node)->point.getValues(0);
     const int numcoords = ((SoCoordinate4*)node)->point.getNum();
     for (int i = 0; i < n; i++) {
@@ -235,13 +235,13 @@ SmVertexArrayShape::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & cent
     }
   }
   if (numacc) center /= (float) numacc;
-  
+
 }
 
 void
 SmVertexArrayShapeP::initializeVBO(const cc_glglue * glue)
 {
-  
+
   cc_glglue_glGenBuffers(glue, 1, &this->vertex3vbo);
   cc_glglue_glGenBuffers(glue, 1, &this->vertex4vbo);
   cc_glglue_glGenBuffers(glue, 1, &this->normalvbo);
@@ -260,7 +260,7 @@ SmVertexArrayShapeP::setupCurrentContextVBOs(SoState * state)
 
   if (contextid == this->prevcontextid) return;
   this->prevcontextid = contextid;
-  
+
   const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));
 
   void * vbo = NULL;
@@ -272,11 +272,11 @@ SmVertexArrayShapeP::setupCurrentContextVBOs(SoState * state)
     this->basecolorvbo = oldvbo->basecolor;
     this->packedcolorvbo = oldvbo->packedcolor;
     this->texcoord2vbo = oldvbo->texcoord2;
-    this->texcoord3vbo = oldvbo->texcoord3;  
+    this->texcoord3vbo = oldvbo->texcoord3;
     this->indexvbo = oldvbo->index;
-  } 
+  }
   else {
-    initializeVBO(glue);    
+    initializeVBO(glue);
     SmVertexArrayShape_vboidx * vbonew = new SmVertexArrayShape_vboidx;
     vbonew->vertex3 = this->vertex3vbo;
     vbonew->vertex4 = this->vertex4vbo;
@@ -296,54 +296,54 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
 {
   SbBool changed = FALSE;
 
-  if (this->coordarraydirty) {    
+  if (this->coordarraydirty) {
     SoNode * node = PUBLIC(this)->vertexCoord.getValue();
     if (node && node->isOfType(SoCoordinate3::getClassTypeId())) {
       SoCoordinate3 * coord3 = (SoCoordinate3 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->vertex3vbo);
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
-                             coord3->point.getNum() * 3 * sizeof(float), 
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER,
+                             coord3->point.getNum() * 3 * sizeof(float),
                              coord3->point.getValues(0), GL_STATIC_DRAW);
       changed = TRUE;
     }
     else if (node && node->isOfType(SoCoordinate4::getClassTypeId())) {
       SoCoordinate4 * coord4 = (SoCoordinate4 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->vertex4vbo);
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
-                             coord4->point.getNum() * 4 * sizeof(float), 
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER,
+                             coord4->point.getNum() * 4 * sizeof(float),
                              coord4->point.getValues(0), GL_STATIC_DRAW);
       changed = TRUE;
     }
     this->coordarraydirty = FALSE;
   }
- 
-     
-  if (this->normalarraydirty) {    
+
+
+  if (this->normalarraydirty) {
     SoNormal * normal = (SoNormal *) PUBLIC(this)->vertexNormal.getValue();
     cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->normalvbo);
-    cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, normal->vector.getNum() * 3 * sizeof(float), 
+    cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, normal->vector.getNum() * 3 * sizeof(float),
                            normal->vector.getValues(0), GL_STATIC_DRAW);
     changed = TRUE;
     this->normalarraydirty = FALSE;
   }
 
- 
+
   if(this->texcoordarraydirty) {
     SoNode * node = PUBLIC(this)->vertexTexCoord.getValue();
     if (node && node->isOfType(SoTextureCoordinate2::getClassTypeId())) {
       SoTextureCoordinate2 * texcoord2 = (SoTextureCoordinate2 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->texcoord2vbo);
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, texcoord2->point.getNum() * 2 * sizeof(float), 
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, texcoord2->point.getNum() * 2 * sizeof(float),
                              texcoord2->point.getValues(0), GL_STATIC_DRAW);
       changed = TRUE;
     }
     else if (node && node->isOfType(SoTextureCoordinate3::getClassTypeId())) {
       SoTextureCoordinate3 * texcoord3 = (SoTextureCoordinate3 *) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->texcoord3vbo);
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, texcoord3->point.getNum() * 3 * sizeof(float), 
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, texcoord3->point.getNum() * 3 * sizeof(float),
                              texcoord3->point.getValues(0), GL_STATIC_DRAW);
       changed = TRUE;
-    }   
+    }
     this->texcoordarraydirty = FALSE;
   }
 
@@ -352,12 +352,12 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
     if (node && node->isOfType(SoBaseColor::getClassTypeId())) {
       SoBaseColor * basecolor = (SoBaseColor*) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->basecolorvbo);
-      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);  
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, basecolor->rgb.getNum() * sizeof(float) * 3, 
+      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, NULL);
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, basecolor->rgb.getNum() * sizeof(float) * 3,
                       basecolor->rgb.getValues(0), GL_STATIC_DRAW);
     }
     else if (node && node->isOfType(SoPackedColor::getClassTypeId())) {
-      SoPackedColor * packedcolor = (SoPackedColor*) node;      
+      SoPackedColor * packedcolor = (SoPackedColor*) node;
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, this->packedcolorvbo);
 
       const uint32_t * pcptr = packedcolor->orderedRGBA.getValues(0);
@@ -368,8 +368,8 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
         pcptr = this->littleendiancolor.getArrayPtr();
       }
 
-      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER, 
-                             packedcolor->orderedRGBA.getNum() * sizeof(uint32_t), 
+      cc_glglue_glBufferData(glue, GL_ARRAY_BUFFER,
+                             packedcolor->orderedRGBA.getNum() * sizeof(uint32_t),
                              pcptr, GL_STATIC_DRAW);
       changed = TRUE;
 
@@ -379,7 +379,7 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
 
   if (this->onlyoneindexlist && this->indexvbodirty) {
     cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, this->indexvbo);
-    cc_glglue_glBufferData(glue, GL_ELEMENT_ARRAY_BUFFER, 
+    cc_glglue_glBufferData(glue, GL_ELEMENT_ARRAY_BUFFER,
                            this->indexlist[1] * sizeof(int32_t),
                            this->indexlist.getArrayPtr() + 4,
                            GL_STATIC_DRAW);
@@ -396,10 +396,10 @@ SmVertexArrayShapeP::updateVBOs(const cc_glglue * glue)
 void
 SmVertexArrayShape::GLRender(SoGLRenderAction * action)
 {
-  
+
   if (!this->shouldGLRender(action)) return;
   SoState * state = action->getState();
-  
+
   const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));
   if (!cc_glglue_has_vertex_array(glue)) return; // FIXME: render using normal OpenGL
 
@@ -412,7 +412,7 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
   SoTextureCoordinate3 * texcoord3 = NULL;
   SoNormal * normal = NULL;
   SoBaseColor * basecolor = NULL;
-  SoPackedColor * packedcolor = NULL;  
+  SoPackedColor * packedcolor = NULL;
 
   SoNode * node;
   node = this->vertexCoord.getValue();
@@ -425,7 +425,7 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
     numberofvertices = coord4->point.getNum();
   }
   else return; // no data
-  
+
   node = this->vertexNormal.getValue();
   if (node && node->isOfType(SoNormal::getClassTypeId())) {
     normal = (SoNormal *) node;
@@ -452,9 +452,9 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
-  
+
   if (!SmVertexArrayShapeP::disable_vbo && this->renderAsVertexBufferObject.getValue() != OFF) {
-    if (cc_glglue_has_vertex_buffer_object(glue)) {          
+    if (cc_glglue_has_vertex_buffer_object(glue)) {
       if (this->renderAsVertexBufferObject.getValue() == ON ||
           numberofvertices > 32) { // Dont bother to optimize for very small tri-sets.
         renderasvbo = TRUE;
@@ -464,7 +464,7 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
         }
       }
       else {
-        //        SoCacheElement::invalidate(state); // don't cache vertex arrays        
+        //        SoCacheElement::invalidate(state); // don't cache vertex arrays
       }
     }
   }
@@ -473,23 +473,23 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
   if (!renderasvbo) { // -------- Regular draw elements ---------
 
     if (coord3) {
-      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 
+      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0,
                                 (GLvoid*) coord3->point.getValues(0));
     }
     else {
-      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, 
+      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0,
                                 (GLvoid*) coord4->point.getValues(0));
     }
     cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
-  
+
     if (normal) {
-      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, 
+      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0,
                                 (GLvoid*) normal->vector.getValues(0));
       cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
     }
     if (basecolor || packedcolor) {
       if (basecolor) {
-        cc_glglue_glColorPointer(glue, 3, GL_FLOAT, 0, 
+        cc_glglue_glColorPointer(glue, 3, GL_FLOAT, 0,
                                  (GLvoid*) basecolor->rgb.getValues(0));
       }
       else { // packedcolor
@@ -500,7 +500,7 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
           }
           pcptr = PRIVATE(this)->littleendiancolor.getArrayPtr();
         }
-        cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0, 
+        cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0,
                                  (GLvoid*) pcptr);
       }
       cc_glglue_glEnableClientState(glue, GL_COLOR_ARRAY);
@@ -515,34 +515,34 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
                                     (GLvoid*) texcoord3->point.getValues(0));
       }
       cc_glglue_glEnableClientState(glue, GL_TEXTURE_COORD_ARRAY);
-    }  
-  
+    }
+
   }
   else { // ------- Draw as vertex buffer object ---------
 
     if (coord3) {
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, PRIVATE(this)->vertex3vbo);
-      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 0);           
+      cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 0);
     }
     else {
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, PRIVATE(this)->vertex4vbo);
-      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, 0);  
+      cc_glglue_glVertexPointer(glue, 4, GL_FLOAT, 0, 0);
     }
     cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
-  
+
     if (normal) {
       cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, PRIVATE(this)->normalvbo);
-      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, 0);          
+      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, 0);
       cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
     }
     if (basecolor || packedcolor) {
       if (basecolor) {
         cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, PRIVATE(this)->basecolorvbo);
-        cc_glglue_glColorPointer(glue, 3, GL_FLOAT, 0, 0);  
+        cc_glglue_glColorPointer(glue, 3, GL_FLOAT, 0, 0);
       }
       else {
         cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, PRIVATE(this)->packedcolorvbo);
-        cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0, 0);              
+        cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE, 0, 0);
       }
       cc_glglue_glEnableClientState(glue, GL_COLOR_ARRAY);
     }
@@ -556,16 +556,16 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
         cc_glglue_glTexCoordPointer(glue, 3, GL_FLOAT, 0, 0);
       }
       cc_glglue_glEnableClientState(glue, GL_TEXTURE_COORD_ARRAY);
-    }  
+    }
 
     if (PRIVATE(this)->onlyoneindexlist) {
       cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, PRIVATE(this)->indexvbo);
     }
   }
-  
+
 //   fprintf(stderr,"renderasvbo: %d, onelist: %d\n",
 //           renderasvbo, PRIVATE(this)->onlyoneindexlist);
-  
+
   const int32_t * ptr = PRIVATE(this)->indexlist.getArrayPtr();
   const int32_t * endptr =  ptr + PRIVATE(this)->indexlist.getLength();
 
@@ -573,9 +573,9 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
     const int32_t type = *ptr++;
     const int32_t len = *ptr++;
 
-    cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, NULL);    
-    cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding  
-    cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0); // Reset VBO binding  
+    cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, NULL);
+    cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding
+    cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0); // Reset VBO binding
   }
   else {
     while (ptr < endptr) {
@@ -583,56 +583,56 @@ SmVertexArrayShape::GLRender(SoGLRenderAction * action)
       const int32_t len = *ptr++;
       const int32_t start = *ptr++;
       const int32_t end = *ptr++;
-      
+
       if (!renderasvbo) {
-        cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
+        cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);
       }
       else {
 #if 1
-        cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);    
+        cc_glglue_glDrawElements(glue, (GLenum) (-type-1), len, GL_UNSIGNED_INT, ptr);
 #else
         assert(FALSE && "code not enabled, does not build with Coin-2");
         cc_glglue_glDrawRangeElements(glue, (GLenum) (-type-1), start, end, len, GL_UNSIGNED_INT, ptr);
 #endif
-        cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding  
+        cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0); // Reset VBO binding
       }
       ptr += len;
     }
   }
-  
+
   cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
   if (normal) cc_glglue_glDisableClientState(glue, GL_NORMAL_ARRAY);
   if (basecolor || packedcolor) cc_glglue_glDisableClientState(glue, GL_COLOR_ARRAY);
-  if (texcoord2 || texcoord3) cc_glglue_glDisableClientState(glue, GL_TEXTURE_COORD_ARRAY);  
+  if (texcoord2 || texcoord3) cc_glglue_glDisableClientState(glue, GL_TEXTURE_COORD_ARRAY);
 
-  if (basecolor || packedcolor) { 
+  if (basecolor || packedcolor) {
     SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
   }
 
   SoGLCacheContextElement::shouldAutoCache(state, SoGLCacheContextElement::DONT_AUTO_CACHE);
-  
+
 }
 
 // doc from parent
 void
 SmVertexArrayShape::getPrimitiveCount(SoGetPrimitiveCountAction *action)
 {
-  
+
   if (!this->shouldPrimitiveCount(action)) return;
 
   if (PRIVATE(this)->indexlistdirty) {
     PRIVATE(this)->updateIndexList();
   }
   action->addNumTriangles(PRIVATE(this)->numtriangles);
-  
+
 }
 
 // doc from parent
 void
 SmVertexArrayShape::generatePrimitives(SoAction * action)
 {
-  
-  if (PRIVATE(this)->indexlistdirty) 
+
+  if (PRIVATE(this)->indexlistdirty)
     PRIVATE(this)->updateIndexList();
 
   SoState * state = action->getState();
@@ -655,7 +655,7 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
     coord4 = (SoCoordinate4*) node;
   }
   else return; // no data
-  
+
   node = this->vertexNormal.getValue();
   if (node && node->isOfType(SoNormal::getClassTypeId())) {
     normal = (SoNormal*) node;
@@ -766,21 +766,21 @@ SmVertexArrayShape::generatePrimitives(SoAction * action)
       }
       this->shapeVertex(&vertex);
     }
-    this->endShape(); 
+    this->endShape();
   }
   state->pop();
 }
 
-void 
+void
 SmVertexArrayShape::notify(SoNotList * l)
 {
-  
+
   SoField * f = l->getLastField();
   if (f == &this->vertexIndex) {
     PRIVATE(this)->indexlistdirty = TRUE;
     PRIVATE(this)->indexvbodirty = TRUE;
   }
-  else if (f == &this->vertexCoord) {    
+  else if (f == &this->vertexCoord) {
     PRIVATE(this)->coordarraydirty = TRUE;
   }
   else if (f == &this->vertexNormal) {
@@ -796,10 +796,10 @@ SmVertexArrayShape::notify(SoNotList * l)
   inherited::notify(l);
 }
 
-void 
+void
 SmVertexArrayShapeP::updateIndexList(void)
 {
-  
+
   this->indexlistdirty = FALSE;
   this->indexlist.truncate(0);
   this->numtriangles = 0;
@@ -827,8 +827,8 @@ SmVertexArrayShapeP::updateIndexList(void)
     int32_t startvalue = 0x7fffffff; // The maximum signed 32bit value
     int32_t endvalue = -1;
 
-    int i = 0;       
-    while (src < end && *src >= 0) { 
+    int i = 0;
+    while (src < end && *src >= 0) {
       startvalue = SbMin(startvalue, *src);
       endvalue = SbMax(endvalue, *src);
       this->indexlist.append(*src++);
@@ -837,7 +837,7 @@ SmVertexArrayShapeP::updateIndexList(void)
 
     this->numtriangles += i - 2;
     this->indexlist[lenidx] = i; // set the correct len value
-    this->indexlist[lenidx + 1] = startvalue; 
+    this->indexlist[lenidx + 1] = startvalue;
     this->indexlist[lenidx + 2] = endvalue;
 
   } while (src < end);
@@ -845,13 +845,13 @@ SmVertexArrayShapeP::updateIndexList(void)
   this->onlyoneindexlist = numlists == 1;
 }
 
-void 
+void
 SmVertexArrayShapeP::updateLittleEndianList(SoPackedColor * pc)
 {
   this->littleendiancolor.truncate(0);
   int n = pc->orderedRGBA.getNum();
   const uint32_t * src = pc->orderedRGBA.getValues(0);
-  
+
   for (int i = 0; i < n; i++) {
     uint32_t t = *src++;
     this->littleendiancolor.append((t&0xff<<24) | ((t&0xff00)<<8) | ((t&0xff0000)>>8) | (t>>24));

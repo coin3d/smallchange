@@ -42,7 +42,7 @@ public:
 
 protected:
   virtual ~SmHeadlight();
-  
+
 private:
   SoDirectionalLight * dummy;
 };

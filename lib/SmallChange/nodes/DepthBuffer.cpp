@@ -23,7 +23,7 @@
 
 /*!
   \class DepthBuffer DepthBuffer.h
-  \brief The DepthBuffer class is a node used to control the GL depth buffer. 
+  \brief The DepthBuffer class is a node used to control the GL depth buffer.
   \ingroup nodes
 
   It is basically a direct mapping of glDepthFunc(). In addition it is possible
@@ -123,7 +123,7 @@ DepthBuffer::DepthBuffer(void)
   SO_NODE_ADD_FIELD(func, (DepthBuffer::LESS));
   SO_NODE_ADD_FIELD(enable, (TRUE));
   SO_NODE_ADD_FIELD(clearNow, (FALSE));
-  
+
   SO_NODE_DEFINE_ENUM_VALUE(Func, NEVER);
   SO_NODE_DEFINE_ENUM_VALUE(Func, ALWAYS);
   SO_NODE_DEFINE_ENUM_VALUE(Func, LESS);
@@ -163,7 +163,7 @@ DepthBuffer::initClass(void)
 void
 DepthBuffer::GLRender(SoGLRenderAction * action)
 {
-  GLDepthBufferElement::set(action->getState(), 
+  GLDepthBufferElement::set(action->getState(),
                             (GLDepthBufferElement::Func) this->func.getValue(),
                             this->enable.getValue());
   if (this->clearNow.getValue()) glClear(GL_DEPTH_BUFFER_BIT);

@@ -112,7 +112,7 @@
 
 /*!
   \var SoSFFloat radius
-  
+
   The radius of the points when rendered as quads.
 */
 
@@ -126,7 +126,7 @@ public:
   SbList <int32_t> sphereidx;
 
   void genSphereGeom(const int level) {
-    this->spheregenerator.generate(SbClamp(level, 1, 12), this->spherebsp, this->sphereidx);  
+    this->spheregenerator.generate(SbClamp(level, 1, 12), this->spherebsp, this->sphereidx);
   }
 };
 
@@ -189,7 +189,7 @@ SoPointCloud::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 
   SbVec3f & bmin = box.getMin();
   SbVec3f & bmax = box.getMax();
-  
+
   bmin[0] -= size;
   bmin[1] -= size;
   bmin[2] -= size;
@@ -334,14 +334,14 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   int32_t idx = this->startIndex.getValue();
   int32_t numpts = this->numPoints.getValue();
   if (numpts < 0) numpts = coords->getNum() - idx;
-  
+
   float distlimit = this->detailDistance.getValue();
-  
+
   float r = this->itemSize.getValue() * 0.5f;
   xaxis *= r;
   yaxis *= r;
   zaxis *= r;
-  
+
   // render in two loops to avoid frequent OpenGL state changes
 
   // FIXME: add test here when adding more shapes
@@ -355,7 +355,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
     glDisable(GL_LIGHTING);
     islightingenabled = FALSE;
   }
-  
+
   if (rendershape == BILLBOARD_DIAMOND) {
     if (iscullingenabled) {
       glDisable(GL_CULL_FACE);
@@ -367,8 +367,8 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   SbVec3f v;
 
   if (rendershape == SPHERE) {
-    const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));  
-    
+    const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));
+
     if (PRIVATE(this)->sphereidx.getLength() == 0) {
       PRIVATE(this)->genSphereGeom(3);
     }
@@ -379,7 +379,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
 
     cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, (GLvoid*) nptr);
     cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
-    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 
+    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0,
                               (GLvoid*) pts);
     cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
 
@@ -388,7 +388,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
       float dist = - nearplane.getDistance(v);
       if (dist <= distlimit) {
         if (mbind == PER_VERTEX) mb.send(idx+i, TRUE);
-        
+
         glPushMatrix();
         glTranslatef(v[0], v[1], v[2]);
         glScalef(r, r, r);
@@ -403,7 +403,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
   }
   else {
     glBegin(GL_QUADS);
-    
+
     for (i = 0; i < numpts; i++) {
       v = coords->get3(idx+i);
       float dist = - nearplane.getDistance(v);
@@ -426,7 +426,7 @@ SoPointCloud::GLRender(SoGLRenderAction * action)
       }
     }
     glEnd();
-  }    
+  }
   if (islightingenabled) {
     glDisable(GL_LIGHTING);
     islightingenabled = FALSE;

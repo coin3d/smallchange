@@ -30,13 +30,13 @@
 
   The marker shape is stored in the "shape" part. Any kind of node
   can be used, even group nodes with several shapes, but the marker
-  shape should be approximately of unit size, and with a center 
+  shape should be approximately of unit size, and with a center
   position in (0, 0, 0).
 */
 
 /*!
   \var SoSFFloat ShapeScale::active
-  
+
   Turns the scaling on/off. Default value is TRUE.
 */
 
@@ -69,12 +69,12 @@
 
 SO_KIT_SOURCE(ShapeScale);
 
-ShapeScale::ShapeScale(void) 
+ShapeScale::ShapeScale(void)
 {
   SO_KIT_CONSTRUCTOR(ShapeScale);
 
   SO_KIT_ADD_FIELD(active, (TRUE));
-  SO_KIT_ADD_FIELD(projectedSize, (5.0f));  
+  SO_KIT_ADD_FIELD(projectedSize, (5.0f));
 
 #ifndef __COIN__
 #error catalog setup probably not compatible with non-Coin Inventor implementation
@@ -125,14 +125,14 @@ ShapeScale::preRender(SoAction * action)
   if (this->cache && this->cache->isValid(state)) return;
 
   if (this->cache) this->cache->unref();
-  
+
   SbBool storedinvalid = SoCacheElement::setInvalid(FALSE);
 
   state->push();
   this->cache = new SoCache(state);
   this->cache->ref();
   SoCacheElement::set(state, this->cache);
-  
+
   SoNode * shape = (SoNode*) this->getAnyPart(SbName("shape"), FALSE);
   assert(shape);
 
@@ -152,7 +152,7 @@ ShapeScale::preRender(SoAction * action)
     const SbMatrix & mm = SoModelMatrixElement::get(state);
     mm.multVecMatrix(center, center);
     const float scalefactor = vv.getWorldToScreenScale(center, nsize);
-    
+
 #if 1 // new version that considers the current model-matrix scale
     SbVec3f t;
     SbRotation r;
@@ -175,7 +175,7 @@ ShapeScale::preRender(SoAction * action)
 }
 
 // Overridden to (re)initialize image and other data before rendering.
-void 
+void
 ShapeScale::GLRender(SoGLRenderAction * action)
 {
   this->preRender(action);
@@ -185,7 +185,7 @@ ShapeScale::GLRender(SoGLRenderAction * action)
                                            SoGLCacheContextElement::DONT_AUTO_CACHE);
 }
 
-void 
+void
 ShapeScale::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   if (this->cache) {

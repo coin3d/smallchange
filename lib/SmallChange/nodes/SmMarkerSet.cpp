@@ -86,7 +86,7 @@ SO_NODE_SOURCE(SmMarkerSet);
 
 struct smmarkerset_indexdistance {
   unsigned int index;
-  float distance; 
+  float distance;
 };
 
 static int smmarkerset_sortcompare(const void * element1, const void * element2)
@@ -189,7 +189,7 @@ SmMarkerSet::initClass(void)
     temp.deletedata = FALSE;
     markerlist->append(temp);
   }
-  
+
 }
 
 
@@ -249,27 +249,27 @@ SmMarkerSet::GLRender(SoGLRenderAction * action)
   glLoadIdentity();
   glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
 
-  // Find the number of closest markers to render  
-  if (numpts != PRIVATE(this)->pointdistancelistlen || 
-      PRIVATE(this)->pointdistancelist == NULL) {    
+  // Find the number of closest markers to render
+  if (numpts != PRIVATE(this)->pointdistancelistlen ||
+      PRIVATE(this)->pointdistancelist == NULL) {
     if (PRIVATE(this)->pointdistancelist != NULL)
       delete PRIVATE(this)->pointdistancelist;
     PRIVATE(this)->pointdistancelist = new smmarkerset_indexdistance[numpts];
     PRIVATE(this)->pointdistancelistlen = numpts;
-  }  
+  }
   if (this->maxMarkersToRender.getValue() != -1) {
     SbVec3f campos = vv.getProjectionPoint();
     // Calculate distance to camera for all markers
-    for (int i=0;i<numpts;++i) {        
+    for (int i=0;i<numpts;++i) {
       SbVec3f pointpos = coords->get3(idx + i);
-      mat.multVecMatrix(pointpos, pointpos);        
+      mat.multVecMatrix(pointpos, pointpos);
       PRIVATE(this)->pointdistancelist[i].distance = (pointpos - campos).length();
       PRIVATE(this)->pointdistancelist[i].index = i;
     }
     // qsort array using distance as key
-    qsort(PRIVATE(this)->pointdistancelist, numpts, 
+    qsort(PRIVATE(this)->pointdistancelist, numpts,
           sizeof(smmarkerset_indexdistance), smmarkerset_sortcompare);
-  } 
+  }
   else {
     // Regular rendering
     for (int i=0;i<numpts;++i) {
@@ -279,12 +279,12 @@ SmMarkerSet::GLRender(SoGLRenderAction * action)
   }
 
 
-  int counter = (this->maxMarkersToRender.getValue() != -1) ? 
+  int counter = (this->maxMarkersToRender.getValue() != -1) ?
     this->maxMarkersToRender.getValue() : numpts;
   if (counter > numpts) counter = numpts; // Failsafe
-  
+
   for (int i = 0; i < counter; i++) {
-    
+
     const int index = PRIVATE(this)->pointdistancelist[i].index;
     int midx = SbMin(index, this->markerIndex.getNum() - 1);
 
@@ -302,15 +302,15 @@ SmMarkerSet::GLRender(SoGLRenderAction * action)
         continue;
       }
 #endif // COIN_DEBUG
-      
-    if (mbind == PER_VERTEX) 
+
+    if (mbind == PER_VERTEX)
       mb.send(index, TRUE);
-      
-    if (this->markerIndex[midx] == NONE) 
+
+    if (this->markerIndex[midx] == NONE)
       { continue; }
-    
+
     SbVec3f point = coords->get3(idx + index);
-    
+
     // OpenGL's glBitmap() will not be clipped against anything but
     // the near and far planes. We want markers to also be clipped
     // against other clipping planes, to behave like the SoPointSet
@@ -321,10 +321,10 @@ SmMarkerSet::GLRender(SoGLRenderAction * action)
     // positions in a oct-tree data structure and cull several at
     // the same time.  20031219 mortene.
     if (SoCullElement::cullTest(state, bbox, TRUE)) { continue; }
-   
+
     projmatrix.multVecMatrix(point, point);
     point[0] = (point[0] + 1.0f) * 0.5f * vpsize[0];
-    point[1] = (point[1] + 1.0f) * 0.5f * vpsize[1];      
+    point[1] = (point[1] + 1.0f) * 0.5f * vpsize[1];
 
     // To have the exact center point of the marker drawn at the
     // projected 3D position.  (FIXME: I haven't actually checked that

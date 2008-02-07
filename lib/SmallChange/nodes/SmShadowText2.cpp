@@ -5,7 +5,7 @@
 
 /*!
   \var SoSFVec2f ShadowText2::pixelOffset
-  
+
   Offset text placement, in pixels, relative to the viewport position calculated
   from the transformation matrix. Default (0,0).
 */
@@ -94,7 +94,7 @@ static unsigned char painter_fontdata[][12] = {
   {  0,  2,  2,  4,  4,  8,  8,  8, 16, 16, 32, 32 }, // [backslash]
   {  0, 56,  8,  8,  8,  8,  8,  8,  8,  8,  8, 56 }, // ]
   //  {  0,  0,  0,  0,  0, 34, 34, 20, 20,  8,  8,  0 }, // ^ (rotate)
-  {  0,  0,  0,127,  1,  1, 65,225, 65, 65,127,  0 },  
+  {  0,  0,  0,127,  1,  1, 65,225, 65, 65,127,  0 },
   {  0,127,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, // _
   {  0,  0,  0,  0,  0,  0,  0,  0,  0, 24, 24, 12 }, // `
   {  0,  0, 29, 34, 34, 30,  2, 34, 28,  0,  0,  0 }, // a
@@ -199,7 +199,7 @@ SmShadowText2::initClass(void)
   static int first = 1;
   if (first) {
     first = 0;
-    SO_NODE_INIT_CLASS(SmShadowText2, SoText2, "Text2");    
+    SO_NODE_INIT_CLASS(SmShadowText2, SoText2, "Text2");
   }
 }
 
@@ -232,7 +232,7 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
   // change z-range from [0,1] to [-1,1]
   nilpoint[2] *= 2.0f;
   nilpoint[2] -= 1.0f;
-  
+
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   SbVec2s vpsize = vp.getViewportSizePixels();
   nilpoint[0] = nilpoint[0] * float(vpsize[0]);
@@ -249,10 +249,10 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
 
   nilpoint[0] += this->pixelOffset.getValue()[0];
   nilpoint[1] += this->pixelOffset.getValue()[1];
-  
+
   float xpos, ypos;
   int strwidth;
-  
+
   xpos = nilpoint[0];      // to get rid of compiler warning..
   ypos = nilpoint[1];
 
@@ -275,7 +275,7 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
     for (int i2 = 0; i2 < strwidth; i2++) {
 
       int idx = painter_isolatin1_mapping[s[i2]];
-      
+
       if (idx) {
         glColor3f(0.0f, 0.0f, 0.0f);
         glRasterPos3f(xpos+1, ypos-1, -nilpoint[2]);
@@ -296,7 +296,7 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
         glBitmap(8,12,0,0,0,0,(const GLubyte *)painter_fontdata + 12 * idx);
         glRasterPos3f(xpos, ypos-1, -nilpoint[2]);
         glBitmap(8,12,0,0,0,0,(const GLubyte *)painter_fontdata + 12 * idx);
-        
+
         // use current state color, not white
         mb.forceSend(0);
         // glColor3f(1.0f, 1.0f, 1.0f);
@@ -308,7 +308,7 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
     // - instead of + because of OpenGL's "inverted" y coordinate...
     ypos -= ( 12.0f * this->spacing.getValue() );
   }
-  
+
   SoGLLazyElement::getInstance(state)->reset(state, SoLazyElement::DIFFUSE_MASK);
   glDepthFunc(GL_LESS);
 

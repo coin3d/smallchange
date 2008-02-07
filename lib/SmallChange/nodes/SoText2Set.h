@@ -50,7 +50,7 @@ public:
     RIGHT,
     CENTER
   };
-  
+
   // Fields
   SoMFEnum justification;
   SoMFString string;
@@ -68,7 +68,7 @@ public:
 
 protected:
   virtual ~SoText2Set();
-  
+
   virtual void notify(SoNotList * list);
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);

@@ -65,7 +65,7 @@ public:
 /*!
   \var SoSFVec2f ViewportRegion::origin
   Origin of new viewport. (0,0) is lower left corner of current viewport. (1,1) is upper right.
-  Default value is (0,0). The field last written into of origin and pixelOrigin will be 
+  Default value is (0,0). The field last written into of origin and pixelOrigin will be
   used to set the origin when the node is traversed.
 
   \sa pixelOrigin
@@ -74,7 +74,7 @@ public:
 /*!
   \var SoSFVec2f ViewportRegion::size
   Size of new viewport. (1,1) will create a viewport with the same size as the current.
-  Default value is (1,1). The field last written into of size and pixelSize will be 
+  Default value is (1,1). The field last written into of size and pixelSize will be
   used to set the size when the node is traversed.
 
   \sa pixelSize
@@ -92,7 +92,7 @@ public:
   \var SoSFVec2f ViewportRegion::pixelSize
   Can be used to set size directly, in pixels.
   Default value is (128,128).
-  
+
   \sa size
 */
 
@@ -197,7 +197,7 @@ ViewportRegion::doAction(SoAction * action)
   else {
     org = this->origin.getValue();
   }
-    
+
   if (siz[0] < 0.0f) siz[0] = 0.0f;
   else if (siz[0] > 1.0f) siz[0] = 1.0f;
   if (siz[1] < 0.0f) siz[1] = 0.0f;
@@ -225,7 +225,7 @@ ViewportRegion::doAction(SoAction * action)
 
   //  this->size = siz;
   this->origin = org;
-  
+
   // this->pixelSize = SbVec2f(siz[0]*float(winsize[0]), siz[1]*float(winsize[1]));
   this->pixelOrigin = SbVec2f(org[0]*float(winsize[0]), org[1]*float(winsize[1]));
 
@@ -246,7 +246,7 @@ ViewportRegion::doAction(SoAction * action)
     org[1] -= siz[1];
   }
 
-  vp.setViewport(org, siz);  
+  vp.setViewport(org, siz);
 
   SoViewportRegionElement::set(action->getState(), vp);
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
@@ -316,7 +316,7 @@ ViewportRegion::pick(SoPickAction * action)
   ViewportRegion::doAction((SoAction*)action);
 }
 
-void 
+void
 ViewportRegion::callback(SoCallbackAction * action)
 {
   ViewportRegion::doAction((SoAction*)action);

@@ -30,7 +30,7 @@
   regular intervals. The idle sensor then checks if the loaded file
   has been modified, and triggers a new timer sensor that reloads the
   file after a given delay. A delay is needed to avoid trying to load
-  the file while it is being written by another process.  
+  the file while it is being written by another process.
 */
 
 // *************************************************************************
@@ -70,7 +70,7 @@
   always have an SoSeparator as its root, and never add an extra such
   node at the top. The contents of an SoFile / AutoFile will always
   match exactly what is found in the file.
-  
+
   FIXME: this means the stripTopSeparator field is not really needed
   any more, and it should therefore be removed in a design
   cleanup. Will not do that yet, as we have software out at customers
@@ -130,7 +130,7 @@ class AutoFileP {
 public:
   AutoFileP(AutoFile * master);
   ~AutoFileP();
-  
+
   SbString currname;
   SbString fullname;
   SbBool mtimevalid;
@@ -166,7 +166,7 @@ SO_NODE_SOURCE(AutoFile);
 AutoFile::AutoFile()
 {
   SO_NODE_CONSTRUCTOR(AutoFile);
-  
+
   SO_NODE_ADD_FIELD(active, (TRUE));
   SO_NODE_ADD_FIELD(interval, (1.0f));
   SO_NODE_ADD_FIELD(delay, (1.0f));
@@ -191,7 +191,7 @@ AutoFile::initClass(void)
   SO_NODE_INIT_CLASS(AutoFile, SoFile, "File");
 }
 
-void 
+void
 AutoFile::doAction(SoAction * action)
 {
   // FIXME: as far as I can tell, this method is exactly the same as
@@ -204,10 +204,10 @@ AutoFile::doAction(SoAction * action)
   }
   else {
     this->getChildren()->traverse(action); // traverse all children
-  }  
+  }
 }
 
-void 
+void
 AutoFile::search(SoSearchAction * action)
 {
   inherited::search(action);
@@ -215,7 +215,7 @@ AutoFile::search(SoSearchAction * action)
   AutoFile::doAction(action);
 }
 
-void 
+void
 AutoFile::notify(SoNotList * list)
 {
   SoField *f = list->getLastField();
@@ -232,7 +232,7 @@ AutoFile::notify(SoNotList * list)
 
   if (f == &this->active) {
     if (this->active.getValue()) {
-      if (!PRIVATE(this)->rescheduler->isScheduled() && 
+      if (!PRIVATE(this)->rescheduler->isScheduled() &&
           !PRIVATE(this)->idler->isScheduled()) {
         PRIVATE(this)->rescheduler->setInterval(SbTime((double) this->interval.getValue()));
         PRIVATE(this)->rescheduler->schedule();
@@ -253,7 +253,7 @@ SbBool
 AutoFile::readNamedFile(SoInput * in)
 {
   SbBool ret = inherited::readNamedFile(in);
-  
+
   if (this->stripTopSeparator.getValue()) {
     SoChildList * children = this->getChildren();
     SoNode * child = children->getLength() == 1 ?
@@ -306,9 +306,9 @@ void
 AutoFileP::idler_cb(void * data, SoSensor *)
 {
   AutoFileP * thisp = (AutoFileP*) data;
- 
+
   if (!PUBLIC(thisp)->active.getValue()) return;
- 
+
   if (PUBLIC(thisp)->name.getValue().getLength()) {
     // test for new name
     if (PUBLIC(thisp)->name.getValue() != thisp->currname) {
@@ -340,8 +340,8 @@ AutoFileP::idler_cb(void * data, SoSensor *)
           a separate thread to detect changes in the file. The contents
           of the file could be read in the thread (to minimize risk of
           failing to open file because it's being written to again), and
-          a flag could be set. The interval-based polling could check 
-          this flag, and read file from buffer instead of from file if 
+          a flag could be set. The interval-based polling could check
+          this flag, and read file from buffer instead of from file if
           flag is set.
        2002-11-29 thammer
      */
@@ -393,7 +393,7 @@ AutoFileP::idler_cb(void * data, SoSensor *)
   }
 }
 
-void 
+void
 AutoFileP::rescheduler_cb(void * data, SoSensor *)
 {
   AutoFileP * thisp = (AutoFileP*) data;
@@ -406,7 +406,7 @@ AutoFileP::rescheduler_cb(void * data, SoSensor *)
   thisp->rescheduler->unschedule();
 }
 
-void 
+void
 AutoFileP::toucher_cb(void * data, SoSensor *)
 {
   AutoFileP * thisp = (AutoFileP*) data;
@@ -415,7 +415,7 @@ AutoFileP::toucher_cb(void * data, SoSensor *)
     // FIXME: stat() errors are just silently ignored. Should do
     // proper reporting. 20031217 mortene.
     if (stat(thisp->fullname.getString(), &statbuf) == 0) {
-      // only load if size and mtime hasn't changed 
+      // only load if size and mtime hasn't changed
       if (statbuf.st_size == thisp->size && statbuf.st_mtime == thisp->mtime) {
 
         if (thisp->debug) {

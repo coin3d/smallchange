@@ -24,7 +24,7 @@
 /*!
   \class SmTextureText2 SmallChange/nodes/SmTextureText2.h
   \brief The SmTextureText2 node is used for fast text rendering
-  
+
   This node can render ~200k strings / second. It pregenerates a font
   texture which is used for rendering the text instead of using the
   glBitmap()/glPixmap() method.
@@ -132,7 +132,7 @@ static unsigned char texture_fontdata[][12] = {
   {  0,  2,  2,  4,  4,  8,  8,  8, 16, 16, 32, 32 }, // [backslash]
   {  0, 56,  8,  8,  8,  8,  8,  8,  8,  8,  8, 56 }, // ]
   //  {  0,  0,  0,  0,  0, 34, 34, 20, 20,  8,  8,  0 }, // ^ (rotate)
-  {  0,  0,  0,127,  1,  1, 65,225, 65, 65,127,  0 },  
+  {  0,  0,  0,127,  1,  1, 65,225, 65, 65,127,  0 },
   {  0,127,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, // _
   {  0,  0,  0,  0,  0,  0,  0,  0,  0, 24, 24, 12 }, // `
   {  0,  0, 29, 34, 34, 30,  2, 34, 28,  0,  0,  0 }, // a
@@ -213,7 +213,7 @@ static int texturetext_isolatin1_mapping[] = {
 // FIXME: support more fonts
 static unsigned char * texturetext_texture = NULL;
 static SoGLImage * texturetext_glimage = NULL;
-static int texturetext_numglyphs = 0; 
+static int texturetext_numglyphs = 0;
 static SbVec2f * texturetext_glyphcoords = NULL;
 
 /*!
@@ -306,33 +306,33 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   SoState * state = action->getState();
   state->push();
   SoCacheElement::invalidate(state);
-  
+
   SoShapeStyleElement::setTransparentMaterial(state, TRUE);
-  
+
   if (!this->shouldGLRender(action)) {
     state->pop();
     return;
   }
-  
+
   SoTextureQualityElement::set(state, 0.0f);
   SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
   SoGLTextureImageElement::set(state, this,
-                               texturetext_glimage, 
+                               texturetext_glimage,
                                SoTextureImageElement::MODULATE,
                                SbColor(1.0f, 1.0f, 1.0f));
   SoGLTextureEnabledElement::set(state, this, TRUE);
-  
+
   SoMaterialBundle mb(action);
   mb.sendFirst(); // make sure we have the correct material
 
-  SbMatrix modelmatrix = SoModelMatrixElement::get(state); 
+  SbMatrix modelmatrix = SoModelMatrixElement::get(state);
   SbMatrix inv = modelmatrix.inverse();
 
   SbMatrix normalize(0.5f, 0.0f, 0.0f, 0.0f,
                      0.0f, 0.5f, 0.0f, 0.0f,
                      0.0f, 0.0f, 1.0f, 0.0f,
                      0.5f, 0.5f, 0.0f, 1.0f);
-  SbMatrix projmatrix = 
+  SbMatrix projmatrix =
     modelmatrix *
     SoViewingMatrixElement::get(state) *
     SoProjectionMatrixElement::get(state) *
@@ -355,8 +355,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glLoadIdentity();
   glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
 
-  SbBool perpart = 
-    SoMaterialBindingElement::get(state) != 
+  SbBool perpart =
+    SoMaterialBindingElement::get(state) !=
     SoMaterialBindingElement::OVERALL;
 
   if (num > 1) {
@@ -367,7 +367,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
       glDisable(GL_TEXTURE_2D);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
       for (int i = 0; i < num; i++) {
-        this->renderBorder(&s[SbMin(i, numstring-1)], 1, 
+        this->renderBorder(&s[SbMin(i, numstring-1)], 1,
                            pos[i],
                            vv,
                            vp,
@@ -382,7 +382,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
       if (perpart) {
         mb.send(i, FALSE);
       }
-      this->renderString(&s[SbMin(i, numstring-1)], 1, 
+      this->renderString(&s[SbMin(i, numstring-1)], 1,
                          pos[i],
                          vv,
                          vp,
@@ -392,8 +392,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     }
   }
   else {
-    this->renderString(&s[0], 
-                       numstring, 
+    this->renderString(&s[0],
+                       numstring,
                        num > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f),
                        vv,
                        vp,
@@ -405,11 +405,11 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
-  
+
   state->pop();
 }
 
-void 
+void
 SmTextureText2::rayPick(SoRayPickAction * action)
 {
   // we don't want to pick on this text node
@@ -430,8 +430,8 @@ SmTextureText2::generatePrimitives(SoAction *action)
   // no primitives to generate
 }
 
-void 
-SmTextureText2::renderBorder(const SbString * s, 
+void
+SmTextureText2::renderBorder(const SbString * s,
                              const int numstring,
                              const SbVec3f & pos,
                              const SbViewVolume & vv,
@@ -445,10 +445,10 @@ SmTextureText2::renderBorder(const SbString * s,
   modelmatrix.multVecMatrix(pos, tmp);
   float dist = -vv.getPlane(0.0f).getDistance(tmp);
   if (dist < vv.getNearDist()) return;
-  
+
   int i;
   SbVec2s vpsize = vp.getViewportSizePixels();
-  
+
   SbVec3f screenpoint;
   projmatrix.multVecMatrix(pos, screenpoint);
 
@@ -456,20 +456,20 @@ SmTextureText2::renderBorder(const SbString * s,
   for (i = 0; i < numstring; i++) {
     int len = s[i].getLength();
     if (len == 0) continue;
-    
+
     int xmin = -4;
     int xmax = len * 8 + 4;
     int ymin = -i*14;
     int ymax = -i*14 + 16;
-    
+
     if (xmin >= vpsize[0] ||
         xmax < 0 ||
         ymin >= vpsize[0] ||
         ymax < 0) continue;
-    
+
     SbVec2s n0,n1,n2,n3;
     SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
-    
+
     n0 = SbVec2s(sp[0] + xmin,
                  sp[1] + ymax);
     n1 = SbVec2s(sp[0] + xmax,
@@ -478,7 +478,7 @@ SmTextureText2::renderBorder(const SbString * s,
                  sp[1] + ymin);
     n3 = SbVec2s(sp[0] + xmin,
                  sp[1] + ymin);
-    
+
     short w = n1[0]-n0[0];
     short halfw = w / 2;
 
@@ -533,13 +533,13 @@ SmTextureText2::renderBorder(const SbString * s,
     glVertex3fv(c0.getValue());
     glVertex3fv(c1.getValue());
     glVertex3fv(c2.getValue());
-    glVertex3fv(c3.getValue());    
+    glVertex3fv(c3.getValue());
   }
   glEnd();
 }
 
-void 
-SmTextureText2::renderString(const SbString * s, 
+void
+SmTextureText2::renderString(const SbString * s,
                             const int numstring,
                              const SbVec3f & pos,
                              const SbViewVolume & vv,
@@ -553,13 +553,13 @@ SmTextureText2::renderString(const SbString * s,
   modelmatrix.multVecMatrix(pos, tmp);
   float dist = -vv.getPlane(0.0f).getDistance(tmp);
   if (dist < vv.getNearDist()) return;
-  
+
   float maxr = this->maxRange.getValue();
-  if (maxr > 0.0f && dist > maxr) return; 
+  if (maxr > 0.0f && dist > maxr) return;
 
   int i;
   SbVec2s vpsize = vp.getViewportSizePixels();
-  
+
   SbVec3f screenpoint;
   projmatrix.multVecMatrix(pos, screenpoint);
 
@@ -567,27 +567,27 @@ SmTextureText2::renderString(const SbString * s,
   for (i = 0; i < numstring; i++) {
     int len = s[i].getLength();
     if (len == 0) continue;
-    
+
     const unsigned char * sptr = (const unsigned char *) s[i].getString();
-    
+
     int xmin = -4;
     int xmax = len * 8 + 4;
     int ymin = -i*14;
     int ymax = -i*14 + 16;
-    
+
     if (xmin >= vpsize[0] ||
         xmax < 0 ||
         ymin >= vpsize[0] ||
         ymax < 0) continue;
-    
+
     SbVec2s n0,n1;
     SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
-    
+
     n0 = SbVec2s(sp[0] + xmin,
                  sp[1] + ymin);
     n1 = SbVec2s(sp[0] + xmax,
                  sp[1] + ymax);
-    
+
     short w = n1[0]-n0[0];
     short halfw = w / 2;
 
@@ -625,7 +625,7 @@ SmTextureText2::renderString(const SbString * s,
       break;
     }
 
-    
+
     for (int j = 0; j < len; j++) {
       const int gidx = texturetext_isolatin1_mapping[sptr[j]] * 4;
       float n00 = n0[0]; // compile fix for gcc 3.2.3 (20070518 frodo)
@@ -648,8 +648,8 @@ SmTextureText2::renderString(const SbString * s,
   glEnd();
 }
 
-void 
-SmTextureText2::oldRenderString(const SbString * s, 
+void
+SmTextureText2::oldRenderString(const SbString * s,
                                 const int numstring,
                                 const SbVec3f & pos,
                                 const SbViewVolume & vv,
@@ -663,10 +663,10 @@ SmTextureText2::oldRenderString(const SbString * s,
   modelmatrix.multVecMatrix(pos, tmp);
   float dist = -vv.getPlane(0.0f).getDistance(tmp);
   if (dist < vv.getNearDist()) return;
-  
+
   int i;
   SbVec2s vpsize = vp.getViewportSizePixels();
-  
+
   SbVec3f screenpoint;
   projmatrix.multVecMatrix(pos, screenpoint);
 
@@ -676,29 +676,29 @@ SmTextureText2::oldRenderString(const SbString * s,
   for (i = 0; i < numstring; i++) {
     int len = s[i].getLength();
     if (len == 0) continue;
-    
+
     const unsigned char * sptr = (const unsigned char *) s[i].getString();
 
     int xmin = 0;
     int xmax = len * 9;
     int ymin = i*14 + 14;
     int ymax = i*14;
-    
+
     SbVec2f n0,n1,n2,n3;
     SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
-    
-    n0 = SbVec2f(float(sp[0] + xmin)/float(vpsize[0]), 
+
+    n0 = SbVec2f(float(sp[0] + xmin)/float(vpsize[0]),
                  float(sp[1] + ymax)/float(vpsize[1]));
-    n1 = SbVec2f(float(sp[0] + xmax)/float(vpsize[0]), 
+    n1 = SbVec2f(float(sp[0] + xmax)/float(vpsize[0]),
                  float(sp[1] + ymax)/float(vpsize[1]));
-    n2 = SbVec2f(float(sp[0] + xmax)/float(vpsize[0]), 
+    n2 = SbVec2f(float(sp[0] + xmax)/float(vpsize[0]),
                  float(sp[1] + ymin)/float(vpsize[1]));
-    n3 = SbVec2f(float(sp[0] + xmin)/float(vpsize[0]), 
+    n3 = SbVec2f(float(sp[0] + xmin)/float(vpsize[0]),
                  float(sp[1] + ymin)/float(vpsize[1]));
-    
+
     n1[0] += 0.1f / float(vpsize[0]);
     n2[0] += 0.1f / float(vpsize[0]);
-    
+
     n2[1] += 0.1f / float(vpsize[1]);
     n3[1] += 0.1f / float(vpsize[1]);
 
@@ -724,25 +724,25 @@ SmTextureText2::oldRenderString(const SbString * s,
       assert(0 && "unknown alignment");
       break;
     }
-    
+
     SbVec3f v0,v1,v2,v3;
     // find the four image points in the plane
     v0 = vv.getPlanePoint(dist, n0);
     v1 = vv.getPlanePoint(dist, n1);
     v2 = vv.getPlanePoint(dist, n2);
     v3 = vv.getPlanePoint(dist, n3);
-    
+
     // transform back to object space
     invmodelmatrix.multVecMatrix(v0, v0);
     invmodelmatrix.multVecMatrix(v1, v1);
     invmodelmatrix.multVecMatrix(v2, v2);
     invmodelmatrix.multVecMatrix(v3, v3);
-    
+
     float invflen = 1.0f / float(len);
-    
+
     for (int j = 0; j < len; j++) {
       const int gidx = texturetext_isolatin1_mapping[sptr[j]] * 4;
-      
+
       SbVec3f c0 = v0 + (v1-v0) * float(j) * invflen;
       SbVec3f c1 = v0 + (v1-v0) * float(j+1) * invflen;
       SbVec3f c2 = v3 + (v2-v3) * float(j+1) * invflen;
@@ -762,17 +762,17 @@ SmTextureText2::oldRenderString(const SbString * s,
   glEnd();
 }
 
-unsigned char * 
+unsigned char *
 SmTextureText2::create_texture(void)
 {
   int num = sizeof(texture_fontdata) / 12;
   texturetext_numglyphs = num;
   texturetext_glyphcoords = new SbVec2f[num*4];
-  
+
   SbVec2f * tc = texturetext_glyphcoords;
 
   assert(num < 128);
-  
+
   unsigned char * ptr = new unsigned char[256*128*2];
   memset(ptr, 0, 256*128*2);
 
@@ -801,12 +801,12 @@ SmTextureText2::create_texture(void)
       render_text(ptr, i, x+1, y, 0, 255);
       render_text(ptr, i, x, y-1, 0, 255);
       render_text(ptr, i, x, y+1, 0, 255);
-      
+
       render_text(ptr, i, x-1, y+1, 0, 255);
       render_text(ptr, i, x+1, y+1, 0, 255);
       render_text(ptr, i, x-1, y-1, 0, 255);
       render_text(ptr, i, x+1, y-1, 0, 255);
-      
+
       render_text(ptr, i, x, y, 255, 255);
 
       // move it back for texture coords
@@ -823,12 +823,12 @@ SmTextureText2::create_texture(void)
       render_text(ptr, i, x+1, y, 255, 64);
       render_text(ptr, i, x, y-1, 255, 64);
       render_text(ptr, i, x, y+1, 255, 64);
-      
+
       render_text(ptr, i, x-1, y+1, 255, 64);
       render_text(ptr, i, x+1, y+1, 255, 64);
       render_text(ptr, i, x-1, y-1, 255, 64);
       render_text(ptr, i, x+1, y-1, 255, 64);
-      
+
       render_text(ptr, i, x, y, 255, 255);
 
       // move it back for texture coords
@@ -853,12 +853,12 @@ SmTextureText2::create_texture(void)
 
 
       x -= 4;
-      y -= 2;      
+      y -= 2;
     }
 
     else if (effect == BOLD_DROPSHADOW) {
       x += 2;
-      
+
       render_text(ptr, i, x+DROP_SHADOW_DIST, y+DROP_SHADOW_DIST, 0, 255);
       render_text(ptr, i, x+DROP_SHADOW_DIST+1, y+DROP_SHADOW_DIST, 0, 255);
 
@@ -870,21 +870,21 @@ SmTextureText2::create_texture(void)
 
     float x0 = float(x) / float(256);
     float y0 = float(y) / float(128);
-    
+
     float x1 = float(x+16) / float(256);
     float y1 = float(y+16) / float(128);
-    
+
     *tc++ = SbVec2f(x0, y0);
     *tc++ = SbVec2f(x1, y0);
     *tc++ = SbVec2f(x1, y1);
     *tc++ = SbVec2f(x0, y1);
- 
+
   }
-  
+
   return ptr;
 }
 
-void 
+void
 SmTextureText2::get_text_pixmap_position(const int idx, int & x, int & y)
 {
   y = idx / 16; // 16 chars per line
@@ -902,7 +902,7 @@ SmTextureText2::render_text(unsigned char * dst,
                             const unsigned char alpha)
 {
   unsigned char * src = texture_fontdata[idx];
-  
+
   for (int sy = 0; sy < 12; sy++) {
     for (int sx = 0; sx  < 8; sx++) {
       if (src[sy] & (0x80 >> sx)) {
@@ -910,6 +910,6 @@ SmTextureText2::render_text(unsigned char * dst,
         dst[dstidx] = value;
         dst[dstidx+1] = alpha;
       }
-    } 
+    }
   }
 }

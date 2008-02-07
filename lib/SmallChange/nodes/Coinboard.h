@@ -90,7 +90,7 @@ private:
                 const SbVec3f & offset,
                 const SbVec3f * coords, const int n,
                 const SbVec4f * texcoords = NULL);
-  
+
   void generate(SoPrimitiveVertex * v,
                 const SbMatrix & transform,
                 const SbVec3f * coords, const int n,

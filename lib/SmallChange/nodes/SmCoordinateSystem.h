@@ -40,11 +40,11 @@ class SMALLCHANGE_DLL_API SmCoordinateSystem : public SoTransformation {
 public:
   static void initClass(void);
   SmCoordinateSystem(void);
-  
+
   SoSFVec3f xAxis;
   SoSFVec3f yAxis;
   SoSFVec3f zAxis;
- 
+
   virtual void doAction(SoAction * action);
   virtual void GLRender(SoGLRenderAction * action);
   virtual void callback(SoCallbackAction * action);
@@ -52,7 +52,7 @@ public:
   virtual void getMatrix(SoGetMatrixAction * action);
   virtual void pick(SoPickAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
-  
+
 protected:
   virtual ~SmCoordinateSystem();
 
@@ -61,4 +61,4 @@ private:
 };
 
 
-#endif //SMALLCHANGE_SMCOORDINATESYSTEM_H 
+#endif //SMALLCHANGE_SMCOORDINATESYSTEM_H

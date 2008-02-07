@@ -72,7 +72,7 @@
   at different positions. Very useful for rendering particles or a
   forest of trees etc.
 
-  When picking, each triangle in each billboard will have an 
+  When picking, each triangle in each billboard will have an
   SoFaceDetail. The face index will (for now) always be 0, while
   the part index will the position index used for the billboard.
 
@@ -450,7 +450,7 @@ Coinboard::generatePrimitives(SoAction * action)
     type = SoShape::TRIANGLES;
     break;
   }
-  
+
   SbBool doTextures = SoGLTextureEnabledElement::get(state);
   if (doTextures) {
     texcoords = this->texCoord.getValues(0);
@@ -632,7 +632,7 @@ Coinboard::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 
   const SbVec3f * pos = this->position.getValues(0);
   const SbVec3f * coords = this->coord.getValues(0);
-  
+
   float maxval = SbAbs(coords[0][0]);
   for (int j = 0; j < numcoords; j++) {
     for (int k = 0; k < 3; k++) {
@@ -665,7 +665,7 @@ Coinboard::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
 }
 
-void 
+void
 Coinboard::generate(SoPrimitiveVertex * v,
                     const SbVec3f & offset,
                     const SbVec3f * coords, const int n,
@@ -686,8 +686,8 @@ Coinboard::generate(SoPrimitiveVertex * v,
   }
 }
 
-  
-void 
+
+void
 Coinboard::generate(SoPrimitiveVertex * v,
                     const SbMatrix & transform,
                     const SbVec3f * coords, const int n,

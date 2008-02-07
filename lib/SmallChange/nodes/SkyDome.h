@@ -55,9 +55,9 @@ protected:
   virtual ~SkyDome();
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
-  
+
 private:
-  
+
 };
 
 #endif // COIN_SKYDOME_H

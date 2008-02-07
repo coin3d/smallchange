@@ -49,7 +49,7 @@ public:
 
   virtual void search(SoSearchAction * action);
   virtual void doAction(SoAction * action);
-  
+
 protected:
   virtual ~AutoFile();
   virtual void notify(SoNotList * list);

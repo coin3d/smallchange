@@ -45,7 +45,7 @@ SmCoordinateSystem::SmCoordinateSystem()
 
   SO_NODE_ADD_FIELD(xAxis, (SbVec3f(1.0f, 0, 0)));
   SO_NODE_ADD_FIELD(yAxis, (SbVec3f(0, 1.0f, 0)));
-  SO_NODE_ADD_FIELD(zAxis, (SbVec3f(0, 0, 1.0f)));  
+  SO_NODE_ADD_FIELD(zAxis, (SbVec3f(0, 0, 1.0f)));
 }
 
 /*!
@@ -63,14 +63,14 @@ SmCoordinateSystem::initClass(void)
   if (first) {
     first = 0;
     SO_NODE_INIT_CLASS(SmCoordinateSystem, SoTransformation, "Transformation");
-  } 
+  }
 }
 
 void
 SmCoordinateSystem::calcMatrix(SbMatrix & m) const
 {
   m.makeIdentity();
-  
+
   m[0][0] = this->xAxis.getValue()[0];
   m[0][1] = this->xAxis.getValue()[1];
   m[0][2] = this->xAxis.getValue()[2];
@@ -101,21 +101,21 @@ SmCoordinateSystem::GLRender(SoGLRenderAction * action)
 }
 
 // Doc from superclass.
-void 
+void
 SmCoordinateSystem::callback(SoCallbackAction * action)
 {
   SmCoordinateSystem::doAction((SoAction *)action);
 }
 
 // Doc from superclass.
-void 
+void
 SmCoordinateSystem::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SmCoordinateSystem::doAction((SoAction *)action);
 }
 
 // Doc from superclass.
-void 
+void
 SmCoordinateSystem::getMatrix(SoGetMatrixAction * action)
 {
   SbMatrix m;
@@ -126,14 +126,14 @@ SmCoordinateSystem::getMatrix(SoGetMatrixAction * action)
 }
 
 // Doc from superclass.
-void 
+void
 SmCoordinateSystem::pick(SoPickAction * action)
 {
   SmCoordinateSystem::doAction((SoAction *)action);
 }
 
 // Doc from superclass.
-void 
+void
 SmCoordinateSystem::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   SmCoordinateSystem::doAction((SoAction *)action);

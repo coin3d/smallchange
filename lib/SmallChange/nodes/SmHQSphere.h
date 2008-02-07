@@ -54,7 +54,7 @@ protected:
   virtual ~SmHQSphere();
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
-  
+
 private:
   SmHQSphereP * pimpl;
 };
@@ -68,7 +68,7 @@ public:
   ~HQSphereGenerator(void) {
     delete this->orgobject;
   }
-  
+
   class triangle {
   public:
     triangle(void) { }
@@ -76,11 +76,11 @@ public:
       pt[0] = p0;
       pt[1] = p1;
       pt[2] = p2;
-    } 
+    }
   public:
     SbVec3f pt[3];
   };
-  
+
   class object {
   public:
     object(int npoly, const triangle * poly) {
@@ -99,7 +99,7 @@ public:
   };
 
   void generate(const int level, SbBSPTree & bsp, SbList <int> & idx);
-  
+
   SbVec3f normalize(const SbVec3f & p);
   SbVec3f midpoint(const SbVec3f & a, const SbVec3f & b);
 

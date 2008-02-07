@@ -45,7 +45,7 @@ public:
   SoMFVec3d track;
   SoSFFloat trackLength;
 
-  void append(const SbVec3d & pos, 
+  void append(const SbVec3d & pos,
               const SbTime & timestamp);
 
   /*!
@@ -55,7 +55,7 @@ public:
 
 protected:
   virtual void GLRender(SoGLRenderAction * action);
-  virtual void computeBBox(SoAction * action, SbBox3f & box, 
+  virtual void computeBBox(SoAction * action, SbBox3f & box,
                            SbVec3f & center);
   virtual void generatePrimitives(SoAction * action);
 

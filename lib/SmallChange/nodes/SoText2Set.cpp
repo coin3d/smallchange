@@ -157,7 +157,7 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
 
 struct sotext2set_indexdistance {
   unsigned int index;
-  float distance; 
+  float distance;
 };
 
 static int sotext2set_sortcompare(const void * element1, const void * element2)
@@ -200,7 +200,7 @@ public:
 
   SoText2Set::Justification getJustification(int idx) const;
   float getRotation(int idx) const;
- 
+
 private:
   SoText2Set * master;
 };
@@ -309,7 +309,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     const SbVec2s vpsize = vp.getViewportSizePixels();
     const SbMatrix & projmatrix = (mat * SoViewingMatrixElement::get(state) *
                                    SoProjectionMatrixElement::get(state));
-    
+
     // Set new state.
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -323,7 +323,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     // Find the number of closest strings to render
     const unsigned int stringcnt = this->string.getNum();
 
-    if (PRIVATE(this)->dirty || PRIVATE(this)->textdistancelist == NULL) {    
+    if (PRIVATE(this)->dirty || PRIVATE(this)->textdistancelist == NULL) {
       if (PRIVATE(this)->textdistancelist != NULL)
         delete PRIVATE(this)->textdistancelist;
       PRIVATE(this)->textdistancelist = new sotext2set_indexdistance[stringcnt];
@@ -332,17 +332,17 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     if (this->maxStringsToRender.getValue() != -1) {
       SbVec3f campos = vv.getProjectionPoint();
       // Calculate distance to camera for all strings
-      for (unsigned int i=0;i<stringcnt;++i) {        
+      for (unsigned int i=0;i<stringcnt;++i) {
         SbVec3f textpos;
         if (i < (unsigned int) this->position.getNum()) textpos = this->position[i];
-        else textpos = SbVec3f(0 ,0, 0); // Default position        
-        mat.multVecMatrix(textpos, textpos);        
+        else textpos = SbVec3f(0 ,0, 0); // Default position
+        mat.multVecMatrix(textpos, textpos);
         PRIVATE(this)->textdistancelist[i].distance = (textpos - campos).length();
         PRIVATE(this)->textdistancelist[i].index = i;
       }
       // qsort array using distance as key
       qsort(PRIVATE(this)->textdistancelist, stringcnt, sizeof(sotext2set_indexdistance), sotext2set_sortcompare);
-    } 
+    }
     else {
       // Regular rendering
       for (unsigned int i=0;i<stringcnt;++i) {
@@ -356,10 +356,10 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     if (stringcnt > (unsigned int)this->position.getNum())
       SoDebugError::postWarning("SoText2Set::GLRender", "Position not specfied for all the strings.");
 
-    unsigned int counter = (this->maxStringsToRender.getValue() != -1) ? 
+    unsigned int counter = (this->maxStringsToRender.getValue() != -1) ?
       this->maxStringsToRender.getValue() : stringcnt;
     if (counter > stringcnt) counter = stringcnt; // Failsafe
-  
+
     for (unsigned int i = 0; i < counter; i++) {
 
       const unsigned int index = PRIVATE(this)->textdistancelist[i].index;
@@ -374,7 +374,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       // check near/far plane and skip if in front/behind
       if (nilpoint[2] < -1.0f || nilpoint[2] > 1.0f) continue;
       nilpoint[0] = (nilpoint[0] + 1.0f) * 0.5f * vpsize[0];
-      nilpoint[1] = (nilpoint[1] + 1.0f) * 0.5f * vpsize[1];      
+      nilpoint[1] = (nilpoint[1] + 1.0f) * 0.5f * vpsize[1];
       float xpos = nilpoint[0];
       float ypos = nilpoint[1];
 
@@ -388,10 +388,10 @@ SoText2Set::GLRender(SoGLRenderAction * action)
       // left-side and top borders of the rendering canvas.
       //
       // 20031222 mortene.
-#if 0      
+#if 0
       // Frustum cull each string, checking just its position point.
       const SbBox3f stringbbox(nilpoint, nilpoint);
-      // FIXME: there should be a SoCullElement::cullTest(..,SbVec3f,...) 
+      // FIXME: there should be a SoCullElement::cullTest(..,SbVec3f,...)
       // method. 20031222 mortene.
       if (SoCullElement::cullTest(state, stringbbox, TRUE)) { continue; }
 #else
@@ -404,7 +404,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
         if (!p.isInHalfSpace(worldnil)) break;
       }
       if (j < clipelem->getNum()) continue;
-#endif      
+#endif
 
       const unsigned int charcnt = this->string[index].getLength();
       switch (PRIVATE(this)->getJustification(index)) {
@@ -419,7 +419,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
         ypos -= PRIVATE(this)->stringheight[index]/2.0f;
         break;
       }
-      
+
       for (unsigned int i2 = 0; i2 < charcnt; i2++) {
         SbVec2s thispos;
         SbVec2s thissize;
@@ -505,7 +505,7 @@ SoText2Set::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
   for (unsigned int i = 0; i < (unsigned int)this->string.getNum(); i++) {
     box.extendBy(PRIVATE(this)->stringBBox(action->getState(), i));
   }
-  center = box.getCenter(); 
+  center = box.getCenter();
 }
 
 SbBox3f
@@ -560,7 +560,7 @@ SoText2Set::rayPick(SoRayPickAction * action)
       ptonline = vert.getClosestPoint(isect);
       float hdist = (ptonline-isect).length();
       hdist /= w;
-      
+
       // find the character
       int charidx = -1;
       int strlength = this->string[stringidx].getLength();
@@ -570,16 +570,16 @@ SoText2Set::rayPick(SoRayPickAction * action)
       float bbheight = (float)(maxy - miny);
       float charleft, charright, charbottom, chartop;
       SbVec2s thissize, thispos;
-      
+
       for (int i=0; i<strlength; i++) {
         PRIVATE(this)->glyphs[stringidx][i]->getBitmap(thissize, thispos, SbBool(FALSE));
         charleft = (PRIVATE(this)->positions[stringidx][i][0] - minx) / bbwidth;
         charright = (PRIVATE(this)->positions[stringidx][i][0] + PRIVATE(this)->charbboxes[stringidx][i][0] - minx) / bbwidth;
-        
+
         if (hdist >= charleft && hdist <= charright) {
           chartop = (maxy - PRIVATE(this)->positions[stringidx][i][1] - PRIVATE(this)->charbboxes[stringidx][i][1]) / bbheight;
           charbottom = (maxy - PRIVATE(this)->positions[stringidx][i][1]) / bbheight;
-          
+
           if (vdist >= chartop && vdist <= charbottom) {
             charidx = i;
             i = strlength;
@@ -728,11 +728,11 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   const SbViewVolume &vv = SoViewVolumeElement::get(state);
   // get distance from nilpoint to camera plane
   float dist = -vv.getPlane(0.0f).getDistance(nilpoint);
-  
+
   if (SbAbs(dist) < vv.getNearDist() * FLT_EPSILON) {
     nilpoint += vv.getProjectionDirection() * vv.getNearDist() * FLT_EPSILON;
   }
-  
+
   SbVec3f screenpoint;
   vv.projectToScreen(nilpoint, screenpoint);
 
@@ -742,17 +742,17 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
   SbVec2f n0, n1, n2, n3;
   short xmin, ymin, xmax, ymax;
   this->bboxes[stringidx].getBounds(xmin, ymin, xmax, ymax);
-    
-  SbVec2f sp((float) screenpoint[0], (float) screenpoint[1]);  
+
+  SbVec2f sp((float) screenpoint[0], (float) screenpoint[1]);
   n0 = SbVec2f(sp[0] + ((float) xmin)/float(vpsize[0]),
                sp[1] + ((float) ymax)/float(vpsize[1]));
-  n1 = SbVec2f(sp[0] + ((float) xmax)/float(vpsize[0]), 
+  n1 = SbVec2f(sp[0] + ((float) xmax)/float(vpsize[0]),
                sp[1] + ((float) ymax)/float(vpsize[1]));
-  n2 = SbVec2f(sp[0] + ((float) xmax)/float(vpsize[0]), 
+  n2 = SbVec2f(sp[0] + ((float) xmax)/float(vpsize[0]),
                sp[1] + ((float) ymin)/float(vpsize[1]));
-  n3 = SbVec2f(sp[0] + ((float) xmin)/float(vpsize[0]), 
+  n3 = SbVec2f(sp[0] + ((float) xmin)/float(vpsize[0]),
                sp[1] + ((float) ymin)/float(vpsize[1]));
-  
+
   float w = n1[0]-n0[0];
   float halfw = w*0.5f;
   switch (this->getJustification(stringidx)) {
@@ -774,7 +774,7 @@ SoText2SetP::getQuad(SoState * state, SbVec3f & v0, SbVec3f & v1,
     assert(0 && "unknown alignment");
     break;
   }
-  
+
   // find the four image points in the plane
   v0 = vv.getPlanePoint(dist, n0);
   v1 = vv.getPlanePoint(dist, n1);
@@ -905,13 +905,13 @@ SoText2SetP::buildGlyphCache(SoState * state)
         if (outline) advance[0] += 1;
 
         SbVec2s kerning;
-        if (j > 0) 
-          kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)* this->glyphs[i][j-1]);       
-        else 
+        if (j > 0)
+          kerning = this->glyphs[i][j]->getKerning((const SoGlyph &)* this->glyphs[i][j-1]);
+        else
           kerning = SbVec2s(0,0);
-        
+
         this->charbboxes[i][j] = advance + SbVec2s(0, -thissize[1]);
-        
+
         SbVec2s pos = penpos +
           SbVec2s((short) thispos[0], (short) thispos[1]) +
           SbVec2s(0, (short) -thissize[1]);
@@ -921,9 +921,9 @@ SoText2SetP::buildGlyphCache(SoState * state)
         this->positions[i][j] = pos;
 
         penpos += advance + kerning;
-	
+
       }
-	
+
       this->stringwidth[i] = stringbox.getMax()[0] - stringbox.getMin()[0];
       this->stringheight[i] = stringbox.getMax()[1] - stringbox.getMin()[1];
       this->bboxes.append(stringbox);

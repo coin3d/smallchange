@@ -39,12 +39,12 @@ class SMALLCHANGE_DLL_API SmTooltip: public SoNode {
 public:
   static void initClass(void);
   SmTooltip(void);
-  
+
   SoMFString description;
-    
+
 protected:
   virtual ~SmTooltip();
 };
 
 
-#endif //SMALLCHANGE_SMTOOLTIP_H 
+#endif //SMALLCHANGE_SMTOOLTIP_H

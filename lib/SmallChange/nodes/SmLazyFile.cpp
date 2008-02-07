@@ -43,14 +43,14 @@ SmLazyFile::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   if (!PRIVATE(this)->loaded) {
     SbBox3f bbox(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    action->setCenter(SbVec3f(0.0f, 0.0f, 0.0f), FALSE);  
+    action->setCenter(SbVec3f(0.0f, 0.0f, 0.0f), FALSE);
     action->extendBy(bbox);
   } else {
     inherited::getBoundingBox(action);
   }
 }
 
-void 
+void
 SmLazyFile::GLRender(SoGLRenderAction * action)
 {
   if (!PRIVATE(this)->loaded && !PRIVATE(this)->isloading) {
@@ -69,7 +69,7 @@ SmLazyFile::readInstance(SoInput * in, unsigned short flags)
   return inherited::readInstance(in, flags);
 }
 
-SbBool 
+SbBool
 SmLazyFile::readNamedFile(SoInput * in)
 {
   return TRUE;

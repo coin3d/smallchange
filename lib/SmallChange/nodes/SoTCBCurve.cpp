@@ -39,17 +39,17 @@
   #include <SmallChange/nodes/SoTCBCurve.h>
   #include <Inventor/nodes/SoCoordinate3.h>
   #include <Inventor/nodes/SoSeparator.h>
-      
+
   int
   main(int argc, char* argv[])
   {
     QWidget * mainwin = SoQt::init(argv[0]);
-  
+
     SoTCBCurve::initClass();
-  
+
     SoSeparator * root = new SoSeparator;
     root->ref();
-      
+
     const SbVec3f coordset[] = {
       SbVec3f(0, 0, 0),
       SbVec3f(1, 1, 0),
@@ -57,15 +57,15 @@
       SbVec3f(3, -1, 0),
       SbVec3f(4, 0, 0)
     };
-  
+
     SoCoordinate3 * coords = new SoCoordinate3;
     coords->point.setValues(0, sizeof(coordset) / sizeof(coordset[0]), coordset);
-  
+
     root->addChild(coords);
-  
+
     SoTCBCurve * curve = new SoTCBCurve;
     curve->numControlpoints = coords->point.getNum();
-  
+
     // XXX this should really have been unnecessary, but due to a bug in
     // SoTCBCurve vs spec... XXX
   #if 1
@@ -73,18 +73,18 @@
       curve->timestamp.set1Value(i, SbTime((double)i));
     }
   #endif
-  
+
     root->addChild(curve);
-  
+
     SoQtExaminerViewer * viewer = new SoQtExaminerViewer(mainwin);
     viewer->setSceneGraph(root);
-      
+
     SoQt::show(mainwin);
     SoQt::mainLoop();
-  
+
     delete viewer;
     root->unref();
-      
+
     return 0;
   }
   \endcode

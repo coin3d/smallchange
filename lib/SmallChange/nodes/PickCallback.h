@@ -64,17 +64,17 @@ public:
   SoSFVec3f worldSpacePickedPoint;
 
   SoSFBool delayTrigger;
-  
+
   const SoPickedPoint * getCurrentPickedPoint(void) const;
   SbBool isButton1(void) const;
   SbBool isButton2(void) const;
-  
+
   static void setSchemeEvalFunctions(int (*scriptcb)(const char *),
                                      void (*filecb)(const char *));
-  
+
   void addCallback(void (*callback)(void *, SoPath *), void * userdata);
   void removeCallback(void (*callback)(void *, SoPath *), void * userdata);
-  
+
   SbVec2s getEventPosition(void) const;
   SbBool currentIsMouseDown(void) const;
   const SbViewportRegion & getEventViewportRegion(void) const;

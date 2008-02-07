@@ -28,7 +28,7 @@
   Renders an extrusion of \e crossSection along \e spine, for
   all \e spine segments closer to camera than \e lodDistance1. Between
   \e lodDistance1 and \e lodDistance2 , \e spine segments are rendered
-  as simple lines. Beyond \e lodDistance2 nothing is rendered. 
+  as simple lines. Beyond \e lodDistance2 nothing is rendered.
   To render lines to infinity, set \e lodDistance2 to less than zero.
   (the default value for \e lodDistance2 is -1.0).
 
@@ -82,7 +82,7 @@
 
 /*! \var SoSFFloat SoLODExtrusion::lodDistance2
   The distance from camera where line rendering will be replaced
-  by nothing, if \e lodDistance2 is greater than zero. If 
+  by nothing, if \e lodDistance2 is greater than zero. If
   \e lodDistance2 is less than zero, lines will be rendered to
   infinity (or to the end of the spine, or to the far clipping
   plane, whichever is closer to camera). Default value for
@@ -91,11 +91,11 @@
 
 /*!
   \var SoSFVec3f SoLODExtrusion::zAxis
-  
-  Makes it possible to lock the extrusion Z-axis to always have this 
+
+  Makes it possible to lock the extrusion Z-axis to always have this
   value. The extrusion coordinate system will need to be orthonormal,
   of course, so the Z-axis will be transformed to accout for this.
-  Default value is (0, 0, 0), which means that the Z-axis is not 
+  Default value is (0, 0, 0), which means that the Z-axis is not
   locked.
 */
 
@@ -290,7 +290,7 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   float dist, ld1dist, ld2dist, accdist;
 
   SbBool use_alternate_color = this->doAlternateColor.getValue();
-  
+
   SbColor alt_color = this->alternateColor.getValue();
   SbColor main_color = SoLazyElement::getDiffuse(state, 0);
 
@@ -309,7 +309,7 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
       if (dist < this->lodDistance2.getValue()) {
         lodmode = 1;
       }
-      else { 
+      else {
         lodmode = 2;
       }
     }
@@ -362,14 +362,14 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     }
     // to avoid hangs
     if (i == oldi) i++;
-  } 
+  }
   SoGLCacheContextElement::shouldAutoCache(action->getState(),
                                            SoGLCacheContextElement::DONT_AUTO_CACHE);
   SoGLLazyElement::getInstance(state)->reset(action->getState(),
                                              SoLazyElement::DIFFUSE_MASK);
 }
 
-void 
+void
 SoLODExtrusion::rayPick(SoRayPickAction * action)
 {
   if (!shouldRayPick(action)) return;
@@ -382,7 +382,7 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
   const SbMatrix matrix = tempmat.inverse();
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
   matrix.multVecMatrix(vv.getProjectionPoint(), cameralocal);
-  
+
   action->setObjectSpace();
   const SbLine & ray = action->getLine();
 
@@ -417,7 +417,7 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
     if (v0 != v1) {
       float l1 = (v0-cameralocal).sqrLength();
       float l2 = (v1-cameralocal).sqrLength();
-      
+
       if (l1 < d2 || l2 < d2) {
         SbLine line(v0, v1);
         SbVec3f op0, op1; // object space
@@ -425,7 +425,7 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
           // clamp op1 between v0 and v1
           if ((op1-v0).dot(line.getDirection()) < 0.0f) op1 = v0;
           else if ((v1-op1).dot(line.getDirection()) < 0.0f) op1 = v1;
-          
+
           if ((op1-op0).sqrLength() <= r2 && action->isBetweenPlanes(op0)) {
             // adjust picked point to account for radius of the extrusion
             SbCylinder cyl(line, r);
@@ -483,7 +483,7 @@ void
 SoLODExtrusion::generatePrimitives(SoAction * action)
 {
   this->updateCache();
-  
+
   // FIXME: generate triangles
 
   /*
@@ -538,7 +538,7 @@ SoLODExtrusion::notify(SoNotList * list)
 }
 
 
-SoDetail * 
+SoDetail *
 SoLODExtrusion::createTriangleDetail(SoRayPickAction * action,
                                       const SoPrimitiveVertex * v1,
                                       const SoPrimitiveVertex * v2,
@@ -571,7 +571,7 @@ SoLODExtrusionP::generateCoords(void)
   }
   if (this->master->crossSection.getNum() == 0 ||
       this->master->spine.getNum() == 0) return;
-  
+
   SbMatrix matrix = SbMatrix::identity();
 
   int i, j, numcross;
@@ -635,7 +635,7 @@ SoLODExtrusionP::generateCoords(void)
       else
         Y = SbVec3f(0.0f, 1.0f, 0.0f);
     }
-    
+
     if (dolockz) {
       Z = zaxis;
       X = Y.cross(Z);
@@ -645,7 +645,7 @@ SoLODExtrusionP::generateCoords(void)
     }
     else {
       SbVec3f z0, z1;
-      
+
       if (closed) {
         if (i > 0) {
           z0 = spine[i+1] - spine[i];
@@ -679,10 +679,10 @@ SoLODExtrusionP::generateCoords(void)
           z1 = spine[i-1] - spine[i];
         }
       }
-      
+
       my_normalize(z0);
       my_normalize(z1);
-      
+
       // test if spine segments are (almost) parallel. If they are, the
       // cross product will not be reliable, and we should just use the
       // previous Z-axis instead.
@@ -692,10 +692,10 @@ SoLODExtrusionP::generateCoords(void)
       else {
         Z = z0.cross(z1);
       }
-      
+
       if (my_normalize(Z) <= FLT_EPSILON || SbAbs(Y.dot(Z)) > 0.5f) {
         Z = SbVec3f(0.0f, 0.0f, 0.0f);
-        
+
         int bigy = 0;
         float bigyval = Y[0];
         if (SbAbs(Y[1]) > SbAbs(bigyval)) {
@@ -707,17 +707,17 @@ SoLODExtrusionP::generateCoords(void)
           bigyval = Y[2];
         }
         Z[(bigy+1)%3] = bigyval > 0.0f ? 1.0f : -1.0f;
-        
+
         // make Z perpendicular to Y
         X = Y.cross(Z);
         my_normalize(X);
         Z = X.cross(Y);
         my_normalize(Z);
       }
-      
+
       X = Y.cross(Z);
       my_normalize(X);
-      
+
       if (i > 0 && (Z.dot(prevZ) <= 0.5f || X.dot(prevX) <= 0.5f)) {
         // if change is fairly large, try to find the most appropriate
         // axis. This will minimize change from spine-point to
@@ -727,7 +727,7 @@ SoLODExtrusionP::generateCoords(void)
         v[1] = -X;
         v[2] = Z;
         v[3] = -Z;
-        
+
         float maxdot = v[0].dot(prevZ);
         int maxcnt = 0;
         for (int cnt = 1; cnt < 4; cnt++) {
@@ -854,7 +854,7 @@ SoLODExtrusionP::generateCoords(void)
       ADD_VERTEX(i+1, 0);
       cursegidx += 2;
       this->striplens.append( 2 + numcross * 2 );
-    } 
+    }
     else {
       this->striplens.append( numcross * 2 );
     }
@@ -871,9 +871,9 @@ SoLODExtrusionP::generateCoords(void)
 // Render triangles for segidx[index]
 // Assumes per vertex normals, no materials or texture coords
 //
-void 
+void
 SoLODExtrusionP::renderSegidx(SoState * state,
-                              const int index, 
+                              const int index,
                               const SbBool use_color,
                               const SbBool use_alternate_color)
 {
@@ -881,7 +881,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
 
   SbColor alt_color = this->master->alternateColor.getValue();
   SbColor main_color = SoLazyElement::getDiffuse(state, 0);
-  
+
   const int * siv = this->segidx.getArrayPtr();
   const int * iv = this->idx.getArrayPtr();
   const SbVec3f * cv = this->coord.getArrayPtr();
@@ -900,7 +900,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
 
   int curidx = startindex;
   int32_t v1, v2, v3, v4, v5 = 0; // v5 init unnecessary, but kills a compiler warning.
-  
+
   if (iv[curidx+3] < 0) {  /* Triangle */
     assert(0 && "should never get here");
     //    printf("renderSegidx: triangles. \n");
@@ -913,7 +913,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       assert(v1 < vcnt && v2 < vcnt && v3 < vcnt);
       v4 = iv[curidx++];
       assert( v4 < 0);  /* Triangle means every 4th index = -1  */
-      
+
       /* vertex 1 *********************************************************/
       if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
@@ -923,14 +923,14 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       }
       glNormal3fv((const GLfloat*)nv[v1].getValue());
       glVertex3fv((const GLfloat*)cv[v1].getValue());
-      
+
       /* vertex 2 *********************************************************/
       if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v2]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v2].getValue());
       glVertex3fv((const GLfloat*)cv[v2].getValue());
-      
+
       /* vertex 3 *********************************************************/
       if (use_color) {
 	glColor3fv((const GLfloat*)colorv[coloridx[v3]].getValue());
@@ -939,7 +939,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       glVertex3fv((const GLfloat*)cv[v3].getValue());
     }
     glEnd(); /* draw triangles */
-  } 
+  }
   else {   /* Tristrip(s) */
     if (use_alternate_color) {
       glColor3fv(index & 1 ? main_color.getValue() : alt_color.getValue());

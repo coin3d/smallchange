@@ -54,7 +54,7 @@
 
 /*!
   \var SoSFBool PickSwitch::toggle
-  Set to TRUE to toggle active/inactive for each pick. When this field is 
+  Set to TRUE to toggle active/inactive for each pick. When this field is
   FALSE, the node is active only while some child is selected and the mouse
   button is down.
 */
@@ -110,29 +110,29 @@ void
 PickSwitch::handleEvent(SoHandleEventAction *action)
 {
   const SoEvent *event = action->getEvent();
-  
+
   SbBool haltaction = FALSE;
   if (SO_MOUSE_PRESS_EVENT(event, BUTTON1)) {
     const SoPickedPoint *pp = action->getPickedPoint();
     if (pp) {
       SoPath *path = pp->getPath();
       if (path->containsPath(action->getCurPath())) {
-        this->isActive = this->toggle.getValue() ? !this->isActive.getValue() : TRUE;        
-        this->whichChild = this->isActive.getValue() ? 
+        this->isActive = this->toggle.getValue() ? !this->isActive.getValue() : TRUE;
+        this->whichChild = this->isActive.getValue() ?
           this->activeChild.getValue() :
           this->inactiveChild.getValue();
         haltaction = TRUE;
       }
     }
   }
-  else if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1) && this->isActive.getValue()) {    
+  else if (SO_MOUSE_RELEASE_EVENT(event, BUTTON1) && this->isActive.getValue()) {
     if (!this->toggle.getValue()) {
       this->whichChild = this->inactiveChild.getValue();
       this->isActive = FALSE;
       haltaction = TRUE;
     }
   }
-  
+
   if (haltaction) {
     action->isHandled();
   }

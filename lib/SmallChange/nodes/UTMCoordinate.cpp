@@ -37,11 +37,11 @@
   this node. To specify more complex geometry, you're better off
   using a UTMPosition node and specify the coordinates relative to
   the position using an SoCoordinate3 node.
-  
+
   Note that an UTMCoordinate node will \e replace the coordinates
   already present in the state (if any).
-  
-  \sa UTMCamera, UTMPosition 
+
+  \sa UTMCamera, UTMPosition
 */
 
 #include "UTMCoordinate.h"
@@ -56,7 +56,7 @@
 
 /*!
   \var SoMFVec3f UTMCoordinate::point
-  Coordinate set of 3D points. Currently only single precision, but will be 
+  Coordinate set of 3D points. Currently only single precision, but will be
   double in the future.
 */
 
@@ -156,7 +156,7 @@ UTMCoordinate::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 /*!
   Overloaded to invalidate cache.
 */
-void 
+void
 UTMCoordinate::notify(SoNotList * nl)
 {
   this->dirty = TRUE;
@@ -166,20 +166,20 @@ UTMCoordinate::notify(SoNotList * nl)
 /*!
   Recalculates cache.
 */
-void 
+void
 UTMCoordinate::updateCoords(SoState * state)
 {
   double pos[3];
   UTMElement::getReferencePosition(state, pos[0], pos[1], pos[2]);
   SbVec3f newtrans = UTMElement::getCurrentTranslation(state);
-  if (this->dirty || 
-      pos[0] != this->refpos[0] || 
+  if (this->dirty ||
+      pos[0] != this->refpos[0] ||
       pos[1] != this->refpos[1] ||
       pos[2] != this->refpos[2] ||
       newtrans != this->trans) {
     int n = this->point.getNum();
     const SbVec3f * ptr = this->point.getValues(0);
-    
+
     float posf[3];
     posf[0] = float(pos[0]) - newtrans[0];
     posf[1] = float(pos[1]) - newtrans[1];
@@ -189,7 +189,7 @@ UTMCoordinate::updateCoords(SoState * state)
     for (int i = 0; i < n; i++) {
       this->coords.append(SbVec3f(ptr[i][0] - posf[0],
                                   ptr[i][1] - posf[1],
-                                  ptr[i][2] - posf[2])); 
+                                  ptr[i][2] - posf[2]));
     }
     this->dirty = FALSE;
     this->refpos[0] = pos[0];

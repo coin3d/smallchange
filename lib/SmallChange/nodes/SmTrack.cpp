@@ -22,10 +22,10 @@
 
 class SmTrackP {
 public:
-  SmTrackP(void) 
+  SmTrackP(void)
     : startix(0) {}
 
-  void updateInterval(void) 
+  void updateInterval(void)
   {
     float t = PUBLIC(this)->trackLength.getValue();
     int n = PUBLIC(this)->timeStamps.getNum();
@@ -73,7 +73,7 @@ SmTrack::SmTrack(void)
   PRIVATE(this) = new SmTrackP;
   PRIVATE(this)->master = this;
 
-  PRIVATE(this)->tracklengthsensor = 
+  PRIVATE(this)->tracklengthsensor =
     new SoFieldSensor(SmTrackP::updateIntervalCB, PRIVATE(this));
   PRIVATE(this)->tracklengthsensor->attach(&this->trackLength);
 }
@@ -83,7 +83,7 @@ SmTrack::~SmTrack()
   delete PRIVATE(this);
 }
 
-void 
+void
 SmTrack::GLRender(SoGLRenderAction * action)
 {
   if (!this->shouldGLRender(action)) return;
@@ -99,8 +99,8 @@ SmTrack::GLRender(SoGLRenderAction * action)
   glEnd();
 }
 
-void 
-SmTrack::append(const SbVec3d & pos, 
+void
+SmTrack::append(const SbVec3d & pos,
                 const SbTime & timestamp)
 {
   int index = this->timeStamps.getNum();
@@ -112,7 +112,7 @@ SmTrack::append(const SbVec3d & pos,
 }
 
 
-void 
+void
 SmTrack::deleteValues()
 {
 	this->track.deleteValues(0, this->track.getNum());
@@ -120,8 +120,8 @@ SmTrack::deleteValues()
 }
 
 
-void 
-SmTrack::computeBBox(SoAction * action, SbBox3f & box, 
+void
+SmTrack::computeBBox(SoAction * action, SbBox3f & box,
                      SbVec3f & center)
 {
   box.makeEmpty();
@@ -133,7 +133,7 @@ SmTrack::computeBBox(SoAction * action, SbBox3f & box,
   if (!box.isEmpty()) center = box.getCenter();
 }
 
-void 
+void
 SmTrack::generatePrimitives(SoAction * action)
 {
   // FIXME: implement! (20060602 frodo)

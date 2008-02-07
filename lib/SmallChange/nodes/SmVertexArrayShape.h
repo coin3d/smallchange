@@ -60,7 +60,7 @@ public:
     OFF, ON, AUTO
   };
 
-  SoSFEnum renderAsVertexBufferObject;  
+  SoSFEnum renderAsVertexBufferObject;
   SoMFInt32 vertexIndex;
   SoSFNode vertexCoord;
   SoSFNode vertexNormal;

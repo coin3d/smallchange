@@ -52,7 +52,7 @@
   \var SoSFVec3f::worldSpacePickedPoint
   Will be set before callbacks are called (if any)
 */
-  
+
 
 
 #include "PickCallback.h"
@@ -98,14 +98,14 @@ public:
 
     SbString schemeFile = thisp->nodeptr->schemeFile.getValue();
     SbString schemeScript = thisp->nodeptr->schemeScript.getValue();
-    
+
     thisp->nodeptr->cblist.invokeCallbacks(thisp->path);
-    if (schemeFile.getLength() > 0 && schemefilecb) 
+    if (schemeFile.getLength() > 0 && schemefilecb)
       schemefilecb(schemeFile.getString());
     if (schemeScript.getLength() > 0 && schemescriptcb)
       schemescriptcb(schemeScript.getString());
     thisp->nodeptr->trigger.setValue();
-    
+
     delete thisp->pickedpoint;
     thisp->nodeptr->current = NULL;
     delete sensor;
@@ -122,7 +122,7 @@ SO_NODE_SOURCE(PickCallback);
 PickCallback::PickCallback()
 {
   SO_NODE_CONSTRUCTOR(PickCallback);
-  
+
   SO_NODE_ADD_FIELD(pickable, (FALSE));
   SO_NODE_ADD_FIELD(onMousePress, (TRUE));
   SO_NODE_ADD_FIELD(onMouseRelease, (FALSE));
@@ -135,7 +135,7 @@ PickCallback::PickCallback()
   SO_NODE_ADD_FIELD(objectSpacePickedPoint, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(worldSpacePickedPoint, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(delayTrigger, (TRUE));
-  
+
   this->pickedpoint = NULL;
   this->buttonnum = 0;
   this->current = NULL;
@@ -159,7 +159,7 @@ PickCallback::initClass(void)
 }
 
 /*!
-  Coin method. Checks to see if some child is picked, and triggers 
+  Coin method. Checks to see if some child is picked, and triggers
   callbacks when this happens.
 */
 void
@@ -179,24 +179,24 @@ PickCallback::handleEvent(SoHandleEventAction * action)
       SO_MOUSE_PRESS_EVENT(event, BUTTON1)) {
     this->buttonnum = 1;
     haltaction = this->testPick(action, TRUE);
-  }  
+  }
   else if (this->onMouseRelease.getValue() &&
            this->onButton1.getValue() &&
            SO_MOUSE_RELEASE_EVENT(event, BUTTON1)) {
     this->buttonnum = 1;
-    haltaction = this->testPick(action, FALSE);    
+    haltaction = this->testPick(action, FALSE);
   }
   else if (this->onMousePress.getValue() &&
       this->onButton2.getValue() &&
       SO_MOUSE_PRESS_EVENT(event, BUTTON2)) {
     this->buttonnum = 2;
     haltaction = this->testPick(action, TRUE);
-  }  
+  }
   else if (this->onMouseRelease.getValue() &&
            this->onButton2.getValue() &&
            SO_MOUSE_RELEASE_EVENT(event, BUTTON2)) {
     this->buttonnum = 2;
-    haltaction = this->testPick(action, FALSE);    
+    haltaction = this->testPick(action, FALSE);
   }
 
   if (haltaction) {
@@ -207,7 +207,7 @@ PickCallback::handleEvent(SoHandleEventAction * action)
   }
 }
 
-const SoPickedPoint * 
+const SoPickedPoint *
 PickCallback::getCurrentPickedPoint(void) const
 {
   if (this->current) {
@@ -216,7 +216,7 @@ PickCallback::getCurrentPickedPoint(void) const
   return this->pickedpoint;
 }
 
-SbBool 
+SbBool
 PickCallback::isButton1(void) const
 {
   if (this->current) {
@@ -225,7 +225,7 @@ PickCallback::isButton1(void) const
   return this->buttonnum == 1;
 }
 
-SbBool 
+SbBool
 PickCallback::isButton2(void) const
 {
   if (this->current) {
@@ -238,7 +238,7 @@ PickCallback::isButton2(void) const
   Adds a callback that will be called when some node is picked.
   \sa removeCallback()
 */
-void 
+void
 PickCallback::addCallback(void (*callback)(void *, SoPath *), void * userdata)
 {
   this->cblist.addCallback((SoCallbackListCB*) callback, userdata);
@@ -248,13 +248,13 @@ PickCallback::addCallback(void (*callback)(void *, SoPath *), void * userdata)
   Removes a callback.
   \sa addCallback()
 */
-void 
+void
 PickCallback::removeCallback(void (*callback)(void *, SoPath *), void * userdata)
 {
   this->cblist.removeCallback((SoCallbackListCB*)callback, userdata);
 }
 
-SbBool 
+SbBool
 PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
 {
   const SoPickedPoint *pp = action->getPickedPoint();
@@ -269,9 +269,9 @@ PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
       this->mousepress = mousepress;
       this->eventpos = action->getEvent()->getPosition();
       this->viewport = SoViewportRegionElement::get(action->getState());
-      
+
       if (this->delayTrigger.getValue()) {
-                
+
         pc_sensordata * data = new pc_sensordata;
         data->path = path->copy();
         data->path->ref();
@@ -293,7 +293,7 @@ PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
       else {
         this->pickedpoint = new SoPickedPoint(*pp);
         this->cblist.invokeCallbacks(path);
-        if (schemeFile.getLength() > 0 && schemefilecb) 
+        if (schemeFile.getLength() > 0 && schemefilecb)
           schemefilecb(schemeFile.getString());
         if (schemeScript.getLength() > 0 && schemescriptcb)
           schemescriptcb(schemeScript.getString());
@@ -307,7 +307,7 @@ PickCallback::testPick(SoHandleEventAction * action, const SbBool mousepress)
   return FALSE;
 }
 
-SbBool 
+SbBool
 PickCallback::currentIsMouseDown(void) const
 {
   if (this->current) {
@@ -316,7 +316,7 @@ PickCallback::currentIsMouseDown(void) const
   return this->mousepress;
 }
 
-SbVec2s 
+SbVec2s
 PickCallback::getEventPosition(void) const
 {
   if (this->current) {
@@ -325,7 +325,7 @@ PickCallback::getEventPosition(void) const
   return this->eventpos;
 }
 
-const SbViewportRegion & 
+const SbViewportRegion &
 PickCallback::getEventViewportRegion(void) const
 {
   if (this->current) {
@@ -335,7 +335,7 @@ PickCallback::getEventViewportRegion(void) const
 }
 
 
-void 
+void
 PickCallback::setSchemeEvalFunctions(int (*scriptcb)(const char *),
                                      void (*filecb)(const char *))
 {

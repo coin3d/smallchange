@@ -55,9 +55,9 @@ public:
   virtual void rayPick(SoRayPickAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
   virtual void getMatrix(SoGetMatrixAction * action);
-  
+
   void getPosition(double & easting, double & northing, double & elevation);
-    
+
 protected:
   virtual ~UTMCamera();
   virtual void notify(SoNotList * nl);

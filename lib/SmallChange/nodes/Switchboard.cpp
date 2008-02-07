@@ -23,7 +23,7 @@
 
 /*!
   \class SmSwitchboard SmSwitchboard.h SmallChange/nodes/SmSwitchboard.h
-  \brief The SmSwitchboard class is a group node that can toggle children 
+  \brief The SmSwitchboard class is a group node that can toggle children
   on and off arbitrarily.
 
   FIXME: write doc

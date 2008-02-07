@@ -144,18 +144,18 @@ UTMPosition::doAction(SoAction * action)
 
   SbVec3f trans = UTMElement::setPosition(action->getState(),
                                           utm[0], utm[1], utm[2]);
-  
-  
+
+
   if (SoModelMatrixElement::get(state) != SbMatrix::identity()) {
     if (action->isOfType(SoGetBoundingBoxAction::getClassTypeId())) {
-      SoModelMatrixElement::mult(state, 
-                                 this, 
+      SoModelMatrixElement::mult(state,
+                                 this,
                                  SoModelMatrixElement::get(state).inverse());
     }
     else {
       // disabled, yields bad floating point precision
-      // SoModelMatrixElement::mult(state, 
-      //                            this, 
+      // SoModelMatrixElement::mult(state,
+      //                            this,
       //                            SoModelMatrixElement::get(state).inverse());
 
       // use makeIdentity instead
@@ -163,7 +163,7 @@ UTMPosition::doAction(SoAction * action)
     }
   }
   SoModelMatrixElement::translateBy(action->getState(), this, trans);
-  
+
   const SbMatrix & gtransform = UTMElement::getGlobalTransform(action->getState());
   if (gtransform != SbMatrix::identity()) {
     SoModelMatrixElement::mult(action->getState(), this, gtransform);
@@ -175,7 +175,7 @@ UTMPosition::doAction(SoAction * action)
   }
 
 //   if (oldm != SbMatrix::identity()) {
-//     SoModelMatrixElement::mult(action->getState(), this, oldm); 
+//     SoModelMatrixElement::mult(action->getState(), this, oldm);
 //   }
 }
 
@@ -215,7 +215,7 @@ void
 UTMPosition::getMatrix(SoGetMatrixAction * action)
 {
   SbMatrix oldm = action->getMatrix();
-  
+
   // eliminate translation
   oldm[3][0] = 0.0f;
   oldm[3][1] = 0.0f;
@@ -238,7 +238,7 @@ UTMPosition::getMatrix(SoGetMatrixAction * action)
   }
   if (oldm != SbMatrix::identity()) {
     action->getMatrix().multLeft(oldm);
-    action->getInverse().multRight(oldm.inverse());    
+    action->getInverse().multRight(oldm.inverse());
   }
 }
 
@@ -263,7 +263,7 @@ UTMPosition::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 /*!
   Overridden to invalidate cache when some field change.
 */
-void 
+void
 UTMPosition::notify(SoNotList * nl)
 {
   SoField * f = nl->getLastField();

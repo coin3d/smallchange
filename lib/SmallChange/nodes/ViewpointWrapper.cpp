@@ -28,7 +28,7 @@
 #include <Inventor/actions/SoGetMatrixAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
-#include <Inventor/fields/SoSFBool.h>        
+#include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/VRMLnodes/SoVRMLViewpoint.h>
 #include <assert.h>
@@ -69,7 +69,7 @@ SmViewpointWrapper::~SmViewpointWrapper(void)
   if (this->scenegraph) this->scenegraph->unref();
 }
 
-void 
+void
 SmViewpointWrapper::sendBindEvents(SoNode * node, const SbBool onoff)
 {
   SoSFBool * isBound = (SoSFBool*) node->getField("isBound");
@@ -80,7 +80,7 @@ SmViewpointWrapper::sendBindEvents(SoNode * node, const SbBool onoff)
   }
 }
 
-void 
+void
 SmViewpointWrapper::setViewpoint(SoPath * path)
 {
   if (this->pathtoviewpoint) {
@@ -91,7 +91,7 @@ SmViewpointWrapper::setViewpoint(SoPath * path)
   this->pathtoviewpoint = (SoFullPath*) path;
   if (path) {
     path->ref();
-    this->pathsensor->attach(path); 
+    this->pathsensor->attach(path);
     this->updateCamera();
     this->sendBindEvents(this->pathtoviewpoint->getTail(), TRUE);
 
@@ -102,15 +102,15 @@ SmViewpointWrapper::setViewpoint(SoPath * path)
     SoGetBoundingBoxAction bboxaction(vp);
     bboxaction.apply(path->getHead());
     SbVec3f center = bboxaction.getCenter();
-    
+
     float dist = (this->position.getValue() - center).length();
     // avoid focalDistance ~= 0
     if (dist < 0.1f) dist = 0.1f;
-    this->focalDistance = dist; 
+    this->focalDistance = dist;
   }
 }
 
-void 
+void
 SmViewpointWrapper::updateCamera(void)
 {
   if (this->pathtoviewpoint == NULL) return;
@@ -120,19 +120,19 @@ SmViewpointWrapper::updateCamera(void)
   SoVRMLViewpoint * vp = (SoVRMLViewpoint*)
     this->pathtoviewpoint->getTail();
   assert(vp->getTypeId() == SoVRMLViewpoint::getClassTypeId());
-  
+
   this->gmaction->apply(this->pathtoviewpoint);
   SbVec3f pos = vp->position.getValue();
   float angle = vp->fieldOfView.getValue();
 
   SbRotation rot = vp->orientation.getValue();
   SbMatrix m;
-  m.setRotate(rot);  
+  m.setRotate(rot);
   this->gmaction->getMatrix().multVecMatrix(pos, pos);
   m.multRight(this->gmaction->getInverse());
   m.multLeft(this->gmaction->getMatrix());
   rot.setValue(m);
-  
+
   this->position = pos;
   this->orientation = rot;
   this->heightAngle = angle;
@@ -145,31 +145,31 @@ SmViewpointWrapper::updateViewpoint(void)
 {
   if (this->pathtoviewpoint == NULL) return;
   this->pathsensor->detach();
-  
+
   SoVRMLViewpoint * vp = (SoVRMLViewpoint*)
     this->pathtoviewpoint->getTail();
   assert(vp->getTypeId() == SoVRMLViewpoint::getClassTypeId());
-  
+
   this->gmaction->apply(this->pathtoviewpoint);
   SbVec3f pos = this->position.getValue();
   float angle = this->heightAngle.getValue();
 
   SbRotation rot = this->orientation.getValue();
   SbMatrix m;
-  m.setRotate(rot);  
+  m.setRotate(rot);
   this->gmaction->getInverse().multVecMatrix(pos, pos);
   m.multRight(this->gmaction->getMatrix());
   m.multLeft(this->gmaction->getInverse());
   rot.setValue(m);
-  
+
   vp->position = pos;
   vp->orientation = rot;
   vp->fieldOfView = angle;
 
-  this->pathsensor->attach(this->pathtoviewpoint); 
+  this->pathsensor->attach(this->pathtoviewpoint);
 }
 
-void 
+void
 SmViewpointWrapper::attachFieldSensors(void)
 {
   this->positionsensor->attach(&this->position);
@@ -177,7 +177,7 @@ SmViewpointWrapper::attachFieldSensors(void)
   this->heightanglesensor->attach(&this->heightAngle);
 }
 
-void 
+void
 SmViewpointWrapper::detachFieldSensors(void)
 {
   this->positionsensor->detach();
@@ -185,26 +185,26 @@ SmViewpointWrapper::detachFieldSensors(void)
   this->heightanglesensor->detach();
 }
 
-void 
+void
 SmViewpointWrapper::fieldsensor_cb(void * data, SoSensor * sensor)
 {
   SmViewpointWrapper * thisp = (SmViewpointWrapper *) data;
   thisp->updateViewpoint();
 }
 
-void 
+void
 SmViewpointWrapper::pathsensor_cb(void * data, SoSensor * sensor)
 {
   SmViewpointWrapper * thisp = (SmViewpointWrapper *) data;
   thisp->updateCamera();
 }
 
-void 
+void
 SmViewpointWrapper::set_bind_cb(void * data, SoSensor * sensor)
 {
   SmViewpointWrapper * thisp = (SmViewpointWrapper *) data;
   int idx = thisp->set_bind_sensorlist.find(sensor);
-  
+
   if (idx >= 0) {
     SoNode * node = thisp->nodelist[idx];
     node->ref();
@@ -215,7 +215,7 @@ SmViewpointWrapper::set_bind_cb(void * data, SoSensor * sensor)
       if (thisp->pathtoviewpoint && thisp->pathtoviewpoint->getTail() == node) return;
       thisp->nodelist.remove(idx);
       thisp->nodelist.insert(node, 0);
-      
+
       thisp->bindTopOfStack();
     }
     else if (idx == 0) { // FALSE event to top-of-stack
@@ -242,7 +242,7 @@ SmViewpointWrapper::bindTopOfStack(void)
   }
 }
 
-SbBool 
+SbBool
 SmViewpointWrapper::hasViewpoints(SoNode * root)
 {
   SoSearchAction sa;
@@ -283,7 +283,7 @@ SmViewpointWrapper::setSceneGraph(SoNode * root)
   }
 }
 
-void 
+void
 SmViewpointWrapper::truncateLists(void)
 {
   this->detachSetBindSensors();
@@ -294,7 +294,7 @@ SmViewpointWrapper::truncateLists(void)
   }
 }
 
-void 
+void
 SmViewpointWrapper::attachSetBindSensors(void)
 {
   assert(this->nodelist.getLength() == this->set_bind_sensorlist.getLength());
@@ -305,7 +305,7 @@ SmViewpointWrapper::attachSetBindSensors(void)
   }
 }
 
-void 
+void
 SmViewpointWrapper::detachSetBindSensors(void)
 {
   for (int i = 0; i < this->set_bind_sensorlist.getLength(); i++) {

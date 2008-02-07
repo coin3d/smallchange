@@ -40,12 +40,12 @@ class SMALLCHANGE_DLL_API PickSwitch : public SoSwitch {
 public:
   static void initClass(void);
   PickSwitch(void);
-  
+
   SoSFBool isActive;
   SoSFInt32 activeChild;
   SoSFInt32 inactiveChild;
   SoSFBool toggle;
-  
+
 protected:
   virtual ~PickSwitch();
   virtual void handleEvent(SoHandleEventAction * action);

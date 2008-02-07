@@ -39,13 +39,13 @@ class SbMatrix;
 
 class SMALLCHANGE_DLL_API SmTextureText2 : public SoShape {
   typedef SoShape inherited;
-  
+
   SO_NODE_HEADER(SmTextureText2);
 
 public:
   static void initClass(void);
   SmTextureText2(void);
-  
+
   enum Justification {
     LEFT = 1,
     RIGHT,
@@ -76,7 +76,7 @@ protected:
 
 private:
 
-  void renderString(const SbString * s, 
+  void renderString(const SbString * s,
                     const int numstring,
                     const SbVec3f & pos,
                     const SbViewVolume & vv,
@@ -85,7 +85,7 @@ private:
                     const SbMatrix & modelmatrix,
                     const SbMatrix & invmodelmatrix);
 
-  void renderBorder(const SbString * s, 
+  void renderBorder(const SbString * s,
                     const int numstring,
                     const SbVec3f & pos,
                     const SbViewVolume & vv,
@@ -94,7 +94,7 @@ private:
                     const SbMatrix & modelmatrix,
                     const SbMatrix & invmodelmatrix);
 
-  void oldRenderString(const SbString * s, 
+  void oldRenderString(const SbString * s,
                        const int numstring,
                        const SbVec3f & pos,
                        const SbViewVolume & vv,

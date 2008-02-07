@@ -50,7 +50,7 @@
   this scheme, we get the advantage of maximum precision for floating
   point numbers.
 
-  \sa UTMPosition, UTMCoordinate 
+  \sa UTMPosition, UTMCoordinate
 */
 
 // *************************************************************************
@@ -75,7 +75,7 @@
 
 /*!
   \var SoSFVec3d UTMCamera::utmposition
-  
+
   First value of vector is easting (+X) position of the camera, second
   is northing (+Y) position, and third ist he elevation (+Z) position
   of the camera.
@@ -102,14 +102,14 @@ UTMCamera::UTMCamera(void)
 {
   SO_NODE_CONSTRUCTOR(UTMCamera);
 
-  SO_NODE_ADD_FIELD(utmposition, (0.0, 0.0, 0.0)); 
+  SO_NODE_ADD_FIELD(utmposition, (0.0, 0.0, 0.0));
 
   // these are present for backwards compatibility
   SO_NODE_ADD_FIELD(easting, ("0.0"));
   SO_NODE_ADD_FIELD(northing, ("0.0"));
   SO_NODE_ADD_FIELD(elevation, ("0.0"));
 
-  SO_NODE_ADD_FIELD(moveTransform, (FALSE)); 
+  SO_NODE_ADD_FIELD(moveTransform, (FALSE));
 }
 
 UTMCamera::~UTMCamera()
@@ -122,14 +122,14 @@ UTMCamera::initClass(void)
   SO_NODE_INIT_CLASS(UTMCamera, SoPerspectiveCamera, "PerspectiveCamera");
 }
 
-void 
+void
 UTMCamera::callback(SoCallbackAction * action)
 {
   this->setReferencePosition(action->getState());
   SoCamera::callback(action);
 }
 
-void 
+void
 UTMCamera::GLRender(SoGLRenderAction * action)
 {
   SoCacheElement::invalidate(action->getState());
@@ -137,34 +137,34 @@ UTMCamera::GLRender(SoGLRenderAction * action)
   SoCamera::GLRender(action);
 }
 
-void 
+void
 UTMCamera::audioRender(SoAudioRenderAction * action)
 {
   this->setReferencePosition(action->getState());
   SoCamera::audioRender(action);
 }
 
-void 
+void
 UTMCamera::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   this->setReferencePosition(action->getState());
   SoCamera::getBoundingBox(action);
 }
 
-void 
+void
 UTMCamera::handleEvent(SoHandleEventAction * action)
 {
   SoCamera::handleEvent(action);
 }
 
-void 
+void
 UTMCamera::rayPick(SoRayPickAction * action)
 {
   this->setReferencePosition(action->getState());
   SoCamera::rayPick(action);
 }
 
-void 
+void
 UTMCamera::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   this->setReferencePosition(action->getState());
@@ -177,7 +177,7 @@ UTMCamera::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 
   FIXME: function is redundant and should be made obsolete.
 */
-void 
+void
 UTMCamera::getPosition(double & easting, double & northing, double & elevation)
 {
   SbVec3d utm = this->utmposition.getValue();
@@ -190,7 +190,7 @@ UTMCamera::getPosition(double & easting, double & northing, double & elevation)
   Internal method that will update UTMElement to set the
   reference position.
 */
-void 
+void
 UTMCamera::setReferencePosition(SoState * state)
 {
   SbVec3d utm = this->utmposition.getValue();
@@ -221,7 +221,7 @@ UTMCamera::setReferencePosition(SoState * state)
   }
 }
 
-void 
+void
 UTMCamera::getMatrix(SoGetMatrixAction * action)
 {
   this->setReferencePosition(action->getState());
@@ -240,7 +240,7 @@ UTMCamera::getMatrix(SoGetMatrixAction * action)
 /*!
   Overridden to recalculate cached values when something change.
 */
-void 
+void
 UTMCamera::notify(SoNotList * nl)
 {
   SoField * f = nl->getLastField();

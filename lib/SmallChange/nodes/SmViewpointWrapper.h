@@ -43,30 +43,30 @@ class SMALLCHANGE_DLL_API SmViewpointWrapper : public SoPerspectiveCamera {
 public:
   static void initClass(void);
   SmViewpointWrapper(void);
-  
+
   void setSceneGraph(SoNode * root);
-  
+
   static SbBool hasViewpoints(SoNode * root);
 
 protected:
   ~SmViewpointWrapper();
-  
+
 private:
   void setViewpoint(SoPath * path);
-  
+
   static void fieldsensor_cb(void * data, SoSensor * sensor);
   static void pathsensor_cb(void * data, SoSensor * sensor);
   static void set_bind_cb(void * data, SoSensor * sensor);
 
   void updateCamera(void);
   void updateViewpoint(void);
-  
+
   void attachFieldSensors(void);
   void detachFieldSensors(void);
-  
+
 
   void truncateLists(void);
-  
+
   SoNodeList nodelist;
   SbPList set_bind_sensorlist;
   SoSearchAction sa;

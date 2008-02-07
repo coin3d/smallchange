@@ -58,7 +58,7 @@ SmBillboardClipPlane::initClass(void)
     SO_NODE_INIT_CLASS(SmBillboardClipPlane, SoNode, "Node");
   }
 }
-  
+
 // Doc from superclass.
 void
 SmBillboardClipPlane::doAction(SoAction * action)
@@ -96,11 +96,11 @@ SmBillboardClipPlane::pick(SoPickAction * action)
   SmBillboardClipPlane::doAction(action);
 }
 
-SbPlane 
+SbPlane
 SmBillboardClipPlane::calcPlane(SoState * state)
 {
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
-  SbVec3f dir = - vv.getProjectionDirection();  
+  SbVec3f dir = - vv.getProjectionDirection();
   return SbPlane(dir, 0.0f);
 }
 

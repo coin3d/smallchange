@@ -60,7 +60,7 @@ protected:
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
   virtual void notify(SoNotList * nl);
   virtual ~ShapeScale();
-  
+
 private:
   SbBool didrender;
   SoCache * cache;

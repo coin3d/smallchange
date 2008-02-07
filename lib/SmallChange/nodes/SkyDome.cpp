@@ -25,7 +25,7 @@
   \class SkyDome SkyDome.h
   \brief The SkyDome class is a shape node for rendering skydomes.
   \ingroup nodes
-  
+
 */
 
 /*!
@@ -33,7 +33,7 @@
   Specifies the vertical angle where the (partial) sphere will start. 0 is straight up (+Z).
 */
 
-/*!  
+/*!
   \var SoSFFloat SkyDome::endAngle;
   Specifies the vertical angle where the (partial) sphere will end. 0 is straight up (+Z).
 */
@@ -50,7 +50,7 @@
 
 /*!
   \var SoSFFloat SkyDome::height;
-  Specifies the height (+Z) of the skydome. 
+  Specifies the height (+Z) of the skydome.
 */
 
 /*!
@@ -159,7 +159,7 @@ SkyDome::GLRender(SoGLRenderAction * action)
   float startangle = SbClamp(this->startAngle.getValue(), 0.0f, float(M_PI));
   float endangle = SbClamp(this->endAngle.getValue(), 0.0f, float(M_PI));
   if (endangle <= startangle) return;
-  
+
   float h = this->height.getValue();
   float r = this->radius.getValue();
 
@@ -182,20 +182,20 @@ SkyDome::GLRender(SoGLRenderAction * action)
   tmp[0] *= r;
   tmp[1] *= r;
   tmp[2] *= h;
-  
+
   coords[0] = tmp;
   S[0] = currs;
   float dT = 1.0f / (float) (stacks-1);
   float T = 1.0f - dT;
-  
+
   glBegin(GL_TRIANGLES);
-  
+
   for (j = 1; j <= slices; j++) {
     if (startangle == 0.0f) {
       glNormal3f(0.0f, 0.0f, 1.0f);
       glTexCoord2f(currs + 0.5f * incs, 1.0f);
       glVertex3f(0.0f, 0.0f, h);
-    
+
       glNormal3fv((const GLfloat*) &normals[j-1]);
       glTexCoord2f(currs, T);
       glVertex3fv((const GLfloat*) &coords[j-1]);
@@ -206,13 +206,13 @@ SkyDome::GLRender(SoGLRenderAction * action)
     tmp.setValue(float(sin(theta))*ts,
                  float(cos(theta))*ts,
                  tc);
-    
+
     normals[j] = tmp;
     tmp[0] *= r;
     tmp[1] *= r;
     tmp[2] *= h;
     coords[j] = tmp;
-    
+
     if (startangle == 0.0f) {
       glNormal3fv((const GLfloat*)&normals[j]);
       glTexCoord2f(currs, T);
@@ -224,7 +224,7 @@ SkyDome::GLRender(SoGLRenderAction * action)
   rho += drho;
 
   if (endangle < float(M_PI)) stacks++;
-  
+
   for (i = 2; i < stacks-1; i++) {
     tc = (float)cos(rho);
     ts = - (float) sin(rho);
@@ -252,18 +252,18 @@ SkyDome::GLRender(SoGLRenderAction * action)
     rho += drho;
     T -= dT;
   }
-  
+
   if (endangle == float(M_PI)) {
     glBegin(GL_TRIANGLES);
     for (j = 0; j < slices; j++) {
       glTexCoord2f(S[j], T);
       glNormal3fv((const GLfloat*)&normals[j]);
       glVertex3fv((const GLfloat*)&coords[j]);
-      
+
       glTexCoord2f(S[j]+incs*0.5f, 0.0f);
       glNormal3f(0.0f, 0.0f, -1.0f);
       glVertex3f(0.0f, 0.0f, -h);
-      
+
       glTexCoord2f(S[j+1], T);
       glNormal3fv((const GLfloat*)&normals[j+1]);
       glVertex3fv((const GLfloat*)&coords[j+1]);
@@ -294,7 +294,7 @@ SkyDome::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 
 /*!
   Coin method. Calculates the number of primitives in skydome. Not implemented.
-*/ 
+*/
 void
 SkyDome::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {

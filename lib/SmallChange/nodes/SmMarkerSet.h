@@ -28,7 +28,7 @@
 #include <Inventor/fields/SoMFInt32.h>
 #include <SmallChange/basic.h>
 
-class SMALLCHANGE_DLL_API SmMarkerSet : public SoMarkerSet 
+class SMALLCHANGE_DLL_API SmMarkerSet : public SoMarkerSet
 {
   typedef SoMarkerSet inherited;
   SO_NODE_HEADER(SmMarkerSet);
@@ -37,7 +37,7 @@ public:
   static void initClass(void);
   SmMarkerSet(void);
 
-  SoSFInt32 maxMarkersToRender; 
+  SoSFInt32 maxMarkersToRender;
 
   virtual void GLRender(SoGLRenderAction * action);
 

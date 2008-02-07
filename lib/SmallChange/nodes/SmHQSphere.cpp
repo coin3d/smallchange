@@ -123,7 +123,7 @@ SmHQSphere::initClass()
 
 // *************************************************************************
 
-void 
+void
 SmHQSphere::GLRender(SoGLRenderAction * action)
 {
   if (!this->shouldGLRender(action)) return;
@@ -138,9 +138,9 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
   if (SoGLTextureEnabledElement::get(state)) doTextures = TRUE;
   else if (SoGLTexture3EnabledElement::get(state)) do3DTextures = TRUE;
 
-  SbBool sendNormals = !mb.isColorOnly() || 
+  SbBool sendNormals = !mb.isColorOnly() ||
     (SoTextureCoordinateElement::getType(state) == SoTextureCoordinateElement::FUNCTION);
-  
+
   int l = this->level.getValue();
   if (l != PRIVATE(this)->currlevel) {
     PRIVATE(this)->genGeom(l);
@@ -151,7 +151,7 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
   const int32_t * idx = PRIVATE(this)->idx.getArrayPtr();
   const SbVec3f * pts = PRIVATE(this)->coord.getArrayPtr();
   const SbVec2f * tc = PRIVATE(this)->texcoord.getArrayPtr();
-  
+
   float r = this->radius.getValue();
 
   if (r != 1.0f) {
@@ -161,17 +161,17 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
 
   SbBool varray = FALSE;
 #if (COIN_MAJOR_VERSION > 2) || ((COIN_MAJOR_VERSION == 2) && (COIN_MINOR_VERSION > 1))
-  const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));  
+  const cc_glglue * glue = cc_glglue_instance(SoGLCacheContextElement::get(state));
   varray = cc_glglue_has_vertex_array(glue);
-#endif // Coin version >= 2.2 
+#endif // Coin version >= 2.2
   if (varray) {
 #if (COIN_MAJOR_VERSION > 2) || ((COIN_MAJOR_VERSION==2) && (COIN_MINOR_VERSION > 1))
-    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0, 
+    cc_glglue_glVertexPointer(glue, 3, GL_FLOAT, 0,
                               (GLvoid*) pts);
     cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
-    
+
     if (sendNormals) {
-      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0, 
+      cc_glglue_glNormalPointer(glue, GL_FLOAT, 0,
                                 (GLvoid*) pts);
       cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
     }
@@ -179,14 +179,14 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
       cc_glglue_glTexCoordPointer(glue, 2, GL_FLOAT, 0,
                                   (GLvoid*) tc);
       cc_glglue_glEnableClientState(glue, GL_TEXTURE_COORD_ARRAY);
-    } 
+    }
     cc_glglue_glDrawElements(glue, GL_TRIANGLES, n, GL_UNSIGNED_INT, idx);
-    
+
     cc_glglue_glDisableClientState(glue, GL_VERTEX_ARRAY);
     if (sendNormals) cc_glglue_glDisableClientState(glue, GL_NORMAL_ARRAY);
     if (doTextures) cc_glglue_glDisableClientState(glue, GL_TEXTURE_COORD_ARRAY);
     SoGLCacheContextElement::shouldAutoCache(state, SoGLCacheContextElement::DONT_AUTO_CACHE);
-#endif // Coin version >= 2.2 
+#endif // Coin version >= 2.2
   }
   else {
     glBegin(GL_TRIANGLES);
@@ -197,7 +197,7 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
         SbVec3f v = pts[idx[i]];
         glNormal3f(v[0], v[1], v[2]);
         glVertex3f(v[0], v[1], v[2]);
-      }    
+      }
     }
     else if (sendNormals && !doTextures) {
       for (int i = 0; i < n; i++) {
@@ -220,7 +220,7 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
 }
 
 
-void 
+void
 SmHQSphere::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 {
   if (!this->shouldPrimitiveCount(action)) return;
@@ -252,7 +252,7 @@ try_add_intersection(SoRayPickAction * action, const SbVec3f & pt)
   }
 }
 
-void 
+void
 SmHQSphere::rayPick(SoRayPickAction * action)
 {
   if (!shouldRayPick(action)) return;
@@ -267,7 +267,7 @@ SmHQSphere::rayPick(SoRayPickAction * action)
   }
 }
 
-void 
+void
 SmHQSphere::generatePrimitives(SoAction * action)
 {
   int l = this->level.getValue();
@@ -280,7 +280,7 @@ SmHQSphere::generatePrimitives(SoAction * action)
   const int32_t * idx = PRIVATE(this)->idx.getArrayPtr();
   const SbVec3f * pts = PRIVATE(this)->coord.getArrayPtr();
   const SbVec2f * tc = PRIVATE(this)->texcoord.getArrayPtr();
-  
+
   float r = this->radius.getValue();
 
   SoPrimitiveVertex vertex;
@@ -297,7 +297,7 @@ SmHQSphere::generatePrimitives(SoAction * action)
   this->endShape();
 }
 
-void 
+void
 SmHQSphere::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
   float r = this->radius.getValue();
@@ -311,11 +311,11 @@ SmHQSphere::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 
 #undef PRIVATE
 
-void 
+void
 SmHQSphereP::genGeom(const int level)
 {
   int i, n;
-  this->generator.generate(SbClamp(level, 1, 12), this->bsp, this->idx);  
+  this->generator.generate(SbClamp(level, 1, 12), this->bsp, this->idx);
   const SbVec3f * pts = this->bsp.getPointsArrayPtr();
   this->texcoord.truncate(0, TRUE);
   this->coord.truncate(0, TRUE);
@@ -326,26 +326,26 @@ SmHQSphereP::genGeom(const int level)
   }
   this->bsp.clear();
   pts = this->coord.getArrayPtr();
-  
+
   // generate texcoords for all vertices
   for (i = 0; i < n; i++) {
     SbVec3f pt = pts[i];
     SbVec2f tc((float) (atan2(pt[0], pt[2]) * (1.0 / (2.0*M_PI)) + 0.5),
                (float) (atan2(pt[1], sqrt(pt[0]*pt[0] + pt[2]*pt[2])) * (1.0/M_PI) + 0.5));
-    
+
     tc[0] = SbClamp(tc[0], 0.0f, 1.0f);
     tc[1] = SbClamp(tc[1], 0.0f, 1.0f);
     // so that right-side-of-texture can be detected below
     if (tc[0] >= 0.99999f) tc[0] = 0.0f;
     this->texcoord.append(tc);
   }
-  
+
   // detect triangles that are on the back side of the sphere, on the
   // right side, with at least one vertex on the right-side-edge of
   // the texture. Fix texture coordinates for those trianges
   n = this->idx.getLength();
   int32_t * iptr = (int32_t*) this->idx.getArrayPtr();
-  
+
 #define FLTCOMPARE(x, y) (fabs((x)-(y)) < 0.000001f)
 
   SbVec3f p[3];
@@ -359,8 +359,8 @@ SmHQSphereP::genGeom(const int level)
       t[j] = this->texcoord[iptr[i+j]];
       if (p[j][0] > 0.000001f) rightside = TRUE;
       if (p[j][2] > 0.000001f) break; // not on the back of the sphere
-    }    
-    if (rightside && (j == 3) && 
+    }
+    if (rightside && (j == 3) &&
         (FLTCOMPARE(p[0][0], 0.0f) || FLTCOMPARE(p[1][0], 0.0f) || FLTCOMPARE(p[2][0], 0.0f))) {
       // just create new vertices for these triangles
       int len = this->coord.getLength();
@@ -377,7 +377,7 @@ SmHQSphereP::genGeom(const int level)
 
 void
 HQSphereGenerator::init(void)
-{  
+{
 #if 0 // octahedron looks better
   /* Twelve vertices of icosahedron on unit sphere */
   const float tau = 0.8506508084f; /* t=(1+sqrt(5))/2, tau=t/sqrt(1+t^2)  */
@@ -419,7 +419,7 @@ HQSphereGenerator::init(void)
     triangle(YD, ZC, XB),
     triangle(YC, XC, ZC)
   };
-  this->orgobject = 
+  this->orgobject =
     new object(20, triangles);
 #else
   const SbVec3f XPLUS(1,  0,  0);
@@ -440,7 +440,7 @@ HQSphereGenerator::init(void)
     triangle(XMIN , YMIN , ZMIN),
     triangle(YMIN , XPLUS, ZMIN)
   };
-  this->orgobject = 
+  this->orgobject =
     new object(8, triangles);
 #endif
 };
@@ -451,7 +451,7 @@ HQSphereGenerator::generate(const int maxlevel,
                             SbList <int> & idx)
 {
   int level;
-  
+
   bsp.clear();
   idx.truncate(0, TRUE);
   object * old = this->orgobject;
@@ -461,7 +461,7 @@ HQSphereGenerator::generate(const int maxlevel,
     /* Allocate a new object */
     /* FIXME: Valgrind reports an 8-byte memory leak here. 20030404 mortene. */
     object * newobj = new object(old->npoly * 4, NULL);
-      
+
     /* Subdivide each triangle in the old approximation and normalize
      *  the new points thus generated to lie on the surface of the unit
      *  sphere.
@@ -485,31 +485,31 @@ HQSphereGenerator::generate(const int maxlevel,
       triangle *oldt = &old->poly[i];
       triangle *newt = &newobj->poly[i*4];
       SbVec3f a, b, c;
-      
+
       a = normalize(midpoint(oldt->pt[0], oldt->pt[2]));
       b = normalize(midpoint(oldt->pt[0], oldt->pt[1]));
       c = normalize(midpoint(oldt->pt[1], oldt->pt[2]));
-        
+
       newt->pt[0] = oldt->pt[0];
       newt->pt[1] = b;
       newt->pt[2] = a;
       newt++;
-        
+
       newt->pt[0] = b;
       newt->pt[1] = oldt->pt[1];
       newt->pt[2] = c;
       newt++;
-      
+
       newt->pt[0] = a;
       newt->pt[1] = b;
       newt->pt[2] = c;
       newt++;
-      
+
       newt->pt[0] = a;
       newt->pt[1] = c;
       newt->pt[2] = oldt->pt[2];
     }
-    
+
     if (old != this->orgobject) delete old;
     /* Continue subdividing new triangles */
     old = newobj;
@@ -518,11 +518,11 @@ HQSphereGenerator::generate(const int maxlevel,
   if (old != this->orgobject) delete old;
 }
 
-SbVec3f 
+SbVec3f
 HQSphereGenerator::normalize(const SbVec3f & p)
 {
   float mag;
-  
+
   SbVec3f r = p;
   mag = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
   if (mag != 0.0f) {
@@ -535,24 +535,24 @@ HQSphereGenerator::normalize(const SbVec3f & p)
 }
 
 /* Return the midpoint on the line between two points */
-SbVec3f 
+SbVec3f
 HQSphereGenerator::midpoint(const SbVec3f & a, const SbVec3f & b)
 {
   SbVec3f r;
-  
+
   r[0] = (a[0] + b[0]) * 0.5f;
   r[1] = (a[1] + b[1]) * 0.5f;
   r[2] = (a[2] + b[2]) * 0.5f;
-  
+
   return r;
 }
 
-void 
+void
 HQSphereGenerator::convert(object * obj, SbBSPTree & bsp, SbList <int> & idx)
 {
   triangle * t = obj->poly;
   int n = obj->npoly;
-  
+
   for (int i = 0; i < n; i++) {
     for (int j = 2; j >= 0; j--) {
       idx.append(bsp.addPoint(t->pt[j]));
