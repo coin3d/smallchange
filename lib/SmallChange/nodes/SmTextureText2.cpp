@@ -332,7 +332,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                      0.0f, 0.5f, 0.0f, 0.0f,
                      0.0f, 0.0f, 1.0f, 0.0f,
                      0.5f, 0.5f, 0.0f, 1.0f);
-  SbMatrix projmatrix =
+  SbMatrix projmatrix = 
     modelmatrix *
     SoViewingMatrixElement::get(state) *
     SoProjectionMatrixElement::get(state) *
@@ -430,6 +430,28 @@ SmTextureText2::generatePrimitives(SoAction *action)
   // no primitives to generate
 }
 
+// convert normalized screen space coordinates into pixel screen
+// space. Values that are too far from the viewport are culled.
+static SbBool get_screenpoint_pixels(const SbVec3f & screenpoint,
+                                     const SbVec2s & vpsize,
+                                     SbVec2s & sp)
+{
+  float sx = screenpoint[0] * vpsize[0];
+  float sy = screenpoint[1] * vpsize[1];
+
+  // FIXME: just assume we won't have strings larger than 3000 pixels
+  const float limit = 3000.0f;
+
+  if ((sx > -limit) &&
+      (sy > -limit) &&
+      (sx < limit) &&
+      (sy < limit)) {
+    sp = SbVec2s((short)sx, (short) sy);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 void
 SmTextureText2::renderBorder(const SbString * s,
                              const int numstring,
@@ -444,8 +466,9 @@ SmTextureText2::renderBorder(const SbString * s,
   SbVec3f tmp;
   modelmatrix.multVecMatrix(pos, tmp);
   float dist = -vv.getPlane(0.0f).getDistance(tmp);
-  if (dist < vv.getNearDist()) return;
-
+  if (dist <= vv.getNearDist()) return;
+  if (dist > (vv.getNearDist() + vv.getDepth())) return;
+  
   int i;
   SbVec2s vpsize = vp.getViewportSizePixels();
 
@@ -468,8 +491,9 @@ SmTextureText2::renderBorder(const SbString * s,
         ymax < 0) continue;
 
     SbVec2s n0,n1,n2,n3;
-    SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
-
+    SbVec2s sp;
+    if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
+   
     n0 = SbVec2s(sp[0] + xmin,
                  sp[1] + ymax);
     n1 = SbVec2s(sp[0] + xmax,
@@ -552,7 +576,8 @@ SmTextureText2::renderString(const SbString * s,
   SbVec3f tmp;
   modelmatrix.multVecMatrix(pos, tmp);
   float dist = -vv.getPlane(0.0f).getDistance(tmp);
-  if (dist < vv.getNearDist()) return;
+  if (dist <= vv.getNearDist()) return;
+  if (dist > (vv.getNearDist() + vv.getDepth())) return;
 
   float maxr = this->maxRange.getValue();
   if (maxr > 0.0f && dist > maxr) return;
