@@ -605,13 +605,13 @@ SmTextureText2::renderString(const SbString * s,
         ymin >= vpsize[0] ||
         ymax < 0) continue;
 
-    SbVec2s n0,n1;
-    SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
-
-    n0 = SbVec2s(sp[0] + xmin,
-                 sp[1] + ymin);
-    n1 = SbVec2s(sp[0] + xmax,
-                 sp[1] + ymax);
+    SbVec2s sp;
+    if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
+    
+    SbVec2s n0 = SbVec2s(sp[0] + xmin,
+                         sp[1] + ymin);
+    SbVec2s n1 = SbVec2s(sp[0] + xmax,
+                         sp[1] + ymax);
 
     short w = n1[0]-n0[0];
     short halfw = w / 2;
