@@ -235,7 +235,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_CONSTRUCTOR(SmTextureText2);
 
   SO_NODE_ADD_FIELD(string, (""));
-  SO_NODE_ADD_FIELD(justification, (CENTER));
+  SO_NODE_ADD_FIELD(justification, (LEFT));
   SO_NODE_ADD_FIELD(verticalJustification, (BOTTOM));
   SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
@@ -359,6 +359,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     SoMaterialBindingElement::get(state) !=
     SoMaterialBindingElement::OVERALL;
 
+  glPushAttrib(GL_ENABLE_BIT);
+  glDisable(GL_CULL_FACE);
   if (num > 1) {
     SbBool render_border = FALSE; // just for testing
     if (render_border) {
@@ -401,6 +403,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                        modelmatrix,
                        inv);
   }
+  glPopAttrib();
 
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
