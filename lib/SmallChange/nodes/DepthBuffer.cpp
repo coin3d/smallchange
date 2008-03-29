@@ -22,8 +22,8 @@
 \**************************************************************************/
 
 /*!
-  \class DepthBuffer DepthBuffer.h
-  \brief The DepthBuffer class is a node used to control the GL depth buffer.
+  \class SmDepthBuffer SmDepthBuffer.h
+  \brief The SmDepthBuffer class is a node used to control the GL depth buffer.
   \ingroup nodes
 
   It is basically a direct mapping of glDepthFunc(). In addition it is possible
@@ -48,79 +48,79 @@
 #endif // SGI/TGS Inventor
 
 /*!
-  \enum DepthBuffer::Func
+  \enum SmDepthBuffer::Func
   Enumeration for the various depth functions.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::NEVER
+  \var SmDepthBuffer::Func SmDepthBuffer::NEVER
   Never passes.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::ALWAYS
+  \var SmDepthBuffer::Func SmDepthBuffer::ALWAYS
   Always passes.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::LESS
+  \var SmDepthBuffer::Func SmDepthBuffer::LESS
   Passes if the incoming depth value is less than the stored depth value.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::LEQUAL
+  \var SmDepthBuffer::Func SmDepthBuffer::LEQUAL
   Passes if the incoming depth value is less than or equal to the stored depth value.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::EQUAL
+  \var SmDepthBuffer::Func SmDepthBuffer::EQUAL
   Passes if the incoming depth value is equal to the stored depth value.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::GEQUAL
+  \var SmDepthBuffer::Func SmDepthBuffer::GEQUAL
   Passes if the incoming depth value is greater than or equal to the stored depth value.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::GREATER
+  \var SmDepthBuffer::Func SmDepthBuffer::GREATER
   Passes if the incoming depth value is greater than the stored depth value.
 */
 
 /*!
-  \var DepthBuffer::Func DepthBuffer::NOTEQUAL
+  \var SmDepthBuffer::Func SmDepthBuffer::NOTEQUAL
   Passes if the incoming depth value is not equal to the stored depth value.
 */
 
 /*!
-  \var SoSFEnum DepthBuffer::func
+  \var SoSFEnum SmDepthBuffer::func
 
   Which depth function to use. Defaults to LESS.
 */
 
 /*!
-  \var SoSFBool DepthBuffer::enable
+  \var SoSFBool SmDepthBuffer::enable
 
   Enable depth buffer writes. Defaults to TRUE.
 */
 
 /*!
-  \var SoSFFloat DepthBuffer::clearNow
+  \var SoSFFloat SmDepthBuffer::clearNow
 
   If TRUE, clear buffer when node is traversed. Default is FALSE.
 */
 
 
-SO_NODE_SOURCE(DepthBuffer);
+SO_NODE_SOURCE(SmDepthBuffer);
 
 /*!
   Constructor.
 */
-DepthBuffer::DepthBuffer(void)
+SmDepthBuffer::SmDepthBuffer(void)
 {
-  SO_NODE_CONSTRUCTOR(DepthBuffer);
+  SO_NODE_CONSTRUCTOR(SmDepthBuffer);
 
-  SO_NODE_ADD_FIELD(func, (DepthBuffer::LESS));
+  SO_NODE_ADD_FIELD(func, (SmDepthBuffer::LESS));
   SO_NODE_ADD_FIELD(enable, (TRUE));
   SO_NODE_ADD_FIELD(clearNow, (FALSE));
 
@@ -138,7 +138,7 @@ DepthBuffer::DepthBuffer(void)
 /*!
   Destructor.
 */
-DepthBuffer::~DepthBuffer()
+SmDepthBuffer::~SmDepthBuffer()
 {
 }
 
@@ -146,13 +146,13 @@ DepthBuffer::~DepthBuffer()
   Required Coin method.
 */
 void
-DepthBuffer::initClass(void)
+SmDepthBuffer::initClass(void)
 {
   static int first = 1;
   if (first) {
     first = 0;
     GLDepthBufferElement::initClass();
-    SO_NODE_INIT_CLASS(DepthBuffer, SoNode, "Node");
+    SO_NODE_INIT_CLASS(SmDepthBuffer, SoNode, "Node");
     SO_ENABLE(SoGLRenderAction, GLDepthBufferElement);
   }
 }
@@ -161,7 +161,7 @@ DepthBuffer::initClass(void)
   Coin method.
 */
 void
-DepthBuffer::GLRender(SoGLRenderAction * action)
+SmDepthBuffer::GLRender(SoGLRenderAction * action)
 {
   GLDepthBufferElement::set(action->getState(),
                             (GLDepthBufferElement::Func) this->func.getValue(),

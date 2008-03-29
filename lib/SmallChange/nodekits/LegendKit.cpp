@@ -333,7 +333,7 @@ LegendKit::LegendKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(viewport, ViewportRegion, TRUE, topSeparator, resetTransform, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, TRUE, topSeparator, lightModel, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, SmDepthBuffer, TRUE, topSeparator, lightModel, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topSeparator, camera, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(camera, SoOrthographicCamera, FALSE, topSeparator, position, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(position, SoTranslation, TRUE, topSeparator, texture, TRUE);
@@ -412,7 +412,7 @@ LegendKit::LegendKit(void)
   topsep->boundingBoxCaching = SoSeparator::OFF;
 
   // disable depth buffer
-  DepthBuffer * db = (DepthBuffer*) this->getAnyPart("depthBuffer", TRUE);
+  SmDepthBuffer * db = (SmDepthBuffer*) this->getAnyPart("depthBuffer", TRUE);
   db->enable = FALSE;
 
   // avoid rounding errors
@@ -441,7 +441,7 @@ LegendKit::initClass(void)
   static int first = 1;
   if (first) {
     first = 0;
-    DepthBuffer::initClass();
+    SmDepthBuffer::initClass();
     SO_KIT_INIT_CLASS(LegendKit, SoBaseKit, "BaseKit");
   }
 }

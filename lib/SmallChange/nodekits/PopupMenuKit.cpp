@@ -209,7 +209,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(transparencyType, SoTransparencyType, TRUE, topSeparator, resetTransform, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(resetTransform, SoResetTransform, FALSE, topSeparator, depthBuffer, TRUE);
-  SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, DepthBuffer, TRUE, topSeparator, lightModel, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(depthBuffer, SmDepthBuffer, TRUE, topSeparator, lightModel, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(lightModel, SoLightModel, FALSE, topSeparator, camera, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(camera, SoOrthographicCamera, FALSE, topSeparator, texture, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(texture, SoTexture2, FALSE, topSeparator, shapeHints, TRUE);
@@ -251,7 +251,7 @@ SmPopupMenuKit::SmPopupMenuKit(void)
   lm->model = SoLightModel::BASE_COLOR;
 
   // disable depth buffer
-  DepthBuffer * db = (DepthBuffer*) this->getAnyPart("depthBuffer", TRUE);
+  SmDepthBuffer * db = (SmDepthBuffer*) this->getAnyPart("depthBuffer", TRUE);
   db->enable = FALSE;
 
   // Set font, fetch size  

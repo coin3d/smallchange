@@ -95,7 +95,7 @@ smallchange_init(void)
   AutoFile::initClass();
   GLDepthBufferElement::initClass();
   Coinboard::initClass();
-  DepthBuffer::initClass();
+  SmDepthBuffer::initClass();
   ViewportRegion::initClass();
   SmSwitchboard::initClass();
   SmSwitchboardOperator::initClass();

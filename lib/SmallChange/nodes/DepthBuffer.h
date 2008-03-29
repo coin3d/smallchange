@@ -36,14 +36,14 @@
 #include <SmallChange/basic.h>
 
 
-class SMALLCHANGE_DLL_API DepthBuffer : public SoNode {
+class SMALLCHANGE_DLL_API SmDepthBuffer : public SoNode {
   typedef SoNode inherited;
 
-  SO_NODE_HEADER(DepthBuffer);
+  SO_NODE_HEADER(SmDepthBuffer);
 
 public:
   static void initClass(void);
-  DepthBuffer(void);
+  SmDepthBuffer(void);
 
   enum Func {
     NEVER = GLDepthBufferElement::NEVER,
@@ -63,7 +63,7 @@ public:
   virtual void GLRender(SoGLRenderAction * action);
 
 protected:
-  virtual ~DepthBuffer();
+  virtual ~SmDepthBuffer();
 };
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
