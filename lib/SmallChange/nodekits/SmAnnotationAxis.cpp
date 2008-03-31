@@ -195,7 +195,8 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
     SbString * text = t->string.startEditing();
     for (int i = 0; i < l1.getLength(); i++) {
       pos[i] = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
-      text[i] = this->annotation.getValues(0)[l1[i]];
+      text[i] = this->annotation.getNum() > 0 ?
+        this->annotation.getValues(0)[l1[i]%this->annotation.getNum()] : "";
     }
     t->position.finishEditing();
     t->string.finishEditing();
