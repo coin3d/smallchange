@@ -68,7 +68,7 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoTransformSeparator.h>
 #include <Inventor/nodes/SoTransparencyType.h>
-#include <SmallChange/nodes/DepthBuffer.h>
+#include <SmallChange/nodes/SmDepthBuffer.h>
 #include <Inventor/nodes/SoResetTransform.h>
 #include <Inventor/nodes/SoLightModel.h>
 #include <Inventor/nodes/SoTexture2.h>

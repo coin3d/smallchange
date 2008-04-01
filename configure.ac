@@ -10,7 +10,7 @@ m4_define([SMALLCHANGE_ABI_AGE], [SMALLCHANGE_MINOR])
 
 AC_INIT([SmallChange], [SMALLCHANGE_MAJOR.SMALLCHANGE_MINOR.SMALLCHANGE_MICRO[]SMALLCHANGE_BETA], [coin-bugs@coin3d.org])
 
-AC_CONFIG_SRCDIR(lib/SmallChange/nodes/DepthBuffer.cpp)
+AC_CONFIG_SRCDIR(lib/SmallChange/nodes/SmDepthBuffer.cpp)
 AC_CONFIG_AUX_DIR(cfg)
 
 AC_CANONICAL_SYSTEM

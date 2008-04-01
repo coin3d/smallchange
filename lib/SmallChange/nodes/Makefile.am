@@ -8,7 +8,7 @@ endif
 
 SOURCES = \
 	AutoFile.cpp AutoFile.h \
-	DepthBuffer.cpp DepthBuffer.h \
+	SmDepthBuffer.cpp SmDepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp SmSwitchboard.h \
@@ -47,7 +47,7 @@ libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
 	AutoFile.h \
 	ViewportRegion.h \
-	DepthBuffer.h \
+	SmDepthBuffer.h \
 	Coinboard.h \
 	SmSwitchboard.h \
 	SmSwitchboardOperator.h \

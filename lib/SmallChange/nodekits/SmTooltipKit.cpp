@@ -71,7 +71,7 @@
 #include <Inventor/sensors/SoFieldSensor.h>
 #include <Inventor/sensors/SoAlarmSensor.h>
 #include <Inventor/nodes/SoSeparator.h>
-#include <SmallChange/nodes/DepthBuffer.h>
+#include <SmallChange/nodes/SmDepthBuffer.h>
 #include <Inventor/nodes/SoResetTransform.h>
 #include <Inventor/nodes/SoLightModel.h>
 #include <Inventor/nodes/SoVertexProperty.h>

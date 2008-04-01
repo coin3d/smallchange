@@ -230,7 +230,7 @@
 #include "SbList.h"
 #endif
 
-#include <SmallChange/nodes/DepthBuffer.h>
+#include <SmallChange/nodes/SmDepthBuffer.h>
 #include <SmallChange/nodes/ViewportRegion.h>
 #include <string.h>
 #include <float.h>

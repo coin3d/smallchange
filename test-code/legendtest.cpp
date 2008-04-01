@@ -14,7 +14,7 @@
 #include <SmallChange/nodekits/LegendKit.h>
 #include <SmallChange/elements/GLDepthBufferElement.h>
 #include <SmallChange/nodes/ViewportRegion.h>
-#include <SmallChange/nodes/DepthBuffer.h>
+#include <SmallChange/nodes/SmDepthBuffer.h>
 #include <Inventor/actions/SoSearchAction.h>
 
 

@@ -397,7 +397,7 @@ SOURCE=..\..\lib\SmallChange\nodes\AutoFile.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\lib\SmallChange\nodes\DepthBuffer.cpp
+SOURCE=..\..\lib\SmallChange\nodes\SmDepthBuffer.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
 # PROP Intermediate_Dir "Release\SmallChange\nodes"
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
@@ -1143,7 +1143,7 @@ SOURCE=..\..\lib\SmallChange\nodes\ViewportRegion.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\lib\SmallChange\nodes\DepthBuffer.h
+SOURCE=..\..\lib\SmallChange\nodes\SmDepthBuffer.h
 # End Source File
 # Begin Source File
 

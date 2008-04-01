@@ -29,7 +29,7 @@
 #include <SmallChange/elements/GLDepthBufferElement.h>
 #include <SmallChange/nodes/AutoFile.h>
 #include <SmallChange/nodes/Coinboard.h>
-#include <SmallChange/nodes/DepthBuffer.h>
+#include <SmallChange/nodes/SmDepthBuffer.h>
 #include <SmallChange/nodes/ViewportRegion.h>
 #include <SmallChange/nodes/SmSwitchboard.h>
 #include <SmallChange/nodes/SmSwitchboardOperator.h>

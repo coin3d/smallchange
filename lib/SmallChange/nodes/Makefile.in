@@ -182,7 +182,7 @@ INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 
 SOURCES = \
 	AutoFile.cpp AutoFile.h \
-	DepthBuffer.cpp DepthBuffer.h \
+	SmDepthBuffer.cpp SmDepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp SmSwitchboard.h \
@@ -221,7 +221,7 @@ libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
 	AutoFile.h \
 	ViewportRegion.h \
-	DepthBuffer.h \
+	SmDepthBuffer.h \
 	Coinboard.h \
 	SmSwitchboard.h \
 	SmSwitchboardOperator.h \
@@ -259,7 +259,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 nodes_lst_AR = $(AR) cru
 nodes_lst_LIBADD =
-am__objects_1 = AutoFile.$(OBJEXT) DepthBuffer.$(OBJEXT) \
+am__objects_1 = AutoFile.$(OBJEXT) SmDepthBuffer.$(OBJEXT) \
 	ViewportRegion.$(OBJEXT) Coinboard.$(OBJEXT) \
 	Switchboard.$(OBJEXT) SwitchboardOperator.$(OBJEXT) \
 	CoinEnvironment.$(OBJEXT) SkyDome.$(OBJEXT) \
@@ -280,7 +280,7 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 
 libnodes_la_LDFLAGS =
 libnodes_la_LIBADD =
-am__objects_2 = AutoFile.lo DepthBuffer.lo ViewportRegion.lo \
+am__objects_2 = AutoFile.lo SmDepthBuffer.lo ViewportRegion.lo \
 	Coinboard.lo Switchboard.lo SwitchboardOperator.lo \
 	CoinEnvironment.lo SkyDome.lo ShapeScale.lo PickSwitch.lo \
 	PickCallback.lo SoTCBCurve.lo SoText2Set.lo SoPointCloud.lo \
@@ -299,8 +299,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/DepthBuffer.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmDepthBuffer.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmDepthBuffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
@@ -370,7 +370,7 @@ HEADERS = $(libnodesinc_HEADERS)
 DIST_COMMON = $(libnodesinc_HEADERS) Makefile.am Makefile.in
 SOURCES = \
 	AutoFile.cpp AutoFile.h \
-	DepthBuffer.cpp DepthBuffer.h \
+	SmDepthBuffer.cpp SmDepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
 	Coinboard.cpp Coinboard.h \
 	Switchboard.cpp SmSwitchboard.h \
@@ -437,8 +437,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DepthBuffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmDepthBuffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmDepthBuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@

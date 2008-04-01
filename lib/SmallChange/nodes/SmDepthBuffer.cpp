@@ -31,7 +31,7 @@
   traversed.
 */
 
-#include "DepthBuffer.h"
+#include "SmDepthBuffer.h"
 #include <Inventor/actions/SoGLRenderAction.h>
 
 #if HAVE_CONFIG_H

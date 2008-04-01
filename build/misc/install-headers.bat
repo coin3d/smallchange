@@ -19,7 +19,7 @@ copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmDynamicObjectKit.h %COINDIR%\
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodekits\SmTrackPointKit.h %COINDIR%\include\SmallChange\nodekits\SmTrackPointKit.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\AutoFile.h %COINDIR%\include\SmallChange\nodes\AutoFile.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\ViewportRegion.h %COINDIR%\include\SmallChange\nodes\ViewportRegion.h >nul:
-copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\DepthBuffer.h %COINDIR%\include\SmallChange\nodes\DepthBuffer.h >nul:
+copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmDepthBuffer.h %COINDIR%\include\SmallChange\nodes\SmDepthBuffer.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\Coinboard.h %COINDIR%\include\SmallChange\nodes\Coinboard.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmSwitchboard.h %COINDIR%\include\SmallChange\nodes\SmSwitchboard.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmSwitchboardOperator.h %COINDIR%\include\SmallChange\nodes\SmSwitchboardOperator.h >nul:

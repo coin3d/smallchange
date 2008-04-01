@@ -1299,7 +1299,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\lib\SmallChange\nodes\DepthBuffer.cpp"
+					RelativePath="..\..\lib\SmallChange\nodes\SmDepthBuffer.cpp"
 					>
 					<FileConfiguration
 						Name="DLL (Release)|Win32"
@@ -3814,7 +3814,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\lib\SmallChange\nodes\DepthBuffer.h"
+					RelativePath="..\..\lib\SmallChange\nodes\SmDepthBuffer.h"
 					>
 				</File>
 				<File

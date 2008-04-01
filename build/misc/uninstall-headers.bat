@@ -19,7 +19,7 @@ del %COINDIR%\include\SmallChange\nodekits\SmDynamicObjectKit.h
 del %COINDIR%\include\SmallChange\nodekits\SmTrackPointKit.h
 del %COINDIR%\include\SmallChange\nodes\AutoFile.h
 del %COINDIR%\include\SmallChange\nodes\ViewportRegion.h
-del %COINDIR%\include\SmallChange\nodes\DepthBuffer.h
+del %COINDIR%\include\SmallChange\nodes\SmDepthBuffer.h
 del %COINDIR%\include\SmallChange\nodes\Coinboard.h
 del %COINDIR%\include\SmallChange\nodes\SmSwitchboard.h
 del %COINDIR%\include\SmallChange\nodes\SmSwitchboardOperator.h
