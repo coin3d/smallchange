@@ -35,7 +35,7 @@
 */
 
 /*!
-  \var SoSFFloat ShapeScale::active
+  \var SoSFBool ShapeScale::active
 
   Turns the scaling on/off. Default value is TRUE.
 */
@@ -44,6 +44,18 @@
   \var SoSFFloat ShapeScale::projectedSize
 
   The requested projected size of the shape. Default value is 5.0.
+*/
+
+/*!
+  \var SoSFFloat ShapeScale::minScale
+
+  The minimum scalefactor applied to the shape. Default value is 0.0.
+*/
+
+/*!
+  \var SoSFFloat ShapeScale::maxScale
+
+  The maximum scalefactor applied to the shape. Default value is FLT_MAX.
 */
 
 #include "ShapeScale.h"
@@ -62,6 +74,7 @@
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/caches/SoCache.h>
+#include <float.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -75,6 +88,8 @@ ShapeScale::ShapeScale(void)
 
   SO_KIT_ADD_FIELD(active, (TRUE));
   SO_KIT_ADD_FIELD(projectedSize, (5.0f));
+  SO_KIT_ADD_FIELD(minScale, (0.0f));
+  SO_KIT_ADD_FIELD(maxScale, (FLT_MAX));
 
 #ifndef __COIN__
 #error catalog setup probably not compatible with non-Coin Inventor implementation
@@ -151,7 +166,13 @@ ShapeScale::preRender(SoAction * action)
     const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[0]);
     const SbMatrix & mm = SoModelMatrixElement::get(state);
     mm.multVecMatrix(center, center);
-    const float scalefactor = vv.getWorldToScreenScale(center, nsize);
+    float scalefactor = vv.getWorldToScreenScale(center, nsize);
+    if (scalefactor < this->minScale.getValue()) {
+      scalefactor = this->minScale.getValue();
+    }
+    else if (scalefactor > this->maxScale.getValue()) {
+      scalefactor = this->maxScale.getValue();
+    }
 
 #if 1 // new version that considers the current model-matrix scale
     SbVec3f t;

@@ -50,8 +50,10 @@ public:
   static void initClass(void);
   ShapeScale(void);
 
-  SoSFFloat active;
+  SoSFBool active;
   SoSFFloat projectedSize;
+  SoSFFloat minScale;
+  SoSFFloat maxScale;
 
   void preRender(SoAction * action);
 
