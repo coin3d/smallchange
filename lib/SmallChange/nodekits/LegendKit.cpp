@@ -297,6 +297,8 @@ public:
   } legend_discrete;
   SbList <legend_discrete> discretelist;
 
+  LegendKit::SoNumberFormatCB * numberformatcb;
+  void * numberformatclosure;
 };
 
 // convenience define to access private data
@@ -374,7 +376,9 @@ LegendKit::LegendKit(void)
   PRIVATE(this)->prevvpsize.setValue(-1,-1);
   PRIVATE(this)->imageenabled = TRUE;
   PRIVATE(this)->backgroundenabled = TRUE;
-
+  PRIVATE(this)->numberformatcb = NULL;
+  PRIVATE(this)->numberformatclosure = NULL;
+  
   // disable picking on geometry below
   SoPickStyle * ps = (SoPickStyle*) this->getAnyPart("pickStyle", TRUE);
   ps->style = SoPickStyle::UNPICKABLE;
@@ -444,6 +448,16 @@ LegendKit::initClass(void)
     SmDepthBuffer::initClass();
     SO_KIT_INIT_CLASS(LegendKit, SoBaseKit, "BaseKit");
   }
+}
+
+/*!
+  Set a callback to be used for formatting numbers instead of the tickValueFormat field.
+*/
+void 
+LegendKit::setNumberFormatCallback(SoNumberFormatCB * cb, void * closure)
+{
+  PRIVATE(this)->numberformatcb = cb;
+  PRIVATE(this)->numberformatclosure = closure;
 }
 
 /*!  
@@ -993,10 +1007,14 @@ LegendKit::addBigTick(double nval, double tickvalue, const SbString * discretete
 {
   LegendKitP::legend_tick tick;
 
-  char buf[1024];
-  sprintf(buf, this->tickValueFormat.getValue().getString(), tickvalue); 
-  tick.string = SbString(buf);
-
+  if (PRIVATE(this)->numberformatcb) {
+    tick.string = PRIVATE(this)->numberformatcb(tickvalue, PRIVATE(this)->numberformatclosure); 
+  }
+  else {
+    char buf[1024];
+    sprintf(buf, this->tickValueFormat.getValue().getString(), tickvalue); 
+    tick.string = SbString(buf);
+  }
   tick.nval = nval;
   tick.tickval = tickvalue;
   tick.discretestringset = FALSE;

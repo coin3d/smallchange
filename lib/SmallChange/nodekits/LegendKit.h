@@ -121,6 +121,9 @@ public:
 
   float getLegendWidth(void) const;
 
+  typedef SbString SoNumberFormatCB(const double number, void * closure);
+  void setNumberFormatCallback(SoNumberFormatCB * cb, void * closure);
+
 public:
   // convenience methods for setting part attributes
   void setTickAndLinesColor(const SbColor & color, const float transparency = 0.0f);
@@ -128,6 +131,7 @@ public:
   void setPosition(const SbVec2s & pos);
   void setBackgroundColor(const SbColor & color, const float transparency = 0.0f);
   void enableBackground(const SbBool onoff);
+
 
 protected:
   virtual void GLRender(SoGLRenderAction * action);
