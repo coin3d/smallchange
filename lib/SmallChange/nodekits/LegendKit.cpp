@@ -366,7 +366,7 @@ LegendKit::LegendKit(void)
   PRIVATE(this) = new LegendKitP(this); // private and hidden data members are stored here
   PRIVATE(this)->size.setValue(0.0f, 0.0f);
   PRIVATE(this)->needimageinit = FALSE;
-  PRIVATE(this)->imagealpha = 255;
+  PRIVATE(this)->imagealpha = 0xff;
   PRIVATE(this)->needalphainit = FALSE;
   PRIVATE(this)->recalcsize = TRUE;
   PRIVATE(this)->colorCB = NULL;
@@ -699,7 +699,9 @@ LegendKit::reallyInitImage(unsigned char * data, unsigned char * rowdata)
     unsigned char r  = col>>24;
     unsigned char g = (col>>16)&0xff;
     unsigned char b = (col>>8)&0xff;
-    unsigned char a = PRIVATE(this)->imagealpha;
+    unsigned char a = (col&0xff);
+    
+    a = (unsigned char) ((uint32_t(a) * PRIVATE(this)->imagealpha) >> 8);
     
     if (rowdata) {
       *rowdata++ = r;
@@ -1398,13 +1400,13 @@ LegendKit::setSwitchValue(const char * part, const int value)
 uint32_t 
 LegendKitP::getLineColor(const double nval)
 {
-  if (!this->discrete && this->colorCB) return (this->colorCB(nval, this->colorCBdata)&0xffffff00)|this->imagealpha;
-  else if (!this->discrete && this->colorCB2) return (this->colorCB2(nval)&0xffffff00)|this->imagealpha;
+  if (!this->discrete && this->colorCB) return this->colorCB(nval, this->colorCBdata);
+  else if (!this->discrete && this->colorCB2) return this->colorCB2(nval);
   else if (this->discrete && this->discretelist.getLength()) { // discrete values
     int i = 0, n = this->discretelist.getLength();
     while (i < n-1 && this->discretelist[i].uppernval < nval) i++;
     if (this->discretelist[i].colorset) {
-      return (this->discretelist[i].color&0xffffff00) | this->imagealpha;
+      return this->discretelist[i].color;
     }
     else if (this->colorCB || this->colorCB2) {
       double val = this->discretelist[i].uppernval - DBL_EPSILON;
@@ -1414,11 +1416,11 @@ LegendKitP::getLineColor(const double nval)
       }
       if (val < 0.0) val = 0.0;
       else if (val > 1.0) val = 1.0;
-      if (this->colorCB) return (this->colorCB(val, this->colorCBdata)&0xffffff00)|this->imagealpha;
-      else return (this->colorCB2(val)&0xffffff00)|this->imagealpha;
+      if (this->colorCB) return this->colorCB(val, this->colorCBdata);
+      else return this->colorCB2(val);
     }
   }
-  return 0xffffff00|this->imagealpha; // should never happen...
+  return 0xffffffff; // should never happen...
 }
 
 // calculates line number in image based on the normalized value
