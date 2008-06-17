@@ -106,6 +106,9 @@ SmAnnotationAxis::SmAnnotationAxis()
   SoSwitch * sw = static_cast<SoSwitch*>(this->getAnyPart("axisSwitch", TRUE));
   sw->whichChild.connectFrom(&this->renderAxis);
 
+  SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
+  t->justification = SmTextureText2::CENTER;
+
   PRIVATE(this)->regen_sensor = new SoOneShotSensor(regen_geometry, this);
 }
 
@@ -188,7 +191,6 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
   if (l1 != PRIVATE(this)->axisidx) {
     SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
     assert(t);
-    t->justification = SmTextureText2::CENTER;
     t->position.setNum(l1.getLength());
     t->string.setNum(l1.getLength());
     SbVec3f * pos = t->position.startEditing();
