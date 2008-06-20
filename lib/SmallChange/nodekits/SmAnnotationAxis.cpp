@@ -39,6 +39,8 @@
 #include <Inventor/nodes/SoLineSet.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoVertexProperty.h>
+#include <Inventor/SbTime.h>
+#include <Inventor/sensors/SoAlarmSensor.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <SmallChange/nodes/SmTextureText2.h>
 #include <string.h>
@@ -66,6 +68,14 @@ public:
                      const SbMatrix & projm, 
                      const float maxdist,
                      const SbVec3f * pos, int i0, int i1);
+
+  SbTime lastchanged;
+  SoAlarmSensor * alarm;
+
+  static void alarmCB(void * closure, SoSensor * s) {
+    SmAnnotationAxisP * thisp = (SmAnnotationAxisP*) closure;
+    thisp->master->touch();
+  }
 };
 
 #define PRIVATE(p) ((p)->pimpl)
@@ -78,6 +88,8 @@ SmAnnotationAxis::SmAnnotationAxis()
   PRIVATE(this) = new SmAnnotationAxisP(this);
   PRIVATE(this)->cache = NULL;
   PRIVATE(this)->regen_sensor = NULL;
+  PRIVATE(this)->alarm = new SoAlarmSensor(SmAnnotationAxisP::alarmCB, PRIVATE(this));
+  PRIVATE(this)->lastchanged = SbTime::zero();
 
   SO_KIT_CONSTRUCTOR(SmAnnotationAxis);
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
@@ -114,6 +126,7 @@ SmAnnotationAxis::SmAnnotationAxis()
 
 SmAnnotationAxis::~SmAnnotationAxis()
 {
+  delete PRIVATE(this)->alarm;
   delete PRIVATE(this)->regen_sensor;
   if (PRIVATE(this)->cache) PRIVATE(this)->cache->unref();
   delete PRIVATE(this);
@@ -189,21 +202,32 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
   }
   
   if (l1 != PRIVATE(this)->axisidx) {
-    SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
-    assert(t);
-    t->position.setNum(l1.getLength());
-    t->string.setNum(l1.getLength());
-    SbVec3f * pos = t->position.startEditing();
-    SbString * text = t->string.startEditing();
-    for (int i = 0; i < l1.getLength(); i++) {
+    // avoid that we update the scene graph and trigger redraws too often
+    SbTime curtime = SbTime::getTimeOfDay();
+    if ((curtime.getValue() - PRIVATE(this)->lastchanged.getValue()) < 0.5) {
+      if (!PRIVATE(this)->alarm->isScheduled()) {
+        PRIVATE(this)->alarm->setTimeFromNow(1.0);
+        PRIVATE(this)->alarm->schedule();
+      }
+    }
+    else {
+      PRIVATE(this)->lastchanged = curtime;
+      SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
+      assert(t);
+      t->position.setNum(l1.getLength());
+      t->string.setNum(l1.getLength());
+      SbVec3f * pos = t->position.startEditing();
+      SbString * text = t->string.startEditing();
+      for (int i = 0; i < l1.getLength(); i++) {
       pos[i] = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
       text[i] = this->annotation.getNum() > 0 ?
         this->annotation.getValues(0)[l1[i]%this->annotation.getNum()] : "";
+      }
+      t->position.finishEditing();
+      t->string.finishEditing();
+      
+      PRIVATE(this)->axisidx = l1;
     }
-    t->position.finishEditing();
-    t->string.finishEditing();
-
-    PRIVATE(this)->axisidx = l1;
   }
   if (createcache) {
     state->pop();
@@ -216,7 +240,6 @@ void
 SmAnnotationAxis::notify(SoNotList * list)
 {
   if (PRIVATE(this)->cache) PRIVATE(this)->cache->invalidate();
-  PRIVATE(this)->axisidx.truncate(0);
 
   if (PRIVATE(this)->regen_sensor) {
     SoField * f = list->getLastField();
@@ -314,6 +337,12 @@ SmAnnotationAxisP::add_anno_text(const int level,
   }
 
   if ((mid == i0) || (mid == i1)) return;
+
+  // do some fast view frustum culling
+  if (p[0][0] < -1.0f && p[2][0] < -1.0f) return;
+  if (p[0][1] < -1.0f && p[2][1] < -1.0f) return;
+  if (p[0][0] > 1.0f && p[2][0] > 1.0f) return;
+  if (p[0][1] > 1.0f && p[2][1] > 1.0f) return;
 
   if (p[1][2] < 1.0f) {
     SbBool add = FALSE;
