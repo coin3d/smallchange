@@ -58,6 +58,7 @@
 #include <Inventor/elements/SoCacheElement.h>
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
+#include <Inventor/elements/SoGLTextureCoordinateElement.h>
 #include <Inventor/misc/SoGLImage.h>
 #include <Inventor/SbPlane.h>
 
@@ -313,7 +314,11 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     state->pop();
     return;
   }
+  
+  // turn off any texture coordinate functions
+  SoGLTextureCoordinateElement::setTexGen(action->getState(), this, NULL);
 
+  // set up my font texture
   SoTextureQualityElement::set(state, 0.0f);
   SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
   SoGLTextureImageElement::set(state, this,
