@@ -264,9 +264,7 @@ SmTextureText2::~SmTextureText2()
 void
 SmTextureText2::initClass(void)
 {
-  static int first = 1;
-  if (first) {
-    first = 0;
+  if (getClassTypeId() == SoType::badType()) {
     SO_NODE_INIT_CLASS(SmTextureText2, SoShape, "Shape");
 
     texturetext_texture = create_texture();
@@ -277,7 +275,19 @@ SmTextureText2::initClass(void)
                                  SoGLImage::CLAMP,
                                  SoGLImage::CLAMP,
                                  0.0f);
+    cc_coin_atexit(destroyClass);
   }
+}
+
+void 
+SmTextureText2::destroyClass() {
+  assert(texturetext_glimage);
+  texturetext_glimage->unref();
+  texturetext_glimage = NULL;
+  delete [] texturetext_texture;
+  texturetext_texture = NULL;
+  delete [] texturetext_glyphcoords;
+  texturetext_glyphcoords = NULL;
 }
 
 // doc from parent
@@ -337,7 +347,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                      0.0f, 0.5f, 0.0f, 0.0f,
                      0.0f, 0.0f, 1.0f, 0.0f,
                      0.5f, 0.5f, 0.0f, 1.0f);
-  SbMatrix projmatrix = 
+  SbMatrix projmatrix =
     modelmatrix *
     SoViewingMatrixElement::get(state) *
     SoProjectionMatrixElement::get(state) *
