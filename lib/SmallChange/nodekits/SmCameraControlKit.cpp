@@ -33,7 +33,7 @@
 
 #include "SmCameraControlKit.h"
 
-#include <float.h>
+#include <cfloat>
 
 #include <Inventor/actions/SoHandleEventAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>

@@ -51,7 +51,7 @@
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 
-#include <string.h>
+#include <cstring>
 
 #ifndef DOXYGEN_SKIP_THIS
 

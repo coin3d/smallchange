@@ -31,7 +31,7 @@
 #include <Inventor/fields/SoSFBool.h>
 #include <Inventor/fields/SoSFTime.h>
 #include <Inventor/VRMLnodes/SoVRMLViewpoint.h>
-#include <assert.h>
+#include <cassert>
 
 // FIXME: make a generic class to handle bindable nodes, pederb 2004-09-28
 

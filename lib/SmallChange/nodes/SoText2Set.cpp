@@ -101,11 +101,11 @@
 
 #include "../misc/SbList.h"
 
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
+#include <climits>
+#include <cstring>
+#include <cstdio>
+#include <cmath>
+#include <cfloat>
 
 static const unsigned int NOT_AVAILABLE = UINT_MAX;
 

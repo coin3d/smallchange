@@ -130,8 +130,8 @@
 #include <Inventor/details/SoPointDetail.h>
 #include <Inventor/details/SoLineDetail.h>
 #include <Inventor/details/SoFaceDetail.h>
-#include <float.h>
-#include <math.h>
+#include <cfloat>
+#include <cmath>
 
 #include "../misc/SbList.h"
 

@@ -2,7 +2,7 @@
 #include <config.h>
 #endif // HAVE_CONFIG_H
 
-#include <assert.h>
+#include <cassert>
 
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/nodes/SoSeparator.h>

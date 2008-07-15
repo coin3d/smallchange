@@ -5,7 +5,7 @@
 #include <Inventor/nodes/SoMatrixTransform.h>
 #include <Inventor/SoInput.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 static void
 setup_lod(SoLODExtrusion * lod)

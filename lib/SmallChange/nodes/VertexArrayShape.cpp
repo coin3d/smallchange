@@ -56,9 +56,9 @@
 #include <Inventor/SbDict.h>
 #include <Inventor/details/SoFaceDetail.h>
 #include <Inventor/C/tidbits.h>
-#include <stdlib.h>
+#include <cstdlib>
 
-#include <assert.h>
+#include <cassert>
 
 
 struct SmVertexArrayShape_vboidx {

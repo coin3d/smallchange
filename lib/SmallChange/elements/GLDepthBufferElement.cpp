@@ -41,7 +41,7 @@
 #include <GL/gl.h>
 #endif // SGI/TGS Inventor
 
-#include <assert.h>
+#include <cassert>
 
 SO_ELEMENT_SOURCE(GLDepthBufferElement);
 

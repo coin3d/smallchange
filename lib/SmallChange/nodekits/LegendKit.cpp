@@ -232,8 +232,8 @@
 
 #include <SmallChange/nodes/SmDepthBuffer.h>
 #include <SmallChange/nodes/ViewportRegion.h>
-#include <string.h>
-#include <float.h>
+#include <cstring>
+#include <cfloat>
 
 #include "bitmapfont.cpp" // the default font
 #define FONT_HEIGHT 12

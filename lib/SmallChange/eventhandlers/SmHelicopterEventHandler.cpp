@@ -36,7 +36,7 @@
 #include <SmallChange/nodes/UTMCamera.h>
 #include <Inventor/SbMatrix.h>
 #include <Inventor/SbRotation.h>
-#include <math.h>
+#include <cmath>
 
 SO_NODE_SOURCE(SmHelicopterEventHandler);
 

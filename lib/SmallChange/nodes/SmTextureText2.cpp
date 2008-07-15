@@ -1,7 +1,7 @@
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
- *  Copyright (C) 1998-2003 by Systems in Motion.  All rights reserved.
+ *  Copyright (C) 1998-2008 by Systems in Motion.  All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -66,8 +66,8 @@
 #include <Inventor/errors/SoDebugError.h>
 #endif // COIN_DEBUG
 
-#include <limits.h>
-#include <string.h>
+#include <climits>
+#include <cstring>
 
 static unsigned char texture_fontdata[][12] = {
   {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, //

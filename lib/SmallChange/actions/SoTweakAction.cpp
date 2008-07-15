@@ -21,8 +21,8 @@
  *
 \**************************************************************************/
 
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
 
 #include <Inventor/nodes/SoGroup.h>
 #include <Inventor/misc/SoChildList.h>

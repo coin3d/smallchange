@@ -27,8 +27,8 @@
 #include <Inventor/SbPlane.h>
 #include <Inventor/SbLine.h>
 
-#include <limits.h>
-#include <string.h>
+#include <climits>
+#include <cstring>
 
 static unsigned char painter_fontdata[][12] = {
   {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, //

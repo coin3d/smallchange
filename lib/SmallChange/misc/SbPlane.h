@@ -24,7 +24,7 @@
  *
 \**************************************************************************/
 
-#include <stdio.h>
+#include <cstdio>
 
 class SbLine;
 class SbMatrix;

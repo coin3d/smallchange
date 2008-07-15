@@ -24,8 +24,8 @@
  *
 \**************************************************************************/
 
-#include <assert.h>
-#include <stddef.h> // NULL definition
+#include <cassert>
+#include <cstddef> // NULL definition
 
 // We usually implement inline functions below the class definition,
 // since we think that makes the file more readable. However, this is

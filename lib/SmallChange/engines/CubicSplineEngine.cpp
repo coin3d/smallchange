@@ -26,7 +26,7 @@
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFTrigger.h>
 #include <Inventor/fields/SoSFRotation.h>
-#include <float.h>
+#include <cfloat>
 
 SO_ENGINE_SOURCE(CubicSplineEngine);
 

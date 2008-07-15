@@ -258,8 +258,8 @@
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/details/SoLineDetail.h>
 #include <Inventor/engines/SoCalculator.h>
-#include <float.h>
-#include <string.h>
+#include <cfloat>
+#include <cstring>
 
 // struct used for storing data for each depth value
 typedef struct {

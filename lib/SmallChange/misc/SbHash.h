@@ -24,9 +24,9 @@
  *
 \**************************************************************************/
 
-#include <assert.h>
-#include <stddef.h> // NULL
-#include <string.h> // memset()
+#include <cassert>
+#include <cstddef> // NULL
+#include <cstring> // memset()
 
 #include <Inventor/SbBasic.h>
 #include <Inventor/lists/SbList.h>

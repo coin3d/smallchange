@@ -13,8 +13,8 @@
 #include <Inventor/SoOutput.h>
 #include <Inventor/SoInteraction.h>
 #include <SmallChange/misc/Init.h>
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 #include <SmallChange/actions/SmToVertexArrayShapeAction.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 

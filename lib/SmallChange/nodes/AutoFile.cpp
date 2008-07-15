@@ -113,8 +113,8 @@
 #include <io.h>
 #endif
 
-#include <stdlib.h>
-#include <stddef.h>
+#include <cstdlib>
+#include <cstddef>
 
 #include <Inventor/sensors/SoTimerSensor.h>
 #include <Inventor/sensors/SoIdleSensor.h>

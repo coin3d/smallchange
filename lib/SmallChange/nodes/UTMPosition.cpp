@@ -68,7 +68,7 @@
 #include <Inventor/SbMatrix.h>
 #include <Inventor/misc/SoState.h>
 #include <SmallChange/elements/UTMElement.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 // *************************************************************************
 

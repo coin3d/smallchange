@@ -25,8 +25,8 @@
 #define SMALLCHANGE_SBLIST_H
 
 #include <Inventor/SbBasic.h>
-#include <assert.h>
-#include <stddef.h> // NULL definition
+#include <cassert>
+#include <cstddef> // NULL definition
 
 template <class Type>
 class SbList {

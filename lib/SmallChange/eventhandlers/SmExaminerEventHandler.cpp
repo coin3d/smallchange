@@ -45,8 +45,8 @@
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/errors/SoDebugError.h>
 #include <Inventor/SoPickedPoint.h>
-#include <float.h>
-#include <assert.h>
+#include <cfloat>
+#include <cassert>
 
 SO_NODE_SOURCE(SmExaminerEventHandler);
 

@@ -2,10 +2,10 @@
 #include <SmallChange/misc/Init.h>
 #include <Inventor/SoInteraction.h>
 #include <Inventor/SoDB.h>
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 int main(int argc, char ** argv)
 {

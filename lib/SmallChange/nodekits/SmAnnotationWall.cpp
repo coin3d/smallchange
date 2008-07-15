@@ -34,7 +34,7 @@
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/caches/SoCache.h>
 #include <SmallChange/nodes/SmTextureText2.h>
-#include <string.h>
+#include <cstring>
 #include <Inventor/SbClip.h>
 
 // *************************************************************************

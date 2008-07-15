@@ -9,7 +9,7 @@
 #include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
-#include <assert.h>
+#include <cassert>
 #include <SmallChange/nodes/SoText2Set.h>
 
 

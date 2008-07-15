@@ -41,7 +41,7 @@
 #include <Inventor/lists/SbList.h>
 #include <Inventor/SbViewportRegion.h>
 #include <SmallChange/nodes/SmVertexArrayShape.h>
-#include <string.h>
+#include <cstring>
 #include "../misc/SbHash.h"
 
 SO_ACTION_SOURCE(SmToVertexArrayShapeAction);

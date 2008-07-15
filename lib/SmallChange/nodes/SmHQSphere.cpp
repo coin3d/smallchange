@@ -39,8 +39,8 @@
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/C/glue/gl.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
-#include <stddef.h>
-#include <string.h>
+#include <cstddef>
+#include <cstring>
 #include <Inventor/SbBasic.h> // COIN_MAJOR_VERSION, COIN_MINOR_VERSION
 
 #include "../misc/SbList.h"

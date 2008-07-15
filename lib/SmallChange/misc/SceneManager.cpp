@@ -47,7 +47,7 @@
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/SoFullPath.h>
 #include <Inventor/system/gl.h>
-#include <assert.h>
+#include <cassert>
 
 class SmSceneManagerP {
 public:

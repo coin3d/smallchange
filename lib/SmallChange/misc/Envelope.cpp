@@ -38,8 +38,8 @@
 #include <Inventor/VRMLnodes/SoVRMLAppearance.h>
 #include <Inventor/elements/SoTextureEnabledElement.h>
 #include <Inventor/SoInteraction.h>
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 // helper class
 class sm_meshattrib {

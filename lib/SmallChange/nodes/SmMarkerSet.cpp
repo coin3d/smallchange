@@ -48,7 +48,7 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoCullElement.h>
 #include <Inventor/misc/SoState.h>
-#include <string.h>
+#include <cstring>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

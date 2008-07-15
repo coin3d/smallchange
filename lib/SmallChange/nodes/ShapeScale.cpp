@@ -74,7 +74,7 @@
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/caches/SoCache.h>
-#include <float.h>
+#include <cfloat>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

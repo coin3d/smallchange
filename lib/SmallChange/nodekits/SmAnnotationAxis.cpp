@@ -43,7 +43,7 @@
 #include <Inventor/sensors/SoAlarmSensor.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <SmallChange/nodes/SmTextureText2.h>
-#include <string.h>
+#include <cstring>
 
 // *************************************************************************
 

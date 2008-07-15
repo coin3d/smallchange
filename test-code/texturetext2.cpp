@@ -3,8 +3,8 @@
 // Usage: texturetext2 [numtexts] > out.iv
 //
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <Inventor/SbVec3f.h>
 
 int main(int argc, char ** argv)

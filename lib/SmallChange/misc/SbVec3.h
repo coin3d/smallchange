@@ -24,8 +24,8 @@
  *
 \**************************************************************************/
 
-#include <assert.h>
-#include <stddef.h>
+#include <cassert>
+#include <cstddef>
 
 template <class Type>
 class SbVec3 {

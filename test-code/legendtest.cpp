@@ -9,7 +9,7 @@
 #include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
-#include <assert.h>
+#include <cassert>
 #include <SmallChange/misc/Init.h>
 #include <SmallChange/nodekits/LegendKit.h>
 #include <SmallChange/elements/GLDepthBufferElement.h>
