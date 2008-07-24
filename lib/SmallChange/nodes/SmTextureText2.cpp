@@ -61,6 +61,7 @@
 #include <Inventor/elements/SoGLTextureCoordinateElement.h>
 #include <Inventor/misc/SoGLImage.h>
 #include <Inventor/SbPlane.h>
+#include <Inventor/C/tidbits.h>
 
 #if COIN_DEBUG
 #include <Inventor/errors/SoDebugError.h>
