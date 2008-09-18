@@ -70,7 +70,7 @@
 #include <climits>
 #include <cstring>
 
-static unsigned char texture_fontdata[][12] = {
+static const unsigned char texture_fontdata[][12] = {
   {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }, //
   {  0,  0, 12, 12,  0,  8, 12, 12, 12, 12, 12,  0 }, // !
   {  0,  0,  0,  0,  0,  0,  0,  0,  0, 20, 20, 20 }, // "
@@ -177,7 +177,7 @@ static unsigned char texture_fontdata[][12] = {
 };
 
 // map from iso-latin1 to font data array index
-static int texturetext_isolatin1_mapping[] = {
+static const int texturetext_isolatin1_mapping[] = {
     0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,
@@ -280,7 +280,7 @@ SmTextureText2::initClass(void)
   }
 }
 
-void 
+void
 SmTextureText2::destroyClass() {
   assert(texturetext_glimage);
   texturetext_glimage->unref();
@@ -325,7 +325,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     state->pop();
     return;
   }
-  
+
   // turn off any texture coordinate functions
   SoGLTextureCoordinateElement::setTexGen(action->getState(), this, NULL);
 
@@ -487,7 +487,7 @@ SmTextureText2::renderBorder(const SbString * s,
   float dist = -vv.getPlane(0.0f).getDistance(tmp);
   if (dist <= vv.getNearDist()) return;
   if (dist > (vv.getNearDist() + vv.getDepth())) return;
-  
+
   int i;
   SbVec2s vpsize = vp.getViewportSizePixels();
 
@@ -512,7 +512,7 @@ SmTextureText2::renderBorder(const SbString * s,
     SbVec2s n0,n1,n2,n3;
     SbVec2s sp;
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
-   
+
     n0 = SbVec2s(sp[0] + xmin,
                  sp[1] + ymax);
     n1 = SbVec2s(sp[0] + xmax,
@@ -626,7 +626,7 @@ SmTextureText2::renderString(const SbString * s,
 
     SbVec2s sp;
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
-    
+
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
                          sp[1] + ymin);
     SbVec2s n1 = SbVec2s(sp[0] + xmax,
@@ -945,7 +945,7 @@ SmTextureText2::render_text(unsigned char * dst,
                             const unsigned char value,
                             const unsigned char alpha)
 {
-  unsigned char * src = texture_fontdata[idx];
+  const unsigned char * src = texture_fontdata[idx];
 
   for (int sy = 0; sy < 12; sy++) {
     for (int sx = 0; sx  < 8; sx++) {
