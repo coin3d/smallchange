@@ -465,7 +465,7 @@ static SbBool get_screenpoint_pixels(const SbVec3f & screenpoint,
       (sy > -limit) &&
       (sx < limit) &&
       (sy < limit)) {
-    sp = SbVec2s((short)sx, (short) sy);
+    sp = SbVec2s(static_cast<short>(sx), static_cast<short>(sy));
     return TRUE;
   }
   return FALSE;
@@ -612,7 +612,10 @@ SmTextureText2::renderString(const SbString * s,
     int len = s[i].getLength();
     if (len == 0) continue;
 
-    const unsigned char * sptr = (const unsigned char *) s[i].getString();
+    //Using sptr as index into a table, so casting to unsigned to
+    //avoid negativ indices.
+    const unsigned char * sptr =
+      reinterpret_cast<const unsigned char *>(s[i].getString());
 
     int xmin = -4;
     int xmax = len * 8 + 4;
@@ -721,7 +724,10 @@ SmTextureText2::oldRenderString(const SbString * s,
     int len = s[i].getLength();
     if (len == 0) continue;
 
-    const unsigned char * sptr = (const unsigned char *) s[i].getString();
+    //Using sptr as index into a table, so casting to unsigned to
+    //avoid negativ indices.
+    const unsigned char * sptr =
+      reinterpret_cast<const unsigned char *>(s[i].getString());
 
     int xmin = 0;
     int xmax = len * 9;
@@ -729,7 +735,10 @@ SmTextureText2::oldRenderString(const SbString * s,
     int ymax = i*14;
 
     SbVec2f n0,n1,n2,n3;
-    SbVec2s sp((short) (screenpoint[0] * vpsize[0]), (short)(screenpoint[1] * vpsize[1]));
+    SbVec2s sp(
+	       static_cast<short>(screenpoint[0] * vpsize[0]),
+	       static_cast<short>(screenpoint[1] * vpsize[1])
+	       );
 
     n0 = SbVec2f(float(sp[0] + xmin)/float(vpsize[0]),
                  float(sp[1] + ymax)/float(vpsize[1]));
