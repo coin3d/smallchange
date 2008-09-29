@@ -818,4 +818,3 @@ SoFEMKit::update_cb(void * data, SoSensor * sensor)
 {
   ((SoFEMKit*)data)->updateScene();
 }
-

@@ -321,4 +321,3 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
-

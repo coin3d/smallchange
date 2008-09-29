@@ -63,4 +63,3 @@ protected:
 };
 
 #endif // SMALLCHANGE_TRACKPOINTKIT_H
-

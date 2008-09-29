@@ -96,5 +96,3 @@ SmTooltip::initClass(void)
     SO_NODE_INIT_CLASS(SmTooltip, SoNode, "Node");
   }
 }
-
-

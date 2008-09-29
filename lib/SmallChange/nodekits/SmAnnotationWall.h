@@ -61,4 +61,3 @@ private:
 };
 
 #endif // SM_ANNOTATION_WALL_H
-

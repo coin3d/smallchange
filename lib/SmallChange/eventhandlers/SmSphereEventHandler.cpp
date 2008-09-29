@@ -69,4 +69,3 @@ SmSphereEventHandler::handleEvent(SoHandleEventAction * action)
 {
   inherited::handleEvent(action);
 }
-

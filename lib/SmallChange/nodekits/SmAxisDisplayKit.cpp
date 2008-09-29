@@ -471,4 +471,3 @@ SmAxisDisplayKitP::callback_cb(void * userdata, SoAction * action)
     camera->position.setValue(7.0f*dir); // Just a good guess
   }
 }
-

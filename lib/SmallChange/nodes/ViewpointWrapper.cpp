@@ -313,4 +313,3 @@ SmViewpointWrapper::detachSetBindSensors(void)
     fs->detach();
   }
 }
-

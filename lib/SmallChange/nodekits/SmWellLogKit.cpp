@@ -1455,11 +1455,3 @@ SmWellLogKitP::updateList(void)
 
 
 #undef PUBLIC
-
-
-
-
-
-
-
-

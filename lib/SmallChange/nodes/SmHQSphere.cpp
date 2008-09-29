@@ -560,4 +560,3 @@ HQSphereGenerator::convert(object * obj, SbBSPTree & bsp, SbList <int> & idx)
     t++;
   }
 }
-

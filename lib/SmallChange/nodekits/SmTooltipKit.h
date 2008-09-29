@@ -104,4 +104,3 @@ private:
 
 
 #endif // SMALLCHANGE_SMTOOLTIPKIT_H
-

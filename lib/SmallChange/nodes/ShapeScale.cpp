@@ -227,4 +227,3 @@ ShapeScale::notify(SoNotList * l)
   }
   inherited::notify(l);
 }
-

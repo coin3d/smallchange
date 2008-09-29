@@ -66,4 +66,3 @@ private:
 };
 
 #endif // SMALLCHANGE_TRACK_H
-

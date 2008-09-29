@@ -103,4 +103,3 @@ SmBillboardClipPlane::calcPlane(SoState * state)
   SbVec3f dir = - vv.getProjectionDirection();
   return SbPlane(dir, 0.0f);
 }
-

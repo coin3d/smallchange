@@ -980,4 +980,3 @@ SoLODExtrusionP::makeCircleCrossSection(const float radius, const int segments)
 }
 
 #endif // DOXYGEN_SKIP_THIS
-

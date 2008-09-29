@@ -82,4 +82,3 @@ private:
 };
 
 #endif // COIN_VERTEXARRAYSHAPE_H
-

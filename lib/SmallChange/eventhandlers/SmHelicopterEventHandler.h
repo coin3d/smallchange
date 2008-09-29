@@ -65,4 +65,3 @@ private:
 };
 
 #endif // SMALLCHANGE_SMHELICOPTEREVENTHANDLER_H
-

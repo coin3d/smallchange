@@ -342,4 +342,3 @@ ViewportRegion::notify(SoNotList * list)
 }
 
 #undef PRIVATE
-

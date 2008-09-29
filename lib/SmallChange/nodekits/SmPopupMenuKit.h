@@ -141,4 +141,3 @@ private:
 
 
 #endif // SMALLCHANGE_SMPOPUPMENUKIT_H
-

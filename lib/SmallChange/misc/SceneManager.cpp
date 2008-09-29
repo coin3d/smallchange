@@ -415,4 +415,3 @@ SmSceneManager::renderSingle(SoGLRenderAction * action,
 
 
 #undef PRIVATE
-

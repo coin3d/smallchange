@@ -528,4 +528,3 @@ SmTooltipKit::updateBackground(void)
 }
 
 #undef PRIVATE
-

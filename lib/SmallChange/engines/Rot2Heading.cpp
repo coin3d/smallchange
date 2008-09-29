@@ -101,4 +101,3 @@ Rot2Heading::evaluate(void)
     SO_ENGINE_OUTPUT(heading, SoMFVec3f, set1Value(i, tmp));
   }
 }
-

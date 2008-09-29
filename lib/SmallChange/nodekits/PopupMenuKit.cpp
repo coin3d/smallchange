@@ -1158,4 +1158,3 @@ SmPopupMenuKitP::addSubmenuMarker()
 
 #undef PRIVATE
 #undef PUBLIC
-

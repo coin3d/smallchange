@@ -75,4 +75,3 @@ private:
 };
 
 #endif // SM_ANNOTATION_AXIS_H
-

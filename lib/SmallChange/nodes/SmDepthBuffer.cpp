@@ -168,4 +168,3 @@ SmDepthBuffer::GLRender(SoGLRenderAction * action)
                             this->enable.getValue());
   if (this->clearNow.getValue()) glClear(GL_DEPTH_BUFFER_BIT);
 }
-

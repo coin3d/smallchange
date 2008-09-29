@@ -122,4 +122,3 @@ main(int argc, char ** argv)
   graph->unref();
   return 0;
 }
-

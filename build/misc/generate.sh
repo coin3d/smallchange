@@ -65,4 +65,3 @@ echo "* Upgrade project files with devenv if necessary."
 
 # How can I avoid the modal upgrade prompt-dialog for MSVC7.1 here???
 # devenv /command "File.OpenProject $build\\smallchange1.dsp"
-

@@ -126,4 +126,3 @@ SoTweakAction::visitS(SoAction * action, SoNode * node)
   assert(action != NULL);
   ((SoTweakAction *) action)->pimpl->visit(node);
 }
-

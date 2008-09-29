@@ -91,4 +91,3 @@ private:
 };
 
 #endif // !DYNAMIC_OBJECT_H
-

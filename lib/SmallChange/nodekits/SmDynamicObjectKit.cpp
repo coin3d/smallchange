@@ -413,4 +413,3 @@ SmDynamicObjectKit::removeObject(const SbName objectId)
   }
   return removed;
 }
-

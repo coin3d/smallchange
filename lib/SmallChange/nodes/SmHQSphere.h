@@ -110,4 +110,3 @@ private:
 };
 
 #endif // COIN_SMHQSPHERE_H
-

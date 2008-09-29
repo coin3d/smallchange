@@ -29,4 +29,3 @@ SmSceneryView::SmSceneryView(void)
 SmSceneryView::~SmSceneryView(void)
 {
 }
-

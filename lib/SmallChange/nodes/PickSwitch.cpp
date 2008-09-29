@@ -140,4 +140,3 @@ PickSwitch::handleEvent(SoHandleEventAction *action)
     inherited::handleEvent(action);
   }
 }
-

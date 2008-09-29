@@ -38,4 +38,3 @@ SMALLCHANGE_DLL_API void smallchange_init(void);
 #endif
 
 #endif // !SMALLCHANGE_INIT_H
-

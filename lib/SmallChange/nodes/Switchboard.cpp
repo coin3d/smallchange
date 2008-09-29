@@ -198,4 +198,3 @@ SmSwitchboard::search(SoSearchAction * action)
   if (action->isFound()) return;
   SmSwitchboard::doAction(action);
 }
-

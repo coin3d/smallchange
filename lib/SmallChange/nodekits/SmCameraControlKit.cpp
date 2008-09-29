@@ -654,4 +654,3 @@ SmCameraControlKitP::eventhandlersensor_cb(void * closure, SoSensor * sensor)
 }
 
 #undef PUBLIC
-

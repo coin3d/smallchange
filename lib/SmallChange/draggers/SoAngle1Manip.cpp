@@ -65,4 +65,3 @@ SoAngle1Manip::SoAngle1Manip()
 SoAngle1Manip::~SoAngle1Manip()
 {
 }//Destructor
-

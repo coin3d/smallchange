@@ -28,4 +28,3 @@ SwitchboardOperator {
   Cube {}
   Translation { translation 3 0 0 }
 }
-

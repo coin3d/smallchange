@@ -404,4 +404,3 @@ SmToVertexArrayShapeAction::useIndexedFaceSet(const SbBool onoff)
 }
 
 #undef PRIVATE
-
