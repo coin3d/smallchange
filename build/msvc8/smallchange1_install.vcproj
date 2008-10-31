@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="smallchange1_install"
-	ProjectGUID="{22BABB3F-92ED-4A6D-B007-EC5C025CC602}"
+	ProjectGUID="{C1CBFE51-5983-46C2-98B5-ADBB074DAF47}"
 	Keyword="MakeFileProj"
 	>
 	<Platforms>
