@@ -36,7 +36,8 @@ SOURCES = \
         SmShadowText2.cpp SmShadowText2.h \
         SmTrack.cpp SmTrack.h \
         SmLazyFile.cpp SmLazyFile.h \
-	SmTextureText2.cpp SmTextureText2.h
+	SmTextureText2.cpp SmTextureText2.h \
+	SmTextureFont.cpp SmTextureFont.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -74,7 +75,8 @@ libnodesinc_HEADERS = \
         SmShadowText2.h \
         SmTrack.h \
         SmLazyFile.h \
-	SmTextureText2.h
+	SmTextureText2.h \
+	SmTextureFont.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

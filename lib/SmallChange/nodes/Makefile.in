@@ -210,7 +210,8 @@ SOURCES = \
         SmShadowText2.cpp SmShadowText2.h \
         SmTrack.cpp SmTrack.h \
         SmLazyFile.cpp SmLazyFile.h \
-	SmTextureText2.cpp SmTextureText2.h
+	SmTextureText2.cpp SmTextureText2.h \
+	SmTextureFont.cpp SmTextureFont.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -248,7 +249,8 @@ libnodesinc_HEADERS = \
         SmShadowText2.h \
         SmTrack.h \
         SmLazyFile.h \
-	SmTextureText2.h
+	SmTextureText2.h \
+	SmTextureFont.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -273,7 +275,7 @@ am__objects_1 = AutoFile.$(OBJEXT) SmDepthBuffer.$(OBJEXT) \
 	VertexArrayShape.$(OBJEXT) SmCoordinateSystem.$(OBJEXT) \
 	SmMarkerSet.$(OBJEXT) ViewpointWrapper.$(OBJEXT) \
 	SmShadowText2.$(OBJEXT) SmTrack.$(OBJEXT) SmLazyFile.$(OBJEXT) \
-	SmTextureText2.$(OBJEXT)
+	SmTextureText2.$(OBJEXT) SmTextureFont.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -288,7 +290,7 @@ am__objects_2 = AutoFile.lo SmDepthBuffer.lo ViewportRegion.lo \
 	SmTooltip.lo SmHQSphere.lo SmBillboardClipPlane.lo \
 	SmHeadlight.lo VertexArrayShape.lo SmCoordinateSystem.lo \
 	SmMarkerSet.lo ViewpointWrapper.lo SmShadowText2.lo SmTrack.lo \
-	SmLazyFile.lo SmTextureText2.lo
+	SmLazyFile.lo SmTextureText2.lo SmTextureFont.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -299,8 +301,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/SmDepthBuffer.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/SmDepthBuffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
@@ -312,6 +312,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmBillboardClipPlane.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmCoordinateSystem.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmCoordinateSystem.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmDepthBuffer.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmDepthBuffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHQSphere.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmHeadlight.Plo \
@@ -322,6 +324,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmMarkerSet.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmShadowText2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmShadowText2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTextureFont.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTextureFont.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTextureText2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTextureText2.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Plo ./$(DEPDIR)/SmTooltip.Po \
@@ -398,7 +402,8 @@ SOURCES = \
         SmShadowText2.cpp SmShadowText2.h \
         SmTrack.cpp SmTrack.h \
         SmLazyFile.cpp SmLazyFile.h \
-	SmTextureText2.cpp SmTextureText2.h
+	SmTextureText2.cpp SmTextureText2.h \
+	SmTextureFont.cpp SmTextureFont.h
 
 
 all: all-am
@@ -437,8 +442,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmDepthBuffer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmDepthBuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@
@@ -451,6 +454,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmBillboardClipPlane.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCoordinateSystem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmCoordinateSystem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmDepthBuffer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmDepthBuffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHQSphere.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmHeadlight.Plo@am__quote@
@@ -461,6 +466,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmMarkerSet.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmShadowText2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmShadowText2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureFont.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureFont.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureText2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureText2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
