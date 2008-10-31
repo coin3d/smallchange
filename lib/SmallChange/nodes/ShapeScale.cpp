@@ -62,16 +62,13 @@
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/nodes/SoShape.h>
-#include <Inventor/nodes/SoScale.h>
+#include <Inventor/nodes/SoCallback.h>
 #include <Inventor/nodes/SoCube.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
-#include <Inventor/elements/SoCullElement.h>
-#include <Inventor/elements/SoCacheElement.h>
-#include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/caches/SoCache.h>
 #include <cfloat>
@@ -96,21 +93,17 @@ ShapeScale::ShapeScale(void)
 #endif // !__COIN__
 
   SO_KIT_ADD_CATALOG_ENTRY(topSeparator, SoSeparator, FALSE, this, "", FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(scale, SoScale, FALSE, topSeparator, shape, FALSE);
+  SO_KIT_ADD_CATALOG_ENTRY(callback, SoCallback, FALSE, topSeparator, shape, FALSE);
   SO_KIT_ADD_CATALOG_ABSTRACT_ENTRY(shape, SoNode, SoCube, TRUE, topSeparator, "", TRUE);
 
   SO_KIT_INIT_INSTANCE();
-  this->didrender = FALSE;
-  this->cache = NULL;
 
-  SoSeparator * sep = static_cast<SoSeparator*> (this->getAnyPart("topSeparator", TRUE));
-  sep->renderCaching = SoSeparator::OFF;
-  sep->boundingBoxCaching = SoSeparator::OFF;
+  SoCallback * cb = static_cast<SoCallback*> (this->getAnyPart("callback", TRUE));
+  cb->setCallback(scaleCB, this);
 }
 
 ShapeScale::~ShapeScale()
 {
-  if (this->cache) this->cache->unref();
 }
 
 // doc in superclass
@@ -120,110 +113,39 @@ ShapeScale::initClass(void)
   SO_KIT_INIT_CLASS(ShapeScale, SoBaseKit, "BaseKit");
 }
 
-static SbBool
-update_scale(SoScale * scale, const SbVec3f & v)
+void 
+ShapeScale::scaleCB(void * closure, SoAction * action)
 {
-  // only write to field when scaling has changed.
-  if (!scale->scaleFactor.getValue().equals(v, 0.001f)) {
-    scale->scaleFactor.enableNotify(FALSE);
-    scale->scaleFactor = v;
-    scale->scaleFactor.enableNotify(TRUE);
-    return TRUE;
-  }
-  return FALSE;
-}
+  ShapeScale * thisp = (ShapeScale*) closure;
+  if (!thisp->active.getValue()) return;
 
-void
-ShapeScale::preRender(SoAction * action)
-{
+  // if the current action doesn't support all elements we need we'll just return
   SoState * state = action->getState();
-  if (this->cache && this->cache->isValid(state)) return;
-
-  if (this->cache) this->cache->unref();
-
-  SbBool storedinvalid = SoCacheElement::setInvalid(FALSE);
-
-  state->push();
-  this->cache = new SoCache(state);
-  this->cache->ref();
-  SoCacheElement::set(state, this->cache);
-
-  SoNode * shape = (SoNode*) this->getAnyPart(SbName("shape"), FALSE);
-  assert(shape);
-
-  SoScale * scale = (SoScale*) this->getAnyPart(SbName("scale"), TRUE);
-  if (!this->active.getValue()) {
-    if (update_scale(scale, SbVec3f(1.0f, 1.0f, 1.0f))) {
-      SoCacheElement::invalidate(state);
-      this->cache->invalidate();
-    }
+  if (!state->isElementEnabled(SoViewportRegionElement::getClassStackIndex()) ||
+      !state->isElementEnabled(SoViewVolumeElement::getClassStackIndex()) ||
+      !state->isElementEnabled(SoModelMatrixElement::getClassStackIndex())) return;
+  
+  SbBox3f bbox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
+  const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
+  SbVec3f center(0.0f, 0.0f, 0.0f);
+  const float nsize = thisp->projectedSize.getValue() / float(vp.getViewportSizePixels()[0]);
+  const SbMatrix & mm = SoModelMatrixElement::get(state);
+  mm.multVecMatrix(center, center);
+  float scalefactor = vv.getWorldToScreenScale(center, nsize);
+  if (scalefactor < thisp->minScale.getValue()) {
+      scalefactor = thisp->minScale.getValue();
   }
-  else {
-    SbBox3f bbox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
-    const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-    const SbViewVolume & vv = SoViewVolumeElement::get(state);
-    SbVec3f center(0.0f, 0.0f, 0.0f);
-    const float nsize = this->projectedSize.getValue() / float(vp.getViewportSizePixels()[0]);
-    const SbMatrix & mm = SoModelMatrixElement::get(state);
-    mm.multVecMatrix(center, center);
-    float scalefactor = vv.getWorldToScreenScale(center, nsize);
-    if (scalefactor < this->minScale.getValue()) {
-      scalefactor = this->minScale.getValue();
-    }
-    else if (scalefactor > this->maxScale.getValue()) {
-      scalefactor = this->maxScale.getValue();
-    }
-
-#if 1 // new version that considers the current model-matrix scale
-    SbVec3f t;
-    SbRotation r;
-    SbVec3f s;
-    SbRotation so;
-    mm.getTransform(t, r, s, so);
-
-    if (update_scale(scale, SbVec3f(scalefactor/s[0], scalefactor/s[1], scalefactor/s[2]))) {
-      SoCacheElement::invalidate(state);
-      this->cache->invalidate();
-    }
-#else
-    if (update_scale(scale, SbVec3f(scalefactor, scalefactor, scalefactor))) {
-      SoCacheElement::invalidate(state);
-    }
-#endif
+  else if (scalefactor > thisp->maxScale.getValue()) {
+    scalefactor = thisp->maxScale.getValue();
   }
-  state->pop();
-  SoCacheElement::setInvalid(storedinvalid);
-}
-
-// Overridden to (re)initialize image and other data before rendering.
-void
-ShapeScale::GLRender(SoGLRenderAction * action)
-{
-  this->preRender(action);
-  SoCacheElement::addCacheDependency(action->getState(), this->cache);
-  inherited::GLRender(action);
-  SoGLCacheContextElement::shouldAutoCache(action->getState(),
-                                           SoGLCacheContextElement::DONT_AUTO_CACHE);
-}
-
-void
-ShapeScale::getBoundingBox(SoGetBoundingBoxAction * action)
-{
-  if (this->cache) {
-    SoCacheElement::addCacheDependency(action->getState(), this->cache);
-  }
-  else {
-    SoCacheElement::invalidate(action->getState());
-  }
-  inherited::getBoundingBox(action);
-}
-
-void
-ShapeScale::notify(SoNotList * l)
-{
-  SoField * f = l->getLastField();
-  if (f == &this->active) {
-    if (this->cache) this->cache->invalidate();
-  }
-  inherited::notify(l);
+  
+  SbVec3f t;
+  SbRotation r;
+  SbVec3f s;
+  SbRotation so;
+  mm.getTransform(t, r, s, so);
+  
+  SbVec3f scale(scalefactor / s[0], scalefactor / s[1], scalefactor / s[2]);
+  SoModelMatrixElement::scaleBy(state, thisp, scale);
 }

@@ -43,7 +43,7 @@ class SMALLCHANGE_DLL_API ShapeScale : public SoBaseKit {
   SO_KIT_HEADER(ShapeScale);
 
   SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);
-  SO_KIT_CATALOG_ENTRY_HEADER(scale);
+  SO_KIT_CATALOG_ENTRY_HEADER(callback);
   SO_KIT_CATALOG_ENTRY_HEADER(shape);
 
 public:
@@ -55,17 +55,11 @@ public:
   SoSFFloat minScale;
   SoSFFloat maxScale;
 
-  void preRender(SoAction * action);
-
 protected:
-  virtual void GLRender(SoGLRenderAction * action);
-  virtual void getBoundingBox(SoGetBoundingBoxAction * action);
-  virtual void notify(SoNotList * nl);
   virtual ~ShapeScale();
 
 private:
-  SbBool didrender;
-  SoCache * cache;
+  static void scaleCB(void * closure, SoAction * action);
 };
 
 #endif // ! SHAPESCALE_H
