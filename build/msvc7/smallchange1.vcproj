@@ -37,13 +37,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin3.lib opengl32.lib winmm.lib"
 				OutputFile="smallchange1.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Release/smallchange1.pdb"
 				OptimizeForWindows98="1"
+				SetChecksum="TRUE"
 				ImportLibrary=".\Release/smallchange1.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -87,7 +87,7 @@
 				Optimization="3"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_NOT_DLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				PrecompiledHeaderFile=".\StaticRelease/smallchange1.pch"
@@ -136,9 +136,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="lib,..\..\lib,.,$(COINDIR)\include,$(COINDIR)\include\Inventor\annex"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_DLL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_LIB;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_INTERNAL;COIN_NOT_DLL"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="2"
+				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\StaticDebug/smallchange1.pch"
 				AssemblerListingLocation=".\StaticDebug/"
 				ObjectFile=".\StaticDebug/"
@@ -200,7 +200,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(COINDIR)\lib\coin2d.lib opengl32.lib winmm.lib"
+				AdditionalDependencies="$(COINDIR)\lib\coin3d.lib opengl32.lib winmm.lib"
 				OutputFile="smallchange1d.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -1085,51 +1085,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\lib\SmallChange\nodes\SmDepthBuffer.cpp">
-					<FileConfiguration
-						Name="DLL (Release)|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="3"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-							ObjectFile=".\Release\SmallChange\nodes/"
-							ProgramDataBaseFileName="Release\SmallChange\nodes/"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="LIB (Release)|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="3"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\StaticRelease\SmallChange\nodes/"
-							ProgramDataBaseFileName="StaticRelease\SmallChange\nodes/"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="LIB (Debug)|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BasicRuntimeChecks="3"
-							ObjectFile=".\StaticDebug\SmallChange\nodes/"
-							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DLL (Debug)|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							ObjectFile=".\Debug\SmallChange\nodes/"
-							ProgramDataBaseFileName="Debug\SmallChange\nodes/"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="..\..\lib\SmallChange\nodes\PickCallback.cpp">
 					<FileConfiguration
 						Name="DLL (Release)|Win32">
@@ -1400,6 +1355,51 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SmDepthBuffer.cpp">
+					<FileConfiguration
+						Name="DLL (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="3"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							ObjectFile=".\Release\SmallChange\nodes/"
+							ProgramDataBaseFileName="Release\SmallChange\nodes/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="3"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticRelease\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticRelease\SmallChange\nodes/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
+							ObjectFile=".\StaticDebug\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							ObjectFile=".\Debug\SmallChange\nodes/"
+							ProgramDataBaseFileName="Debug\SmallChange\nodes/"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmHeadlight.cpp">
 					<FileConfiguration
 						Name="DLL (Release)|Win32">
@@ -1581,6 +1581,51 @@
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmShadowText2.cpp">
+					<FileConfiguration
+						Name="DLL (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="3"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;SMALLCHANGE_DEBUG=0;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							ObjectFile=".\Release\SmallChange\nodes/"
+							ProgramDataBaseFileName="Release\SmallChange\nodes/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="3"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticRelease\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticRelease\SmallChange\nodes/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BasicRuntimeChecks="3"
+							ObjectFile=".\StaticDebug\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;SMALLCHANGE_DEBUG=1;HAVE_CONFIG_H;SMALLCHANGE_MAKE_DLL;SMALLCHANGE_INTERNAL;COIN_DLL;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							ObjectFile=".\Debug\SmallChange\nodes/"
+							ProgramDataBaseFileName="Debug\SmallChange\nodes/"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SmTextureFont.cpp">
 					<FileConfiguration
 						Name="DLL (Release)|Win32">
 						<Tool
@@ -3335,9 +3380,6 @@
 					RelativePath="..\..\lib\SmallChange\nodes\CoinEnvironment.h">
 				</File>
 				<File
-					RelativePath="..\..\lib\SmallChange\nodes\SmDepthBuffer.h">
-				</File>
-				<File
 					RelativePath="..\..\lib\SmallChange\nodes\PickCallback.h">
 				</File>
 				<File
@@ -3354,6 +3396,9 @@
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmCoordinateSystem.h">
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SmDepthBuffer.h">
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmHeadlight.h">
@@ -3375,6 +3420,9 @@
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmSwitchboardOperator.h">
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SmTextureFont.h">
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmTextureText2.h">

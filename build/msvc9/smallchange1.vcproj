@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="smallchange1"
-	ProjectGUID="{D7320012-7E16-4278-B0D6-982471FEA944}"
+	ProjectGUID="{E10DF2AE-65D7-46A0-8CA9-B67723575EDE}"
+	TargetFrameworkVersion="0"
 	>
 	<Platforms>
 		<Platform
@@ -79,6 +80,8 @@
 				ProgramDatabaseFile=".\Release/smallchange1.pdb"
 				OptimizeForWindows98="1"
 				SetChecksum="true"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/smallchange1.lib"
 				TargetMachine="1"
 			/>
@@ -101,9 +104,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -322,6 +322,8 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/smallchange1d.pdb"
 				OptimizeForWindows98="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\Debug/smallchange1d.lib"
 				TargetMachine="1"
 			/>
@@ -344,9 +346,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"

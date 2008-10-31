@@ -45,8 +45,8 @@ RSC=rc.exe
 # PROP Target_Dir ""
 MTL=midl.exe
 CPP=cl.exe
-# ADD BASE CPP /nologo /MD /W3 /GX /Ox /Gy /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=0  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Ox /Gy /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=0  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /Ox /Gy /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=0  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_NOT_DLL" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Ox /Gy /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=0  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_NOT_DLL" /FD /c
 RSC=rc.exe
 # ADD BASE RSC /l 0x414 /d "NDEBUG"
 # ADD RSC /l 0x414 /d "NDEBUG"
@@ -71,8 +71,8 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 MTL=midl.exe
 CPP=cl.exe
-# ADD BASE CPP /nologo /MD /W3 /GX /GZ /Od /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=1  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /GZ /Od /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=1  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_DLL" /FD /c
+# ADD BASE CPP /nologo /MDd /W3 /GX /GZ /Od /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=1  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_NOT_DLL" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /GZ /Od /Zi /I "lib" /I "..\..\lib" /I "." /I "$(COINDIR)\include" /I "$(COINDIR)\include\Inventor\annex" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_LIB" /D SMALLCHANGE_DEBUG=1  /D "HAVE_CONFIG_H" /D "SMALLCHANGE_INTERNAL" /D "COIN_NOT_DLL" /FD /c
 RSC=rc.exe
 # ADD BASE RSC /l 0x414 /d "_DEBUG"
 # ADD RSC /l 0x414 /d "_DEBUG"
@@ -109,8 +109,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 $(COINDIR)\lib\coin2.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(COINDIR)\lib\coin2.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /out:"smallchange1.dll" /opt:nowin98
+# ADD BASE LINK32 $(COINDIR)\lib\coin3.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /release /machine:I386 /pdbtype:sept
+# ADD LINK32 $(COINDIR)\lib\coin3.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /release /machine:I386 /pdbtype:sept /out:"smallchange1.dll" /opt:nowin98
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
@@ -138,8 +138,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 $(COINDIR)\lib\coin2d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /out:"smallchange1d.dll" /opt:nowin98
+# ADD BASE LINK32 $(COINDIR)\lib\coin3d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 $(COINDIR)\lib\coin3d.lib opengl32.lib gdi32.lib winmm.lib user32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept /out:"smallchange1d.dll" /opt:nowin98
 
 !ENDIF
 
@@ -772,6 +772,19 @@ SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2.cpp
 # PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
 !ENDIF
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\nodes\SmTextureFont.cpp
+!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
+# End Source File
 # End Group
 # Begin Group "SmallChange/elements sources"
 # PROP Default_Filter "c;cpp;ic;icc;h"
@@ -1252,6 +1265,10 @@ SOURCE=..\..\lib\SmallChange\nodes\SmLazyFile.h
 # Begin Source File
 
 SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\nodes\SmTextureFont.h
 # End Source File
 # End Group
 # Begin Group "SmallChange\elements headers"

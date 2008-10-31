@@ -47,6 +47,7 @@ del %COINDIR%\include\SmallChange\nodes\SmShadowText2.h
 del %COINDIR%\include\SmallChange\nodes\SmTrack.h
 del %COINDIR%\include\SmallChange\nodes\SmLazyFile.h
 del %COINDIR%\include\SmallChange\nodes\SmTextureText2.h
+del %COINDIR%\include\SmallChange\nodes\SmTextureFont.h
 del %COINDIR%\include\SmallChange\elements\UTMElement.h
 del %COINDIR%\include\SmallChange\elements\GLDepthBufferElement.h
 del %COINDIR%\include\SmallChange\engines\Rot2Heading.h

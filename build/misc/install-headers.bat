@@ -47,6 +47,7 @@ copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmShadowText2.h %COINDIR%\include\
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmTrack.h %COINDIR%\include\SmallChange\nodes\SmTrack.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmLazyFile.h %COINDIR%\include\SmallChange\nodes\SmLazyFile.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmTextureText2.h %COINDIR%\include\SmallChange\nodes\SmTextureText2.h >nul:
+copy /Y ..\%msvc%\..\..\lib\SmallChange\nodes\SmTextureFont.h %COINDIR%\include\SmallChange\nodes\SmTextureFont.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\elements\UTMElement.h %COINDIR%\include\SmallChange\elements\UTMElement.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\elements\GLDepthBufferElement.h %COINDIR%\include\SmallChange\elements\GLDepthBufferElement.h >nul:
 copy /Y ..\%msvc%\..\..\lib\SmallChange\engines\Rot2Heading.h %COINDIR%\include\SmallChange\engines\Rot2Heading.h >nul:

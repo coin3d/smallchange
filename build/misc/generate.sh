@@ -4,12 +4,27 @@
 #
 # 20041214 larsa
 
-projname=smallchange1
+project=smallchange1
 
-rm -f ${projname}.dsp ${projname}.dsw ${projname}.vcproj ${projname}.sln install-headers.bat uninstall-headers.bat
-rm -f ${projname}_docs.dsp ${projname}_docs.vcproj
-rm -f ${projname}_install.dsp ${projname}_install.vcproj
-rm -f ${projname}_uninstalldocs.dsp ${projname}_uninstall.vcproj
+function cleansolution() {
+  name=$1;
+  rm -f ${name}.dsw ${name}.sln;
+}
+
+function cleanproject() {
+  name=$1;
+  rm -f ${name}.dsp ${name}.vcproj;
+}
+
+proper=true;
+
+cleansolution ${project}
+cleanproject ${project}
+cleanproject ${project}_install
+cleanproject ${project}_uninstall
+cleanproject ${project}_docs
+
+rm -f install-headers.bat uninstall-headers.bat
 
 build_pwd=`pwd`
 build="`cygpath -w $build_pwd | sed -e 's/\\\\/\\\\\\\\/g'`"
@@ -21,15 +36,20 @@ source_pwd="`(cd ../..; pwd) | sed -e 's/\\//\\\\\\\\/g'`"
 
 ../../configure --with-msvcrt=mtd --with-suffix=d \
   --enable-debug --enable-symbols || exit 1
-mv config.h lib/config-debug.h
+test -f src/config.h && mv src/config.h src/config-debug.h
+test -f lib/config.h && mv lib/config.h lib/config-debug.h
+test -f config.h && mv config.h config-debug.h
 
 ../../configure --enable-msvcdsp --with-msvcrt=mt \
   --disable-debug --disable-symbols --enable-optimization || exit 1
-mv config.h lib/config-release.h
+test -f src/config.h && mv src/config.h src/config-release.h
+test -f lib/config.h && mv lib/config.h lib/config-release.h
+test -f config.h && mv config.h config-release.h
 
-cp ../misc/config-wrapper.h lib/config.h
+test -f src/config-debug.h && cp ../misc/config-wrapper.h src/config.h
+test -f lib/config-debug.h && cp ../misc/config-wrapper.h lib/config.h
+test -f config-debug.h && cp ../misc/config-wrapper.h config.h
 
-# if test x"" != x"--use-msvc6"; then
 make || exit 1
 
 sed \
@@ -37,9 +57,14 @@ sed \
   -e "s/$build_pwd//g" \
   -e "s/$source/..\\\\../g" \
   -e "s/$source_pwd/..\\\\../g" \
+  -e 's/COIN_DLL/COIN_NOT_DLL/g' \
+  -e '/_MAKE_DLL/ { s/COIN_NOT_DLL/COIN_DLL/g; }' \
+  -e '/^# ADD .*LINK32.*\/debug/ { s/COINDIR)\\lib\\coin3.lib/COINDIR)\\lib\\coin3d.lib/g; }' \
+  -e '/^# ADD .*LINK32.*\/debug/ { s/QTDIR)\\lib\\Qt\([^ ]*\)4.lib/QTDIR)\\lib\\Qt\1d4.lib/g; }' \
   -e 's/$/\r/g' \
-  <${projname}.dsp >new.dsp
-mv new.dsp ${projname}.dsp
+  <${project}.dsp >new.dsp
+
+mv new.dsp ${project}.dsp
 
 sed \
   -e "s/$build/./g" \
@@ -48,7 +73,8 @@ sed \
   -e "s/$source_pwd/..\\\\../g" \
   -e 's/$/\r/g' \
   <install-headers.bat >new.bat
-mv -f new.bat ../misc/install-headers.bat
+
+mv new.bat ../misc/install-headers.bat
 
 sed \
   -e "s/$build/./g" \
@@ -57,11 +83,20 @@ sed \
   -e "s/$source_pwd/..\\\\../g" \
   -e 's/$/\r/g' \
   <uninstall-headers.bat >new.bat
-mv -f new.bat ../misc/uninstall-headers.bat
 
-echo "* Update smallchange1.dsp to have 2x 'End Group' over 'Public Headers'."
-echo "* Update Coin link library for DLL Debug to use coin2d.lib."
-echo "* Upgrade project files with devenv if necessary."
+mv new.bat ../misc/uninstall-headers.bat
+
+echo "Done."
+echo ""
+echo "* Make sure there are no absolute paths in the project files"
+grep -i c: ${project}.dsp ${project}.dsw
+echo "* Make sure 'Public Headers' group is preceded by 2s 'End Group' lines."
+echo "* Fix up DLL library dependencies, so Debug Builds use debug dependencies."
+echo "* Upgrade project files by running devenv soqt1.dsw"
+echo "* Run ./fixvcproj.sh if you are using msvc7."
+
+find . -name "moc_*" | xargs rm -f
 
 # How can I avoid the modal upgrade prompt-dialog for MSVC7.1 here???
-# devenv /command "File.OpenProject $build\\smallchange1.dsp"
+# devenv /command "File.OpenProject $build\\${project}.dsp"
+

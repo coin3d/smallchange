@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
-	Name="smallchange1_docs"
-	ProjectGUID="{548B75E8-E9C2-4FC9-875D-F09B7D01032B}"
+	Version="9.00"
+	Name="smallchange1_uninstall"
+	ProjectGUID="{A06F65DD-36B8-4B33-A84C-013C4FEC716A}"
 	Keyword="MakeFileProj"
+	TargetFrameworkVersion="0"
 	>
 	<Platforms>
 		<Platform
@@ -25,10 +26,10 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="..\misc\build-docs.bat dll debug msvc8 smallchange1"
-				ReBuildCommandLine="..\misc\build-docs.bat dll debug msvc8 smallchange1 "
+				BuildCommandLine="..\misc\uninstall-sdk.bat dll debug msvc9 smallchange1"
+				ReBuildCommandLine="..\misc\uninstall-sdk.bat dll debug msvc9 smallchange1 "
 				CleanCommandLine=""
-				Output="smallchange1_docs.exe"
+				Output="smallchange1_uninstall.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
 				ForcedIncludes=""
@@ -48,10 +49,10 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="..\misc\build-docs.bat dll release msvc8 smallchange1"
-				ReBuildCommandLine="..\misc\build-docs.bat dll release msvc8 smallchange1 "
+				BuildCommandLine="..\misc\uninstall-sdk.bat dll release msvc9 smallchange1"
+				ReBuildCommandLine="..\misc\uninstall-sdk.bat dll release msvc9 smallchange1 "
 				CleanCommandLine=""
-				Output="smallchange1_docs.exe"
+				Output="smallchange1_uninstall.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
 				ForcedIncludes=""
@@ -71,10 +72,10 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="..\misc\build-docs.bat lib release msvc8 smallchange1"
-				ReBuildCommandLine="..\misc\build-docs.bat lib release msvc8 smallchange1 "
+				BuildCommandLine="..\misc\uninstall-sdk.bat lib release msvc9 smallchange1"
+				ReBuildCommandLine="..\misc\uninstall-sdk.bat lib release msvc9 smallchange1 "
 				CleanCommandLine=""
-				Output="smallchange1_docs.exe"
+				Output="smallchange1_uninstall.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
 				ForcedIncludes=""
@@ -94,10 +95,10 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="..\misc\build-docs.bat lib debug msvc8 smallchange1"
-				ReBuildCommandLine="..\misc\build-docs.bat lib debug msvc8 smallchange1 "
+				BuildCommandLine="..\misc\uninstall-sdk.bat lib debug msvc9 smallchange1"
+				ReBuildCommandLine="..\misc\uninstall-sdk.bat lib debug msvc9 smallchange1 "
 				CleanCommandLine=""
-				Output="smallchange1_docs.exe"
+				Output="smallchange1_uninstall.exe"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
 				ForcedIncludes=""
@@ -115,15 +116,11 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;bat"
 			>
 			<File
-				RelativePath="..\misc\build-docs.bat"
+				RelativePath="..\misc\uninstall-headers.bat"
 				>
 			</File>
 			<File
-				RelativePath="..\html\index.html"
-				>
-			</File>
-			<File
-				RelativePath="docs\smallchange1.doxygen"
+				RelativePath="..\misc\uninstall-sdk.bat"
 				>
 			</File>
 		</Filter>

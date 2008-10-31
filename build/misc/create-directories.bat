@@ -44,6 +44,7 @@ if exist misc\*.* goto miscexists
 echo mkdir %COINDIR%\include\SmallChange\misc
 mkdir misc
 :miscexists
+if exist nodekits\*.* goto nodekitsexists
 echo mkdir %COINDIR%\include\SmallChange\nodekits
 mkdir nodekits
 :nodekitsexists
