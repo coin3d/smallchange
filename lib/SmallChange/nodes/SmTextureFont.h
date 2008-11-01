@@ -30,6 +30,7 @@
 #include <Inventor/elements/SoReplacedElement.h>
 #include <Inventor/elements/SoSubElement.h>
 #include <Inventor/SbVec2f.h>
+#include <Inventor/SbDict.h>
 #include <SmallChange/basic.h>
 
 class SoGLImage;
@@ -48,11 +49,18 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     void addGlyph(unsigned char c, const SbImage & image);
     void setGlyphWidth(unsigned char c, short w);
     short getGlyphWidth(unsigned char c) const;
-    
-    const SbVec2s & getGlyphSize() const;
-    SoGLImage * getGLImage(void) const;
-    SbVec2s getGlyphPositionPixels(unsigned char c);
 
+    void setKerning(unsigned char glyph, unsigned char next, short kerning);
+    short getKerning(unsigned char glyph, unsigned char next) const;
+    
+    SoGLImage * getGLImage(void) const;
+
+    SbVec2s getGlyphPositionPixels(unsigned char c) const;
+    const SbVec2s & getGlyphSizePixels() const;
+
+    SbVec2f getGlyphPosition(unsigned char c) const;
+    SbVec2f getGlyphSize(unsigned char c) const;
+    
   private:
     FontImage();
     
@@ -61,10 +69,12 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     SbVec2s glyphsize;
     SoGLImage * glimage;
     short glyphwidth[256];
-
+    SbDict kerningdict;
   };
 
   static void initClass(void);
+  static void destroyClass(void);
+
   SmTextureFont(void);
   
   virtual void doAction(SoAction * action);

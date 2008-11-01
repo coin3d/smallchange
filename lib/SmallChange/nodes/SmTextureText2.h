@@ -30,8 +30,8 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFEnum.h>
-
 #include <SmallChange/basic.h>
+#include <SmallChange/nodes/SmTextureFont.h>
 
 class SbViewVolume;
 class SbViewportRegion;
@@ -76,9 +76,8 @@ protected:
 
 private:
 
-  static void destroyClass(void);
-
-  void renderString(const SbString * s,
+  void renderString(const SmTextureFont::FontImage * font,
+                    const SbString * s,
                     const int numstring,
                     const SbVec3f & pos,
                     const SbViewVolume & vv,
@@ -87,30 +86,11 @@ private:
                     const SbMatrix & modelmatrix,
                     const SbMatrix & invmodelmatrix);
 
-  void renderBorder(const SbString * s,
-                    const int numstring,
-                    const SbVec3f & pos,
-                    const SbViewVolume & vv,
-                    const SbViewportRegion & vp,
-                    const SbMatrix & projmatrix,
-                    const SbMatrix & modelmatrix,
-                    const SbMatrix & invmodelmatrix);
-
-  void oldRenderString(const SbString * s,
-                       const int numstring,
-                       const SbVec3f & pos,
-                       const SbViewVolume & vv,
-                       const SbViewportRegion & vp,
-                       const SbMatrix & projmatrix,
-                       const SbMatrix & modelmatrix,
-                       const SbMatrix & invmodelmatrix);
-
-  static unsigned char * create_texture(void);
-  static void get_text_pixmap_position(const int idx, int & x, int & y);
   static void render_text(unsigned char * dst,
-                          const int idx, const int x, const int y,
+                          const int idx,
                           const unsigned char value,
                           const unsigned char alpha);
+
 };
 
 #endif
