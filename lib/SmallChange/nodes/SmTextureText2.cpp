@@ -142,29 +142,23 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   SoState * state = action->getState();
   state->push();
   SoCacheElement::invalidate(state);
-
-  SoShapeStyleElement::setTransparentMaterial(state, TRUE);
+  // turn off any texture coordinate functions
+  SoGLTextureCoordinateElement::setTexGen(action->getState(), this, NULL);
+  SoTextureQualityElement::set(state, 0.0f);
+  const SmTextureFont::FontImage * font = SmTextureFontElement::get(state);
+  SoGLTextureImageElement::set(state, this,
+                               font->getGLImage(),
+                               SoTextureImageElement::MODULATE,
+                               SbColor(1.0f, 1.0f, 1.0f));
+  SoGLTextureEnabledElement::set(state, this, TRUE);
 
   if (!this->shouldGLRender(action)) {
     state->pop();
     return;
   }
 
-  // turn off any texture coordinate functions
-  SoGLTextureCoordinateElement::setTexGen(action->getState(), this, NULL);
-
   // set up my font texture
-  SoTextureQualityElement::set(state, 0.0f);
-  SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
-
-  const SmTextureFont::FontImage * font = SmTextureFontElement::get(state);
-
-  SoGLTextureImageElement::set(state, this,
-                               font->getGLImage(),
-                               SoTextureImageElement::MODULATE,
-                               SbColor(1.0f, 1.0f, 1.0f));
-  SoGLTextureEnabledElement::set(state, this, TRUE);
-  
+  SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR); 
   SoMaterialBundle mb(action);
   mb.sendFirst(); // make sure we have the correct material
 
