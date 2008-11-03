@@ -338,12 +338,6 @@ SmAnnotationAxisP::add_anno_text(const int level,
 
   if ((mid == i0) || (mid == i1)) return;
 
-  // do some fast view frustum culling
-  if (p[0][0] < -1.0f && p[2][0] < -1.0f) return;
-  if (p[0][1] < -1.0f && p[2][1] < -1.0f) return;
-  if (p[0][0] > 1.0f && p[2][0] > 1.0f) return;
-  if (p[0][1] > 1.0f && p[2][1] > 1.0f) return;
-
   if (p[1][2] < 1.0f) {
     SbBool add = FALSE;
     float len = 0.0f;
