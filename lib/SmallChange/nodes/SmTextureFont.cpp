@@ -185,9 +185,16 @@ static SmTextureFont::FontImage * default_font = NULL;
 
 /**************************************************************************/
 
-SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in, const int numcomp)
+SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in, 
+                                    const int leading_in,
+                                    const int ascent_in,
+                                    const int descent_in,
+                                    const int numcomp)
+  : glyphsize(glyphsize_in),
+    leading(leading_in),
+    ascent(ascent_in),
+    descent(descent_in)
 {
-  this->glyphsize = glyphsize_in;
   for (int i = 0; i < 256; i++) {
     this->glyphwidth[i] =  0;
   }
@@ -369,6 +376,24 @@ SmTextureFont::FontImage::findGlyphWidth(const SbImage & glyph)
   return x+1;
 }
 
+int 
+SmTextureFont::FontImage::getLeading() const
+{
+  return this->leading;
+}
+
+int 
+SmTextureFont::FontImage::getAscent() const
+{
+  return this->ascent;
+}
+
+int 
+SmTextureFont::FontImage::getDescent() const
+{
+  return this->descent;
+}
+
 const SbVec2s & 
 SmTextureFont::FontImage::getGlyphSizePixels() const
 {
@@ -417,7 +442,11 @@ SmTextureFont::initClass(void)
   SO_ENABLE(SoPickAction, SmTextureFontElement);
   SO_ENABLE(SoGetBoundingBoxAction, SmTextureFontElement);
 
-  default_font = new SmTextureFont::FontImage(SbVec2s(8,12), 2);
+  default_font = new SmTextureFont::FontImage(SbVec2s(8,12), 
+                                              0,
+                                              8,
+                                              3,
+                                              2);
   SbImage img(NULL, SbVec2s(8,12), 2);
   for (size_t c = 0; c < sizeof(texturetext_isolatin1_mapping) / sizeof(int); c++) {
     SbVec2s dummy;
@@ -480,6 +509,11 @@ SmTextureFont::setFont(FontImage * image)
   this->image = image;
 }
 
+SmTextureFont::FontImage * 
+SmTextureFont::getFont(void) const
+{
+  return this->image;
+}
 
 /**************************************************************************/
 
@@ -511,7 +545,12 @@ SmTextureFontElement::set(SoState * state,
                            classStackIndex,
                            node));
   
-  elem->image = image;
+  if (image) {
+    elem->image = image;
+  }
+  else {
+    elem->image = default_font;
+  }
 }
 
 const SmTextureFont::FontImage * 

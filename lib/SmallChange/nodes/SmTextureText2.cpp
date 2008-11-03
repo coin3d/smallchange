@@ -305,8 +305,8 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
   projmatrix.multVecMatrix(pos, screenpoint);
   
   int xmin = 0;
-  int ymax = glyphsize[1];
-  int ymin = ymax - numstring * glyphsize[1];
+  int ymax = font->getAscent();
+  int ymin = ymax - numstring * glyphsize[1] + (numstring-1) * font->getLeading();
   
   short h = ymax - ymin;
   short halfh = h / 2;
@@ -359,10 +359,10 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
 
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
-                         sp[1] + ymax - (i+1)*glyphsize[1]);
+                         sp[1] + ymax - (i+1)*glyphsize[1] - i * font->getLeading());
     SbVec2s n1 = SbVec2s(sp[0] + xmax,
-                         sp[1] + ymax - i* glyphsize[1]);
-    
+                         sp[1] + ymax - i * (glyphsize[1] + font->getLeading()));
+                         
     short w = (short) widthlist[i]; 
     short halfw = w / 2;
 

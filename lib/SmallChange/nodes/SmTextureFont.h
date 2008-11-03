@@ -43,7 +43,11 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
  public:
   class FontImage : public SbImage {
   public:
-    FontImage(const SbVec2s glyphsize, const int numcomponents);
+    FontImage(const SbVec2s glyphsize, 
+              const int leading,
+              const int ascent,
+              const int descent,
+              const int numcomponents);
     ~FontImage();
 
     void addGlyph(unsigned char c, const SbImage & image);
@@ -61,15 +65,23 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     SbVec2f getGlyphPosition(unsigned char c) const;
     SbVec2f getGlyphSize(unsigned char c) const;
     
+    int getLeading() const;
+    int getAscent() const;
+    int getDescent() const;
+
   private:
     FontImage();
     
     short findGlyphWidth(const SbImage & glyph);
     void copyGlyph(unsigned char c, const SbImage & glyph);
     SbVec2s glyphsize;
+    int leading;
+    int ascent;
+    int descent;
     SoGLImage * glimage;
     short glyphwidth[256];
     SbDict kerningdict;
+    
   };
 
   static void initClass(void);
@@ -82,7 +94,8 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
   virtual void pick(SoPickAction * action);
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
 
-  void setFont(FontImage * image);
+  virtual void setFont(FontImage * image);
+  virtual FontImage * getFont(void) const;
 
  protected:
   virtual ~SmTextureFont();
