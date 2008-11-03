@@ -76,7 +76,7 @@ protected:
 
 private:
 
-  void renderString(const SmTextureFont::FontImage * font,
+  void renderString(const SmTextureFontBundle & bundle,
                     const SbString * s,
                     const int numstring,
                     const SbVec3f & pos,

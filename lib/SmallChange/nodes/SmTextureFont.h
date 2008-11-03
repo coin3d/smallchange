@@ -35,6 +35,7 @@
 
 class SoGLImage;
 
+
 class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
   typedef SoNode inherited;
   
@@ -131,6 +132,39 @@ class SMALLCHANGE_DLL_API SmTextureFontElement : public SoReplacedElement {
   
  private:
   SmTextureFont::FontImage * image;
+};
+
+class SMALLCHANGE_DLL_API SmTextureFontBundle {
+ public:
+  SmTextureFontBundle(SoState * state, SoNode * node);
+  ~SmTextureFontBundle();
+
+  void begin() const;
+  void renderString(const SbString & string,
+		    const SbVec3f & pos) const;
+  void end() const;
+  int stringWidth(const SbString & s) const {
+    return this->font->stringWidth(s);
+  }
+  int getLeading() const {
+    return this->font->getLeading();
+  }
+  int getAscent() const {
+    return this->font->getAscent();
+  }
+  int getDescent() const {
+    return this->font->getDescent();
+  }
+  int height() const {
+    return this->font->height();
+  }
+
+ private:
+  
+  SoState * state;
+  SoNode * node;
+  bool didupdatecoin;
+  const SmTextureFont::FontImage * font;
 };
 
 

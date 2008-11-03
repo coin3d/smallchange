@@ -657,5 +657,64 @@ SmTextureFontElement::get(SoState * const state)
   return elem->image;
 }
 
-  
+/**************************************************************************/
+
+#include <Inventor/elements/SoTextureQualityElement.h>
+#include <Inventor/elements/SoLightModelElement.h>
+#include <Inventor/elements/SoGLTextureImageElement.h>
+#include <Inventor/elements/SoGLTextureCoordinateElement.h>
+#include <Inventor/elements/SoGLTextureEnabledElement.h>
+#include <Inventor/elements/SoGLLazyElement.h>
+#include <Inventor/elements/SoLightModelElement.h>
+
+SmTextureFontBundle::SmTextureFontBundle(SoState * state_in, SoNode * node_in)
+  : state(state_in),
+    node(node_in),
+    didupdatecoin(false),
+    font(SmTextureFontElement::get(state_in))
+{
+  this->state->push();
+  // update these elements here to make blending work
+  SoGLTextureImageElement::set(this->state, this->node,
+			       this->font->getGLImage(),
+			       SoTextureImageElement::MODULATE,
+			       SbColor(1.0f, 1.0f, 1.0f));
+  SoGLTextureEnabledElement::set(this->state, this->node, TRUE);
+}
+
+SmTextureFontBundle::~SmTextureFontBundle()
+{
+  this->state->pop();
+}
+
+void 
+SmTextureFontBundle::begin() const
+{
+  if (!this->didupdatecoin) {
+    // turn off any texture coordinate functions
+    SoLazyElement::setVertexOrdering(this->state, SoLazyElement::CCW);
+    SoGLTextureCoordinateElement::setTexGen(this->state, this->node, NULL);
+    SoTextureQualityElement::set(this->state, 0.0f);
+    SoLightModelElement::set(this->state, SoLightModelElement::BASE_COLOR); 
+    SoGLLazyElement::getInstance(this->state)->send(this->state, 
+						    SoLazyElement::ALL_MASK); 
+    const_cast<SmTextureFontBundle*> (this)->didupdatecoin = true;
+  }
+  glBegin(GL_QUADS);
+}
+
+void 
+SmTextureFontBundle::end() const
+{
+  glEnd();
+}
+
+void 
+SmTextureFontBundle::renderString(const SbString & string,
+				  const SbVec3f & pos) const
+{
+  this->font->renderString(string, pos, false);
+}
+
+
 /**************************************************************************/

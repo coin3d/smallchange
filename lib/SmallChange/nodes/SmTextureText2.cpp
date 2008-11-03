@@ -140,20 +140,11 @@ void
 SmTextureText2::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
-  state->push();
+  
+  SmTextureFontBundle bundle(state, this);
   SoCacheElement::invalidate(state);
-  // turn off any texture coordinate functions
-  SoGLTextureCoordinateElement::setTexGen(action->getState(), this, NULL);
-  SoTextureQualityElement::set(state, 0.0f);
-  const SmTextureFont::FontImage * font = SmTextureFontElement::get(state);
-  SoGLTextureImageElement::set(state, this,
-                               font->getGLImage(),
-                               SoTextureImageElement::MODULATE,
-                               SbColor(1.0f, 1.0f, 1.0f));
-  SoGLTextureEnabledElement::set(state, this, TRUE);
-
+  
   if (!this->shouldGLRender(action)) {
-    state->pop();
     return;
   }
 
@@ -196,14 +187,12 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     SoMaterialBindingElement::get(state) !=
     SoMaterialBindingElement::OVERALL;
 
-  glPushAttrib(GL_ENABLE_BIT);
-  glDisable(GL_CULL_FACE);
   if (num > 1) {
     for (int i = 0; i < num; i++) {
       if (perpart) {
         mb.send(i, FALSE);
       }
-      this->renderString(font,
+      this->renderString(bundle,
                          &s[SbMin(i, numstring-1)], 1,
                          pos[i],
                          vv,
@@ -214,7 +203,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     }
   }
   else {
-    this->renderString(font,
+    this->renderString(bundle,
                        &s[0],
                        numstring,
                        num > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f),
@@ -224,13 +213,9 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                        modelmatrix,
                        inv);
   }
-  glPopAttrib();
-
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
-
-  state->pop();
 }
 
 void
@@ -277,7 +262,7 @@ static SbBool get_screenpoint_pixels(const SbVec3f & screenpoint,
 }
 
 void
-SmTextureText2::renderString(const SmTextureFont::FontImage * font,
+SmTextureText2::renderString(const SmTextureFontBundle & bundle,
                              const SbString * s,
                              const int numstring,
                              const SbVec3f & pos,
@@ -287,7 +272,6 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
                              const SbMatrix & modelmatrix,
                              const SbMatrix & invmodelmatrix)
 {
-  SbVec2s glyphsize = font->getGlyphSizePixels();
   // get distance from pos to camera plane
   SbVec3f tmp;
   modelmatrix.multVecMatrix(pos, tmp);
@@ -305,8 +289,8 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
   projmatrix.multVecMatrix(pos, screenpoint);
   
   int xmin = 0;
-  int ymax = font->getAscent();
-  int ymin = ymax - numstring * glyphsize[1] + (numstring-1) * font->getLeading();
+  int ymax = bundle.getAscent();
+  int ymin = ymax - numstring * bundle.height() + (numstring-1) * bundle.getLeading();
   
   short h = ymax - ymin;
   short halfh = h / 2;
@@ -330,11 +314,11 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
   int maxw = 0; 
   
   for (i = 0; i < numstring; i++) {
-    widthlist.append(font->stringWidth(s[i]));
+    widthlist.append(bundle.stringWidth(s[i]));
   }
   int xmax = xmin + maxw;
 
-  glBegin(GL_QUADS);
+  bundle.begin();
   for (i = 0; i < numstring; i++) {
 
     int len = s[i].getLength();
@@ -349,7 +333,7 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
 
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
-                         sp[1] + ymax - (i+1)*glyphsize[1] - i * font->getLeading());
+                         sp[1] + ymax - (i+1)*bundle.height() - i * bundle.getLeading());
 
     short w = (short) widthlist[i]; 
     short halfw = w / 2;
@@ -367,9 +351,9 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
       assert(0 && "unknown alignment");
       break;
     }
-    font->renderString(s[i], SbVec3f(n0[0], n0[1], screenpoint[2]), false);
+    bundle.renderString(s[i], SbVec3f(n0[0], n0[1], screenpoint[2]));
   }
-  glEnd();
+  bundle.end();
 }
 
 
