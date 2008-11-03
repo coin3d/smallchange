@@ -189,8 +189,9 @@ SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in,
                                     const int leading_in,
                                     const int ascent_in,
                                     const int descent_in,
-                                    const int numcomp)
+                                    const int numcomp_in)
   : glyphsize(glyphsize_in),
+    numcomp(numcomp_in),
     leading(leading_in),
     ascent(ascent_in),
     descent(descent_in)
@@ -257,6 +258,31 @@ SmTextureFont::FontImage::getGlyphPosition(unsigned char c) const
   SbVec2s pos = this->getGlyphPositionPixels(c);
   return SbVec2f(float(pos[0])/float(size[0]),
                  float(pos[1])/float(size[1]));
+}
+
+/*!
+  Returns the glyph image for \a c.
+ */
+SbImage 
+SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
+{
+  SbVec2s pos = this->getGlyphPositionPixels(c);
+
+  SbImage image(NULL, this->glyphsize, this->numcomp);
+  SbVec2s size, fullsize;
+  int nc;
+ 
+  unsigned char * dst = image.getValue(size, nc);
+  unsigned char * src = this->getValue(fullsize, nc);
+
+  for (short y = 0; y < size[1]; y++) {
+    for (short x = 0; x < size[0]; x++) {
+      for (int c = 0; c < nc; c++) {
+        *dst++ = src[(pos[1]+y)*fullsize[0]*nc + (pos[0]+x)*nc + c];
+      }
+    }
+  }
+  return image;
 }
 
 /*!

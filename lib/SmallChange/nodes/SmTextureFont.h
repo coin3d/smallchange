@@ -69,12 +69,15 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     int getAscent() const;
     int getDescent() const;
 
+    SbImage getGlyphImage(const unsigned char c) const;
+
   private:
     FontImage();
     
     short findGlyphWidth(const SbImage & glyph);
     void copyGlyph(unsigned char c, const SbImage & glyph);
     SbVec2s glyphsize;
+    int numcomp;
     int leading;
     int ascent;
     int descent;
