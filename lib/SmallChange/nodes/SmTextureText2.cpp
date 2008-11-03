@@ -328,20 +328,9 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
   }
   SbList <int> widthlist;
   int maxw = 0; 
-
+  
   for (i = 0; i < numstring; i++) {
-    //Using sptr as index into a table, so casting to unsigned to
-    //avoid negative indices.
-    const unsigned char * sptr =
-      reinterpret_cast<const unsigned char *>(s[i].getString());
-    int len = s[i].getLength();
-
-    int w = 0;
-    for (int j = 0; j < len; j++) {
-      w += font->getKerning(sptr[j], sptr[j+1]);
-    }
-    if (w > maxw) maxw = w;
-    widthlist.append(w);
+    widthlist.append(font->stringWidth(s[i]));
   }
   int xmax = xmin + maxw;
 

@@ -68,9 +68,11 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     int getLeading() const;
     int getAscent() const;
     int getDescent() const;
+    int height() const;
 
     SbImage getGlyphImage(const unsigned char c) const;
 
+    int stringWidth(const SbString & s) const;
     void renderString(const SbString & s,
                       const SbVec3f & pos,
                       const bool needglbeginend = true) const;
@@ -102,7 +104,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
   virtual void getBoundingBox(SoGetBoundingBoxAction * action);
 
   virtual void setFont(FontImage * image);
-  virtual FontImage * getFont(void) const;
+  virtual const FontImage * getFont(void) const;
 
  protected:
   virtual ~SmTextureFont();

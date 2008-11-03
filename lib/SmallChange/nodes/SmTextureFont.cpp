@@ -287,6 +287,21 @@ SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
 }
 
 /*!
+  Convenience method that calculates the width (in pixels) for \a s.
+*/
+int
+SmTextureFont::FontImage::stringWidth(const SbString & s) const
+{
+  int acc = 0;
+  const int len = s.getLength();
+  const unsigned char * sptr =  reinterpret_cast<const unsigned char *>(s.getString());
+  for (int i = 0; i < len; i++) {
+    acc += this->getKerning(sptr[i], sptr[i+1]);
+  }
+  return acc;
+}
+
+/*!
   
   Convenience method to render \a s at postion \a pos. This function
   assumed a coordinate system with 1 pixel == 1 unit is set up.
@@ -465,6 +480,15 @@ SmTextureFont::FontImage::getDescent() const
   return this->descent;
 }
 
+/*!
+  Returns the height of the font (ascent + descent + 1).
+*/
+int 
+SmTextureFont::FontImage::height() const
+{
+  return this->ascent + this->descent + 1;
+}
+
 const SbVec2s & 
 SmTextureFont::FontImage::getGlyphSizePixels() const
 {
@@ -580,7 +604,7 @@ SmTextureFont::setFont(FontImage * image)
   this->image = image;
 }
 
-SmTextureFont::FontImage * 
+const SmTextureFont::FontImage * 
 SmTextureFont::getFont(void) const
 {
   return this->image;
