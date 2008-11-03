@@ -206,7 +206,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD = \
 
 # **************************************************************************
 libSmallChangeincdir = $(includedir)/SmallChange
-libSmallChangeinc_HEADERS = basic.h
+libSmallChangeinc_HEADERS = basic.h SmallChange.h
 subdir = lib/SmallChange
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/cfg/mkinstalldirs

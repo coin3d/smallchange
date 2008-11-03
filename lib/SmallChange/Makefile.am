@@ -42,7 +42,7 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib: Makefile \
 # **************************************************************************
 
 libSmallChangeincdir = $(includedir)/SmallChange
-libSmallChangeinc_HEADERS = basic.h
+libSmallChangeinc_HEADERS = basic.h SmallChange.h
 
 # **************************************************************************
 

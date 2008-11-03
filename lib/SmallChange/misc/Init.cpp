@@ -26,6 +26,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <SmallChange/misc/Init.h>
+#include <SmallChange/SmallChange.h>
 #include <SmallChange/elements/GLDepthBufferElement.h>
 #include <SmallChange/nodes/AutoFile.h>
 #include <SmallChange/nodes/Coinboard.h>
@@ -89,6 +90,11 @@
 #include <SmallChange/nodes/SmTextureText2.h>
 #include <SmallChange/nodes/SmTextureFont.h>
 #include <SmallChange/nodes/SmShadowText2.h>
+
+void SmallChange::init(void)
+{
+  smallchange_init();
+}
 
 void
 smallchange_init(void)
