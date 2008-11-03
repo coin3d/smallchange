@@ -328,6 +328,7 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
   }
   SbList <int> widthlist;
   int maxw = 0; 
+
   for (i = 0; i < numstring; i++) {
     //Using sptr as index into a table, so casting to unsigned to
     //avoid negative indices.
@@ -360,9 +361,7 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
 
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
                          sp[1] + ymax - (i+1)*glyphsize[1] - i * font->getLeading());
-    SbVec2s n1 = SbVec2s(sp[0] + xmax,
-                         sp[1] + ymax - i * (glyphsize[1] + font->getLeading()));
-                         
+
     short w = (short) widthlist[i]; 
     short halfw = w / 2;
 
@@ -371,40 +370,17 @@ SmTextureText2::renderString(const SmTextureFont::FontImage * font,
       break;
     case SmTextureText2::RIGHT:
       n0[0] -= w;
-      n1[0] -= w;
       break;
     case SmTextureText2::CENTER:
       n0[0] -= halfw;
-      n1[0] -= halfw;
       break;
     default:
       assert(0 && "unknown alignment");
       break;
     }
-
-    short acc = 0;
-    for (int j = 0; j < len; j++) {
-      short gw = font->getGlyphWidth(sptr[j]);
-      SbVec2f t0 = font->getGlyphPosition(sptr[j]);
-      SbVec2f t1 = t0 + font->getGlyphSize(sptr[j]);
-
-      float n00 = n0[0]; // compile fix for gcc 3.2.3 (20070518 frodo)
-      SbVec3f c0(float(n00 + acc),     float(n1[1]), -screenpoint[2]);
-      SbVec3f c1(float(n00 + acc + gw), float(n1[1]), -screenpoint[2]);
-      SbVec3f c2(float(n00 + acc + gw), float(n0[1]), -screenpoint[2]);
-      SbVec3f c3(float(n00 + acc),     float(n0[1]), -screenpoint[2]);
-      
-      acc += font->getKerning(sptr[j], sptr[j+1]);
-      glTexCoord2f(t0[0], t0[1]);
-      glVertex3fv(c0.getValue());
-      glTexCoord2f(t1[0], t0[1]);
-      glVertex3fv(c1.getValue());
-      glTexCoord2f(t1[0], t1[1]);
-      glVertex3fv(c2.getValue());
-      glTexCoord2f(t0[0], t1[1]);
-      glVertex3fv(c3.getValue());
-    }
+    font->renderString(s[i], SbVec3f(n0[0], n0[1], screenpoint[2]), false);
   }
   glEnd();
 }
+
 

@@ -71,6 +71,10 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
 
     SbImage getGlyphImage(const unsigned char c) const;
 
+    void renderString(const SbString & s,
+                      const SbVec3f & pos,
+                      const bool needglbeginend = true) const;
+
   private:
     FontImage();
     

@@ -36,6 +36,7 @@
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <assert.h>
 #include <Inventor/C/tidbits.h>
+#include <Inventor/system/gl.h>
 
 /**************************************************************************/
 
@@ -283,6 +284,50 @@ SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
     }
   }
   return image;
+}
+
+/*!
+  
+  Convenience method to render \a s at postion \a pos. This function
+  assumed a coordinate system with 1 pixel == 1 unit is set up.
+
+*/
+void 
+SmTextureFont::FontImage::renderString(const SbString & s,
+                                       const SbVec3f & pos,
+                                       const bool needglbeginend) const
+{
+  const unsigned char * sptr =  reinterpret_cast<const unsigned char *>(s.getString());
+  const int len = s.getLength();
+
+  const SbVec2f n0(pos[0], pos[1]);
+  const SbVec2f n1(n0[0], n0[1] + float(this->glyphsize[1]));
+  
+  if (needglbeginend) glBegin(GL_QUADS);
+
+  short acc  = 0;
+  for (int j = 0; j < len; j++) {
+    short gw = this->getGlyphWidth(sptr[j]);
+    SbVec2f t0 = this->getGlyphPosition(sptr[j]);
+    SbVec2f t1 = t0 + this->getGlyphSize(sptr[j]);
+    
+    float n00 = pos[0];
+    SbVec3f c0(float(n00 + acc),     float(n1[1]), -pos[2]);
+    SbVec3f c1(float(n00 + acc + gw), float(n1[1]), -pos[2]);
+    SbVec3f c2(float(n00 + acc + gw), float(n0[1]), -pos[2]);
+    SbVec3f c3(float(n00 + acc),     float(n0[1]), -pos[2]);
+    
+    acc += this->getKerning(sptr[j], sptr[j+1]);
+    glTexCoord2f(t0[0], t0[1]);
+    glVertex3fv(c0.getValue());
+    glTexCoord2f(t1[0], t0[1]);
+    glVertex3fv(c1.getValue());
+    glTexCoord2f(t1[0], t1[1]);
+    glVertex3fv(c2.getValue());
+    glTexCoord2f(t0[0], t1[1]);
+    glVertex3fv(c3.getValue());
+  }
+  if (needglbeginend) glEnd();  
 }
 
 /*!
