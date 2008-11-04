@@ -51,8 +51,10 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
               const int numcomponents);
     ~FontImage();
 
-    void addGlyph(unsigned char c, const SbImage & image);
-    void setGlyphWidth(unsigned char c, short w);
+    void addGlyph(unsigned char c, 
+		  const SbImage & image,
+		  const int width,
+		  const int gfxwidth = -1);
     short getGlyphWidth(unsigned char c) const;
 
     void setKerning(unsigned char glyph, unsigned char next, short kerning);
@@ -81,7 +83,6 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
   private:
     FontImage();
     
-    short findGlyphWidth(const SbImage & glyph);
     void copyGlyph(unsigned char c, const SbImage & glyph);
     SbVec2s glyphsize;
     int numcomp;
@@ -90,6 +91,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     int descent;
     SoGLImage * glimage;
     short glyphwidth[256];
+    short gfxglyphwidth[256];
     SbDict kerningdict;
     
   };
@@ -136,7 +138,7 @@ class SMALLCHANGE_DLL_API SmTextureFontElement : public SoReplacedElement {
 
 class SMALLCHANGE_DLL_API SmTextureFontBundle {
  public:
-  SmTextureFontBundle(SoState * state, SoNode * node);
+  SmTextureFontBundle(SoAction * action, SoNode * node = NULL);
   ~SmTextureFontBundle();
 
   void begin() const;

@@ -199,10 +199,8 @@ SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in,
 {
   for (int i = 0; i < 256; i++) {
     this->glyphwidth[i] =  0;
+    this->gfxglyphwidth[i] =  0;
   }
-  // FIXME: it should proably be possible to configure the width of the space character
-  this->glyphwidth[int(' ')] = glyphsize_in[0];
-
   // max glyphs = 256, sqrt(256) = 16
   int w = coin_geq_power_of_two(16 * glyphsize[0]);
   int h = coin_geq_power_of_two(16 * glyphsize[1]);
@@ -217,11 +215,21 @@ SmTextureFont::FontImage::~FontImage()
 }
 
 /*!
-  Adds the image for a glyph to the texture image. The size of the image must
-  be smaller than the glyphsize provided in the constructor.
+
+  Adds the image for a glyph to the texture image. The size of the
+  image must be smaller than the glyphsize provided in the
+  constructor. Glyphwidth is the number of pixels to advance before
+  rendering the next character.  gfxglyphwidth is the width of the
+  glyph in the bitmap. If you supply a negative number in
+  gfxglyphwidth, the width of the glyphs supplied in the constructor
+  will be used instead.
+
 */
 void 
-SmTextureFont::FontImage::addGlyph(unsigned char c, const SbImage & image)
+SmTextureFont::FontImage::addGlyph(unsigned char c,
+				   const SbImage & image,
+				   const int glyphwidth,
+				   const int gfxglyphwidth)
 {
   if (this->glimage) {
     this->glimage->unref();
@@ -231,7 +239,8 @@ SmTextureFont::FontImage::addGlyph(unsigned char c, const SbImage & image)
   int nc;
   unsigned char * bytes = image.getValue(size, nc);
   assert(size == this->glyphsize);
-  this->glyphwidth[c] = this->findGlyphWidth(image);
+  this->glyphwidth[c] = glyphwidth;
+  this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? gfxglyphwidth : this->glyphsize[0];  
   this->copyGlyph(c, image);
 }
 
@@ -355,7 +364,7 @@ SmTextureFont::FontImage::getGlyphSize(unsigned char c) const
   int dummy;
   (void) this->getValue(size, dummy);
   
-  return SbVec2f(float(this->glyphwidth[c]) / float(size[0]),
+  return SbVec2f(float(this->gfxglyphwidth[c]) / float(size[0]),
                  float(this->glyphsize[1]) / float(size[1]));
 }
 
@@ -378,22 +387,12 @@ SmTextureFont::FontImage::copyGlyph(unsigned char c, const SbImage & glyph)
 }
 
 /*!
-  Can be used to adjust the width of a glyph, if you want the text
-  node to offset more/less after rendering that specific glyph.
-*/
-void 
-SmTextureFont::FontImage::setGlyphWidth(unsigned char c, short w)
-{
-  this->glyphwidth[c] = w;
-}
-
-/*!
   Returns the width of the glyph in the texture. 
 */
 short 
 SmTextureFont::FontImage::getGlyphWidth(unsigned char c) const
 {
-  return this->glyphwidth[c];
+  return this->gfxglyphwidth[c];
 }
 
 /*!
@@ -419,7 +418,7 @@ SmTextureFont::FontImage::getKerning(unsigned char glyph, unsigned char next) co
   if (this->kerningdict.find(key, val)) {
     return (short) reinterpret_cast<uintptr_t> (val);
   }
-  return this->getGlyphWidth(glyph);
+  return this->glyphwidth[glyph];
 }
 
 /*!
@@ -435,31 +434,9 @@ SmTextureFont::FontImage::getGLImage(void) const
     SbVec2s size;
     int nc;
     unsigned char * bytes = this->getValue(size, nc);
-    thisp->glimage->setData(bytes, size, nc);
+    thisp->glimage->setData(bytes, size, nc, SoGLImage::CLAMP, SoGLImage::CLAMP, 0.3f);
   }
   return this->glimage;
-}
-
-short 
-SmTextureFont::FontImage::findGlyphWidth(const SbImage & glyph)
-{
-  SbVec2s size;
-  int nc;
-  unsigned char * bytes = glyph.getValue(size, nc);
-  
-  short x;
-  for (x = size[0]-1; x >= 0; x--) {
-    short y;
-    for (y = 0; y < size[1]; y++) {
-      int c;
-      for (c = 0; c < nc-1; c++) {
-        if (bytes[y*size[0]*nc+x*nc+c] != 0) break;
-      }
-      if (c < nc) break;
-    }
-    if (y < size[1]) break;
-  }
-  return x+1;
 }
 
 int 
@@ -548,7 +525,7 @@ SmTextureFont::initClass(void)
     int dummy2;
     render_text(img.getValue(dummy, dummy2), 
 		texturetext_isolatin1_mapping[c], 255, 255); 
-    default_font->addGlyph(c, img);
+    default_font->addGlyph(c, img, 7, 8);
   }
   cc_coin_atexit(destroyClass);
 }
@@ -667,14 +644,16 @@ SmTextureFontElement::get(SoState * const state)
 #include <Inventor/elements/SoGLLazyElement.h>
 #include <Inventor/elements/SoLightModelElement.h>
 
-SmTextureFontBundle::SmTextureFontBundle(SoState * state_in, SoNode * node_in)
-  : state(state_in),
+SmTextureFontBundle::SmTextureFontBundle(SoAction * action, SoNode * node_in)
+  : state(action->getState()),
     node(node_in),
     didupdatecoin(false),
-    font(SmTextureFontElement::get(state_in))
+    font(SmTextureFontElement::get(action->getState()))
 {
+  if (this->node == NULL) this->node = action->getCurPath()->getTail();
   this->state->push();
   // update these elements here to make blending work
+  SoTextureQualityElement::set(this->state, 0.3f);
   SoGLTextureImageElement::set(this->state, this->node,
 			       this->font->getGLImage(),
 			       SoTextureImageElement::MODULATE,
@@ -694,10 +673,10 @@ SmTextureFontBundle::begin() const
     // turn off any texture coordinate functions
     SoLazyElement::setVertexOrdering(this->state, SoLazyElement::CCW);
     SoGLTextureCoordinateElement::setTexGen(this->state, this->node, NULL);
-    SoTextureQualityElement::set(this->state, 0.0f);
     SoLightModelElement::set(this->state, SoLightModelElement::BASE_COLOR); 
     SoGLLazyElement::getInstance(this->state)->send(this->state, 
-						    SoLazyElement::ALL_MASK); 
+						    SoLazyElement::VERTEXORDERING_MASK|
+						    SoLazyElement::LIGHT_MODEL_MASK);
     const_cast<SmTextureFontBundle*> (this)->didupdatecoin = true;
   }
   glBegin(GL_QUADS);

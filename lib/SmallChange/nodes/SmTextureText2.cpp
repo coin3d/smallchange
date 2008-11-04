@@ -141,7 +141,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
   
-  SmTextureFontBundle bundle(state, this);
+  SmTextureFontBundle bundle(action);
   SoCacheElement::invalidate(state);
   
   if (!this->shouldGLRender(action)) {
