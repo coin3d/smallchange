@@ -38,20 +38,20 @@ class SoGLImage;
 
 class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
   typedef SoNode inherited;
-  
+
   SO_NODE_HEADER(SmTextureFont);
 
  public:
-  class FontImage : public SbImage {
+  class SMALLCHANGE_DLL_API FontImage : public SbImage {
   public:
-    FontImage(const SbVec2s glyphsize, 
+    FontImage(const SbVec2s glyphsize,
               const int leading,
               const int ascent,
               const int descent,
               const int numcomponents);
     ~FontImage();
 
-    void addGlyph(unsigned char c, 
+    void addGlyph(unsigned char c,
 		  const SbImage & image,
 		  const int width,
 		  const int gfxwidth = -1,
@@ -61,7 +61,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     void setKerning(unsigned char glyph, unsigned char next, int kerning);
     int getKerning(unsigned char glyph, unsigned char next) const;
     int getXOffset(unsigned char glyph) const;
-    
+
     SoGLImage * getGLImage(void) const;
 
     SbVec2s getGlyphPositionPixels(unsigned char c) const;
@@ -69,7 +69,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
 
     SbVec2f getGlyphPosition(unsigned char c) const;
     SbVec2f getGlyphSize(unsigned char c) const;
-    
+
     int getLeading() const;
     int getAscent() const;
     int getDescent() const;
@@ -84,7 +84,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
 
   private:
     FontImage();
-    
+
     void copyGlyph(unsigned char c, const SbImage & glyph);
     SbVec2s glyphsize;
     int numcomp;
@@ -96,14 +96,14 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     short gfxglyphwidth[256];
     short xoffset[256];
     SbDict kerningdict;
-    
+
   };
 
   static void initClass(void);
   static void destroyClass(void);
 
   SmTextureFont(void);
-  
+
   virtual void doAction(SoAction * action);
   virtual void GLRender(SoGLRenderAction * action);
   virtual void pick(SoPickAction * action);
@@ -114,7 +114,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
 
  protected:
   virtual ~SmTextureFont();
-  
+
  private:
   FontImage * image;
 };
@@ -127,14 +127,14 @@ class SMALLCHANGE_DLL_API SmTextureFontElement : public SoReplacedElement {
   static void initClass(void);
  protected:
   virtual ~SmTextureFontElement();
-  
+
  public:
   virtual void init(SoState * state);
   static void set(SoState * state, SoNode * node,
                   SmTextureFont::FontImage * image);
 
   static const SmTextureFont::FontImage * get(SoState * const state);
-  
+
  private:
   SmTextureFont::FontImage * image;
 };
@@ -165,7 +165,7 @@ class SMALLCHANGE_DLL_API SmTextureFontBundle {
   }
 
  private:
-  
+
   SoState * state;
   SoNode * node;
   bool didupdatecoin;
