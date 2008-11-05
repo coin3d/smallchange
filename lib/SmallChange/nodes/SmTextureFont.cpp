@@ -224,12 +224,15 @@ SmTextureFont::FontImage::~FontImage()
   gfxglyphwidth, the width of the glyphs supplied in the constructor
   will be used instead.
 
+  xoffset is the offset used when rendering the glyph. This is useful
+  for specifying glyphs that extend to the left of the glyph position.
 */
 void 
 SmTextureFont::FontImage::addGlyph(unsigned char c,
 				   const SbImage & image,
 				   const int glyphwidth,
-				   const int gfxglyphwidth)
+				   const int gfxglyphwidth,
+				   const int xoffset)
 {
   if (this->glimage) {
     this->glimage->unref();
@@ -239,8 +242,9 @@ SmTextureFont::FontImage::addGlyph(unsigned char c,
   int nc;
   unsigned char * bytes = image.getValue(size, nc);
   assert(size == this->glyphsize);
-  this->glyphwidth[c] = glyphwidth;
-  this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? gfxglyphwidth : this->glyphsize[0];  
+  this->glyphwidth[c] = (short) glyphwidth;
+  this->xoffset[c] = (short) xoffset;
+  this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? short(gfxglyphwidth) : this->glyphsize[0];  
   this->copyGlyph(c, image);
 }
 
@@ -250,8 +254,8 @@ SmTextureFont::FontImage::getGlyphPositionPixels(unsigned char c) const
   // FIXME: I'm wasting some space in the texture since loads of the
   // characters aren't printable, but doing it like this to keep it
   // simple
-  short column = c % 16;
-  short row = c / 16;
+  short column = short(c) % 16;
+  short row = short(c) / 16;
   return SbVec2s(column * this->glyphsize[0], row * this->glyphsize[1]);
 }
 
@@ -329,17 +333,18 @@ SmTextureFont::FontImage::renderString(const SbString & s,
   
   if (needglbeginend) glBegin(GL_QUADS);
 
-  short acc  = 0;
+  int acc  = 0;
   for (int j = 0; j < len; j++) {
-    short gw = this->getGlyphWidth(sptr[j]);
+    int gw = this->getGlyphWidth(sptr[j]);
+    int xoffset = this->getXOffset(sptr[j]);
     SbVec2f t0 = this->getGlyphPosition(sptr[j]);
     SbVec2f t1 = t0 + this->getGlyphSize(sptr[j]);
     
     float n00 = pos[0];
-    SbVec3f c0(float(n00 + acc),     float(n1[1]), -pos[2]);
-    SbVec3f c1(float(n00 + acc + gw), float(n1[1]), -pos[2]);
-    SbVec3f c2(float(n00 + acc + gw), float(n0[1]), -pos[2]);
-    SbVec3f c3(float(n00 + acc),     float(n0[1]), -pos[2]);
+    SbVec3f c0(float(n00 + acc + xoffset),      float(n1[1]), -pos[2]);
+    SbVec3f c1(float(n00 + acc + gw + xoffset), float(n1[1]), -pos[2]);
+    SbVec3f c2(float(n00 + acc + gw + xoffset), float(n0[1]), -pos[2]);
+    SbVec3f c3(float(n00 + acc + xoffset),      float(n0[1]), -pos[2]);
     
     acc += this->getKerning(sptr[j], sptr[j+1]);
     glTexCoord2f(t0[0], t0[1]);
@@ -389,7 +394,7 @@ SmTextureFont::FontImage::copyGlyph(unsigned char c, const SbImage & glyph)
 /*!
   Returns the width of the glyph in the texture. 
 */
-short 
+int 
 SmTextureFont::FontImage::getGlyphWidth(unsigned char c) const
 {
   return this->gfxglyphwidth[c];
@@ -399,7 +404,7 @@ SmTextureFont::FontImage::getGlyphWidth(unsigned char c) const
   Sets kerning for the glyph/next pair.
  */
 void 
-SmTextureFont::FontImage::setKerning(unsigned char glyph, unsigned char next, short kerning)
+SmTextureFont::FontImage::setKerning(unsigned char glyph, unsigned char next, int kerning)
 {
   uintptr_t key = uintptr_t(glyph)<<8 | uintptr_t(next);
   void * val = reinterpret_cast<void*> (kerning);
@@ -410,15 +415,24 @@ SmTextureFont::FontImage::setKerning(unsigned char glyph, unsigned char next, sh
   Returns the kerning for glyph/next. If no kerning info exists for the pair,
   the width of the glyph is returned.
 */
-short
+int
 SmTextureFont::FontImage::getKerning(unsigned char glyph, unsigned char next) const
 {
   uintptr_t key = uintptr_t(glyph)<<8 | uintptr_t(next);
   void * val;
   if (this->kerningdict.find(key, val)) {
-    return (short) reinterpret_cast<uintptr_t> (val);
+    return (int) reinterpret_cast<uintptr_t> (val);
   }
   return this->glyphwidth[glyph];
+}
+
+/*!
+  Returns the x offset for \a glyph.
+*/
+int 
+SmTextureFont::FontImage::getXOffset(unsigned char glyph) const
+{
+  return this->xoffset[glyph];
 }
 
 /*!

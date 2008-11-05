@@ -54,11 +54,13 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     void addGlyph(unsigned char c, 
 		  const SbImage & image,
 		  const int width,
-		  const int gfxwidth = -1);
-    short getGlyphWidth(unsigned char c) const;
+		  const int gfxwidth = -1,
+		  const int xoffset = 0);
+    int getGlyphWidth(unsigned char c) const;
 
-    void setKerning(unsigned char glyph, unsigned char next, short kerning);
-    short getKerning(unsigned char glyph, unsigned char next) const;
+    void setKerning(unsigned char glyph, unsigned char next, int kerning);
+    int getKerning(unsigned char glyph, unsigned char next) const;
+    int getXOffset(unsigned char glyph) const;
     
     SoGLImage * getGLImage(void) const;
 
@@ -92,6 +94,7 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     SoGLImage * glimage;
     short glyphwidth[256];
     short gfxglyphwidth[256];
+    short xoffset[256];
     SbDict kerningdict;
     
   };
