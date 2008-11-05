@@ -28,6 +28,7 @@
 
 namespace SmallChange {
   void SMALLCHANGE_DLL_API init(void);
+  void SMALLCHANGE_DLL_API cleanup(void);
 };
 
 #endif // !SMALLCHANGE_H

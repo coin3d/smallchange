@@ -96,6 +96,11 @@ void SmallChange::init(void)
   smallchange_init();
 }
 
+void SmallChange::cleanup(void)
+{
+  // FIXME: Implement
+}
+
 void
 smallchange_init(void)
 {
