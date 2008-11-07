@@ -139,6 +139,9 @@ SmTextureText2::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 void
 SmTextureText2::GLRender(SoGLRenderAction * action)
 {
+  if ((this->string.getNum() == 0) ||
+      (this->string.getNum() == 1 && this->string[0] == "")) return;
+
   SoState * state = action->getState();
   
   SmTextureFontBundle bundle(action);
