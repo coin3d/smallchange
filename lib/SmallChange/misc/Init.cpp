@@ -88,6 +88,7 @@
 
 #include <SmallChange/nodekits/SmPieChart.h>
 #include <SmallChange/nodes/SmTextureText2.h>
+#include <SmallChange/nodes/SmTextureText2Collector.h>
 #include <SmallChange/nodes/SmTextureFont.h>
 #include <SmallChange/nodes/SmShadowText2.h>
 
@@ -174,6 +175,9 @@ smallchange_init(void)
 
   SmTextureText2::initClass();
   SmShadowText2::initClass();
+
+  SmTextureText2CollectorElement::initClass();
+  SmTextureText2Collector::initClass();
 
   SmAnnotationWall::initClass();
   SmAnnotationAxis::initClass();

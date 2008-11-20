@@ -37,6 +37,7 @@ SOURCES = \
         SmTrack.cpp SmTrack.h \
         SmLazyFile.cpp SmLazyFile.h \
 	SmTextureText2.cpp SmTextureText2.h \
+	SmTextureText2Collector.cpp SmTextureText2Collector.h \
 	SmTextureFont.cpp SmTextureFont.h
 
 

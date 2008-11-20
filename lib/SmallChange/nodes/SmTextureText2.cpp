@@ -40,6 +40,7 @@
 
 #include "SmTextureText2.h"
 #include "SmTextureFont.h"
+#include "SmTextureText2Collector.h"
 #include <Inventor/misc/SoState.h>
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -143,6 +144,25 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
       (this->string.getNum() == 1 && this->string[0] == "")) return;
 
   SoState * state = action->getState();
+  
+  if ((this->string.getNum() == 1) &&
+      SmTextureText2CollectorElement::isCollecting(state)) {    
+    const SbColor4f col(SoLazyElement::getDiffuse(state, 0),
+			1.0f - SoLazyElement::getTransparency(state, 0));
+    SbMatrix modelmatrix = SoModelMatrixElement::get(state);
+    SbVec3f pos;
+    modelmatrix.multVecMatrix(this->position[0], pos);
+    SmTextureText2CollectorElement::add(state,
+					this->string[0].getString(),
+					SmTextureFontElement::get(state),
+					pos,
+					col,
+					(Justification)
+					this->justification.getValue(),
+					(VerticalJustification)
+					this->verticalJustification.getValue());
+    return;
+  }
   
   SmTextureFontBundle bundle(action);
   SoCacheElement::invalidate(state);

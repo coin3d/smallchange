@@ -211,6 +211,7 @@ SOURCES = \
         SmTrack.cpp SmTrack.h \
         SmLazyFile.cpp SmLazyFile.h \
 	SmTextureText2.cpp SmTextureText2.h \
+	SmTextureText2Collector.cpp SmTextureText2Collector.h \
 	SmTextureFont.cpp SmTextureFont.h
 
 
@@ -275,7 +276,8 @@ am__objects_1 = AutoFile.$(OBJEXT) SmDepthBuffer.$(OBJEXT) \
 	VertexArrayShape.$(OBJEXT) SmCoordinateSystem.$(OBJEXT) \
 	SmMarkerSet.$(OBJEXT) ViewpointWrapper.$(OBJEXT) \
 	SmShadowText2.$(OBJEXT) SmTrack.$(OBJEXT) SmLazyFile.$(OBJEXT) \
-	SmTextureText2.$(OBJEXT) SmTextureFont.$(OBJEXT)
+	SmTextureText2.$(OBJEXT) SmTextureText2Collector.$(OBJEXT) \
+	SmTextureFont.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -290,7 +292,8 @@ am__objects_2 = AutoFile.lo SmDepthBuffer.lo ViewportRegion.lo \
 	SmTooltip.lo SmHQSphere.lo SmBillboardClipPlane.lo \
 	SmHeadlight.lo VertexArrayShape.lo SmCoordinateSystem.lo \
 	SmMarkerSet.lo ViewpointWrapper.lo SmShadowText2.lo SmTrack.lo \
-	SmLazyFile.lo SmTextureText2.lo SmTextureFont.lo
+	SmLazyFile.lo SmTextureText2.lo SmTextureText2Collector.lo \
+	SmTextureFont.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -328,6 +331,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/SmTextureFont.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTextureText2.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTextureText2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTextureText2Collector.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/SmTextureText2Collector.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTooltip.Plo ./$(DEPDIR)/SmTooltip.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SmTrack.Plo ./$(DEPDIR)/SmTrack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/SoLODExtrusion.Plo \
@@ -403,6 +408,7 @@ SOURCES = \
         SmTrack.cpp SmTrack.h \
         SmLazyFile.cpp SmLazyFile.h \
 	SmTextureText2.cpp SmTextureText2.h \
+	SmTextureText2Collector.cpp SmTextureText2Collector.h \
 	SmTextureFont.cpp SmTextureFont.h
 
 
@@ -470,6 +476,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureFont.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureText2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureText2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureText2Collector.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTextureText2Collector.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTooltip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmTrack.Plo@am__quote@
