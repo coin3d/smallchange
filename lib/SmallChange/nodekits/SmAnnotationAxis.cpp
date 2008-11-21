@@ -152,7 +152,7 @@ SmAnnotationAxis::getBoundingBox(SoGetBoundingBoxAction * action)
     for (int i = 0; i < this->annotationPos.getNum(); i++) {
       bbox.extendBy(this->annotationPos[i]);
     }
-
+    
     if (!bbox.isEmpty()) {
       action->extendBy(bbox);
       action->setCenter(bbox.getCenter(), TRUE);
@@ -170,6 +170,9 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
 
   SbBool createcache = FALSE;
   SbBool render = TRUE;
+
+  // don't create render caches for this node
+  SoCacheElement::invalidate(state);
 
   SbBool storedinvalid = FALSE;
   if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
