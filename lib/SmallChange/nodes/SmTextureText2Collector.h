@@ -5,6 +5,7 @@
 
 #include <Inventor/nodes/SoSubNode.h>
 #include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/fields/SoSFBool.h>
 
 #include <SmallChange/basic.h>
 
@@ -16,6 +17,8 @@ class SMALLCHANGE_DLL_API SmTextureText2Collector : public SoSeparator {
   SO_NODE_HEADER(SmTextureText2Collector);
   
  public:
+  SoSFBool depthMask;
+
   static void initClass(void);
   SmTextureText2Collector(void);
   

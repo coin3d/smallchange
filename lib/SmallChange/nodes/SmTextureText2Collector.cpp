@@ -81,6 +81,7 @@ SO_NODE_SOURCE(SmTextureText2Collector);
 SmTextureText2Collector::SmTextureText2Collector(void)
 {
   SO_NODE_CONSTRUCTOR(SmTextureText2Collector);
+  SO_NODE_ADD_FIELD(depthMask, (false));
 }
 
 SmTextureText2Collector::~SmTextureText2Collector()
@@ -185,6 +186,8 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
     SoMaterialBundle mb(action);
     mb.sendFirst();
 
+    glPushAttrib(GL_DEPTH_BUFFER_BIT);
+    glDepthMask(this->depthMask.getValue());
     glBegin(GL_QUADS);
 
     for (size_t i = 0; i < items.size(); i++) {
@@ -249,6 +252,7 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
       currentfont->renderString(items[i].text, SbVec3f(n0[0], n0[1], screenpoint[2]), false);
     }
     glEnd();
+    glPopAttrib();
     SoGLLazyElement::getInstance(state)->reset(state, 
                                                SoLazyElement::DIFFUSE_MASK);
     
