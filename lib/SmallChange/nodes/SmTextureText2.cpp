@@ -166,6 +166,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                                           this->string[i],
                                           SmTextureFontElement::get(state),
                                           pos,
+                                          this->maxRange.getValue(),
                                           col,
                                           (Justification)
                                           this->justification.getValue(),

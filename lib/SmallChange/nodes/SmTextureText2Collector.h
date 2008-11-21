@@ -56,6 +56,7 @@ class SMALLCHANGE_DLL_API SmTextureText2CollectorElement : public SoElement {
     SbString text;
     const SmTextureFont::FontImage * font;
     SbVec3f worldpos;
+    float maxdist;
     SbColor4f color;
     SmTextureText2::Justification justification;
     SmTextureText2::VerticalJustification vjustification;
@@ -69,6 +70,7 @@ class SMALLCHANGE_DLL_API SmTextureText2CollectorElement : public SoElement {
 		  const SbString & text,
 		  const SmTextureFont::FontImage * font,
 		  const SbVec3f & worldpos,
+                  const float maxdist,
 		  const SbColor4f & color,
 		  SmTextureText2::Justification j,
 		  SmTextureText2::VerticalJustification vj);

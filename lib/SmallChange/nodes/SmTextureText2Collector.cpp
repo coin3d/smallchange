@@ -74,6 +74,7 @@
 #include <Inventor/elements/SoGLTextureCoordinateElement.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/system/gl.h>
+#include <Inventor/SbPlane.h>
 #include <assert.h>
 
 SO_NODE_SOURCE(SmTextureText2Collector);
@@ -190,7 +191,13 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
     glDepthMask(this->depthMask.getValue());
     glBegin(GL_QUADS);
 
+    const SbPlane & nearplane = vv.getPlane(0.0f);
+
     for (size_t i = 0; i < items.size(); i++) {
+      float dist = -nearplane.getDistance(items[i].worldpos);
+      if ((dist < 0.0f) ||
+          ((items[i].maxdist > 0.0f) && (dist > items[i].maxdist))) continue;
+      
       glColor4fv(items[i].color.getValue());
       int len = items[i].text.getLength();
       if (len == 0) continue;
@@ -310,6 +317,7 @@ SmTextureText2CollectorElement::add(SoState * state,
 				    const SbString & text,
 				    const SmTextureFont::FontImage * font,
 				    const SbVec3f & worldpos,
+                                    const float maxdist,
 				    const SbColor4f & color,
 				    SmTextureText2::Justification j,
 				    SmTextureText2::VerticalJustification vj)
@@ -326,6 +334,7 @@ SmTextureText2CollectorElement::add(SoState * state,
   item.font = font;
   item.color = color;
   item.worldpos = worldpos;
+  item.maxdist = maxdist;
   item.justification = j;
   item.vjustification = vj;
 
