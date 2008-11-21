@@ -21,6 +21,42 @@
  *
 \**************************************************************************/
 
+/*!
+  \class SmTextureText2Collector nodes/SmTextureText2Collector.h
+  \brief The SmTextureText2Collector node is a group node which optimizes SmTextureText2 rendering.
+
+  Since SmTextureText2 has antialiased rendering, it needs to render
+  the text in a separate blending pass in Coin. This makes rendering
+  slow if you have lots of SmTextureText2 nodes in your scene graph,
+  and you use the SORTED_OBJECT_BLEND or DELAYED_BLEND transparency
+  modes.
+
+  SmTextureText2 will also invalidate render and bbox caches every
+  time the camera moves. In addition, you might get quite a lot of
+  OpenGL state changes when rendering the SmTextureText2 nodes
+  inbetween other geometry.
+
+  To solve these problem, it's possible to use this node to optimize text
+  rendering. It will collect all strings from all SmTextureText2 nodes
+  in its subgraph, and render all strings before exiting.
+
+  A typical scene graph might look like this:
+
+  \code
+  Separator {
+    PerspectiveCamera { } # the camera needs to be in front of the node
+    SmTextureText2Collector {
+      ...
+      SmTextureText2 {...}
+    }
+  }
+
+  \endcode
+
+  Please note that this node will only be able to optimize SmTextureText2 nodes
+  where the number of postions equals the number of strings.
+*/
+
 #include "SmTextureText2Collector.h"
 #include "SmTextureFont.h"
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -155,9 +191,10 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
       glColor4fv(items[i].color.getValue());
       int len = items[i].text.getLength();
       if (len == 0) continue;
+
       const unsigned char * sptr =
         reinterpret_cast<const unsigned char *>(items[i].text.getString());
-
+      
       if (items[i].font != currentfont) {
         glEnd();
         currentfont = items[i].font;
@@ -173,7 +210,7 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
       SbVec3f screenpoint;
       projmatrix.multVecMatrix(items[i].worldpos, screenpoint);
 
-      int ymin = -currentfont->getLeading();
+      short ymin = short(-currentfont->getLeading());
       
       switch (items[i].vjustification) {
       case SmTextureText2::BOTTOM:
