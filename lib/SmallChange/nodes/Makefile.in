@@ -251,6 +251,7 @@ libnodesinc_HEADERS = \
         SmTrack.h \
         SmLazyFile.h \
 	SmTextureText2.h \
+	SmTextureText2Collector.h \
 	SmTextureFont.h
 
 subdir = lib/SmallChange/nodes

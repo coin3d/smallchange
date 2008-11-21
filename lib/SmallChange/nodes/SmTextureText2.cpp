@@ -144,23 +144,34 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
       (this->string.getNum() == 1 && this->string[0] == "")) return;
 
   SoState * state = action->getState();
+  SbBool perpart =
+    SoMaterialBindingElement::get(state) !=
+    SoMaterialBindingElement::OVERALL;
   
-  if ((this->string.getNum() == 1) &&
+  if ((this->string.getNum() == this->position.getNum()) &&
       SmTextureText2CollectorElement::isCollecting(state)) {    
-    const SbColor4f col(SoLazyElement::getDiffuse(state, 0),
-			1.0f - SoLazyElement::getTransparency(state, 0));
     SbMatrix modelmatrix = SoModelMatrixElement::get(state);
     SbVec3f pos;
-    modelmatrix.multVecMatrix(this->position[0], pos);
-    SmTextureText2CollectorElement::add(state,
-					this->string[0].getString(),
-					SmTextureFontElement::get(state),
-					pos,
-					col,
-					(Justification)
-					this->justification.getValue(),
-					(VerticalJustification)
-					this->verticalJustification.getValue());
+
+    SbColor4f col(SoLazyElement::getDiffuse(state, 0),
+			1.0f - SoLazyElement::getTransparency(state, 0));
+    
+    for (int i = 0; i < this->string.getNum(); i++) {
+      if (perpart && i > 0) {
+        col = SbColor4f(SoLazyElement::getDiffuse(state, i),
+                        1.0f - SoLazyElement::getTransparency(state, i));
+      }
+      modelmatrix.multVecMatrix(this->position[i], pos);
+      SmTextureText2CollectorElement::add(state,
+                                          this->string[i],
+                                          SmTextureFontElement::get(state),
+                                          pos,
+                                          col,
+                                          (Justification)
+                                          this->justification.getValue(),
+                                          (VerticalJustification)
+                                          this->verticalJustification.getValue());
+    }
     return;
   }
   
@@ -205,10 +216,6 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPushMatrix();
   glLoadIdentity();
   glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
-
-  SbBool perpart =
-    SoMaterialBindingElement::get(state) !=
-    SoMaterialBindingElement::OVERALL;
 
   if (num > 1) {
     for (int i = 0; i < num; i++) {
@@ -313,7 +320,7 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
   
   int xmin = 0;
   int ymax = bundle.getAscent();
-  int ymin = ymax - numstring * bundle.height() + (numstring-1) * bundle.getLeading();
+  int ymin = ymax - numstring * bundle.height();
   
   short h = ymax - ymin;
   short halfh = h / 2;
@@ -322,11 +329,11 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
   case SmTextureText2::BOTTOM:
     break;
   case SmTextureText2::TOP:
-    ymin -= h;
-    ymax -= h;
+    ymin -= h - bundle.getLeading();
+    ymax -= h - bundle.getLeading();
     break;
   case SmTextureText2::VCENTER:
-    ymax -= halfh;
+    ymin -= halfh;
     ymax -= halfh;
     break;
   default:
@@ -356,7 +363,7 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
 
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
-                         sp[1] + ymax - (i+1)*bundle.height() - i * bundle.getLeading());
+                         sp[1] + ymax - (i+1)*bundle.height());
 
     short w = (short) widthlist[i]; 
     short halfw = w / 2;

@@ -77,6 +77,7 @@ libnodesinc_HEADERS = \
         SmTrack.h \
         SmLazyFile.h \
 	SmTextureText2.h \
+	SmTextureText2Collector.h \
 	SmTextureFont.h
 
 nodes.lst: $(nodes_lst_OBJECTS)

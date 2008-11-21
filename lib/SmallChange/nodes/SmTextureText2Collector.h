@@ -4,14 +4,14 @@
 /**************************************************************************/
 
 #include <Inventor/nodes/SoSubNode.h>
-#include <Inventor/nodes/SoGroup.h>
+#include <Inventor/nodes/SoSeparator.h>
 
 #include <SmallChange/basic.h>
 
 /**************************************************************************/
 
-class SMALLCHANGE_DLL_API SmTextureText2Collector : public SoGroup {
-  typedef SoGroup inherited;
+class SMALLCHANGE_DLL_API SmTextureText2Collector : public SoSeparator {
+  typedef SoSeparator inherited;
 
   SO_NODE_HEADER(SmTextureText2Collector);
   
@@ -19,7 +19,8 @@ class SMALLCHANGE_DLL_API SmTextureText2Collector : public SoGroup {
   static void initClass(void);
   SmTextureText2Collector(void);
   
-  virtual void GLRender(SoGLRenderAction * action);
+  virtual void GLRenderBelowPath(SoGLRenderAction * action);
+  virtual void GLRenderInPath(SoGLRenderAction * action);
 
  protected:
   virtual ~SmTextureText2Collector();
@@ -47,26 +48,9 @@ class SMALLCHANGE_DLL_API SmTextureText2CollectorElement : public SoElement {
   virtual ~SmTextureText2CollectorElement();
   
  public:
-  virtual void init(SoState * state);
-  static void startCollecting(SoState * state); 
-  
-  static void add(SoState * state,
-		  const char * text,
-		  const SmTextureFont::FontImage * font,
-		  const SbVec3f & worldpos,
-		  const SbColor4f & color,
-		  SmTextureText2::Justification j,
-		  SmTextureText2::VerticalJustification vj);
-  
-  static void finishCollecting(SoState * state);
-  static bool isCollecting(SoState * state);
 
-  virtual SbBool matches(const SoElement * elt) const;
-  virtual SoElement * copyMatchInfo(void) const;
-  
- private:
   typedef struct {
-    const char * text;
+    SbString text;
     const SmTextureFont::FontImage * font;
     SbVec3f worldpos;
     SbColor4f color;
@@ -74,7 +58,27 @@ class SMALLCHANGE_DLL_API SmTextureText2CollectorElement : public SoElement {
     SmTextureText2::VerticalJustification vjustification;
   } TextItem;
   
+
+  virtual void init(SoState * state);
+  static void startCollecting(SoState * state, const bool storeitems = true);
+  
+  static void add(SoState * state,
+		  const SbString & text,
+		  const SmTextureFont::FontImage * font,
+		  const SbVec3f & worldpos,
+		  const SbColor4f & color,
+		  SmTextureText2::Justification j,
+		  SmTextureText2::VerticalJustification vj);
+  
+  static const std::vector <TextItem> &  finishCollecting(SoState * state);
+  static bool isCollecting(SoState * state);
+  
+  virtual SbBool matches(const SoElement * elt) const;
+  virtual SoElement * copyMatchInfo(void) const;
+
+ private:
   bool collecting;
+  bool storeitems;
   std::vector <TextItem> items;
 };
 
