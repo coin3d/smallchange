@@ -173,6 +173,9 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                                           (VerticalJustification)
                                           this->verticalJustification.getValue());
     }
+    
+    // invalidate caches to make sure this node is traversed every frame.
+    SoCacheElement::invalidate(state);
     return;
   }
   
