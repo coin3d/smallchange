@@ -220,6 +220,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPushMatrix();
   glLoadIdentity();
   glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
+  glPushAttrib(GL_DEPTH_BUFFER_BIT);
+  glDepthFunc(GL_LEQUAL);
 
   if (num > 1) {
     for (int i = 0; i < num; i++) {
@@ -247,6 +249,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                        modelmatrix,
                        inv);
   }
+  glPopAttrib();
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
