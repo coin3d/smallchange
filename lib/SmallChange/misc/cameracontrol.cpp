@@ -17,23 +17,25 @@
 static SbDict * cameradict = NULL;
 static SbSphereSheetProjector * spinprojector = NULL;
 
-class SeekData {
-public:
-  SeekData(void);
-  ~SeekData();
+namespace {
+  class SeekData {
+  public:
+    SeekData(void);
+    ~SeekData();
 
-  SoCamera * camera;
-  SbVec3d startpoint;
-  SbRotation startorient;
-  SbVec3d endpoint;
-  SbRotation endorient;
+    SoCamera * camera;
+    SbVec3d startpoint;
+    SbRotation startorient;
+    SbVec3d endpoint;
+    SbRotation endorient;
 
-  float seektime;
-  SoTimerSensor * sensor;
+    float seektime;
+    SoTimerSensor * sensor;
 
-private:
-  static void seeksensorCB(void * closure, SoSensor * sensor);
-};
+  private:
+    static void seeksensorCB(void * closure, SoSensor * sensor);
+  };
+}
 
 static void set_pos(SoCamera * camera, 
                     const SbVec3d & position)
