@@ -220,7 +220,7 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
       SbVec3f screenpoint;
       projmatrix.multVecMatrix(items[i].worldpos, screenpoint);
 
-      short ymin = short(-currentfont->getLeading());
+      short ymin = short(-currentfont->getDescent());
 
       switch (items[i].vjustification) {
       case SmTextureText2::BOTTOM:
