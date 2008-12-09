@@ -327,7 +327,8 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
   
   int xmin = 0;
   int ymax = bundle.getAscent();
-  int ymin = ymax - numstring * bundle.height();
+  int ymin = ymax - (numstring * bundle.height() * bundle.getLeading());
+  ymin += bundle.getLeading();
   
   short h = ymax - ymin;
   short halfh = h / 2;
@@ -336,8 +337,8 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
   case SmTextureText2::BOTTOM:
     break;
   case SmTextureText2::TOP:
-    ymin -= h - bundle.getLeading();
-    ymax -= h - bundle.getLeading();
+    ymin -= bundle.getAscent();
+    ymax -= bundle.getAscent();
     break;
   case SmTextureText2::VCENTER:
     ymin -= halfh;
