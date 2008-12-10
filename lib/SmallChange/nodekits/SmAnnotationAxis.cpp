@@ -66,7 +66,8 @@ public:
   void add_anno_text(const int level,
                      SbList <int> & list,
                      const SbMatrix & projm, 
-                     const float maxdist,
+                     const SbVec2s & vpsize,
+		     const float gap,
                      const SbVec3f * pos, int i0, int i1);
 
   SbTime lastchanged;
@@ -198,7 +199,8 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
   if (this->annotationPos.getNum() >= 2) {
     l1.truncate(0);
     PRIVATE(this)->add_anno_text(0, l1, projmatrix,
-                                 (this->annotationGap.getValue() * 2.0f) / maxsize, 
+				 vpsize,
+                                 this->annotationGap.getValue(),
                                  this->annotationPos.getValues(0), 
                                  0, this->annotationPos.getNum() - 1); 
     
@@ -305,7 +307,8 @@ void
 SmAnnotationAxisP::add_anno_text(const int level,
                                  SbList <int> & list,
                                  const SbMatrix & projm, 
-                                 const float maxdist,
+				 const SbVec2s & vpsize,
+                                 const float gap,
                                  const SbVec3f * pos, int i0, int i1)
 {
   if (i0 == i1) return;
@@ -324,9 +327,12 @@ SmAnnotationAxisP::add_anno_text(const int level,
   if (level == 0) { // special case to handle the corner points
     if ((p[0][2] < 1.0f) && (p[2][2] < 1.0f)) {
       SbVec3f d = p[2]-p[0];
+      d[0] = SbAbs(d[0]) * float(vpsize[0]) * 0.5f;
+      d[1] = SbAbs(d[1]) * float(vpsize[1]) * 0.5f;
       d[2] = 0.0f;
+
       float len = d.length();
-      if (len > maxdist) {
+      if (len > gap) {
         list.append(i0);
         list.append(i1);
       }
@@ -345,21 +351,26 @@ SmAnnotationAxisP::add_anno_text(const int level,
     SbBool add = FALSE;
     float len = 0.0f;
     if (p[0][2] < 1.0f) {
-      p[0][2] = 0.0f;
-      p[1][2] = 0.0f;
-      len = (p[1]-p[0]).length();
+      SbVec3f d = p[1]-p[0];
+      d[0] = SbAbs(d[0]) * float(vpsize[0]) * 0.5f;
+      d[1] = SbAbs(d[1]) * float(vpsize[1]) * 0.5f;
+      d[2] = 0.0f;
+
+      len = d.length();
     }
     else if (p[2][2] < 1.0f) {
-      p[2][2] = 0.0f;
-      p[1][2] = 0.0f;
-      len = (p[1]-p[2]).length();
+      SbVec3f d = p[1]-p[2];
+      d[0] = SbAbs(d[0]) * float(vpsize[0]) * 0.5f;
+      d[1] = SbAbs(d[1]) * float(vpsize[1]) * 0.5f;
+      d[2] = 0.0f;
+      len = d.length();
     }
-    if (len > maxdist) {
+    if (len > gap) {
       list.append(mid);
     }
   }
-  add_anno_text(level+1, list, projm, maxdist, pos, i0, mid);
-  add_anno_text(level+1, list, projm, maxdist, pos, mid, i1);
+  add_anno_text(level+1, list, projm, vpsize, gap, pos, i0, mid);
+  add_anno_text(level+1, list, projm, vpsize, gap, pos, mid, i1);
 }
 
 // *************************************************************************
