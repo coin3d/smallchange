@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <Inventor/C/tidbits.h>
 #include <Inventor/system/gl.h>
+#include <string.h>
 
 /**************************************************************************/
 
@@ -206,6 +207,11 @@ SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in,
   int h = coin_geq_power_of_two(16 * glyphsize[1]);
   
   this->setValue(SbVec2s(short(w), short(h)), numcomp, NULL);
+
+  // initialize image to a blank image
+  SbVec2s dummy;
+  int dummy2;
+  memset(this->getValue(dummy, dummy2), 0, w*h*numcomp);
   this->glimage = NULL;
 }
 
