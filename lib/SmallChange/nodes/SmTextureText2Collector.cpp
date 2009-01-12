@@ -1,7 +1,7 @@
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
- *  Copyright (C) 1998-2008 by Systems in Motion.  All rights reserved.
+ *  Copyright (C) 1998-2009 by Systems in Motion.  All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -202,9 +202,6 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
       int len = items[i].text.getLength();
       if (len == 0) continue;
 
-      const unsigned char * sptr =
-        reinterpret_cast<const unsigned char *>(items[i].text.getString());
-
       if (items[i].font != currentfont) {
         glEnd();
         currentfont = items[i].font;
@@ -235,7 +232,7 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
         assert(0 && "unknown alignment");
         break;
       }
-      short w = (short) currentfont->stringWidth(items[i].text);
+      short w = static_cast<short>(currentfont->stringWidth(items[i].text));
 
       SbVec2s sp;
       if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
