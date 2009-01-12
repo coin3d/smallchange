@@ -1,7 +1,7 @@
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
- *  Copyright (C) 1998-2008 by Systems in Motion.  All rights reserved.
+ *  Copyright (C) 1998-2009 by Systems in Motion.  All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -245,11 +245,9 @@ SmTextureFont::FontImage::addGlyph(unsigned char c,
     this->glimage = NULL;
   }
   SbVec2s size;
-  int nc;
-  unsigned char * bytes = image.getValue(size, nc);
   assert(size == this->glyphsize);
-  this->glyphwidth[c] = (short) glyphwidth;
-  this->xoffset[c] = (short) xoffset;
+  this->glyphwidth[c] = static_cast<short>(glyphwidth);
+  this->xoffset[c] = static_cast<short>(xoffset);
   this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? short(gfxglyphwidth) : this->glyphsize[0];
   this->copyGlyph(c, image);
 }
@@ -427,7 +425,7 @@ SmTextureFont::FontImage::getKerning(unsigned char glyph, unsigned char next) co
   uintptr_t key = uintptr_t(glyph)<<8 | uintptr_t(next);
   void * val;
   if (this->kerningdict.find(key, val)) {
-    return (int) reinterpret_cast<uintptr_t> (val);
+    return reinterpret_cast<uintptr_t> (val);
   }
   return this->glyphwidth[glyph];
 }
@@ -578,19 +576,19 @@ SmTextureFont::doAction(SoAction * action)
 void
 SmTextureFont::GLRender(SoGLRenderAction * action)
 {
-  SmTextureFont::doAction((SoAction*) action);
+  SmTextureFont::doAction(static_cast<SoAction *>(action));
 }
 
 void
 SmTextureFont::pick(SoPickAction * action)
 {
-  SmTextureFont::doAction((SoAction*) action);
+  SmTextureFont::doAction(static_cast<SoAction *>(action));
 }
 
 void
 SmTextureFont::getBoundingBox(SoGetBoundingBoxAction * action)
 {
-  SmTextureFont::doAction((SoAction*) action);
+  SmTextureFont::doAction(static_cast<SoAction *>(action));
 }
 
 void
