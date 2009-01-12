@@ -1,7 +1,7 @@
 /**************************************************************************\
  *
  *  This file is part of the SmallChange extension library for Coin.
- *  Copyright (C) 1998-2008 by Systems in Motion.  All rights reserved.
+ *  Copyright (C) 1998-2009 by Systems in Motion.  All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -168,10 +168,13 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                                           pos,
                                           this->maxRange.getValue(),
                                           col,
-                                          (Justification)
-                                          this->justification.getValue(),
-                                          (VerticalJustification)
-                                          this->verticalJustification.getValue());
+                                          static_cast<Justification>(
+                                     this->justification.getValue()
+                                                             ),
+                                          static_cast<VerticalJustification>(
+                                          this->verticalJustification.getValue()
+                                                                    )
+                                                                    );
     }
 
     // invalidate caches to make sure this node is traversed every frame.
@@ -349,12 +352,10 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     break;
   }
   SbList <int> widthlist;
-  int maxw = 0;
 
   for (i = 0; i < numstring; i++) {
     widthlist.append(bundle.stringWidth(s[i]));
   }
-  int xmax = xmin + maxw;
 
   bundle.begin();
   for (i = 0; i < numstring; i++) {
@@ -362,18 +363,13 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     int len = s[i].getLength();
     if (len == 0) continue;
 
-    //Using sptr as index into a table, so casting to unsigned to
-    //avoid negative indices.
-    const unsigned char * sptr =
-      reinterpret_cast<const unsigned char *>(s[i].getString());
-
     SbVec2s sp;
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
 
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
                          sp[1] + ymax - (i+1)*bundle.height());
 
-    short w = (short) widthlist[i];
+    short w = static_cast<short>(widthlist[i]);
     short halfw = w / 2;
 
     switch (this->justification.getValue()) {
