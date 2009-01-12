@@ -49,7 +49,7 @@ public:
               const SbTime & timestamp);
 
   /*!
-	Convenience: Clears timeStamps, track and reset trackLength
+       Convenience: Clears timeStamps, track and reset trackLength
   */
   void deleteValues();
 

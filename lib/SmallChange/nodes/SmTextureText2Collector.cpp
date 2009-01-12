@@ -314,13 +314,13 @@ SmTextureText2CollectorElement::isCollecting(SoState * state)
 
 void
 SmTextureText2CollectorElement::add(SoState * state,
-				    const SbString & text,
-				    const SmTextureFont::FontImage * font,
-				    const SbVec3f & worldpos,
+                                const SbString & text,
+                                const SmTextureFont::FontImage * font,
+                                const SbVec3f & worldpos,
                                     const float maxdist,
-				    const SbColor4f & color,
-				    SmTextureText2::Justification j,
-				    SmTextureText2::VerticalJustification vj)
+                                const SbColor4f & color,
+                                SmTextureText2::Justification j,
+                                SmTextureText2::VerticalJustification vj)
 {
   SmTextureText2CollectorElement * elem =
     static_cast<SmTextureText2CollectorElement*>

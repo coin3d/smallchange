@@ -115,8 +115,8 @@ SmTrack::append(const SbVec3d & pos,
 void
 SmTrack::deleteValues()
 {
-	this->track.deleteValues(0, this->track.getNum());
-	this->timeStamps.deleteValues(0, this->timeStamps.getNum());
+       this->track.deleteValues(0, this->track.getNum());
+       this->timeStamps.deleteValues(0, this->timeStamps.getNum());
 }
 
 

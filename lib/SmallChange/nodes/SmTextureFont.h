@@ -52,10 +52,10 @@ class SMALLCHANGE_DLL_API SmTextureFont : public SoNode {
     ~FontImage();
 
     void addGlyph(unsigned char c,
-		  const SbImage & image,
-		  const int width,
-		  const int gfxwidth = -1,
-		  const int xoffset = 0);
+                const SbImage & image,
+                const int width,
+                const int gfxwidth = -1,
+                const int xoffset = 0);
     int getGlyphWidth(unsigned char c) const;
 
     void setKerning(unsigned char glyph, unsigned char next, int kerning);
@@ -146,7 +146,7 @@ class SMALLCHANGE_DLL_API SmTextureFontBundle {
 
   void begin() const;
   void renderString(const SbString & string,
-		    const SbVec3f & pos) const;
+                  const SbVec3f & pos) const;
   void end() const;
   int stringWidth(const SbString & s) const {
     return this->font->stringWidth(s);

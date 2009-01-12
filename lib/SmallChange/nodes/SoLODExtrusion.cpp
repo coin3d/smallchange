@@ -351,8 +351,8 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
       break;
     case 2:    // render nothing until beneath lodDistance2
       while (accdist < ld2dist && i < spinelength-1) {
-	accdist += lengths[i];
-	i++;
+       accdist += lengths[i];
+       i++;
       }
       break;
     default:
@@ -916,7 +916,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
 
       /* vertex 1 *********************************************************/
       if (use_color) {
-	glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
+       glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
       }
       else if (use_alternate_color) {
         glColor3fv(index & 1 ? main_color.getValue(): alt_color.getValue());
@@ -926,14 +926,14 @@ SoLODExtrusionP::renderSegidx(SoState * state,
 
       /* vertex 2 *********************************************************/
       if (use_color) {
-	glColor3fv((const GLfloat*)colorv[coloridx[v2]].getValue());
+       glColor3fv((const GLfloat*)colorv[coloridx[v2]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v2].getValue());
       glVertex3fv((const GLfloat*)cv[v2].getValue());
 
       /* vertex 3 *********************************************************/
       if (use_color) {
-	glColor3fv((const GLfloat*)colorv[coloridx[v3]].getValue());
+       glColor3fv((const GLfloat*)colorv[coloridx[v3]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v3].getValue());
       glVertex3fv((const GLfloat*)cv[v3].getValue());
@@ -950,7 +950,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       v1 = iv[curidx];
       assert(v1 >= 0 && v1 < vcnt);
       if (use_color) {
-	glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
+       glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v1].getValue());
       glVertex3fv((const GLfloat*)cv[v1].getValue());

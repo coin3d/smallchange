@@ -113,7 +113,7 @@ ShapeScale::initClass(void)
   SO_KIT_INIT_CLASS(ShapeScale, SoBaseKit, "BaseKit");
 }
 
-void 
+void
 ShapeScale::scaleCB(void * closure, SoAction * action)
 {
   ShapeScale * thisp = (ShapeScale*) closure;
@@ -124,7 +124,7 @@ ShapeScale::scaleCB(void * closure, SoAction * action)
   if (!state->isElementEnabled(SoViewportRegionElement::getClassStackIndex()) ||
       !state->isElementEnabled(SoViewVolumeElement::getClassStackIndex()) ||
       !state->isElementEnabled(SoModelMatrixElement::getClassStackIndex())) return;
-  
+
   SbBox3f bbox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
@@ -139,13 +139,13 @@ ShapeScale::scaleCB(void * closure, SoAction * action)
   else if (scalefactor > thisp->maxScale.getValue()) {
     scalefactor = thisp->maxScale.getValue();
   }
-  
+
   SbVec3f t;
   SbRotation r;
   SbVec3f s;
   SbRotation so;
   mm.getTransform(t, r, s, so);
-  
+
   SbVec3f scale(scalefactor / s[0], scalefactor / s[1], scalefactor / s[2]);
   SoModelMatrixElement::scaleBy(state, thisp, scale);
 }

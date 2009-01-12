@@ -154,7 +154,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     SbVec3f pos;
 
     SbColor4f col(SoLazyElement::getDiffuse(state, 0),
-			1.0f - SoLazyElement::getTransparency(state, 0));
+                     1.0f - SoLazyElement::getTransparency(state, 0));
 
     for (int i = 0; i < this->string.getNum(); i++) {
       if (perpart && i > 0) {
@@ -393,5 +393,3 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
   }
   bundle.end();
 }
-
-

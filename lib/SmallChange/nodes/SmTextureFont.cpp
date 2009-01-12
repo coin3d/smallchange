@@ -22,7 +22,7 @@
 \**************************************************************************/
 
 /*!
-  \class SmTextureFont 
+  \class SmTextureFont
   \brief The SmTextureFont is used for setting up a texture font used by SmTextureText2
 
   Using this node, it's possible to use a third party library to generate the fonts
@@ -187,7 +187,7 @@ static SmTextureFont::FontImage * default_font = NULL;
 
 /**************************************************************************/
 
-SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in, 
+SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in,
                                     const int leading_in,
                                     const int ascent_in,
                                     const int descent_in,
@@ -205,7 +205,7 @@ SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in,
   // max glyphs = 256, sqrt(256) = 16
   int w = coin_geq_power_of_two(16 * glyphsize[0]);
   int h = coin_geq_power_of_two(16 * glyphsize[1]);
-  
+
   this->setValue(SbVec2s(short(w), short(h)), numcomp, NULL);
 
   // initialize image to a blank image
@@ -233,12 +233,12 @@ SmTextureFont::FontImage::~FontImage()
   xoffset is the offset used when rendering the glyph. This is useful
   for specifying glyphs that extend to the left of the glyph position.
 */
-void 
+void
 SmTextureFont::FontImage::addGlyph(unsigned char c,
-				   const SbImage & image,
-				   const int glyphwidth,
-				   const int gfxglyphwidth,
-				   const int xoffset)
+                               const SbImage & image,
+                               const int glyphwidth,
+                               const int gfxglyphwidth,
+                               const int xoffset)
 {
   if (this->glimage) {
     this->glimage->unref();
@@ -250,11 +250,11 @@ SmTextureFont::FontImage::addGlyph(unsigned char c,
   assert(size == this->glyphsize);
   this->glyphwidth[c] = (short) glyphwidth;
   this->xoffset[c] = (short) xoffset;
-  this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? short(gfxglyphwidth) : this->glyphsize[0];  
+  this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? short(gfxglyphwidth) : this->glyphsize[0];
   this->copyGlyph(c, image);
 }
 
-SbVec2s 
+SbVec2s
 SmTextureFont::FontImage::getGlyphPositionPixels(unsigned char c) const
 {
   // FIXME: I'm wasting some space in the texture since loads of the
@@ -268,13 +268,13 @@ SmTextureFont::FontImage::getGlyphPositionPixels(unsigned char c) const
 /*!
   Returns the lower left corner position of the glyph in texture coordinates.
 */
-SbVec2f 
+SbVec2f
 SmTextureFont::FontImage::getGlyphPosition(unsigned char c) const
 {
   SbVec2s size;
   int dummy;
   (void) this->getValue(size, dummy);
-  
+
   SbVec2s pos = this->getGlyphPositionPixels(c);
   return SbVec2f(float(pos[0])/float(size[0]),
                  float(pos[1])/float(size[1]));
@@ -283,7 +283,7 @@ SmTextureFont::FontImage::getGlyphPosition(unsigned char c) const
 /*!
   Returns the glyph image for \a c.
  */
-SbImage 
+SbImage
 SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
 {
   SbVec2s pos = this->getGlyphPositionPixels(c);
@@ -291,7 +291,7 @@ SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
   SbImage image(NULL, this->glyphsize, this->numcomp);
   SbVec2s size, fullsize;
   int nc;
- 
+
   unsigned char * dst = image.getValue(size, nc);
   unsigned char * src = this->getValue(fullsize, nc);
 
@@ -321,12 +321,12 @@ SmTextureFont::FontImage::stringWidth(const SbString & s) const
 }
 
 /*!
-  
+
   Convenience method to render \a s at postion \a pos. This function
   assumed a coordinate system with 1 pixel == 1 unit is set up.
 
 */
-void 
+void
 SmTextureFont::FontImage::renderString(const SbString & s,
                                        const SbVec3f & pos,
                                        const bool needglbeginend) const
@@ -336,7 +336,7 @@ SmTextureFont::FontImage::renderString(const SbString & s,
 
   const SbVec2f n0(pos[0], pos[1]);
   const SbVec2f n1(n0[0], n0[1] + float(this->glyphsize[1]));
-  
+
   if (needglbeginend) glBegin(GL_QUADS);
 
   int acc  = 0;
@@ -345,13 +345,13 @@ SmTextureFont::FontImage::renderString(const SbString & s,
     int xoffset = this->getXOffset(sptr[j]);
     SbVec2f t0 = this->getGlyphPosition(sptr[j]);
     SbVec2f t1 = t0 + this->getGlyphSize(sptr[j]);
-    
+
     float n00 = pos[0];
     SbVec3f c0(float(n00 + acc + xoffset),      float(n1[1]), -pos[2]);
     SbVec3f c1(float(n00 + acc + gw + xoffset), float(n1[1]), -pos[2]);
     SbVec3f c2(float(n00 + acc + gw + xoffset), float(n0[1]), -pos[2]);
     SbVec3f c3(float(n00 + acc + xoffset),      float(n0[1]), -pos[2]);
-    
+
     acc += this->getKerning(sptr[j], sptr[j+1]);
     glTexCoord2f(t0[0], t0[1]);
     glVertex3fv(c0.getValue());
@@ -362,24 +362,24 @@ SmTextureFont::FontImage::renderString(const SbString & s,
     glTexCoord2f(t0[0], t1[1]);
     glVertex3fv(c3.getValue());
   }
-  if (needglbeginend) glEnd();  
+  if (needglbeginend) glEnd();
 }
 
 /*!
   Returns the size of the glyph, in texture coordinates.
 */
-SbVec2f 
+SbVec2f
 SmTextureFont::FontImage::getGlyphSize(unsigned char c) const
 {
   SbVec2s size;
   int dummy;
   (void) this->getValue(size, dummy);
-  
+
   return SbVec2f(float(this->gfxglyphwidth[c]) / float(size[0]),
                  float(this->glyphsize[1]) / float(size[1]));
 }
 
-void 
+void
 SmTextureFont::FontImage::copyGlyph(unsigned char c, const SbImage & glyph)
 {
   SbVec2s origo = this->getGlyphPositionPixels(c);
@@ -390,7 +390,7 @@ SmTextureFont::FontImage::copyGlyph(unsigned char c, const SbImage & glyph)
   for (short y = 0; y < this->glyphsize[1]; y++) {
     for (short x = 0; x < this->glyphsize[0]; x++) {
       for (int i = 0; i < nc; i++) {
-        dst[(origo[1]+y)*fullsize[0]*nc + (origo[0]+x)*nc + i] = 
+        dst[(origo[1]+y)*fullsize[0]*nc + (origo[0]+x)*nc + i] =
           src[y*size[0]*nc + x*nc + i];
       }
     }
@@ -398,9 +398,9 @@ SmTextureFont::FontImage::copyGlyph(unsigned char c, const SbImage & glyph)
 }
 
 /*!
-  Returns the width of the glyph in the texture. 
+  Returns the width of the glyph in the texture.
 */
-int 
+int
 SmTextureFont::FontImage::getGlyphWidth(unsigned char c) const
 {
   return this->gfxglyphwidth[c];
@@ -409,7 +409,7 @@ SmTextureFont::FontImage::getGlyphWidth(unsigned char c) const
 /*!
   Sets kerning for the glyph/next pair.
  */
-void 
+void
 SmTextureFont::FontImage::setKerning(unsigned char glyph, unsigned char next, int kerning)
 {
   uintptr_t key = uintptr_t(glyph)<<8 | uintptr_t(next);
@@ -435,7 +435,7 @@ SmTextureFont::FontImage::getKerning(unsigned char glyph, unsigned char next) co
 /*!
   Returns the x offset for \a glyph.
 */
-int 
+int
 SmTextureFont::FontImage::getXOffset(unsigned char glyph) const
 {
   return this->xoffset[glyph];
@@ -444,11 +444,11 @@ SmTextureFont::FontImage::getXOffset(unsigned char glyph) const
 /*!
   Returns the SoGLImage instance for this font.
 */
-SoGLImage * 
+SoGLImage *
 SmTextureFont::FontImage::getGLImage(void) const
 {
   if (this->glimage == NULL) {
-    SmTextureFont::FontImage * thisp = 
+    SmTextureFont::FontImage * thisp =
       const_cast<SmTextureFont::FontImage*> (this);
     thisp->glimage = new SoGLImage();
     SbVec2s size;
@@ -459,19 +459,19 @@ SmTextureFont::FontImage::getGLImage(void) const
   return this->glimage;
 }
 
-int 
+int
 SmTextureFont::FontImage::getLeading() const
 {
   return this->leading;
 }
 
-int 
+int
 SmTextureFont::FontImage::getAscent() const
 {
   return this->ascent;
 }
 
-int 
+int
 SmTextureFont::FontImage::getDescent() const
 {
   return this->descent;
@@ -480,13 +480,13 @@ SmTextureFont::FontImage::getDescent() const
 /*!
   Returns the height of the font (ascent + descent + 1).
 */
-int 
+int
 SmTextureFont::FontImage::height() const
 {
   return this->ascent + this->descent + 1;
 }
 
-const SbVec2s & 
+const SbVec2s &
 SmTextureFont::FontImage::getGlyphSizePixels() const
 {
   return this->glyphsize;
@@ -503,12 +503,12 @@ SO_NODE_SOURCE(SmTextureFont);
 
 static void
 render_text(unsigned char * dst,
-	    const int idx,
-	    const unsigned char value,
-	    const unsigned char alpha)
+           const int idx,
+           const unsigned char value,
+           const unsigned char alpha)
 {
   const unsigned char * src = texture_fontdata[idx];
-  
+
   const int sx = 1;
   for (int y = 0; y < 12; y++) {
     for (int x = sx; x < 8; x++) {
@@ -525,7 +525,7 @@ render_text(unsigned char * dst,
   }
 }
 
-void 
+void
 SmTextureFont::initClass(void)
 {
   SO_NODE_INIT_CLASS(SmTextureFont, SoNode, "Node");
@@ -534,7 +534,7 @@ SmTextureFont::initClass(void)
   SO_ENABLE(SoPickAction, SmTextureFontElement);
   SO_ENABLE(SoGetBoundingBoxAction, SmTextureFontElement);
 
-  default_font = new SmTextureFont::FontImage(SbVec2s(8,12), 
+  default_font = new SmTextureFont::FontImage(SbVec2s(8,12),
                                               0,
                                               8,
                                               3,
@@ -543,15 +543,15 @@ SmTextureFont::initClass(void)
   for (size_t c = 0; c < sizeof(texturetext_isolatin1_mapping) / sizeof(int); c++) {
     SbVec2s dummy;
     int dummy2;
-    render_text(img.getValue(dummy, dummy2), 
-		texturetext_isolatin1_mapping[c], 255, 255); 
+    render_text(img.getValue(dummy, dummy2),
+              texturetext_isolatin1_mapping[c], 255, 255);
     default_font->addGlyph(c, img, 7, 8);
   }
   cc_coin_atexit(destroyClass);
 }
 
 void
-SmTextureFont::destroyClass() 
+SmTextureFont::destroyClass()
 {
   delete default_font;
 }
@@ -567,33 +567,33 @@ SmTextureFont::~SmTextureFont()
   delete this->image;
 }
 
-void 
+void
 SmTextureFont::doAction(SoAction * action)
 {
-  SmTextureFontElement::set(action->getState(), 
+  SmTextureFontElement::set(action->getState(),
                             this,
                             this->image);
 }
 
-void 
+void
 SmTextureFont::GLRender(SoGLRenderAction * action)
 {
   SmTextureFont::doAction((SoAction*) action);
 }
 
-void 
+void
 SmTextureFont::pick(SoPickAction * action)
 {
   SmTextureFont::doAction((SoAction*) action);
 }
 
-void 
+void
 SmTextureFont::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SmTextureFont::doAction((SoAction*) action);
 }
 
-void 
+void
 SmTextureFont::setFont(FontImage * image)
 {
   this->touch();
@@ -601,7 +601,7 @@ SmTextureFont::setFont(FontImage * image)
   this->image = image;
 }
 
-const SmTextureFont::FontImage * 
+const SmTextureFont::FontImage *
 SmTextureFont::getFont(void) const
 {
   return this->image;
@@ -611,7 +611,7 @@ SmTextureFont::getFont(void) const
 
 SO_ELEMENT_SOURCE(SmTextureFontElement);
 
-void 
+void
 SmTextureFontElement::initClass(void)
 {
   SO_ELEMENT_INIT_CLASS(SmTextureFontElement, inherited);
@@ -620,23 +620,23 @@ SmTextureFontElement::initClass(void)
 SmTextureFontElement::~SmTextureFontElement()
 {
 }
-  
-void 
+
+void
 SmTextureFontElement::init(SoState * state)
 {
   this->image = default_font;
 }
 
-void 
-SmTextureFontElement::set(SoState * state, 
+void
+SmTextureFontElement::set(SoState * state,
                           SoNode * node,
                           SmTextureFont::FontImage * image)
 {
-  SmTextureFontElement * elem = static_cast<SmTextureFontElement*> 
+  SmTextureFontElement * elem = static_cast<SmTextureFontElement*>
     (inherited::getElement(state,
                            classStackIndex,
                            node));
-  
+
   if (image) {
     elem->image = image;
   }
@@ -645,10 +645,10 @@ SmTextureFontElement::set(SoState * state,
   }
 }
 
-const SmTextureFont::FontImage * 
+const SmTextureFont::FontImage *
 SmTextureFontElement::get(SoState * const state)
 {
-  const SmTextureFontElement * elem = static_cast<const SmTextureFontElement*> 
+  const SmTextureFontElement * elem = static_cast<const SmTextureFontElement*>
     (SoElement::getConstElement(state,
                                 classStackIndex));
   return elem->image;
@@ -675,9 +675,9 @@ SmTextureFontBundle::SmTextureFontBundle(SoAction * action, SoNode * node_in)
   // update these elements here to make blending work
   SoTextureQualityElement::set(this->state, 0.3f);
   SoGLTextureImageElement::set(this->state, this->node,
-			       this->font->getGLImage(),
-			       SoTextureImageElement::MODULATE,
-			       SbColor(1.0f, 1.0f, 1.0f));
+                            this->font->getGLImage(),
+                            SoTextureImageElement::MODULATE,
+                            SbColor(1.0f, 1.0f, 1.0f));
   SoGLTextureEnabledElement::set(this->state, this->node, TRUE);
 }
 
@@ -686,31 +686,31 @@ SmTextureFontBundle::~SmTextureFontBundle()
   this->state->pop();
 }
 
-void 
+void
 SmTextureFontBundle::begin() const
 {
   if (!this->didupdatecoin) {
     // turn off any texture coordinate functions
     SoLazyElement::setVertexOrdering(this->state, SoLazyElement::CCW);
     SoGLTextureCoordinateElement::setTexGen(this->state, this->node, NULL);
-    SoLightModelElement::set(this->state, SoLightModelElement::BASE_COLOR); 
-    SoGLLazyElement::getInstance(this->state)->send(this->state, 
-						    SoLazyElement::VERTEXORDERING_MASK|
-						    SoLazyElement::LIGHT_MODEL_MASK);
+    SoLightModelElement::set(this->state, SoLightModelElement::BASE_COLOR);
+    SoGLLazyElement::getInstance(this->state)->send(this->state,
+                                              SoLazyElement::VERTEXORDERING_MASK|
+                                              SoLazyElement::LIGHT_MODEL_MASK);
     const_cast<SmTextureFontBundle*> (this)->didupdatecoin = true;
   }
   glBegin(GL_QUADS);
 }
 
-void 
+void
 SmTextureFontBundle::end() const
 {
   glEnd();
 }
 
-void 
+void
 SmTextureFontBundle::renderString(const SbString & string,
-				  const SbVec3f & pos) const
+                              const SbVec3f & pos) const
 {
   this->font->renderString(string, pos, false);
 }
