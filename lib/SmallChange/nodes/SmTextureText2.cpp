@@ -112,7 +112,7 @@ void
 SmTextureText2::initClass(void)
 {
   if (getClassTypeId() == SoType::badType()) {
-    SO_NODE_INIT_CLASS(SmTextureText2, SoShape, "Shape");    
+    SO_NODE_INIT_CLASS(SmTextureText2, SoShape, "Shape");
   }
 }
 
@@ -147,15 +147,15 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   SbBool perpart =
     SoMaterialBindingElement::get(state) !=
     SoMaterialBindingElement::OVERALL;
-  
+
   if ((this->string.getNum() == this->position.getNum()) &&
-      SmTextureText2CollectorElement::isCollecting(state)) {    
+      SmTextureText2CollectorElement::isCollecting(state)) {
     SbMatrix modelmatrix = SoModelMatrixElement::get(state);
     SbVec3f pos;
 
     SbColor4f col(SoLazyElement::getDiffuse(state, 0),
 			1.0f - SoLazyElement::getTransparency(state, 0));
-    
+
     for (int i = 0; i < this->string.getNum(); i++) {
       if (perpart && i > 0) {
         col = SbColor4f(SoLazyElement::getDiffuse(state, i),
@@ -173,21 +173,21 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                                           (VerticalJustification)
                                           this->verticalJustification.getValue());
     }
-    
+
     // invalidate caches to make sure this node is traversed every frame.
     SoCacheElement::invalidate(state);
     return;
   }
-  
+
   SmTextureFontBundle bundle(action);
   SoCacheElement::invalidate(state);
-  
+
   if (!this->shouldGLRender(action)) {
     return;
   }
 
   // set up my font texture
-  SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR); 
+  SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
   SoMaterialBundle mb(action);
   mb.sendFirst(); // make sure we have the correct material
 
@@ -324,15 +324,15 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
 
   SbVec3f screenpoint;
   projmatrix.multVecMatrix(pos, screenpoint);
-  
+
   int xmin = 0;
   int ymax = bundle.getAscent();
   int ymin = ymax - (numstring * bundle.height() * bundle.getLeading());
   ymin += bundle.getLeading();
-  
+
   short h = ymax - ymin;
   short halfh = h / 2;
-  
+
   switch (this->verticalJustification.getValue()) {
   case SmTextureText2::BOTTOM:
     break;
@@ -349,8 +349,8 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     break;
   }
   SbList <int> widthlist;
-  int maxw = 0; 
-  
+  int maxw = 0;
+
   for (i = 0; i < numstring; i++) {
     widthlist.append(bundle.stringWidth(s[i]));
   }
@@ -366,14 +366,14 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     //avoid negative indices.
     const unsigned char * sptr =
       reinterpret_cast<const unsigned char *>(s[i].getString());
- 
+
     SbVec2s sp;
     if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
 
     SbVec2s n0 = SbVec2s(sp[0] + xmin,
                          sp[1] + ymax - (i+1)*bundle.height());
 
-    short w = (short) widthlist[i]; 
+    short w = (short) widthlist[i];
     short halfw = w / 2;
 
     switch (this->justification.getValue()) {
