@@ -244,8 +244,6 @@ SmTextureFont::FontImage::addGlyph(unsigned char c,
     this->glimage->unref();
     this->glimage = NULL;
   }
-  SbVec2s size;
-  assert(size == this->glyphsize);
   this->glyphwidth[c] = static_cast<short>(glyphwidth);
   this->xoffset[c] = static_cast<short>(xoffset);
   this->gfxglyphwidth[c] = gfxglyphwidth >= 0 ? short(gfxglyphwidth) : this->glyphsize[0];
