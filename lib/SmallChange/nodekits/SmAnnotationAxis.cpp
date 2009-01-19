@@ -30,6 +30,7 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCullElement.h>
+#include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/caches/SoCache.h>
@@ -43,6 +44,7 @@
 #include <Inventor/sensors/SoAlarmSensor.h>
 #include <Inventor/sensors/SoOneShotSensor.h>
 #include <SmallChange/nodes/SmTextureText2.h>
+#include <SmallChange/nodes/SmTextureText2Collector.h>
 #include <cstring>
 
 // *************************************************************************
@@ -205,33 +207,59 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
                                  0, this->annotationPos.getNum() - 1); 
     
   }
-  
-  if (l1 != PRIVATE(this)->axisidx) {
-    // avoid that we update the scene graph and trigger redraws too often
-    SbTime curtime = SbTime::getTimeOfDay();
-    if ((curtime.getValue() - PRIVATE(this)->lastchanged.getValue()) < 0.5) {
-      if (!PRIVATE(this)->alarm->isScheduled()) {
-        PRIVATE(this)->alarm->setTimeFromNow(1.0);
-        PRIVATE(this)->alarm->schedule();
+  if (SmTextureText2CollectorElement::isCollecting(state)) {
+    if (this->annotation.getNum()) {
+      SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
+      SbMatrix modelmatrix = SoModelMatrixElement::get(state);
+      SbVec3f pos;
+      SbColor4f col(SoLazyElement::getDiffuse(state, 0),
+                    1.0f - SoLazyElement::getTransparency(state, 0));
+      
+      for (int i = 0; i < l1.getLength(); i++) {
+        pos = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
+        modelmatrix.multVecMatrix(pos, pos);
+        
+        SmTextureText2CollectorElement::add(state,
+                                            this->annotation.getValues(0)[l1[i]%this->annotation.getNum()],
+                                            SmTextureFontElement::get(state),
+                                            pos,
+                                            -1.0,
+                                            col,
+                                            static_cast<SmTextureText2::Justification>(t->justification.getValue()),
+                                            static_cast<SmTextureText2::VerticalJustification>(t->verticalJustification.getValue()));
+        
+        if (t->string.getNum()) t->string.setNum(0);
       }
     }
-    else {
-      PRIVATE(this)->lastchanged = curtime;
-      SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
-      assert(t);
-      t->position.setNum(l1.getLength());
-      t->string.setNum(l1.getLength());
-      SbVec3f * pos = t->position.startEditing();
-      SbString * text = t->string.startEditing();
-      for (int i = 0; i < l1.getLength(); i++) {
-      pos[i] = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
-      text[i] = this->annotation.getNum() > 0 ?
-        this->annotation.getValues(0)[l1[i]%this->annotation.getNum()] : "";
+  }
+  else {  
+    if (l1 != PRIVATE(this)->axisidx) {
+      // avoid that we update the scene graph and trigger redraws too often
+      SbTime curtime = SbTime::getTimeOfDay();
+      if ((curtime.getValue() - PRIVATE(this)->lastchanged.getValue()) < 0.5) {
+        if (!PRIVATE(this)->alarm->isScheduled()) {
+          PRIVATE(this)->alarm->setTimeFromNow(1.0);
+          PRIVATE(this)->alarm->schedule();
+        }
       }
-      t->position.finishEditing();
-      t->string.finishEditing();
-      
-      PRIVATE(this)->axisidx = l1;
+      else {
+        PRIVATE(this)->lastchanged = curtime;
+        SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
+        assert(t);
+        t->position.setNum(l1.getLength());
+        t->string.setNum(l1.getLength());
+        SbVec3f * pos = t->position.startEditing();
+        SbString * text = t->string.startEditing();
+        for (int i = 0; i < l1.getLength(); i++) {
+          pos[i] = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
+          text[i] = this->annotation.getNum() > 0 ?
+            this->annotation.getValues(0)[l1[i]%this->annotation.getNum()] : "";
+        }
+        t->position.finishEditing();
+        t->string.finishEditing();
+        
+        PRIVATE(this)->axisidx = l1;
+      }
     }
   }
   if (createcache) {
