@@ -33,7 +33,6 @@
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
-#include <Inventor/caches/SoCache.h>
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoInfo.h>
 #include <Inventor/nodes/SoMaterial.h>
@@ -61,7 +60,6 @@ public:
   }
 
   SmAnnotationAxis * master;
-  SoCache * cache;
   SbList <int> axisidx;
   SoOneShotSensor * regen_sensor;
 
@@ -89,7 +87,6 @@ public:
 SmAnnotationAxis::SmAnnotationAxis()
 {
   PRIVATE(this) = new SmAnnotationAxisP(this);
-  PRIVATE(this)->cache = NULL;
   PRIVATE(this)->regen_sensor = NULL;
   PRIVATE(this)->alarm = new SoAlarmSensor(SmAnnotationAxisP::alarmCB, PRIVATE(this));
   PRIVATE(this)->lastchanged = SbTime::zero();
@@ -131,7 +128,6 @@ SmAnnotationAxis::~SmAnnotationAxis()
 {
   delete PRIVATE(this)->alarm;
   delete PRIVATE(this)->regen_sensor;
-  if (PRIVATE(this)->cache) PRIVATE(this)->cache->unref();
   delete PRIVATE(this);
 }
 
@@ -146,24 +142,20 @@ SmAnnotationAxis::getBoundingBox(SoGetBoundingBoxAction * action)
 {
   SoState * state = action->getState();
 
-  if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
-    // supply an approximate bbox and always invalidate the bbox cache
-    SoCacheElement::invalidate(state);
-    
-    SbBox3f bbox;
-    bbox.makeEmpty();
-    for (int i = 0; i < this->annotationPos.getNum(); i++) {
-      bbox.extendBy(this->annotationPos[i]);
-    }
-    
-    if (!bbox.isEmpty()) {
-      action->extendBy(bbox);
-      action->setCenter(bbox.getCenter(), TRUE);
-    }
+  // supply an approximate bbox and always invalidate the bbox cache
+  SoCacheElement::invalidate(state);
+  
+  SbBox3f bbox;
+  bbox.makeEmpty();
+  for (int i = 0; i < this->annotationPos.getNum(); i++) {
+    bbox.extendBy(this->annotationPos[i]);
   }
-  else {
-    inherited::getBoundingBox(action);
+  
+  if (!bbox.isEmpty()) {
+    action->extendBy(bbox);
+    action->setCenter(bbox.getCenter(), TRUE);
   }
+  inherited::getBoundingBox(action);
 }
 
 void 
@@ -171,22 +163,10 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
 {
   SoState * state = action->getState();
 
-  SbBool createcache = FALSE;
   SbBool render = TRUE;
-
+  
   // don't create render caches for this node
   SoCacheElement::invalidate(state);
-
-  SbBool storedinvalid = FALSE;
-  if ((PRIVATE(this)->cache == NULL) || !PRIVATE(this)->cache->isValid(state)) {
-    if (PRIVATE(this)->cache) PRIVATE(this)->cache->unref();
-    storedinvalid = SoCacheElement::setInvalid(FALSE);
-    state->push();
-    PRIVATE(this)->cache = new SoCache(state);
-    PRIVATE(this)->cache->ref();
-    SoCacheElement::set(state, PRIVATE(this)->cache);
-    createcache = TRUE;
-  }
   
   SbMatrix projmatrix;
   projmatrix = (SoModelMatrixElement::get(state) *
@@ -262,18 +242,12 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
       }
     }
   }
-  if (createcache) {
-    state->pop();
-    (void) SoCacheElement::setInvalid(storedinvalid);
-  }
   if (render) inherited::GLRender(action);
 }
 
 void 
 SmAnnotationAxis::notify(SoNotList * list)
 {
-  if (PRIVATE(this)->cache) PRIVATE(this)->cache->invalidate();
-
   if (PRIVATE(this)->regen_sensor) {
     SoField * f = list->getLastField();
     if ((f == &this->annotationPos) ||
