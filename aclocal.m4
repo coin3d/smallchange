@@ -78,7 +78,9 @@ EOF
 sim_ac_msc_version=`$CXXCPP $CPPFLAGS conftest.c 2>/dev/null | grep '^int VerMSC' | sed 's%^int VerMSC = %%' | sed 's% *;.*$%%'`
 
 sim_ac_msc_minor_version=0
-if test $sim_ac_msc_version -ge 1400; then
+if test $sim_ac_msc_version -ge 1500; then
+  sim_ac_msc_major_version=9
+elif test $sim_ac_msc_version -ge 1400; then
   sim_ac_msc_major_version=8
 elif test $sim_ac_msc_version -ge 1300; then
   sim_ac_msc_major_version=7
@@ -385,7 +387,7 @@ while test $sim_ac_num_settings -ge 0; do
   sim_ac_description=`echo "$sim_ac_setting" | cut -d: -f1`
   sim_ac_status=`echo "$sim_ac_setting" | cut -d: -f2-`
   # hopefully not too many terminals are too dumb for this
-  echo -e "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:"
+  printf "$sim_ac_padding $sim_ac_status\r  $sim_ac_description:\n"
   sim_ac_configuration_settings=`echo $sim_ac_configuration_settings | cut -d"|" -f2-`
   sim_ac_num_settings=`expr $sim_ac_num_settings - 1`
 done
@@ -660,6 +662,41 @@ rm -f confdefs.old
 
 
 # **************************************************************************
+# SIM_AC_MACOS10_DEPLOYMENT_TARGET
+
+AC_DEFUN([SIM_AC_MACOS10_DEPLOYMENT_TARGET], [
+
+# might not case on host_os here in case of crosscompiling in the future...
+case "$host_os" in
+darwin*)
+  AC_MSG_CHECKING([OS X deployment target])
+  cat > conftest.c << EOF
+int VerOSX = __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__;
+EOF
+  # The " *"-parts of the last sed-expression on the next line are necessary
+  # because at least the Solaris/CC preprocessor adds extra spaces before and
+  # after the trailing semicolon.
+  sim_ac_macos10_deployment_target_code=`$CXXCPP $CPPFLAGS conftest.c 2>/dev/null | grep '^int VerOSX' | sed 's%^int VerOSX = %%' | sed 's% *;.*$%%'`
+  rm -f conftest.c
+
+  case "$sim_ac_macos10_deployment_target_code" in
+  10* )
+    sim_ac_macos10_deployment_version_string=`echo $sim_ac_macos10_deployment_target_code | sed -e 's/^\(.\)\(.\)\(.\)\(.\)/\1\2.\3.\4/;'`
+    sim_ac_macos10_deployment_target_major_version=`echo $sim_ac_macos10_deployment_target_code | cut -c1-2`
+    sim_ac_macos10_deployment_target_minor_version=`echo $sim_ac_macos10_deployment_target_code | cut -c3`
+    sim_ac_macos10_deployment_target_micro_version=`echo $sim_ac_macos10_deployment_target_code | cut -c4`
+    AC_MSG_RESULT($sim_ac_macos10_deployment_target_version_string)
+    ;;
+  * )
+    :
+    AC_MSG_RESULT([-])
+    ;;
+  esac
+  ;;
+esac
+]) # SIM_AC_MACOS10_DEPLOYMENT_TARGET
+
+# **************************************************************************
 # SIM_AC_MAC_CPP_ADJUSTMENTS
 #
 # Add --no-cpp-precomp if necessary. Without this option, the
@@ -761,6 +798,7 @@ case $host_os in
     fi
 esac
 ]) # SIM_AC_UNIVERSAL_BINARIES
+
 
 #   Use this file to store miscellaneous macros related to checking
 #   compiler features.
@@ -8251,8 +8289,9 @@ fi
 #
 # Description:
 #   Let the user decide if C++ exception handling should be compiled
-#   in. The compiled libraries/executables will use a lot less space
-#   if they have exception handling support.
+#   in. With older compilers the libraries/executables will use a lot
+#   less space if they have exception handling support disabled, on
+#   modern compilers the difference is negligible.
 #
 #   Note: this macro must be placed after AC_PROG_CXX in the
 #   configure.in script.
@@ -8268,13 +8307,13 @@ AC_PREREQ([2.13])
 AC_ARG_ENABLE(
   [exceptions],
   AC_HELP_STRING([--enable-exceptions],
-                 [(g++ only) compile with exceptions [[default=no]]]),
+                 [(g++ only) compile with exceptions [[default=yes]]]),
   [case "${enableval}" in
     yes) enable_exceptions=yes ;;
     no)  enable_exceptions=no ;;
     *) AC_MSG_ERROR(bad value "${enableval}" for --enable-exceptions) ;;
   esac],
-  [enable_exceptions=no])
+  [enable_exceptions=yes])
 
 if test x"$enable_exceptions" = x"no"; then
   if test "x$GXX" = "xyes"; then
