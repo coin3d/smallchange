@@ -187,7 +187,11 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
     SoMaterialBundle mb(action);
     mb.sendFirst();
 
-    glPushAttrib(GL_DEPTH_BUFFER_BIT);
+    glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+    // use an alpha test function to avoid that we write values into
+    // the depth buffer for fully transparent parts of the text
+    glAlphaFunc(GL_GREATER, 0.01);
+    glEnable(GL_ALPHA_TEST);
     glDepthMask(this->depthMask.getValue());
     glBegin(GL_QUADS);
 
