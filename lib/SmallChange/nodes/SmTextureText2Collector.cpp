@@ -136,7 +136,7 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
   // for Coin-3
   // bool transppass = action->isRenderingTranspPaths();
 
-  bool transppass = action->handleTransparency(FALSE);
+  SbBool transppass = action->handleTransparency(FALSE);
 
   SmTextureText2CollectorElement::startCollecting(state, !transppass);
   inherited::GLRenderBelowPath(action);
@@ -190,7 +190,7 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
     glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
     // use an alpha test function to avoid that we write values into
     // the depth buffer for fully transparent parts of the text
-    glAlphaFunc(GL_GREATER, 0.01);
+    glAlphaFunc(GL_GREATER, 0.01f);
     glEnable(GL_ALPHA_TEST);
     glDepthMask(this->depthMask.getValue());
     glBegin(GL_QUADS);
