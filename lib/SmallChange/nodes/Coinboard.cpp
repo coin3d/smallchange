@@ -366,7 +366,7 @@ Coinboard::GLRender(SoGLRenderAction * action)
     SbVec3f vecinplane = zaxis - n * n[axisnum];
     vecinplane.normalize();
     if (vecinplane.dot(toviewer) < 0.0f) vecinplane = - vecinplane;
-    float angle = acos(SbClamp(vecinplane.dot(zaxis), -1.0f, 1.0f));
+    float angle = static_cast<float>(acos(SbClamp(vecinplane.dot(zaxis), -1.0f, 1.0f)));
     if (n[axisnum] > 0.0f) angle = -angle;
     SbRotation rot(rotaxis, angle);
 
@@ -562,7 +562,7 @@ Coinboard::generatePrimitives(SoAction * action)
     SbVec3f vecinplane = zaxis - n * n[axisnum];
     vecinplane.normalize();
     if (vecinplane.dot(toviewer) < 0.0f) vecinplane = - vecinplane;
-    float angle = acos(SbClamp(vecinplane.dot(zaxis), -1.0f, 1.0f));
+    float angle = static_cast<float>(acos(SbClamp(vecinplane.dot(zaxis), -1.0f, 1.0f)));
     if (n[axisnum] > 0.0f) angle = -angle;
     SbRotation rot(rotaxis, angle);
 

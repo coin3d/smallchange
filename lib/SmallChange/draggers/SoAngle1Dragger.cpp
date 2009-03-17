@@ -367,7 +367,7 @@ SoAngle1Dragger::drag(void)
   SbVec3f vec = SbVec3f(0, 0, 1);
   mat.multVecMatrix(vec, vec); 
 
-  float tmp = atan2(vec[0], vec[2]);
+  float tmp = static_cast<float>(atan2(vec[0], vec[2]));
   float diff = PRIVATE(this)->lastAngle - tmp;
   if (fabs(diff) > ((350.0*2*M_PI)/360.0)) {
     if (PRIVATE(this)->lastAngle < 0)

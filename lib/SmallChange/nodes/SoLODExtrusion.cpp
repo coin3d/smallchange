@@ -968,7 +968,7 @@ SoLODExtrusionP::makeCircleCrossSection(const float radius, const int segments)
   float angle = (float) (2.0 * M_PI / float(segments));
   templist.append( SbVec2f( 0.0, radius ) );
   for( int i=1; i < segments; i++) {
-    templist.append( SbVec2f( radius*sin(float(i)*angle), radius*cos(float(i)*angle)) );
+    templist.append( SbVec2f( static_cast<float>(radius*sin(float(i)*angle)), static_cast<float>(radius*cos(float(i)*angle))) );
   }
   templist.append( SbVec2f( 0.0, radius ) );
 
