@@ -774,6 +774,19 @@ SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2Collector.cpp
+!IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
+# PROP Intermediate_Dir "Release\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 DLL (Debug)"
+# PROP Intermediate_Dir "Debug\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Release)"
+# PROP Intermediate_Dir "StaticRelease\SmallChange\nodes"
+!ELSEIF  "$(CFG)" == "smallchange1 - Win32 LIB (Debug)"
+# PROP Intermediate_Dir "StaticDebug\SmallChange\nodes"
+!ENDIF
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\SmallChange\nodes\SmTextureFont.cpp
 !IF  "$(CFG)" == "smallchange1 - Win32 DLL (Release)"
 # PROP Intermediate_Dir "Release\SmallChange\nodes"
@@ -1268,6 +1281,10 @@ SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\lib\SmallChange\nodes\SmTextureText2Collector.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\lib\SmallChange\nodes\SmTextureFont.h
 # End Source File
 # End Group
@@ -1366,6 +1383,10 @@ SOURCE=..\..\lib\SmallChange\eventhandlers\SmPanEventHandler.h
 # Begin Source File
 
 SOURCE=lib\SmallChange\basic.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\lib\SmallChange\SmallChange.h
 # End Source File
 # End Group
 # End Group

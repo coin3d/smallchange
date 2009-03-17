@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="smallchange1"
-	ProjectGUID="{FD61A516-CCE0-4034-8DEE-F78647570924}"
+	ProjectGUID="{45146163-2011-4DAA-B2EF-B797D2B66A78}"
 	>
 	<Platforms>
 		<Platform
@@ -1999,6 +1999,56 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SmTextureText2Collector.cpp"
+					>
+					<FileConfiguration
+						Name="DLL (Release)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\Release\SmallChange\nodes/"
+							ProgramDataBaseFileName="Release\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticRelease\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticRelease\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticDebug\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\Debug\SmallChange\nodes/"
+							ProgramDataBaseFileName="Debug\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmTooltip.cpp"
 					>
 					<FileConfiguration
@@ -3928,6 +3978,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\lib\SmallChange\nodes\SmTextureText2Collector.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\lib\SmallChange\nodes\SmTooltip.h"
 					>
 				</File>
@@ -4077,6 +4131,10 @@
 				>
 				<File
 					RelativePath="lib\SmallChange\basic.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\SmallChange.h"
 					>
 				</File>
 			</Filter>
