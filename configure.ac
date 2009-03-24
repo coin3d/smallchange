@@ -302,16 +302,29 @@ fi
 
 # **************************************************************************
 
-if $BUILD_WITH_MSVC; then
-  rm -f vc60.pdb
-  LIBFLAGS="$LIBFLAGS $sim_ac_msvcrt_LIBLDFLAGS"
-  LIBS="$LIBS $sim_ac_msvcrt_LIBLIBS"
+# check if compiler/linker handles __declspec()
+sim_ac_win32_declspec_available=false
+AC_MSG_CHECKING([for __declspec() support])
+AC_TRY_LINK(
+ [],
+ [__declspec(dllimport) int foo;],
+ [sim_ac_win32_declspec_available=true
+  AC_MSG_RESULT([available])],
+ [AC_MSG_RESULT([not available])])
+
+if $sim_ac_win32_declspec_available; then
   if $SMALLCHANGE_STATIC; then
     SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS -DSMALLCHANGE_NOT_DLL"
   else
     CPPFLAGS="-DSMALLCHANGE_MAKE_DLL $CPPFLAGS"
     SMALLCHANGE_EXTRA_CPPFLAGS="$SMALLCHANGE_EXTRA_CPPFLAGS -DSMALLCHANGE_DLL"
   fi
+fi
+
+if $BUILD_WITH_MSVC; then
+  rm -f vc60.pdb
+  LIBFLAGS="$LIBFLAGS $sim_ac_msvcrt_LIBLDFLAGS"
+  LIBS="$LIBS $sim_ac_msvcrt_LIBLIBS"
   debugfile="`pwd`/lib/SmallChange/SmallChange${SMALLCHANGE_MAJOR_VERSION}${SUFFIX}.pdb"
   debugfile=`cygpath -w "$debugfile" | sed 's,\\\\,\\\\\\\\,g'`
   if $SMALLCHANGE_STATIC; then
