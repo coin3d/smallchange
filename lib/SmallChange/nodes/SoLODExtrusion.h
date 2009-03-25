@@ -47,6 +47,7 @@ public:
   static void initClass(void);
   SoLODExtrusion(void);
 
+  SoSFBool antiSquish;
   SoSFBool ccw;
   SoSFFloat creaseAngle;
   SoMFVec2f crossSection;

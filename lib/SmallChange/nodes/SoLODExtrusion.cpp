@@ -106,6 +106,14 @@
   rendered as extrusions. Default value for \e pickLines is FALSE.
  */
 
+/*! 
+  \var SoSFBool SoLODExtrusion::antiSquish
+  
+  Will antisquish the cross sections, based on the current model matrix scale factor.
+  This works in the same way as the SoAntiSquish node, but on each spine segment,
+  such that spine segment positions are affected by scale, but not the geometry.
+*/
+
 #include "SoLODExtrusion.h"
 // #include <Inventor/nodes/SoSubNodeP.h>
 #include <Inventor/misc/SoNormalGenerator.h>
@@ -188,9 +196,11 @@ public:
   SbList <float> spinelens;    // geometric length of each spine segment, precalculated
   SbBool dirty;
 
+  void generateAntiSquish(SbMatrix & mat, const SbVec3f & spinept, const SbVec3f & scale);
   void generateCoords(void);
-  void renderSegidx(SoState * state, const int, const SbBool, const SbBool);
+  void renderSegidx(SoState * state, const int, const SbBool, const SbBool, const SbBool, const SbVec3f &);
   void makeCircleCrossSection( const float, const int);
+  SbVec3f calcAntiSquish(SoState * state);
 };
 #endif // DOXYGEN_SKIP_THIS
 
@@ -241,6 +251,7 @@ SoLODExtrusion::SoLODExtrusion(void)
   SO_NODE_ADD_FIELD(pickLines, (FALSE));
   SO_NODE_ADD_FIELD(alternateColor, (0.0, 0.0, 0.0));
   SO_NODE_ADD_FIELD(doAlternateColor, (FALSE));
+  SO_NODE_ADD_FIELD(antiSquish, (FALSE));
 
   THIS->dirty = TRUE;
 }
@@ -258,6 +269,10 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
   SoState * state = action->getState();
 
   this->updateCache();
+
+  SbVec3f scale(1.0f, 1.0f, 1.0f);
+  SbBool antisquish = this->antiSquish.getValue();
+  if (antisquish) scale = THIS->calcAntiSquish(state);
 
   SoMaterialBundle mb(action);
   mb.sendFirst();
@@ -319,7 +334,7 @@ SoLODExtrusion::GLRender(SoGLRenderAction * action)
     switch (lodmode) {
     case 0:    // render extrusion until above lodDistance1
       while (accdist < ld1dist && i < spinelength-1) {
-        THIS->renderSegidx(state, i, use_color, use_alternate_color);
+        THIS->renderSegidx(state, i, use_color, use_alternate_color, antisquish, scale);
         accdist += lengths[i];
         i++;
       }
@@ -375,6 +390,21 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
   if (!shouldRayPick(action)) return;
 
   SoState * state = action->getState();
+  state->push();
+
+  SbVec3f scale(1.0f, 1.0f, 1.0f);
+  SbBool antisquish = this->antiSquish.getValue();
+  
+  if (antisquish) {
+    SbMatrix squishedmatrix = SoModelMatrixElement::get(state);
+    SbRotation r, so;
+    SbVec3f t;
+    squishedmatrix.getTransform(t, r, scale, so);
+    SbMatrix matrix;
+    matrix.setTransform(t, r, SbVec3f(1.0f, 1.0f, 1.0f), so);
+    matrix.multRight(squishedmatrix.inverse());
+    SoModelMatrixElement::mult(state, this, matrix);
+  }
 
   // Find camera position in local coordinate space
   SbVec3f cameralocal;
@@ -414,6 +444,11 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
     SbVec3f v0 = sptr[i];
     SbVec3f v1 = sptr[i+1];
 
+    for (int j = 0; j < 3; j++) {
+      v0[j] *= scale[j];
+      v1[j] *= scale[j];
+    }
+
     if (v0 != v1) {
       float l1 = (v0-cameralocal).sqrLength();
       float l2 = (v1-cameralocal).sqrLength();
@@ -446,6 +481,7 @@ SoLODExtrusion::rayPick(SoRayPickAction * action)
       }
     }
   }
+  state->pop();
 }
 
 void
@@ -858,8 +894,6 @@ SoLODExtrusionP::generateCoords(void)
     else {
       this->striplens.append( numcross * 2 );
     }
-    //  this->idx.append(-1);
-    //  cursegidx += 1;
   }
   this->segidx.append(cursegidx);
 #undef ADD_TRIANGLE
@@ -875,7 +909,9 @@ void
 SoLODExtrusionP::renderSegidx(SoState * state,
                               const int index,
                               const SbBool use_color,
-                              const SbBool use_alternate_color)
+                              const SbBool use_alternate_color,
+                              const SbBool antisquish,
+                              const SbVec3f & antisquishscale)
 {
   assert( index >=0 && index < this->segidx.getLength() );
 
@@ -891,66 +927,61 @@ SoLODExtrusionP::renderSegidx(SoState * state,
   int vcnt = this->coord.getLength();
   int startindex = siv[index];
   int stopindex;
-  if (index < segidx.getLength()-1)
+  int nextindex;
+  if (index < segidx.getLength()-1) {
     stopindex = siv[index+1];
-  else
+    nextindex = index + 1;
+  }
+  else {
     stopindex = idx.getLength();
-
+    nextindex = index;
+  }
   assert(stopindex > startindex);
 
   int curidx = startindex;
   int32_t v1, v2, v3, v4, v5 = 0; // v5 init unnecessary, but kills a compiler warning.
 
-  if (iv[curidx+3] < 0) {  /* Triangle */
-    assert(0 && "should never get here");
-    //    printf("renderSegidx: triangles. \n");
-    glBegin(GL_TRIANGLES);
-    while (curidx < stopindex) {
-      v1 = iv[curidx++];
-      v2 = iv[curidx++];
-      v3 = iv[curidx++];
-      assert(v1 >= 0 && v2 >= 0 && v3 >= 0);
-      assert(v1 < vcnt && v2 < vcnt && v3 < vcnt);
-      v4 = iv[curidx++];
-      assert( v4 < 0);  /* Triangle means every 4th index = -1  */
-
-      /* vertex 1 *********************************************************/
-      if (use_color) {
-       glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
-      }
-      else if (use_alternate_color) {
-        glColor3fv(index & 1 ? main_color.getValue(): alt_color.getValue());
-      }
-      glNormal3fv((const GLfloat*)nv[v1].getValue());
-      glVertex3fv((const GLfloat*)cv[v1].getValue());
-
-      /* vertex 2 *********************************************************/
-      if (use_color) {
-       glColor3fv((const GLfloat*)colorv[coloridx[v2]].getValue());
-      }
-      glNormal3fv((const GLfloat*)nv[v2].getValue());
-      glVertex3fv((const GLfloat*)cv[v2].getValue());
-
-      /* vertex 3 *********************************************************/
-      if (use_color) {
-       glColor3fv((const GLfloat*)colorv[coloridx[v3]].getValue());
-      }
-      glNormal3fv((const GLfloat*)nv[v3].getValue());
-      glVertex3fv((const GLfloat*)cv[v3].getValue());
-    }
-    glEnd(); /* draw triangles */
+  if (use_alternate_color) {
+    glColor3fv(index & 1 ? main_color.getValue() : alt_color.getValue());
   }
-  else {   /* Tristrip(s) */
-    if (use_alternate_color) {
-      glColor3fv(index & 1 ? main_color.getValue() : alt_color.getValue());
+
+  if (antisquish) {
+    SbMatrix transform[2];
+    this->generateAntiSquish(transform[0], this->master->spine.getValues(0)[index], antisquishscale);
+    this->generateAntiSquish(transform[1], this->master->spine.getValues(0)[nextindex], antisquishscale);
+    
+    glBegin(GL_TRIANGLE_STRIP);
+    int cnt = 0;
+    while( curidx < stopindex ) {
+      assert(curidx < this->idx.getLength());
+      v1 = iv[curidx];
+      assert(v1 >= 0 && v1 < vcnt);
+      if (use_color) {
+        glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
+      }
+      SbVec3f n = nv[v1];
+      n[0] /= antisquishscale[0];
+      n[1] /= antisquishscale[1];
+      n[2] /= antisquishscale[2];
+      
+      glNormal3fv((const GLfloat*)n.getValue());
+      
+      SbVec3f tmp = cv[v1];
+      transform[cnt++ & 1].multVecMatrix(tmp, tmp);
+      
+      glVertex3fv((const GLfloat*)tmp.getValue());
+      curidx++;
     }
+    glEnd(); /* draw tristrip*/
+  }
+  else {
     glBegin(GL_TRIANGLE_STRIP);
     while( curidx < stopindex ) {
       assert(curidx < this->idx.getLength());
       v1 = iv[curidx];
       assert(v1 >= 0 && v1 < vcnt);
       if (use_color) {
-       glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
+        glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v1].getValue());
       glVertex3fv((const GLfloat*)cv[v1].getValue());
@@ -977,6 +1008,34 @@ SoLODExtrusionP::makeCircleCrossSection(const float radius, const int segments)
   SbBool old = this->master->crossSection.enableNotify(FALSE);
   this->master->crossSection.setValues( 0, templist.getLength(), templist.getArrayPtr() );
   this->master->crossSection.enableNotify(old);
+}
+
+void 
+SoLODExtrusionP::generateAntiSquish(SbMatrix & transform, const SbVec3f & spinept, 
+                                    const SbVec3f & scale)
+{
+  SbMatrix tmp;
+  transform.setTranslate(-spinept);
+  tmp.setScale(scale);
+  transform.multRight(tmp);
+  tmp.setTranslate(spinept);
+  transform.multRight(tmp);
+}
+
+SbVec3f 
+SoLODExtrusionP::calcAntiSquish(SoState * state)
+{
+  SbMatrix mtrx = SoModelMatrixElement::get(state);
+  SbVec3f translation;
+  SbRotation rot;
+  SbVec3f scale;
+  SbRotation scalerot;
+  mtrx.getTransform(translation, rot, scale, scalerot);
+  scale[0] = 1.0f / scale[0];
+  scale[1] = 1.0f / scale[1];
+  scale[2] = 1.0f / scale[2];
+
+  return scale;
 }
 
 #endif // DOXYGEN_SKIP_THIS
