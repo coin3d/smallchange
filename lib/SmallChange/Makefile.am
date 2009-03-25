@@ -9,7 +9,11 @@ else
 lib_LTLIBRARIES = libSmallChange@SUFFIX@.la
 endif
 
-libSmallChange@SUFFIX@_la_SOURCES =
+# Adding in a dummy C++ source code file to "trick" Automake to set
+# us up with C++ $CXXLD for linking (and not the default C $CCLD).
+Sources = dummy.cpp
+
+libSmallChange@SUFFIX@_la_SOURCES = $(Sources)
 
 libSmallChange@SUFFIX@_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
@@ -20,7 +24,7 @@ libSmallChange@SUFFIX@_la_LDFLAGS = \
 	-no-undefined \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES =
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES = $(Sources)
 SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \

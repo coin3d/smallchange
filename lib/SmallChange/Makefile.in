@@ -183,7 +183,11 @@ SUBDIRS = nodekits nodes elements engines actions misc draggers eventhandlers .
 @BUILD_WITH_MSVC_TRUE@lib_LIBRARIES = SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@.lib
 @BUILD_WITH_MSVC_FALSE@lib_LTLIBRARIES = libSmallChange@SUFFIX@.la
 
-libSmallChange@SUFFIX@_la_SOURCES = 
+# Adding in a dummy C++ source code file to "trick" Automake to set
+# us up with C++ $CXXLD for linking (and not the default C $CCLD).
+Sources = dummy.cpp
+
+libSmallChange@SUFFIX@_la_SOURCES = $(Sources)
 
 libSmallChange@SUFFIX@_la_LIBADD = \
 	nodekits/libnodekits.la nodes/libnodes.la elements/libelements.la \
@@ -196,7 +200,7 @@ libSmallChange@SUFFIX@_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 
-SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES = 
+SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES = $(Sources)
 SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_LIBADD = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
@@ -219,7 +223,9 @@ SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_DEPENDENCIES = \
 	nodekits/nodekits.lst nodes/nodes.lst elements/elements.lst \
 	engines/engines.lst actions/actions.lst misc/misc.lst \
 	draggers/draggers.lst eventhandlers/eventhandlers.lst
-am_SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS =
+am__objects_1 = dummy.$(OBJEXT)
+am_SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS = \
+	$(am__objects_1)
 SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS = \
 	$(am_SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_OBJECTS)
 LTLIBRARIES = $(lib_LTLIBRARIES)
@@ -228,17 +234,22 @@ libSmallChange@SUFFIX@_la_DEPENDENCIES = nodekits/libnodekits.la \
 	nodes/libnodes.la elements/libelements.la engines/libengines.la \
 	actions/libactions.la misc/libmisc.la draggers/libdraggers.la \
 	eventhandlers/libeventhandlers.la
-am_libSmallChange@SUFFIX@_la_OBJECTS =
+am__objects_2 = dummy.lo
+am_libSmallChange@SUFFIX@_la_OBJECTS = $(am__objects_2)
 libSmallChange@SUFFIX@_la_OBJECTS = \
 	$(am_libSmallChange@SUFFIX@_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
-	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+depcomp = $(SHELL) $(top_srcdir)/cfg/depcomp
+am__depfiles_maybe = depfiles
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/dummy.Plo ./$(DEPDIR)/dummy.Po
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = \
 	$(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES) \
@@ -259,6 +270,7 @@ SOURCES = $(SmallChange@SMALLCHANGE_MAJOR_VERSION@@SUFFIX@_lib_SOURCES) $(libSma
 all: all-recursive
 
 .SUFFIXES:
+.SUFFIXES: .cpp .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --gnu  lib/SmallChange/Makefile
@@ -325,13 +337,52 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libSmallChange@SUFFIX@.la: $(libSmallChange@SUFFIX@_la_OBJECTS) $(libSmallChange@SUFFIX@_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libSmallChange@SUFFIX@_la_LDFLAGS) $(libSmallChange@SUFFIX@_la_OBJECTS) $(libSmallChange@SUFFIX@_la_LIBADD) $(LIBS)
+	$(CXXLINK) -rpath $(libdir) $(libSmallChange@SUFFIX@_la_LDFLAGS) $(libSmallChange@SUFFIX@_la_OBJECTS) $(libSmallChange@SUFFIX@_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
 
 distclean-compile:
 	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Po@am__quote@
+
+distclean-depend:
+	-rm -rf ./$(DEPDIR)
+
+.cpp.o:
+@am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
+
+.cpp.obj:
+@am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o $@ `if test -f '$<'; then $(CYGPATH_W) '$<'; else $(CYGPATH_W) '$(srcdir)/$<'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `if test -f '$<'; then $(CYGPATH_W) '$<'; else $(CYGPATH_W) '$(srcdir)/$<'; fi`
+
+.cpp.lo:
+@am__fastdepCXX_TRUE@	if $(LTCXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
+@am__fastdepCXX_TRUE@	  -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Plo"; \
+@am__fastdepCXX_TRUE@	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
+@am__fastdepCXX_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -558,8 +609,8 @@ clean-am: clean-generic clean-libLIBRARIES clean-libLTLIBRARIES \
 
 distclean: distclean-recursive
 
-distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-libtool distclean-tags
+distclean-am: clean-am distclean-compile distclean-depend \
+	distclean-generic distclean-libtool distclean-tags
 
 dvi: dvi-recursive
 
@@ -606,10 +657,10 @@ uninstall-info: uninstall-info-recursive
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am check check-am clean \
 	clean-generic clean-libLIBRARIES clean-libLTLIBRARIES \
 	clean-libtool clean-recursive ctags ctags-recursive distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-recursive distclean-tags distdir dvi dvi-am \
-	dvi-recursive info info-am info-recursive install install-am \
-	install-data install-data-am install-data-local \
+	distclean-compile distclean-depend distclean-generic \
+	distclean-libtool distclean-recursive distclean-tags distdir \
+	dvi dvi-am dvi-recursive info info-am info-recursive install \
+	install-am install-data install-data-am install-data-local \
 	install-data-recursive install-exec install-exec-am \
 	install-exec-local install-exec-recursive install-info \
 	install-info-am install-info-recursive install-libLIBRARIES \
