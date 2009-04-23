@@ -32,6 +32,7 @@ nodekits_lst_SOURCES = $(SOURCES)
 
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
+	DynamicBaseKit.h \
 	DynamicNodeKit.h \
 	LegendKit.h \
 	SoFEMKit.h \
