@@ -648,6 +648,16 @@ SoLODExtrusionP::generateCoords(void)
 
   int reversecnt = 0;
 
+  float sumDepths = 0;
+  SbList <float> depths;
+  depths.append(0);
+  for (i = 1; i < master->spine.getNum(); i++) {
+    const SbVec3f cv = master->spine.getValues(0)[i];
+    const SbVec3f pv = master->spine.getValues(0)[i - 1];
+    sumDepths += (cv - pv).length();
+    depths.append(sumDepths);
+  }
+
   // loop through all spines
   for (i = 0; i < numspine; i++) {
     if (i < numspine-1) {
@@ -846,8 +856,7 @@ SoLODExtrusionP::generateCoords(void)
       c -= t;
       c.normalize();
       this->normals.append(c);
-      this->tcoord.append(SbVec2f(float(j)/float(numcross-1),
-                                  float(i)/float(closed ? numspine : numspine-1)));
+      this->tcoord.append(SbVec2f(float(j) / numcross, depths[i] / sumDepths));
       this->color_idx.append(i);
     }
   }
@@ -922,6 +931,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
   const int * iv = this->idx.getArrayPtr();
   const SbVec3f * cv = this->coord.getArrayPtr();
   const SbVec3f * nv = this->normals.getArrayPtr();
+  const SbVec2f * tcv = this->tcoord.getArrayPtr();
   const SbColor * colorv = this->master->color.getValues(0);
   const int * coloridx = this->color_idx.getArrayPtr();
   int vcnt = this->coord.getLength();
@@ -965,6 +975,10 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       n[2] /= antisquishscale[2];
       
       glNormal3fv((const GLfloat*)n.getValue());
+
+      SbVec2f t = tcv[v1];
+      if (curidx > stopindex - 3) t[0] = 1;
+      glTexCoord2fv((const GLfloat*)t.getValue());
       
       SbVec3f tmp = cv[v1];
       transform[cnt++ & 1].multVecMatrix(tmp, tmp);
