@@ -998,6 +998,11 @@ SoLODExtrusionP::renderSegidx(SoState * state,
         glColor3fv((const GLfloat*)colorv[coloridx[v1]].getValue());
       }
       glNormal3fv((const GLfloat*)nv[v1].getValue());
+
+      SbVec2f t = tcv[v1];
+      if (curidx > stopindex - 3) t[0] = 1;
+      glTexCoord2fv((const GLfloat*)t.getValue());
+
       glVertex3fv((const GLfloat*)cv[v1].getValue());
       curidx++;
     }
