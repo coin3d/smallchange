@@ -856,7 +856,7 @@ SoLODExtrusionP::generateCoords(void)
       c -= t;
       c.normalize();
       this->normals.append(c);
-      this->tcoord.append(SbVec2f(float(j) / numcross, 1 - depths[i] / sumDepths));
+      this->tcoord.append(SbVec2f(float(j) / numcross, 1.0f - depths[i] / sumDepths));
       this->color_idx.append(i);
     }
   }
@@ -977,7 +977,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       glNormal3fv((const GLfloat*)n.getValue());
 
       SbVec2f t = tcv[v1];
-      if (curidx > stopindex - 3) t[0] = 1;
+      if (curidx > stopindex - 3) t[0] = 1.0f;
       glTexCoord2fv((const GLfloat*)t.getValue());
       
       SbVec3f tmp = cv[v1];
@@ -1000,7 +1000,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
       glNormal3fv((const GLfloat*)nv[v1].getValue());
 
       SbVec2f t = tcv[v1];
-      if (curidx > stopindex - 3) t[0] = 1;
+      if (curidx > stopindex - 3) t[0] = 1.0f;
       glTexCoord2fv((const GLfloat*)t.getValue());
 
       glVertex3fv((const GLfloat*)cv[v1].getValue());
