@@ -856,7 +856,7 @@ SoLODExtrusionP::generateCoords(void)
       c -= t;
       c.normalize();
       this->normals.append(c);
-      this->tcoord.append(SbVec2f(float(j) / numcross, depths[i] / sumDepths));
+      this->tcoord.append(SbVec2f(float(j) / numcross, 1 - depths[i] / sumDepths));
       this->color_idx.append(i);
     }
   }
