@@ -49,6 +49,7 @@
 #include <SmallChange/nodekits/SmTooltipKit.h>
 #include <SmallChange/nodekits/SmCameraControlKit.h>
 #include <SmallChange/nodekits/SmDynamicObjectKit.h>
+#include <SmallChange/nodekits/DynamicBaseKit.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
@@ -181,4 +182,6 @@ smallchange_init(void)
 
   SmAnnotationWall::initClass();
   SmAnnotationAxis::initClass();
+
+  DynamicBaseKit::initClass();
 }

@@ -2,8 +2,10 @@
 #define DynamicBaseKit_H
 
 #include "DynamicNodeKit.h"
+#include <SmallChange/basic.h>
 
 class SoBaseKit;
-typedef DynamicNodeKit<SoBaseKit> DynamicBaseKit;
+class SMALLCHANGE_DLL_API DynamicBaseKit : public DynamicNodeKit<SoBaseKit> {
+};
 
 #endif // DynamicBaseKit_H

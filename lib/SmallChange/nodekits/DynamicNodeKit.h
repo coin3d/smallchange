@@ -79,6 +79,8 @@ private:
 End class definition, start template method implementation
 */
 
+//only compile when instanciating with new types
+#ifndef DYNAMIC_NODEKIT_NO_GENERATE_FUNCTIONS
 template <class Base> SoType DynamicNodeKit<Base>::classTypeId STATIC_SOTYPE_INIT;
 template <class Base> const SoFieldData ** DynamicNodeKit<Base>::parentFieldData = NULL;
 template <class Base> SoFieldData * DynamicNodeKit<Base>::fieldData = NULL;
@@ -205,6 +207,23 @@ DynamicNodeKit<Base>::initClass(void)
 
     DynamicNodeKit<Base>::parentcatalogptr = Base::getClassNodekitCatalogPtr();
   }
+  /*
+  static bool never = false;
+  if (never){
+    never = true;
+    SbString dummy("");
+    DynamicNodeKit<Base>::initClass();
+    DynamicNodeKit<Base> * kit = new DynamicNodeKit<Base>();
+    //virtual void copyContents(const SoFieldContainer * from, SbBool copyconn);
+    kit->startEditing();
+    kit->addField(dummy, dummy, dummy);
+    kit->addPart(dummy, dummy, false, dummy, dummy, false);
+    kit->setNodekitDescription(dummy);
+    kit->finishEditing();
+    kit->getAnyPart(dummy, false);
+    kit->setAnyPart(dummy, NULL);
+  }
+  */
 }
 
 template <class Base>
@@ -407,5 +426,7 @@ DynamicNodeKit<Base>::setAnyPart(const SbName & partname, SoNode * from, SbBool 
 {
   return inherited::setAnyPart(partname, from, anypart);
 }
+
+#endif //SMALLCHANGE_INTERNAL
 
 #endif // DynamicNodeKit_H
