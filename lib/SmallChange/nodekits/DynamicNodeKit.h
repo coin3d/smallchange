@@ -207,23 +207,6 @@ DynamicNodeKit<Base>::initClass(void)
 
     DynamicNodeKit<Base>::parentcatalogptr = Base::getClassNodekitCatalogPtr();
   }
-  /*
-  static bool never = false;
-  if (never){
-    never = true;
-    SbString dummy("");
-    DynamicNodeKit<Base>::initClass();
-    DynamicNodeKit<Base> * kit = new DynamicNodeKit<Base>();
-    //virtual void copyContents(const SoFieldContainer * from, SbBool copyconn);
-    kit->startEditing();
-    kit->addField(dummy, dummy, dummy);
-    kit->addPart(dummy, dummy, false, dummy, dummy, false);
-    kit->setNodekitDescription(dummy);
-    kit->finishEditing();
-    kit->getAnyPart(dummy, false);
-    kit->setAnyPart(dummy, NULL);
-  }
-  */
 }
 
 template <class Base>
