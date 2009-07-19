@@ -87,6 +87,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_ADD_FIELD(verticalJustification, (BOTTOM));
   SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_EMPTY_MFIELD(stringIndex);
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
   SO_NODE_DEFINE_ENUM_VALUE(Justification, LEFT);
@@ -141,50 +142,49 @@ void
 SmTextureText2::GLRender(SoGLRenderAction * action)
 {
   if ((this->string.getNum() == 0) ||
-      (this->string.getNum() == 1 && this->string[0] == "")) return;
-
+      (this->string.getNum() == 1 && this->string[0] == "") && !this->stringIndex.getNum()) return;
+  
+  const int32_t * stringindex = this->stringIndex.getNum() ? this->stringIndex.getValues(0) : NULL;
+  const int numstrings = stringindex ? this->stringIndex.getNum() : this->string.getNum();
   SoState * state = action->getState();
   SbBool perpart =
     SoMaterialBindingElement::get(state) !=
     SoMaterialBindingElement::OVERALL;
-
-  if ((this->string.getNum() == this->position.getNum()) &&
+  
+  if (((this->string.getNum() == this->position.getNum()) ||
+       stringindex) &&
       SmTextureText2CollectorElement::isCollecting(state)) {
     SbMatrix modelmatrix = SoModelMatrixElement::get(state);
     SbVec3f pos;
 
     SbColor4f col(SoLazyElement::getDiffuse(state, 0),
-                     1.0f - SoLazyElement::getTransparency(state, 0));
-
-    for (int i = 0; i < this->string.getNum(); i++) {
-      if (perpart && i > 0) {
-        col = SbColor4f(SoLazyElement::getDiffuse(state, i),
-                        1.0f - SoLazyElement::getTransparency(state, i));
+                  1.0f - SoLazyElement::getTransparency(state, 0));
+    
+    for (int i = 0; i < numstrings; i++) {
+      const int idx = stringindex ? stringindex[i] : i; 
+      if (perpart) {
+        col = SbColor4f(SoLazyElement::getDiffuse(state, idx),
+                        1.0f - SoLazyElement::getTransparency(state, idx));
       }
-      modelmatrix.multVecMatrix(this->position[i], pos);
+      modelmatrix.multVecMatrix(this->position[idx], pos);
       SmTextureText2CollectorElement::add(state,
-                                          this->string[i],
+                                          this->string[idx],
                                           SmTextureFontElement::get(state),
                                           pos,
                                           this->maxRange.getValue(),
                                           col,
-                                          static_cast<Justification>(
-                                     this->justification.getValue()
-                                                             ),
-                                          static_cast<VerticalJustification>(
-                                          this->verticalJustification.getValue()
-                                                                    )
-                                                                    );
+                                          static_cast<Justification>(this->justification.getValue()),
+                                          static_cast<VerticalJustification>(this->verticalJustification.getValue()));
     }
-
+    
     // invalidate caches to make sure this node is traversed every frame.
     SoCacheElement::invalidate(state);
     return;
   }
-
+  
   SmTextureFontBundle bundle(action);
   SoCacheElement::invalidate(state);
-
+  
   if (!this->shouldGLRender(action)) {
     return;
   }
@@ -210,9 +210,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   const SbVec2s vpsize = vp.getViewportSizePixels();
-  const int num = this->position.getNum();
+  const int numpos = this->position.getNum();
   const SbVec3f * pos = this->position.getValues(0);
-  const int numstring = this->string.getNum();
   const SbString * s = this->string.getValues(0);
 
   // Set up new view volume
@@ -226,14 +225,15 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPushAttrib(GL_DEPTH_BUFFER_BIT);
   glDepthFunc(GL_LEQUAL);
 
-  if (num > 1) {
-    for (int i = 0; i < num; i++) {
+  if (numpos > 1 || stringindex) {
+    for (int i = 0; i < numstrings; i++) {
+      int idx = stringindex ? stringindex[i] : i;
       if (perpart) {
-        mb.send(i, FALSE);
+        mb.send(idx, FALSE);
       }
       this->renderString(bundle,
-                         &s[SbMin(i, numstring-1)], 1,
-                         pos[i],
+                         &s[SbMin(idx, this->string.getNum()-1)], 1,
+                         pos[idx],
                          vv,
                          vp,
                          projmatrix,
@@ -244,8 +244,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   else {
     this->renderString(bundle,
                        &s[0],
-                       numstring,
-                       num > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f),
+                       numstrings,
+                       numpos > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f),
                        vv,
                        vp,
                        projmatrix,

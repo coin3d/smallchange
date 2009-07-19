@@ -28,6 +28,7 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoMFVec3f.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFEnum.h>
 #include <SmallChange/basic.h>
@@ -64,6 +65,8 @@ public:
   SoMFVec3f position;
   SoSFFloat maxRange;
 
+  SoMFInt32 stringIndex;
+
   virtual void GLRender(SoGLRenderAction * action);
   virtual void rayPick(SoRayPickAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
@@ -75,7 +78,6 @@ protected:
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
 
 private:
-
   void renderString(const SmTextureFontBundle & bundle,
                     const SbString * s,
                     const int numstring,
