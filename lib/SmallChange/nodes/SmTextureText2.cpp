@@ -36,6 +36,9 @@
   This node also supports material binding and will pick materials from the
   state whenever the material binding != OVERALL.
 
+  If the stringIndex field is not empty, it will be used to select
+  strings to render. If the material binding != OVERALL, the index
+  array will also be used to select the color.
 */
 
 #include "SmTextureText2.h"
