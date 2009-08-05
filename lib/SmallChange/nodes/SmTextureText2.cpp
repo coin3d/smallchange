@@ -90,6 +90,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_ADD_FIELD(verticalJustification, (BOTTOM));
   SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(offset, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_EMPTY_MFIELD(stringIndex);
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
@@ -133,9 +134,10 @@ SmTextureText2::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
   // accurate or not
   const int num = this->position.getNum();
   const SbVec3f * pos = this->position.getValues(0);
+  const SbVec3f & offset = this->offset.getValue();
 
   for (int i = 0; i < num; i++) {
-    box.extendBy(pos[i]);
+    box.extendBy(pos[i] + offset);
   }
   center = box.getCenter();
 }
@@ -158,6 +160,7 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
        stringindex) &&
       SmTextureText2CollectorElement::isCollecting(state)) {
     SbMatrix modelmatrix = SoModelMatrixElement::get(state);
+    const SbVec3f & offset = this->offset.getValue();
     SbVec3f pos;
 
     SbColor4f col(SoLazyElement::getDiffuse(state, 0),
@@ -169,7 +172,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
         col = SbColor4f(SoLazyElement::getDiffuse(state, idx),
                         1.0f - SoLazyElement::getTransparency(state, idx));
       }
-      modelmatrix.multVecMatrix(this->position[idx], pos);
+      pos = this->position[idx] + offset;
+      modelmatrix.multVecMatrix(pos, pos);
       SmTextureText2CollectorElement::add(state,
                                           this->string[idx],
                                           SmTextureFontElement::get(state),
@@ -216,6 +220,9 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   const int numpos = this->position.getNum();
   const SbVec3f * pos = this->position.getValues(0);
   const SbString * s = this->string.getValues(0);
+  const SbVec3f & offset = this->offset.getValue();
+
+  SbVec3f tmp;
 
   // Set up new view volume
   glMatrixMode(GL_MODELVIEW);
@@ -234,9 +241,10 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
       if (perpart) {
         mb.send(idx, FALSE);
       }
+      tmp = pos[idx] + offset;
       this->renderString(bundle,
                          &s[SbMin(idx, this->string.getNum()-1)], 1,
-                         pos[idx],
+                         tmp,
                          vv,
                          vp,
                          projmatrix,
@@ -245,10 +253,12 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     }
   }
   else {
+    tmp = numpos > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f);
+    tmp += offset;
     this->renderString(bundle,
                        &s[0],
                        numstrings,
-                       numpos > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f),
+                       tmp,
                        vv,
                        vp,
                        projmatrix,

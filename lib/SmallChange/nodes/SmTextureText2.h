@@ -30,6 +30,7 @@
 #include <Inventor/fields/SoSFFloat.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoMFString.h>
+#include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFEnum.h>
 #include <SmallChange/basic.h>
 #include <SmallChange/nodes/SmTextureFont.h>
@@ -64,6 +65,7 @@ public:
   SoSFEnum verticalJustification;
   SoMFVec3f position;
   SoSFFloat maxRange;
+  SoSFVec3f offset;
 
   SoMFInt32 stringIndex;
 
