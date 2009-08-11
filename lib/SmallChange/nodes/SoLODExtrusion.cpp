@@ -949,7 +949,7 @@ SoLODExtrusionP::renderSegidx(SoState * state,
   assert(stopindex > startindex);
 
   int curidx = startindex;
-  int32_t v1, v5 = 0; // v5 init unnecessary, but kills a compiler warning.
+  int32_t v1;
 
   if (use_alternate_color) {
     glColor3fv(index & 1 ? main_color.getValue() : alt_color.getValue());
