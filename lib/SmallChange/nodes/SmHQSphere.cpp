@@ -28,7 +28,6 @@
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoGLTextureEnabledElement.h>
-#include <Inventor/elements/SoGLTexture3EnabledElement.h>
 #include <Inventor/elements/SoTextureCoordinateElement.h>
 #include <Inventor/SoPickedPoint.h>
 #include <Inventor/SbSphere.h>
@@ -135,8 +134,13 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
 
   SbBool doTextures = FALSE;
   SbBool do3DTextures = FALSE;
-  if (SoGLTextureEnabledElement::get(state)) doTextures = TRUE;
-  else if (SoGLTexture3EnabledElement::get(state)) do3DTextures = TRUE;
+  if (SoGLTextureEnabledElement::get(state)) {
+    doTextures = TRUE;
+    if (SoGLTextureEnabledElement::getMode(state) ==
+        SoGLTextureEnabledElement::TEXTURE3D) {
+      do3DTextures = TRUE;
+    }
+  }
 
   SbBool sendNormals = !mb.isColorOnly() ||
     (SoTextureCoordinateElement::getType(state) == SoTextureCoordinateElement::FUNCTION);

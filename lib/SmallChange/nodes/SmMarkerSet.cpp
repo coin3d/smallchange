@@ -39,7 +39,6 @@
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoGLTextureEnabledElement.h>
-#include <Inventor/elements/SoGLTexture3EnabledElement.h>
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
@@ -212,7 +211,6 @@ SmMarkerSet::GLRender(SoGLRenderAction * action)
 
   SoLazyElement::setLightModel(state, SoLazyElement::BASE_COLOR);
   SoGLTextureEnabledElement::set(state, this, FALSE);
-  SoGLTexture3EnabledElement::set(state, this, FALSE);
 
   if (this->vertexProperty.getValue()) {
     this->vertexProperty.getValue()->GLRender(action);
