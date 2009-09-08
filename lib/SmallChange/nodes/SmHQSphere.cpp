@@ -133,15 +133,9 @@ SmHQSphere::GLRender(SoGLRenderAction * action)
   mb.sendFirst();
 
   SbBool doTextures = FALSE;
-  SbBool do3DTextures = FALSE;
   if (SoGLTextureEnabledElement::get(state)) {
     doTextures = TRUE;
-    if (SoGLTextureEnabledElement::getMode(state) ==
-        SoGLTextureEnabledElement::TEXTURE3D) {
-      do3DTextures = TRUE;
-    }
   }
-
   SbBool sendNormals = !mb.isColorOnly() ||
     (SoTextureCoordinateElement::getType(state) == SoTextureCoordinateElement::FUNCTION);
 
