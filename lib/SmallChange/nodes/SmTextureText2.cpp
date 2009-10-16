@@ -91,6 +91,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(offset, (0.0f, 0.0f, 0.0f));
+  SO_NODE_ADD_FIELD(rotation, (0.0f));
   SO_NODE_ADD_EMPTY_MFIELD(stringIndex);
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
@@ -343,7 +344,7 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
 
   int xmin = 0;
   int ymax = bundle.getAscent();
-  int ymin = ymax - (numstring * bundle.height() * bundle.getLeading());
+  int ymin = ymax - (numstring * bundle.height() + bundle.getLeading());
   ymin += bundle.getLeading();
 
   short h = ymax - ymin;
@@ -370,7 +371,8 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     widthlist.append(bundle.stringWidth(s[i]));
   }
 
-  bundle.begin();
+  float rotation = static_cast<float>(this->rotation.getValue() * 180 / M_PI);
+
   for (i = 0; i < numstring; i++) {
 
     int len = s[i].getLength();
@@ -398,7 +400,20 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
       assert(0 && "unknown alignment");
       break;
     }
+
+    if (rotation != 0) {
+      float x = static_cast<float>(sp[0]);
+      float y = static_cast<float>(sp[1]);
+      glPushMatrix();
+      glTranslatef(x, y, 0);
+      glRotatef(rotation, 0, 0, 1);
+      glTranslatef(-x, -y, 0);
+    }
+    
+    bundle.begin();
     bundle.renderString(s[i], SbVec3f(n0[0], n0[1], screenpoint[2]));
+    bundle.end();
+
+    if (rotation != 0) glPopMatrix();
   }
-  bundle.end();
 }

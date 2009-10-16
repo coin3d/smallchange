@@ -66,6 +66,7 @@ public:
   SoMFVec3f position;
   SoSFFloat maxRange;
   SoSFVec3f offset;
+  SoSFFloat rotation;
 
   SoMFInt32 stringIndex;
 
