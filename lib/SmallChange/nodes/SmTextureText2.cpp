@@ -91,7 +91,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_ADD_FIELD(maxRange, (-1.0f));
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(offset, (0.0f, 0.0f, 0.0f));
-  SO_NODE_ADD_FIELD(rotation, (0.0f));
+  SO_NODE_ADD_FIELD(rotation, (0.0f)); // TODO also make it work for SmTextureText2Collector
   SO_NODE_ADD_EMPTY_MFIELD(stringIndex);
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
