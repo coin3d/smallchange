@@ -344,7 +344,7 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
 
   int xmin = 0;
   int ymax = bundle.getAscent();
-  int ymin = ymax - (numstring * bundle.height() + bundle.getLeading());
+  int ymin = ymax - numstring * (bundle.height() + bundle.getLeading());
   ymin += bundle.getLeading();
 
   short h = ymax - ymin;
