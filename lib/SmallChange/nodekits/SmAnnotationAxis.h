@@ -58,6 +58,7 @@ public:
   SoMFVec3f annotationPos;
   SoSFFloat annotationGap;
   SoSFVec3f annotationOffset;
+  SoSFFloat annotationRot;
 
   SoSFBool renderAxis;
   SoSFVec3f axisTickSize;
