@@ -107,6 +107,7 @@ SmAnnotationAxis::SmAnnotationAxis()
   SO_KIT_ADD_FIELD(renderAxis, (FALSE));
   SO_KIT_ADD_FIELD(axisTickSize, (0.0f, 0.0f, 0.0f));
   SO_KIT_ADD_FIELD(annotationOffset, (0.0f, 0.0f, 0.0f));
+  SO_KIT_ADD_FIELD(annotationRot, (0.0f));
 
   this->annotation.setNum(0);
   this->annotationPos.setNum(0);
@@ -120,6 +121,7 @@ SmAnnotationAxis::SmAnnotationAxis()
 
   SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
   t->justification = SmTextureText2::CENTER;
+  t->rotation.connectFrom(&this->annotationRot);
 
   PRIVATE(this)->regen_sensor = new SoOneShotSensor(regen_geometry, this);
 }
