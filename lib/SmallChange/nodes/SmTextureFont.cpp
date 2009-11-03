@@ -568,7 +568,7 @@ SmTextureFont::doAction(SoAction * action)
 {
   SmTextureFontElement::set(action->getState(),
                             this,
-                            this->image);
+                            const_cast<FontImage*>(this->getFont()));
 }
 
 void
@@ -600,7 +600,7 @@ SmTextureFont::setFont(FontImage * image)
 const SmTextureFont::FontImage *
 SmTextureFont::getFont(void) const
 {
-  return this->image;
+  return this->image ? this->image : default_font;
 }
 
 /**************************************************************************/
