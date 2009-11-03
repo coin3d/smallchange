@@ -49,6 +49,7 @@
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/system/gl.h>
 #include <Inventor/actions/SoGetPrimitiveCountAction.h>
+#include <Inventor/actions/SoRayPickAction.h>
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/elements/SoModelMatrixElement.h>
 #include <Inventor/elements/SoTextureQualityElement.h>
@@ -64,8 +65,11 @@
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/elements/SoGLTextureCoordinateElement.h>
+#include <Inventor/SbXfBox3f.h>
+#include <Inventor/SbRotation.h>
 #include <Inventor/misc/SoGLImage.h>
 #include <Inventor/SbPlane.h>
+#include <Inventor/SbLine.h>
 #include <Inventor/C/tidbits.h>
 
 #if COIN_DEBUG
@@ -92,6 +96,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(offset, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(rotation, (0.0f)); // TODO also make it work for SmTextureText2Collector
+  SO_NODE_ADD_FIELD(pickOnPixel, (FALSE)); // 
   SO_NODE_ADD_EMPTY_MFIELD(stringIndex);
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
@@ -270,12 +275,236 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
+
+//#define DRAW_DEBUG_BBOXES
+#ifdef DRAW_DEBUG_BBOXES
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
+  glDisable(GL_TEXTURE_2D);
+  glDepthFunc(GL_ALWAYS);
+  for (int i = 0; i < numstrings; i++){
+    int idx = stringindex ? stringindex[i] : i;
+    SbVec3f p0, p1, p2, p3;
+    this->buildStringQuad(action, idx, p0, p1, p2, p3);
+    glBegin(GL_LINE_LOOP);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glVertex3fv((const GLfloat*)&p0);
+    glVertex3fv((const GLfloat*)&p1);
+    glVertex3fv((const GLfloat*)&p2);
+    glVertex3fv((const GLfloat*)&p3);
+    glEnd();
+  }
+  glPopAttrib();
+#endif
+}
+
+void 
+SmTextureText2::buildStringQuad(SoAction * action, int idx, SbVec3f & p0, SbVec3f & p1, SbVec3f & p2, SbVec3f & p3)
+{
+  //FIXME: Support multiple strings at one position (multiline text)
+
+  const SbVec3f * pos = this->position.getValues(0);
+  const SbVec3f & offset = this->offset.getValue();
+  const SbString * string = this->string.getValues(idx);
+  Justification halign = static_cast<Justification>(this->justification.getValue());
+  VerticalJustification valign = static_cast<VerticalJustification>(this->verticalJustification.getValue());
+
+  SoState * state = action->getState();
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
+  const SbViewportRegion & vpr = SoViewportRegionElement::get(state);
+  SbMatrix modelmatrix = SoModelMatrixElement::get(state);
+  const SmTextureFont::FontImage * font = SmTextureFontElement::get(state);
+
+  SbVec2s vpsize = vpr.getViewportSizePixels();
+  float px = vpsize[0];
+  float py = vpsize[1];
+
+  SbVec3f world, screen;
+  modelmatrix.multVecMatrix(pos[idx] + offset, world);
+  vv.projectToScreen(world, screen);
+
+  float up, down, left, right;
+
+  float width = static_cast<float>(font->stringWidth(*string));
+  switch (halign){
+    case LEFT:
+      right = width;
+      left = 0;
+      break;
+    case CENTER:
+      right = width / 2;
+      left = -right;
+      break;
+    case RIGHT:
+      right = 0.4f;
+      left = -(width - 0.4f);
+      break;
+  }
+  left /= px;
+  right /= px;
+
+  float ascent = static_cast<float>(font->getAscent());
+  float descent = static_cast<float>(font->getDescent());
+  float height = ascent + descent + 1;
+  switch(valign){
+    case TOP:
+      up = 0;
+      down = -height;
+      break;
+    case VCENTER:
+      up = height / 2;
+      down = -up;
+      break;
+    case BOTTOM://actually BASELINE
+      up = ascent;
+      down = -descent;
+      break;
+  }
+  up /= py;
+  down /= py;
+
+  SbMatrix rotation = SbMatrix::identity();
+  rotation.setRotate(SbRotation(SbVec3f(0, 0, 1), this->rotation.getValue()));
+
+  SbMatrix translation = SbMatrix::identity();
+  translation.setTranslate(SbVec3f(screen[0], screen[1], 0));
+
+  //need to account for viewport aspect ratio as we are working in normalized screen coords:
+  float aspectx = px >= py ? 1 : py / px;
+  float aspecty = py >= px ? 1 : px / py;
+  SbMatrix scale = SbMatrix::identity();
+  scale.setScale(SbVec3f(aspectx, aspecty, 1));
+  SbMatrix invScale = scale.inverse();
+
+  //screen coords (offsets from text "anchor" point):
+  SbVec3f offsets[4];
+  offsets[0] = SbVec3f(left, down, 0);
+  offsets[1] = SbVec3f(right, down, 0);
+  offsets[2] = SbVec3f(right, up, 0);
+  offsets[3] = SbVec3f(left, up, 0);
+
+  SbVec2f screenPos[4];
+
+  for (int i = 0; i < 4; i++){
+    SbVec3f & offset = offsets[i];
+    invScale.multVecMatrix(offset, offset);
+    rotation.multVecMatrix(offset, offset);
+    scale.multVecMatrix(offset, offset);
+    translation.multVecMatrix(offset, offset);
+    screenPos[i] = SbVec2f(offset[0], offset[1]);
+  }
+
+  float dist = -vv.getPlane(0.0f).getDistance(world);
+
+  // find the four screen points in the plane
+  p0 = vv.getPlanePoint(dist, screenPos[0]);
+  p1 = vv.getPlanePoint(dist, screenPos[1]);
+  p2 = vv.getPlanePoint(dist, screenPos[2]);
+  p3 = vv.getPlanePoint(dist, screenPos[3]);
+
+  // transform back to object space
+  SbMatrix inv = modelmatrix.inverse();
+  inv.multVecMatrix(p0, p0);
+  inv.multVecMatrix(p1, p1);
+  inv.multVecMatrix(p2, p2);
+  inv.multVecMatrix(p3, p3);
 }
 
 void
 SmTextureText2::rayPick(SoRayPickAction * action)
 {
-  // we don't want to pick on this text node
+  //FIXME: Support multiple strings at one position (multiline text)?
+  //For now, assumes 1 string at each position
+  this->computeObjectSpaceRay(action);
+  const int32_t * stringindex = this->stringIndex.getNum() ? this->stringIndex.getValues(0) : NULL;
+  const int numstrings = stringindex ? this->stringIndex.getNum() : this->string.getNum();
+  const SmTextureFont::FontImage * font = SmTextureFontElement::get(action->getState());
+
+  for (int i = 0; i < numstrings; i++){
+    int idx = stringindex ? stringindex[i] : i;
+    SbVec3f p0, p1, p2, p3;
+    this->buildStringQuad(action, idx, p0, p1, p2, p3);
+
+    SbVec3f isect;
+    SbVec3f bary;
+    SbBool front;
+    SbBool hit = action->intersect(p0, p1, p2, isect, bary, front);
+    if (!hit) hit = action->intersect(p0, p2, p3, isect, bary, front);
+    if (hit && action->isBetweenPlanes(isect)) {
+      if (!this->pickOnPixel.getValue()){
+        SoPickedPoint * pp = action->addIntersection(isect);
+        return;//We only calculate 1 picked point per SmTextureText2 instance
+      }
+      //else:
+      //FIXME: Pixel coordinates are off by at least one pixel. 
+      //Probably a rounding issue, or related to using center vs lowerleft coordinates of each pixel
+      //Find out if the fault lies here, in buildStringQuad or in renderString... wiesener 20091102
+
+      // find normalized 2D hitpoint on quad
+      float h = (p3-p0).length();
+      float w = (p1-p0).length();
+
+      SbLine horizontal(p2, p3);
+      SbVec3f ptonline = horizontal.getClosestPoint(isect);
+      float vdist = (ptonline-isect).length();
+      vdist /= h;
+
+      SbLine vertical(p0, p3);
+      ptonline = vertical.getClosestPoint(isect);
+      float hdist = (ptonline-isect).length();
+      hdist /= w;
+
+      const SbString * string = this->string.getValues(idx);
+      int width_pixels = font->stringWidth(*string);
+      int height_pixels = font->height();
+
+      int px = static_cast<int>(width_pixels * hdist);
+      int py = static_cast<int>(height_pixels * vdist);
+
+      const char * cstr = string->getString();
+      int charindex = 0;
+
+      int lastwidth = 0;
+      while (charindex < string->getLength()){
+        unsigned char c = cstr[charindex];
+        int width = font->getKerning(c, 0);//should return "true width" of the glyph
+        int xoffset = font->getXOffset(c);//will be negative for fonts extending to the left
+        if (lastwidth + width > px){//we have a character, now let's see if it is a pixel hit
+          SbVec2s glyphpos = font->getGlyphPositionPixels(c);//upper left pixel
+          int x = px - lastwidth - xoffset + glyphpos[0];
+          int y = py + glyphpos[1];
+          const SbImage * img = font->getGLImage()->getImage();
+          SbVec2s size;
+          int nc;
+          unsigned char * pixels = img->getValue(size, nc);
+
+//#define DEBUG_CHARACTER
+#ifdef DEBUG_CHARACTER
+          for (int fooy = 0; fooy < font->height(); fooy++){
+            for (int foox = 0; foox < width - xoffset; foox++){
+              int line = glyphpos[1] + fooy;
+              char transparency = pixels[(line * size[0] + foox + glyphpos[0]) * nc];
+              if (fooy == py && foox == px - lastwidth - xoffset) printf("X");
+              else printf(transparency != 0 ? "O" : " ");
+            }
+            printf("\n");
+          }
+          printf("--------\n");
+#endif //DEBUG_CHARACTER
+
+          unsigned char * pixel = &pixels[(y * size[0] + x) * nc];
+          if (pixel[0] != 0){//not completely transparent
+            SoPickedPoint * pp = action->addIntersection(isect);
+            return;//We only calculate 1 picked point per SmTextureText2 instance
+          }
+        }
+        unsigned char c2 = cstr[charindex + 1];
+        lastwidth += font->getKerning(c, c2);//add the kerning instead of width here
+        if (lastwidth + font->getXOffset(c2) > px) break;//passed the point clicked
+        charindex++;
+      }
+    }
+
+  }
 }
 
 // doc from parent

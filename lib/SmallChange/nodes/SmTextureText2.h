@@ -32,6 +32,7 @@
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFVec3f.h>
 #include <Inventor/fields/SoSFEnum.h>
+#include <Inventor/fields/SoSFBool.h>
 #include <SmallChange/basic.h>
 #include <SmallChange/nodes/SmTextureFont.h>
 
@@ -69,10 +70,12 @@ public:
   SoSFFloat rotation;
 
   SoMFInt32 stringIndex;
+  SoSFBool pickOnPixel;
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void rayPick(SoRayPickAction * action);
   virtual void getPrimitiveCount(SoGetPrimitiveCountAction * action);
+  virtual void buildStringQuad(SoAction * action, int idx, SbVec3f & p0, SbVec3f & p1, SbVec3f & p2, SbVec3f & p3);
 
 protected:
   virtual ~SmTextureText2();
