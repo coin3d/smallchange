@@ -250,29 +250,39 @@ ViewportRegion::doAction(SoAction * action)
 
   SoViewportRegionElement::set(action->getState(), vp);
   if (action->isOfType(SoGLRenderAction::getClassTypeId())) {
-    GLenum mask = 0;
-    if (this->clearDepthBuffer.getValue()) mask |= GL_DEPTH_BUFFER_BIT;
-    if (this->clearColorBuffer.getValue()) mask |= GL_COLOR_BUFFER_BIT;
-    if (mask) {
-      GLfloat oldcc[4];
-      glGetFloatv(GL_COLOR_CLEAR_VALUE, oldcc);
-      glClearColor(this->clearColor.getValue()[0],
-                   this->clearColor.getValue()[1],
-                   this->clearColor.getValue()[2],
-                   0.0f);
-      // FIXME: the scissor test here was only needed because of a old
-      // driver bug which caused the entire window to be cleared, not
-      // just the current viewport. Investigate if we can remove this
-      // workaround. pederb, 2003-01-21
-      glScissor(vp.getViewportOriginPixels()[0],
-                vp.getViewportOriginPixels()[1],
-                vp.getViewportSizePixels()[0],
-                vp.getViewportSizePixels()[1]);
-      glEnable(GL_SCISSOR_TEST);
-      glClear(mask);
-      glDisable(GL_SCISSOR_TEST);
+    SoGLRenderAction * glrender = static_cast<SoGLRenderAction*> (action);
 
-      glClearColor(oldcc[0], oldcc[1], oldcc[2], oldcc[3]);
+    // don't clear for other passes than the main rendering pass
+    SbBool shouldclear = !glrender->isRenderingDelayedPaths();
+#if COIN_MAJOR_VERSION >= 3
+    shouldclear &= !isRenderingTranspPaths();
+    shouldclear &= !isRenderingTranspBackfaces(); 
+#endif
+    if (shouldclear) {
+      GLenum mask = 0;
+      if (this->clearDepthBuffer.getValue()) mask |= GL_DEPTH_BUFFER_BIT;
+      if (this->clearColorBuffer.getValue()) mask |= GL_COLOR_BUFFER_BIT;
+      if (mask) {
+        GLfloat oldcc[4];
+        glGetFloatv(GL_COLOR_CLEAR_VALUE, oldcc);
+        glClearColor(this->clearColor.getValue()[0],
+                     this->clearColor.getValue()[1],
+                     this->clearColor.getValue()[2],
+                     0.0f);
+        // FIXME: the scissor test here was only needed because of a old
+        // driver bug which caused the entire window to be cleared, not
+        // just the current viewport. Investigate if we can remove this
+        // workaround. pederb, 2003-01-21
+        glScissor(vp.getViewportOriginPixels()[0],
+                  vp.getViewportOriginPixels()[1],
+                  vp.getViewportSizePixels()[0],
+                  vp.getViewportSizePixels()[1]);
+        glEnable(GL_SCISSOR_TEST);
+        glClear(mask);
+        glDisable(GL_SCISSOR_TEST);
+        
+        glClearColor(oldcc[0], oldcc[1], oldcc[2], oldcc[3]);
+      }
     }
   }
 }
