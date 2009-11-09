@@ -212,7 +212,8 @@ SOURCES = \
         SmLazyFile.cpp SmLazyFile.h \
 	SmTextureText2.cpp SmTextureText2.h \
 	SmTextureText2Collector.cpp SmTextureText2Collector.h \
-	SmTextureFont.cpp SmTextureFont.h
+	SmTextureFont.cpp SmTextureFont.h \
+        InterleavedArraysShape.cpp InterleavedArraysShape.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -252,7 +253,8 @@ libnodesinc_HEADERS = \
         SmLazyFile.h \
 	SmTextureText2.h \
 	SmTextureText2Collector.h \
-	SmTextureFont.h
+	SmTextureFont.h \
+        InterleavedArraysShape.h
 
 subdir = lib/SmallChange/nodes
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -278,7 +280,7 @@ am__objects_1 = AutoFile.$(OBJEXT) SmDepthBuffer.$(OBJEXT) \
 	SmMarkerSet.$(OBJEXT) ViewpointWrapper.$(OBJEXT) \
 	SmShadowText2.$(OBJEXT) SmTrack.$(OBJEXT) SmLazyFile.$(OBJEXT) \
 	SmTextureText2.$(OBJEXT) SmTextureText2Collector.$(OBJEXT) \
-	SmTextureFont.$(OBJEXT)
+	SmTextureFont.$(OBJEXT) InterleavedArraysShape.$(OBJEXT)
 am_nodes_lst_OBJECTS = $(am__objects_1)
 nodes_lst_OBJECTS = $(am_nodes_lst_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
@@ -294,7 +296,7 @@ am__objects_2 = AutoFile.lo SmDepthBuffer.lo ViewportRegion.lo \
 	SmHeadlight.lo VertexArrayShape.lo SmCoordinateSystem.lo \
 	SmMarkerSet.lo ViewpointWrapper.lo SmShadowText2.lo SmTrack.lo \
 	SmLazyFile.lo SmTextureText2.lo SmTextureText2Collector.lo \
-	SmTextureFont.lo
+	SmTextureFont.lo InterleavedArraysShape.lo
 am_libnodes_la_OBJECTS = $(am__objects_2)
 libnodes_la_OBJECTS = $(am_libnodes_la_OBJECTS)
 
@@ -305,6 +307,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/CoinEnvironment.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Coinboard.Plo ./$(DEPDIR)/Coinboard.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/InterleavedArraysShape.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/InterleavedArraysShape.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PickCallback.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/PickSwitch.Plo \
@@ -410,7 +414,8 @@ SOURCES = \
         SmLazyFile.cpp SmLazyFile.h \
 	SmTextureText2.cpp SmTextureText2.h \
 	SmTextureText2Collector.cpp SmTextureText2Collector.h \
-	SmTextureFont.cpp SmTextureFont.h
+	SmTextureFont.cpp SmTextureFont.h \
+        InterleavedArraysShape.cpp InterleavedArraysShape.h
 
 
 all: all-am
@@ -419,7 +424,7 @@ all: all-am
 .SUFFIXES: .cpp .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  lib/SmallChange/nodes/Makefile
+	  $(AUTOMAKE) --foreign  lib/SmallChange/nodes/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
@@ -449,6 +454,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoinEnvironment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Coinboard.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InterleavedArraysShape.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InterleavedArraysShape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickCallback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PickSwitch.Plo@am__quote@

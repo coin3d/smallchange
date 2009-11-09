@@ -38,7 +38,8 @@ SOURCES = \
         SmLazyFile.cpp SmLazyFile.h \
 	SmTextureText2.cpp SmTextureText2.h \
 	SmTextureText2Collector.cpp SmTextureText2Collector.h \
-	SmTextureFont.cpp SmTextureFont.h
+	SmTextureFont.cpp SmTextureFont.h \
+        InterleavedArraysShape.cpp InterleavedArraysShape.h
 
 
 libnodes_la_SOURCES = $(SOURCES)
@@ -78,7 +79,8 @@ libnodesinc_HEADERS = \
         SmLazyFile.h \
 	SmTextureText2.h \
 	SmTextureText2Collector.h \
-	SmTextureFont.h
+	SmTextureFont.h \
+        InterleavedArraysShape.h
 
 nodes.lst: $(nodes_lst_OBJECTS)
 	@echo "Linking $@..."; \

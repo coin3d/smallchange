@@ -62,6 +62,7 @@
 #include <SmallChange/nodes/SkyDome.h>
 #include <SmallChange/nodes/SmTooltip.h>
 #include <SmallChange/nodes/SmHQSphere.h>
+#include <SmallChange/nodes/InterleavedArraysShape.h>
 #include <SmallChange/engines/CubicSplineEngine.h>
 
 #include <SmallChange/elements/UTMElement.h>
@@ -184,4 +185,6 @@ smallchange_init(void)
   SmAnnotationAxis::initClass();
 
   DynamicBaseKit::initClass();
+
+  InterleavedArraysShape::initClass();
 }
