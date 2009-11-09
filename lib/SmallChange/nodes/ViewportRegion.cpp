@@ -255,8 +255,8 @@ ViewportRegion::doAction(SoAction * action)
     // don't clear for other passes than the main rendering pass
     SbBool shouldclear = !glrender->isRenderingDelayedPaths();
 #if COIN_MAJOR_VERSION >= 3
-    shouldclear &= !isRenderingTranspPaths();
-    shouldclear &= !isRenderingTranspBackfaces(); 
+    shouldclear &= !glrender->isRenderingTranspPaths();
+    shouldclear &= !glrender->isRenderingTranspBackfaces(); 
 #endif
     if (shouldclear) {
       GLenum mask = 0;
