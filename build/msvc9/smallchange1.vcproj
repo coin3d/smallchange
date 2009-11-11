@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="smallchange1"
 	ProjectGUID="{E6B414DD-A75E-42B8-BA90-97201274A9EC}"
+	RootNamespace="smallchange1"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -1296,6 +1297,10 @@
 							ProgramDataBaseFileName="Debug\SmallChange\nodes/"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\lib\SmallChange\nodes\InterleavedArraysShape.cpp"
+					>
 				</File>
 				<File
 					RelativePath="..\..\lib\SmallChange\nodes\PickCallback.cpp"
