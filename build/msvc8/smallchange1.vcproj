@@ -2649,6 +2649,56 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\lib\SmallChange\nodes\InterleavedArraysShape.cpp"
+					>
+					<FileConfiguration
+						Name="DLL (Release)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\Release\SmallChange\nodes/"
+							ProgramDataBaseFileName="Release\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Release)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticRelease\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticRelease\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="LIB (Debug)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\StaticDebug\SmallChange\nodes/"
+							ProgramDataBaseFileName="StaticDebug\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DLL (Debug)|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\Debug\SmallChange\nodes/"
+							ProgramDataBaseFileName="Debug\SmallChange\nodes/"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\lib\SmallChange\nodes\ViewpointWrapper.cpp"
 					>
 					<FileConfiguration
