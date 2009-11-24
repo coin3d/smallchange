@@ -65,6 +65,8 @@
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/elements/SoGLTextureCoordinateElement.h>
+#include <Inventor/details/SoTextDetail.h>
+#include <Inventor/SoPickedPoint.h>
 #include <Inventor/SbXfBox3f.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/misc/SoGLImage.h>
@@ -423,6 +425,7 @@ SmTextureText2::rayPick(SoRayPickAction * action)
   const int32_t * stringindex = this->stringIndex.getNum() ? this->stringIndex.getValues(0) : NULL;
   const int numstrings = stringindex ? this->stringIndex.getNum() : this->string.getNum();
   const SmTextureFont::FontImage * font = SmTextureFontElement::get(action->getState());
+  SoMaterialBindingElement::Binding binding = SoMaterialBindingElement::get(action->getState());
 
   for (int i = 0; i < numstrings; i++){
     int idx = stringindex ? stringindex[i] : i;
@@ -437,6 +440,14 @@ SmTextureText2::rayPick(SoRayPickAction * action)
     if (hit && action->isBetweenPlanes(isect)) {
       if (!this->pickOnPixel.getValue()){
         SoPickedPoint * pp = action->addIntersection(isect);
+        if (pp) {
+          SoTextDetail * detail = new SoTextDetail;
+          detail->setStringIndex(idx);
+          detail->setCharacterIndex(0);
+          pp->setDetail(detail, this);
+          pp->setMaterialIndex(binding == SoMaterialBindingElement::OVERALL ? 0 : idx);
+          pp->setObjectNormal(SbVec3f(0.0f, 0.0f, 1.0f));
+        }
         return;//We only calculate 1 picked point per SmTextureText2 instance
       }
       //else:
@@ -499,6 +510,14 @@ SmTextureText2::rayPick(SoRayPickAction * action)
           unsigned char * pixel = &pixels[(y * size[0] + x) * nc];
           if (pixel[0] != 0){//not completely transparent
             SoPickedPoint * pp = action->addIntersection(isect);
+            if (pp) {
+              SoTextDetail * detail = new SoTextDetail;
+              detail->setStringIndex(idx);
+              detail->setCharacterIndex(0);
+              pp->setDetail(detail, this);
+              pp->setMaterialIndex(binding == SoMaterialBindingElement::OVERALL ? 0 : idx);
+              pp->setObjectNormal(SbVec3f(0.0f, 0.0f, 1.0f));
+            }
             return;//We only calculate 1 picked point per SmTextureText2 instance
           }
         }
