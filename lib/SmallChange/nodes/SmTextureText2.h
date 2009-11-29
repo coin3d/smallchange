@@ -28,6 +28,7 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/fields/SoMFVec3f.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoMFFloat.h>
 #include <Inventor/fields/SoMFInt32.h>
 #include <Inventor/fields/SoMFString.h>
 #include <Inventor/fields/SoSFVec3f.h>
@@ -67,10 +68,11 @@ public:
   SoMFVec3f position;
   SoSFFloat maxRange;
   SoSFVec3f offset;
-  SoSFFloat rotation;
+  SoMFFloat rotation;
 
   SoMFInt32 stringIndex;
   SoSFBool pickOnPixel;
+
 
   virtual void GLRender(SoGLRenderAction * action);
   virtual void rayPick(SoRayPickAction * action);
@@ -92,7 +94,8 @@ private:
                     const SbViewportRegion & vp,
                     const SbMatrix & projmatrix,
                     const SbMatrix & modelmatrix,
-                    const SbMatrix & invmodelmatrix);
+                    const SbMatrix & invmodelmatrix,
+                    const float rotation);
 
   static void render_text(unsigned char * dst,
                           const int idx,

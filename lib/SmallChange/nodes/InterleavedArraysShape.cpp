@@ -909,6 +909,8 @@ InterleavedArraysShape::VBO::setBufferData(const GLvoid * data,
                          data,
                          this->usage);
   this->vbomap[contextid] = buffer;
+  // reset/disable current VBO
+  cc_glglue_glBindBuffer(glue, this->target, 0);
 }
 
 bool 
