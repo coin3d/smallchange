@@ -7,6 +7,7 @@
 #include <Inventor/actions/SoCallbackAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
+#include <Inventor/actions/SoReorganizeAction.h>
 #include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoIndexedFaceSet.h>
@@ -15,6 +16,7 @@
 #include <Inventor/nodes/SoShape.h>
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoPackedColor.h>
+#include <Inventor/nodes/SoCoordinate4.h>
 #include <Inventor/nodes/SoMaterialBinding.h>
 #include <Inventor/nodes/SoSphere.h>
 #include <Inventor/nodes/SoNormal.h>
@@ -40,6 +42,56 @@
 #include <Inventor/SoInteraction.h>
 #include <cassert>
 #include <cstring>
+
+static void strip_node(SoType type, SoNode * root)
+{
+  SoSearchAction sa;
+  sa.setType(type);
+  sa.setSearchingAll(TRUE);
+  sa.setInterest(SoSearchAction::ALL);
+  sa.apply(root);
+  
+  SoPathList & pl = sa.getPaths();
+  for (int i = 0; i < pl.getLength(); i++) {
+    SoFullPath * p = (SoFullPath*) pl[i];
+    if (p->getTail()->isOfType(type)) {
+      SoGroup * g = (SoGroup*) p->getNodeFromTail(1);
+      g->removeChild(p->getIndexFromTail(0));
+    }
+  }
+  sa.reset();
+}
+
+static void clamp_materials(SoNode * root)
+{
+  SoSearchAction sa;
+  sa.setType(SoMaterial::getClassTypeId());
+  sa.setSearchingAll(TRUE);
+  sa.setInterest(SoSearchAction::ALL);
+  sa.apply(root);
+  
+  SoPathList & pl = sa.getPaths();
+  for (int i = 0; i < pl.getLength(); i++) {
+    SoFullPath * p = (SoFullPath*) pl[i];
+    SoMaterial * mat = (SoMaterial*) p->getTail();
+    mat->diffuseColor.setNum(1);
+    mat->transparency.setNum(1);
+  }
+  sa.reset();
+
+  sa.setType(SoPackedColor::getClassTypeId());
+  sa.setSearchingAll(TRUE);
+  sa.setInterest(SoSearchAction::ALL);
+  sa.apply(root);
+
+  pl = sa.getPaths();
+  for (int i = 0; i < pl.getLength(); i++) {
+    SoFullPath * p = (SoFullPath*) pl[i];
+    SoPackedColor * mat = (SoPackedColor*) p->getTail();
+    mat->orderedRGBA.setNum(1);
+  }
+  sa.reset();
+}
 
 // helper class
 class sm_meshattrib {
@@ -1057,3 +1109,21 @@ SmEnvelope::getConvertedScene(const int octtreelevels,
 {
   return this->pimpl->getConvertedScene(octtreelevels, vrml2);
 }
+
+void 
+SmEnvelope::reorganizeScene(SoNode * root, SbBool stripnodes) {
+  fprintf(stderr,"Reorganizing\n");
+  SoReorganizeAction reorg;
+  reorg.apply(root);
+  fprintf(stderr,"done\n");
+  
+  if (stripnodes) { // strip coord3, texcoord and normal nodes
+    fprintf(stderr,"stripping old nodes from scene graph\n");
+    strip_node(SoCoordinate3::getClassTypeId(), root);
+    strip_node(SoCoordinate4::getClassTypeId(), root);
+    strip_node(SoNormal::getClassTypeId(), root);
+    strip_node(SoTextureCoordinate2::getClassTypeId(), root);
+    clamp_materials(root);
+  }
+}
+
