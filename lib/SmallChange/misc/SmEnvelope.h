@@ -15,13 +15,15 @@ public:
 
   SbBool importFile(const char * infile);
   void importScene(SoNode * node);
-  
+
   SbBool exportGeometry(const char * outfile, 
                         const int octtreelevels = 0,
                         const SbBool vrml2 = FALSE);
 
   SoNode * getConvertedScene(const int octtreelevels = 0,
                              const SbBool vrml2 = FALSE);
+
+  void reorganizeScene(SoNode * node, SbBool stripnodes);
 
 private:
   SmEnvelopeP * pimpl;

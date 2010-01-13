@@ -65,6 +65,8 @@
 #include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/elements/SoMaterialBindingElement.h>
 #include <Inventor/elements/SoGLTextureCoordinateElement.h>
+#include <Inventor/details/SoTextDetail.h>
+#include <Inventor/SoPickedPoint.h>
 #include <Inventor/SbXfBox3f.h>
 #include <Inventor/SbRotation.h>
 #include <Inventor/misc/SoGLImage.h>
@@ -96,7 +98,7 @@ SmTextureText2::SmTextureText2()
   SO_NODE_ADD_FIELD(position, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(offset, (0.0f, 0.0f, 0.0f));
   SO_NODE_ADD_FIELD(rotation, (0.0f)); // TODO also make it work for SmTextureText2Collector
-  SO_NODE_ADD_FIELD(pickOnPixel, (FALSE)); // 
+  SO_NODE_ADD_FIELD(pickOnPixel, (FALSE));
   SO_NODE_ADD_EMPTY_MFIELD(stringIndex);
 
   SO_NODE_DEFINE_ENUM_VALUE(Justification, CENTER);
@@ -244,6 +246,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   if (numpos > 1 || stringindex) {
     for (int i = 0; i < numstrings; i++) {
       int idx = stringindex ? stringindex[i] : i;
+      float rotation = *this->rotation.getValues(this->rotation.getNum() > 1 ? idx : 0);
+
       if (perpart) {
         mb.send(idx, FALSE);
       }
@@ -255,12 +259,14 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                          vp,
                          projmatrix,
                          modelmatrix,
-                         inv);
+                         inv,
+                         rotation);
     }
   }
   else {
     tmp = numpos > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f);
     tmp += offset;
+    float rotation = *this->rotation.getValues(0);
     this->renderString(bundle,
                        &s[0],
                        numstrings,
@@ -269,7 +275,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
                        vp,
                        projmatrix,
                        modelmatrix,
-                       inv);
+                       inv,
+                       rotation);
   }
   glPopAttrib();
   glPopMatrix();
@@ -363,7 +370,7 @@ SmTextureText2::buildStringQuad(SoAction * action, int idx, SbVec3f & p0, SbVec3
   down /= py;
 
   SbMatrix rotation = SbMatrix::identity();
-  rotation.setRotate(SbRotation(SbVec3f(0, 0, 1), this->rotation.getValue()));
+  rotation.setRotate(SbRotation(SbVec3f(0, 0, 1), *this->rotation.getValues(this->rotation.getNum() > 1 ? idx : 0)));
 
   SbMatrix translation = SbMatrix::identity();
   translation.setTranslate(SbVec3f(screen[0], screen[1], 0));
@@ -418,6 +425,7 @@ SmTextureText2::rayPick(SoRayPickAction * action)
   const int32_t * stringindex = this->stringIndex.getNum() ? this->stringIndex.getValues(0) : NULL;
   const int numstrings = stringindex ? this->stringIndex.getNum() : this->string.getNum();
   const SmTextureFont::FontImage * font = SmTextureFontElement::get(action->getState());
+  SoMaterialBindingElement::Binding binding = SoMaterialBindingElement::get(action->getState());
 
   for (int i = 0; i < numstrings; i++){
     int idx = stringindex ? stringindex[i] : i;
@@ -432,6 +440,14 @@ SmTextureText2::rayPick(SoRayPickAction * action)
     if (hit && action->isBetweenPlanes(isect)) {
       if (!this->pickOnPixel.getValue()){
         SoPickedPoint * pp = action->addIntersection(isect);
+        if (pp) {
+          SoTextDetail * detail = new SoTextDetail;
+          detail->setStringIndex(idx);
+          detail->setCharacterIndex(0);
+          pp->setDetail(detail, this);
+          pp->setMaterialIndex(binding == SoMaterialBindingElement::OVERALL ? 0 : idx);
+          pp->setObjectNormal(SbVec3f(0.0f, 0.0f, 1.0f));
+        }
         return;//We only calculate 1 picked point per SmTextureText2 instance
       }
       //else:
@@ -494,6 +510,14 @@ SmTextureText2::rayPick(SoRayPickAction * action)
           unsigned char * pixel = &pixels[(y * size[0] + x) * nc];
           if (pixel[0] != 0){//not completely transparent
             SoPickedPoint * pp = action->addIntersection(isect);
+            if (pp) {
+              SoTextDetail * detail = new SoTextDetail;
+              detail->setStringIndex(idx);
+              detail->setCharacterIndex(0);
+              pp->setDetail(detail, this);
+              pp->setMaterialIndex(binding == SoMaterialBindingElement::OVERALL ? 0 : idx);
+              pp->setObjectNormal(SbVec3f(0.0f, 0.0f, 1.0f));
+            }
             return;//We only calculate 1 picked point per SmTextureText2 instance
           }
         }
@@ -553,7 +577,8 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
                              const SbViewportRegion & vp,
                              const SbMatrix & projmatrix,
                              const SbMatrix & modelmatrix,
-                             const SbMatrix & invmodelmatrix)
+                             const SbMatrix & invmodelmatrix,
+                             const float rotation)
 {
   // get distance from pos to camera plane
   SbVec3f tmp;
@@ -600,8 +625,6 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
     widthlist.append(bundle.stringWidth(s[i]));
   }
 
-  float rotation = static_cast<float>(this->rotation.getValue() * 180 / M_PI);
-
   for (i = 0; i < numstring; i++) {
 
     int len = s[i].getLength();
@@ -635,7 +658,7 @@ SmTextureText2::renderString(const SmTextureFontBundle & bundle,
       float y = static_cast<float>(sp[1]);
       glPushMatrix();
       glTranslatef(x, y, 0);
-      glRotatef(rotation, 0, 0, 1);
+      glRotatef(rotation * static_cast<float>(180 / M_PI), 0, 0, 1);
       glTranslatef(-x, -y, 0);
     }
     

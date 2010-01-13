@@ -450,7 +450,7 @@ SmTextureFont::FontImage::getGLImage(void) const
     SbVec2s size;
     int nc;
     unsigned char * bytes = this->getValue(size, nc);
-    thisp->glimage->setData(bytes, size, nc, SoGLImage::CLAMP, SoGLImage::CLAMP, 0.3f);
+    thisp->glimage->setData(bytes, size, nc, SoGLImage::CLAMP, SoGLImage::CLAMP, 0.01f);
   }
   return this->glimage;
 }
