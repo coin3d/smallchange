@@ -433,46 +433,93 @@ InterleavedArraysShape::GLRender(SoGLRenderAction * action)
     
     uint32_t contextid = (uint32_t) action->getCacheContext();
     const cc_glglue * glue = cc_glglue_instance((int) contextid);
-    
-    if (!PRIVATE(this)->vbo || !PRIVATE(this)->vbo->hasVBO(contextid)) {
-      this->createVBO(contextid);
-    }
-    else PRIVATE(this)->vbo->bindBuffer(contextid);
-    
-    this->enableArrays(action, 
-                       nbind == PER_VERTEX,
-                       mbind == PER_VERTEX,
-                       doTextures);
-    
-    if (this->vertexIndex.getNum()) {
-      if (!PRIVATE(this)->indexvbo || !PRIVATE(this)->indexvbo->hasVBO(contextid)) {
-        this->createIndexVBO(contextid);
+
+    if (cc_glglue_has_vertex_array(glue) &&
+        cc_glglue_has_vertex_buffer_object(glue)) {
+      if (!PRIVATE(this)->vbo || !PRIVATE(this)->vbo->hasVBO(contextid)) {
+        this->createVBO(contextid);
       }
-      else PRIVATE(this)->indexvbo->bindBuffer(contextid);
+      else PRIVATE(this)->vbo->bindBuffer(contextid);
       
-      cc_glglue_glDrawElements(glue,
+      this->enableArrays(action, 
+                         nbind == PER_VERTEX,
+                         mbind == PER_VERTEX,
+                         doTextures);
+    
+      if (this->vertexIndex.getNum()) {
+        if (!PRIVATE(this)->indexvbo || !PRIVATE(this)->indexvbo->hasVBO(contextid)) {
+          this->createIndexVBO(contextid);
+        }
+        else PRIVATE(this)->indexvbo->bindBuffer(contextid);
+        
+        cc_glglue_glDrawElements(glue,
+                                 toGL((Type) this->type.getValue()),
+                                 this->vertexIndex.getNum(),
+                                 PRIVATE(this)->useshorts ? 
+                                 GL_UNSIGNED_SHORT :
+                                 GL_UNSIGNED_INT,
+                                 NULL);
+        cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0);
+      }
+      else {
+        cc_glglue_glDrawArrays(glue, 
                                toGL((Type) this->type.getValue()),
-                               this->vertexIndex.getNum(),
-                               PRIVATE(this)->useshorts ? 
-                               GL_UNSIGNED_SHORT :
-                               GL_UNSIGNED_INT,
-                               NULL);
-      cc_glglue_glBindBuffer(glue, GL_ELEMENT_ARRAY_BUFFER, 0);
+                               0,
+                               vp->vertex.getNum());
+      }
+      this->disableArrays(action,
+                          nbind == PER_VERTEX,
+                          mbind == PER_VERTEX,
+                          doTextures);
+      cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0);
+      
+      SoGLCacheContextElement::shouldAutoCache(state,
+                                               SoGLCacheContextElement::DONT_AUTO_CACHE);
     }
     else {
-      cc_glglue_glDrawArrays(glue, 
-                             toGL((Type) this->type.getValue()),
-                             0,
-                             vp->vertex.getNum());
+      // fall back to immediate mode rendering
+      const SbVec3f * vptr = vp->vertex.getValues(0);
+      const SbVec3f * nptr = NULL;
+      const SbVec2f * tcptr = NULL;
+      const uint32_t * cptr = NULL;
+      const int nv = vp->vertex.getNum();
+      if (nbind == PER_VERTEX) {
+        nptr = vp->normal.getValues(0);
+      }
+      if (mbind == PER_VERTEX) {
+        cptr = vp->orderedRGBA.getValues(0);
+      }
+      if (vp->texCoord.getNum() >= nv) {
+        tcptr = vp->texCoord.getValues(0);
+      }
+      glBegin(toGL((Type) this->type.getValue()));
+      if (this->vertexIndex.getNum()) {
+        const int n = this->vertexIndex.getNum();
+        const int32_t * idx = this->vertexIndex.getValues(0);
+        for (int j = 0; j < n; j++) {
+          const int i = idx[j];
+          if (cptr) {
+            uint32_t c = cptr[i];
+            glColor4ub(c>>24, (c>>16)&0xff, (c>>8)&0xff, c&0xff);
+          }
+          if (tcptr) glTexCoord2fv((const GLfloat*) &tcptr[i]);
+          if (nptr) glNormal3fv((const GLfloat*) &nptr[i]);
+          glVertex3fv((const GLfloat*) &vptr[i]);
+        }
+      }
+      else {
+        for (int i = 0; i < nv; i++) {
+          if (cptr) {
+            uint32_t c = cptr[i];
+            glColor4ub(c>>24, (c>>16)&0xff, (c>>8)&0xff, c&0xff);
+          }
+          if (tcptr) glTexCoord2fv((const GLfloat*) &tcptr[i]);
+          if (nptr) glNormal3fv((const GLfloat*) &nptr[i]);
+          glVertex3fv((const GLfloat*) &vptr[i]);
+        }
+      }
+      glEnd();
     }
-    this->disableArrays(action,
-                        nbind == PER_VERTEX,
-                        mbind == PER_VERTEX,
-                        doTextures);
-    cc_glglue_glBindBuffer(glue, GL_ARRAY_BUFFER, 0);
-    
-    SoGLCacheContextElement::shouldAutoCache(state,
-                                             SoGLCacheContextElement::DONT_AUTO_CACHE);
   }
   if (transparency) state->pop();
 }
