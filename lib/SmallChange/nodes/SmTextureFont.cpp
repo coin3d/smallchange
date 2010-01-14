@@ -289,7 +289,7 @@ SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
   int nc;
 
   unsigned char * dst = image.getValue(size, nc);
-  unsigned char * src = this->getValue(fullsize, nc);
+  const unsigned char * src = this->getValue(fullsize, nc);
 
   for (short y = 0; y < size[1]; y++) {
     for (short x = 0; x < size[0]; x++) {
@@ -381,7 +381,7 @@ SmTextureFont::FontImage::copyGlyph(unsigned char c, const SbImage & glyph)
   SbVec2s origo = this->getGlyphPositionPixels(c);
   int nc;
   SbVec2s size, fullsize;
-  unsigned char * src = glyph.getValue(size, nc);
+  const unsigned char * src = glyph.getValue(size, nc);
   unsigned char * dst = this->getValue(fullsize, nc);
   for (short y = 0; y < this->glyphsize[1]; y++) {
     for (short x = 0; x < this->glyphsize[0]; x++) {
@@ -449,7 +449,7 @@ SmTextureFont::FontImage::getGLImage(void) const
     thisp->glimage = new SoGLImage();
     SbVec2s size;
     int nc;
-    unsigned char * bytes = this->getValue(size, nc);
+    const unsigned char * bytes = this->getValue(size, nc);
     thisp->glimage->setData(bytes, size, nc, SoGLImage::CLAMP, SoGLImage::CLAMP, 0.01f);
   }
   return this->glimage;

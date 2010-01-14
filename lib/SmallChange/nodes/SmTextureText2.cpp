@@ -491,7 +491,7 @@ SmTextureText2::rayPick(SoRayPickAction * action)
           const SbImage * img = font->getGLImage()->getImage();
           SbVec2s size;
           int nc;
-          unsigned char * pixels = img->getValue(size, nc);
+          const unsigned char * pixels = img->getValue(size, nc);
 
 //#define DEBUG_CHARACTER
 #ifdef DEBUG_CHARACTER
@@ -507,7 +507,7 @@ SmTextureText2::rayPick(SoRayPickAction * action)
           printf("--------\n");
 #endif //DEBUG_CHARACTER
 
-          unsigned char * pixel = &pixels[(y * size[0] + x) * nc];
+          const unsigned char * pixel = &pixels[(y * size[0] + x) * nc];
           if (pixel[0] != 0){//not completely transparent
             SoPickedPoint * pp = action->addIntersection(isect);
             if (pp) {
