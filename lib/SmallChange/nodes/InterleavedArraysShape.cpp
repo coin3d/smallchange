@@ -439,7 +439,7 @@ InterleavedArraysShape::GLRender(SoGLRenderAction * action)
       if (!PRIVATE(this)->vbo || !PRIVATE(this)->vbo->hasVBO(contextid)) {
         this->createVBO(contextid);
       }
-      else PRIVATE(this)->vbo->bindBuffer(contextid);
+      PRIVATE(this)->vbo->bindBuffer(contextid);
       
       this->enableArrays(action, 
                          nbind == PER_VERTEX,
@@ -450,7 +450,7 @@ InterleavedArraysShape::GLRender(SoGLRenderAction * action)
         if (!PRIVATE(this)->indexvbo || !PRIVATE(this)->indexvbo->hasVBO(contextid)) {
           this->createIndexVBO(contextid);
         }
-        else PRIVATE(this)->indexvbo->bindBuffer(contextid);
+        PRIVATE(this)->indexvbo->bindBuffer(contextid);
         
         cc_glglue_glDrawElements(glue,
                                  toGL((Type) this->type.getValue()),
