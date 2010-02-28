@@ -16,41 +16,7 @@
 
 
 
-SOURCES =  
-	AutoFile.cpp AutoFile.h  
-	SmDepthBuffer.cpp SmDepthBuffer.h  
-	ViewportRegion.cpp ViewportRegion.h  
-	Coinboard.cpp Coinboard.h  
-	Switchboard.cpp SmSwitchboard.h  
-	SwitchboardOperator.cpp SmSwitchboardOperator.h  
-	CoinEnvironment.cpp CoinEnvironment.h  
-	SkyDome.cpp SkyDome.h  
-	ShapeScale.cpp ShapeScale.h  
-	PickSwitch.cpp PickSwitch.h  
-	PickCallback.cpp PickCallback.h  
-	SoTCBCurve.cpp SoTCBCurve.h  
-	SoText2Set.cpp SoText2Set.h  
-	SoPointCloud.cpp SoPointCloud.h  
-	SoLODExtrusion.cpp SoLODExtrusion.h  
-	UTMCamera.cpp UTMCamera.h  
-	UTMPosition.cpp UTMPosition.h  
-	UTMCoordinate.cpp UTMCoordinate.h  
-	SmTooltip.cpp SmTooltip.h  
-	SmHQSphere.cpp SmHQSphere.h  
-	SmBillboardClipPlane.cpp SmBillboardClipPlane.h  
-	SmHeadlight.cpp SmHeadlight.h  
-	VertexArrayShape.cpp SmVertexArrayShape.h  
-	SmCoordinateSystem.cpp SmCoordinateSystem.h  
-	SmMarkerSet.cpp SmMarkerSet.h  
-	ViewpointWrapper.cpp SmViewpointWrapper.h  
-        SmShadowText2.cpp SmShadowText2.h  
-        SmTrack.cpp SmTrack.h  
-        SmLazyFile.cpp SmLazyFile.h  
-	SmTextureText2.cpp SmTextureText2.h  
-	SmTextureText2Collector.cpp SmTextureText2Collector.h  
-	SmTextureFont.cpp SmTextureFont.h  
-        InterleavedArraysShape.cpp InterleavedArraysShape.h
-
+SOURCES = $(nodes_lst_SOURCES) $(libnodes_la_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -225,6 +191,7 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(nodes_lst_SOURCES) $(libnodes_la_SOURCES)
 DIST_SOURCES = $(nodes_lst_SOURCES) $(libnodes_la_SOURCES)
 am__installdirs = "$(DESTDIR)$(libnodesincdir)"
 libnodesincHEADERS_INSTALL = $(INSTALL_HEADER)
@@ -383,7 +350,7 @@ target_vendor = @target_vendor@
 INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 @BUILD_WITH_MSVC_TRUE@noinst_LIBRARIES = nodes.lst
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libnodes.la
-SOURCES = \
+RegularSources = \
 	AutoFile.cpp AutoFile.h \
 	SmDepthBuffer.cpp SmDepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
@@ -418,8 +385,8 @@ SOURCES = \
 	SmTextureFont.cpp SmTextureFont.h \
         InterleavedArraysShape.cpp InterleavedArraysShape.h
 
-libnodes_la_SOURCES = $(SOURCES)
-nodes_lst_SOURCES = $(SOURCES)
+libnodes_la_SOURCES = $(RegularSources)
+nodes_lst_SOURCES = $(RegularSources)
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \
 	AutoFile.h \

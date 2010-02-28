@@ -16,13 +16,7 @@
 
 
 
-SOURCES =  
-	SmEventHandler.cpp SmEventHandler.h  
-	SmExaminerEventHandler.cpp SmExaminerEventHandler.h  
-	SmSphereEventHandler.cpp SmSphereEventHandler.h  
-	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h  
-        SmPanEventHandler.cpp SmPanEventHandler.h 
-
+SOURCES = $(eventhandlers_lst_SOURCES) $(libeventhandlers_la_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -127,6 +121,7 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(eventhandlers_lst_SOURCES) $(libeventhandlers_la_SOURCES)
 DIST_SOURCES = $(eventhandlers_lst_SOURCES) \
 	$(libeventhandlers_la_SOURCES)
 am__installdirs = "$(DESTDIR)$(libeventhandlersincdir)"
@@ -286,15 +281,15 @@ target_vendor = @target_vendor@
 INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 @BUILD_WITH_MSVC_TRUE@noinst_LIBRARIES = eventhandlers.lst
 @BUILD_WITH_MSVC_FALSE@noinst_LTLIBRARIES = libeventhandlers.la
-SOURCES = \
+RegularSources = \
 	SmEventHandler.cpp SmEventHandler.h \
 	SmExaminerEventHandler.cpp SmExaminerEventHandler.h \
 	SmSphereEventHandler.cpp SmSphereEventHandler.h \
 	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h \
-        SmPanEventHandler.cpp SmPanEventHandler.h 
+        SmPanEventHandler.cpp SmPanEventHandler.h
 
-libeventhandlers_la_SOURCES = $(SOURCES)
-eventhandlers_lst_SOURCES = $(SOURCES)
+libeventhandlers_la_SOURCES = $(RegularSources)
+eventhandlers_lst_SOURCES = $(RegularSources)
 libeventhandlersincdir = $(includedir)/SmallChange/eventhandlers
 libeventhandlersinc_HEADERS = \
 	SmEventHandler.h \

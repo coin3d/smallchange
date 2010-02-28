@@ -16,23 +16,7 @@
 
 
 
-SOURCES =  
-	LegendKit.cpp LegendKit.h  
-	SoFEMKit.cpp SoFEMKit.h  
-	SmTooltipKit.cpp SmTooltipKit.h  
-	SmWellLogKit.cpp SmWellLogKit.h  
-	SmCameraControlKit.cpp SmCameraControlKit.h  
-	GeoMarkerKit.cpp SmGeoMarkerKit.h  
-	NormalsKit.cpp SmNormalsKit.h  
-	SmAxisDisplayKit.cpp SmAxisDisplayKit.h  
-	SmAxisKit.cpp SmAxisKit.h  
-	SmAnnotationWall.cpp SmAnnotationWall.h  
-	SmAnnotationAxis.cpp SmAnnotationAxis.h  
-	SmPieChart.cpp SmPieChart.h  
-	PopupMenuKit.cpp SmPopupMenuKit.h  
-        SmDynamicObjectKit.cpp SmDynamicObjectKit.h  
-        SmTrackPointKit.cpp SmTrackPointKit.h
-
+SOURCES = $(nodekits_lst_SOURCES) $(libnodekits_la_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -160,6 +144,7 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(nodekits_lst_SOURCES) $(libnodekits_la_SOURCES)
 DIST_SOURCES = $(nodekits_lst_SOURCES) $(libnodekits_la_SOURCES)
 am__installdirs = "$(DESTDIR)$(libnodekitsincdir)"
 libnodekitsincHEADERS_INSTALL = $(INSTALL_HEADER)
@@ -321,7 +306,7 @@ INCLUDES = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 EXTRA_DIST = \
         bitmapfont.cpp
 
-SOURCES = \
+RegularSources = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \
 	SmTooltipKit.cpp SmTooltipKit.h \
@@ -338,8 +323,8 @@ SOURCES = \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
         SmTrackPointKit.cpp SmTrackPointKit.h
 
-libnodekits_la_SOURCES = $(SOURCES)
-nodekits_lst_SOURCES = $(SOURCES)
+libnodekits_la_SOURCES = $(RegularSources)
+nodekits_lst_SOURCES = $(RegularSources)
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
 	DynamicBaseKit.h \
