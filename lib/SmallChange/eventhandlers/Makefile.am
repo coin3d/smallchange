@@ -6,16 +6,16 @@ else
 noinst_LTLIBRARIES = libeventhandlers.la
 endif
 
-SOURCES = \
+RegularSources = \
 	SmEventHandler.cpp SmEventHandler.h \
 	SmExaminerEventHandler.cpp SmExaminerEventHandler.h \
 	SmSphereEventHandler.cpp SmSphereEventHandler.h \
 	SmHelicopterEventHandler.cpp SmHelicopterEventHandler.h \
-        SmPanEventHandler.cpp SmPanEventHandler.h 
+        SmPanEventHandler.cpp SmPanEventHandler.h
 
-libeventhandlers_la_SOURCES = $(SOURCES)
+libeventhandlers_la_SOURCES = $(RegularSources)
 
-eventhandlers_lst_SOURCES = $(SOURCES)
+eventhandlers_lst_SOURCES = $(RegularSources)
 
 libeventhandlersincdir = $(includedir)/SmallChange/eventhandlers
 libeventhandlersinc_HEADERS = \

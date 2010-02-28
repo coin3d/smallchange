@@ -6,7 +6,7 @@ else
 noinst_LTLIBRARIES = libnodes.la
 endif
 
-SOURCES = \
+RegularSources = \
 	AutoFile.cpp AutoFile.h \
 	SmDepthBuffer.cpp SmDepthBuffer.h \
 	ViewportRegion.cpp ViewportRegion.h \
@@ -42,9 +42,9 @@ SOURCES = \
         InterleavedArraysShape.cpp InterleavedArraysShape.h
 
 
-libnodes_la_SOURCES = $(SOURCES)
+libnodes_la_SOURCES = $(RegularSources)
 
-nodes_lst_SOURCES = $(SOURCES)
+nodes_lst_SOURCES = $(RegularSources)
 
 libnodesincdir = $(includedir)/SmallChange/nodes
 libnodesinc_HEADERS = \

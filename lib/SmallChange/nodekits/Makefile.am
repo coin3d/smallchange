@@ -9,7 +9,7 @@ endif
 EXTRA_DIST = \
         bitmapfont.cpp
 
-SOURCES = \
+RegularSources = \
 	LegendKit.cpp LegendKit.h \
 	SoFEMKit.cpp SoFEMKit.h \
 	SmTooltipKit.cpp SmTooltipKit.h \
@@ -26,9 +26,9 @@ SOURCES = \
         SmDynamicObjectKit.cpp SmDynamicObjectKit.h \
         SmTrackPointKit.cpp SmTrackPointKit.h
 
-libnodekits_la_SOURCES = $(SOURCES)
+libnodekits_la_SOURCES = $(RegularSources)
 
-nodekits_lst_SOURCES = $(SOURCES)
+nodekits_lst_SOURCES = $(RegularSources)
 
 libnodekitsincdir = $(includedir)/SmallChange/nodekits
 libnodekitsinc_HEADERS = \
