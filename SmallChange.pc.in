@@ -2,6 +2,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+datarootdir=@datarootdir@
+datadir=${datarootdir}
 
 Name: SmallChange
 Description: a collection of Coin extensions
@@ -14,6 +16,5 @@ Cflags: -I${includedir} @SMALLCHANGE_EXTRA_CFLAGS@ @SMALLCHANGE_EXTRA_CPPFLAGS@
 smallchange_host="@host@"
 compiler=@COIN_COMPILER@
 compiler_is_gcc=@ac_compiler_gnu@
-datadir=@datadir@
 frameworkdir=@frameworkdir@
 msvcrt=@SMALLCHANGE_MSVC_LIBC@
