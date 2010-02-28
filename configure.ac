@@ -159,6 +159,9 @@ AC_PROG_LIBTOOL
 
 fi
 
+# Make it possible for the user to turn off optimization flags.
+SIM_AC_COMPILER_OPTIMIZATION
+
 SIM_AC_COMPILE_DEBUG([
   CPPFLAGS="$CPPFLAGS -DSMALLCHANGE_DEBUG=1"
 ], [
