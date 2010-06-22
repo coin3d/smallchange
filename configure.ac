@@ -8,6 +8,10 @@ m4_define([SMALLCHANGE_ABI_CURRENT], [m4_eval((SMALLCHANGE_MAJOR*20)+SMALLCHANGE
 m4_define([SMALLCHANGE_ABI_REVISION], [SMALLCHANGE_MICRO])
 m4_define([SMALLCHANGE_ABI_AGE], [SMALLCHANGE_MINOR])
 
+m4_define([MAC_FRAMEWORK_NAME_DEFAULT], [SmallChange])
+m4_define([MAC_FRAMEWORK_PREFIX_DEFAULT], [/Library/Frameworks])
+m4_define([MAC_FRAMEWORK_VERSION_DEFAULT], [A])
+
 AC_INIT([SmallChange], [SMALLCHANGE_MAJOR.SMALLCHANGE_MINOR.SMALLCHANGE_MICRO[]SMALLCHANGE_BETA], [coin-bugs@coin3d.org])
 
 AC_CONFIG_SRCDIR(lib/SmallChange/nodes/SmDepthBuffer.cpp)
@@ -122,6 +126,43 @@ AC_SUBST([SMALLCHANGE_EXTRA_LIBS], [$LIBS])
 SIM_AC_UNIVERSAL_BINARIES
 
 # **************************************************************************
+# decide if we want to build Mac OS X framework
+
+AC_ARG_WITH([framework],
+  [  --with-framework  Do Mac OS X-like framework installation
+  --without-framework  Do regular installation on Mac OS X],
+  [sim_ac_framework_name="MAC_FRAMEWORK_NAME_DEFAULT"
+  case $withval in
+  yes ) sim_ac_framework=true ;;
+  no ) sim_ac_framework=false ;;
+  * ) sim_ac_framework=true; sim_ac_framework_name="$withval" ;;
+  esac],
+  [sim_ac_framework_name="MAC_FRAMEWORK_NAME_DEFAULT"
+  case $host_os in
+  darwin* ) sim_ac_framework=true ;;
+  * ) sim_ac_framework=false ;;
+  esac])
+
+# don't allow name to be overrided - just toggled on/off
+sim_ac_framework_name="MAC_FRAMEWORK_NAME_DEFAULT"
+sim_ac_framework_prefix="MAC_FRAMEWORK_PREFIX_DEFAULT"
+sim_ac_framework_version="MAC_FRAMEWORK_VERSION_DEFAULT"
+
+AC_ARG_WITH([framework-prefix],
+  [  --with-framework-prefix=<path>  (default: "MAC_FRAMEWORK_PREFIX_DEFAULT")],
+  [sim_ac_framework_prefix="$withval"],
+  [sim_ac_framework_prefix="MAC_FRAMEWORK_PREFIX_DEFAULT"])
+
+# **************************************************************************
+
+AC_SUBST([MAC_FRAMEWORK], [$sim_ac_framework])
+AC_SUBST([MAC_FRAMEWORK_NAME], [$sim_ac_framework_name])
+AC_SUBST([MAC_FRAMEWORK_PREFIX], [$sim_ac_framework_prefix])
+AC_SUBST([MAC_FRAMEWORK_VERSION], [$sim_ac_framework_version])
+AC_SUBST([nop], [])
+
+AM_CONDITIONAL([MAC_FRAMEWORK], [$sim_ac_framework])
+
 
 AM_INIT_AUTOMAKE(SmallChange, $VERSION)
 
@@ -274,6 +315,28 @@ else
   ], [AC_MSG_ERROR(couldn't compile and link against Coin)])
   SIM_AC_CONFIGURATION_SETTING([Open Inventor brand], [Coin])
 fi
+
+sim_ac_have_inventor_framework=false
+frameworkdir=
+if $sim_ac_framework && $sim_ac_coin_avail; then
+  sim_ac_coin_frameworkdir=`$sim_ac_coin_configcmd --frameworkdir 2>/dev/null`
+  if test x"$sim_ac_coin_frameworkdir" = x""; then
+    SIM_AC_CONFIGURATION_WARNING([Coin was not installed as a framework, so Quarter can't be either (option was disabled).])
+    sim_ac_framework=false
+  else
+    sim_ac_have_inventor_framework=true
+    if test x"$sim_ac_framework_prefix" = x""; then
+      sim_ac_framework_prefix=`dirname "${sim_ac_coin_frameworkdir}"`
+    fi
+    frameworkdir=${sim_ac_framework_prefix}/${sim_ac_framework_name}.framework
+  fi
+  SIM_AC_CONFIGURATION_SETTING([Framework Installation Prefix], [$sim_ac_framework_prefix])
+else
+  sim_ac_framework=false
+fi
+
+AC_SUBST([frameworkdir])
+
 
 # **************************************************************************
 
