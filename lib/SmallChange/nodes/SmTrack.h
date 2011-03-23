@@ -28,6 +28,7 @@
 #include <Inventor/fields/SoMFVec3d.h>
 #include <Inventor/fields/SoMFTime.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFUShort.h>
 #include <SmallChange/basic.h>
 
 class SoAction;
@@ -44,6 +45,11 @@ public:
   SoMFTime timeStamps;
   SoMFVec3d track;
   SoSFFloat trackLength;
+
+  SoSFUShort pointInterval;
+  SoSFUShort lineInterval;
+  SoSFUShort tickInterval;
+  SoSFFloat tickSize;
 
   void append(const SbVec3d & pos,
               const SbTime & timestamp);

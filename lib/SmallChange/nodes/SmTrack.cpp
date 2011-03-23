@@ -13,8 +13,10 @@
 #include <GL/gl.h>
 #endif // SGI/TGS Inventor
 
-#include <Inventor/bundles/SoMaterialBundle.h>
+#include <Inventor/SbRotation.h>
 #include <Inventor/actions/SoGLRenderAction.h>
+#include <Inventor/bundles/SoMaterialBundle.h>
+#include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/sensors/SoFieldSensor.h>
 
 #define PRIVATE(obj) (obj)->pimpl
@@ -66,9 +68,15 @@ SmTrack::initClass(void)
 SmTrack::SmTrack(void)
 {
   SO_NODE_CONSTRUCTOR(SmTrack);
+
   SO_NODE_ADD_FIELD(track, (SbVec3d(0.0, 0.0, 0.0)));
   SO_NODE_ADD_FIELD(timeStamps, (SbTime::getTimeOfDay()));
   SO_NODE_ADD_FIELD(trackLength, (22.0f));
+
+  SO_NODE_ADD_FIELD(pointInterval, (1));
+  SO_NODE_ADD_FIELD(lineInterval, (0));
+  SO_NODE_ADD_FIELD(tickInterval, (0));
+  SO_NODE_ADD_FIELD(tickSize, (1.0f));
 
   PRIVATE(this) = new SmTrackP;
   PRIVATE(this)->master = this;
@@ -80,6 +88,7 @@ SmTrack::SmTrack(void)
 
 SmTrack::~SmTrack()
 {
+  delete PRIVATE(this)->tracklengthsensor;
   delete PRIVATE(this);
 }
 
@@ -92,11 +101,51 @@ SmTrack::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
-  glBegin(GL_POINTS);
-  for (int i = PRIVATE(this)->startix; i < this->track.getNum(); i++) {
-    glVertex3dv(this->track[i].getValue());
+  unsigned short pointInterval = this->pointInterval.getValue();
+  if (pointInterval > 0) {
+    glBegin(GL_POINTS);
+    for (int i = PRIVATE(this)->startix; i < this->track.getNum(); i += pointInterval) {
+      glVertex3dv(this->track[i].getValue());
+    }
+    glEnd();
   }
-  glEnd();
+
+  unsigned short lineInterval = this->lineInterval.getValue();
+  if (lineInterval > 0) {
+    glBegin(GL_LINES);
+    for (int i = PRIVATE(this)->startix + 1; i < this->track.getNum(); i += lineInterval) {
+      glVertex3dv(this->track[i - 1].getValue());
+      glVertex3dv(this->track[i].getValue());
+    }
+    glEnd();
+  }
+
+  unsigned short tickInterval = this->tickInterval.getValue();
+  if (tickInterval > 0) {
+    float s = this->tickSize.getValue();
+    SbRotation r(SbVec3f(0, 0, 1), 0.125f * float(M_PI));
+    for (int i = PRIVATE(this)->startix + 1; i < this->track.getNum(); i += tickInterval) {
+      SbVec3f p = SbVec3f(this->track[i]);
+      SbVec3f v = SbVec3f(this->track[i - 1]) - p;
+
+#if 1
+      v *=  s / v.length();
+#else
+      v *= SoViewVolumeElement::get(action->getState()).getWorldToScreenScale(p, s) / v.length();
+#endif
+
+      SbVec3f left, right;
+      r.multVec(v, left);
+      r.inverse().multVec(v, right);
+      left += p;
+      right += p;
+      glBegin(GL_LINE_STRIP);
+      glVertex3fv(left.getValue());
+      glVertex3fv(p.getValue());
+      glVertex3fv(right.getValue());
+      glEnd();
+    }
+  }
 }
 
 void
