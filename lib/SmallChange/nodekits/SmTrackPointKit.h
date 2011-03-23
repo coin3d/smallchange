@@ -27,6 +27,7 @@
 #include <Inventor/SbTime.h>
 #include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/fields/SoSFFloat.h>
+#include <Inventor/fields/SoSFUShort.h>
 #include <SmallChange/basic.h>
 
 class SbVec3d;
@@ -45,6 +46,10 @@ class SMALLCHANGE_DLL_API SmTrackPointKit : public SoBaseKit {
 
 public:
   SoSFFloat trackLength;
+  SoSFUShort pointInterval;
+  SoSFUShort lineInterval;
+  SoSFUShort tickInterval;
+  SoSFFloat tickSize;
 
 public:
   static void initClass(void);
