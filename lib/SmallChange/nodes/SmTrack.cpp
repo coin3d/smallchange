@@ -101,6 +101,9 @@ SmTrack::GLRender(SoGLRenderAction * action)
   SoMaterialBundle mb(action);
   mb.sendFirst();
 
+  GLboolean lighting = glIsEnabled(GL_LIGHTING);
+  if (lighting) glDisable(GL_LIGHTING);
+
   unsigned short pointInterval = this->pointInterval.getValue();
   if (pointInterval > 0) {
     glBegin(GL_POINTS);
@@ -146,6 +149,8 @@ SmTrack::GLRender(SoGLRenderAction * action)
       glEnd();
     }
   }
+
+  if (lighting) glEnable(GL_LIGHTING);
 }
 
 void
