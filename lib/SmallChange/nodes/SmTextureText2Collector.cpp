@@ -145,85 +145,95 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
     SmTextureText2CollectorElement::finishCollecting(state);
 
   if (!transppass && items.size()) {
-    // FIXME: sort items based on font
-    state->push();
+    this->renderText(action, items);
+  }
+}
 
-    SbMatrix normalize(0.5f, 0.0f, 0.0f, 0.0f,
-                       0.0f, 0.5f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 1.0f, 0.0f,
-                       0.5f, 0.5f, 0.0f, 1.0f);
-    SbMatrix projmatrix =
-      SoViewingMatrixElement::get(state) *
-      SoProjectionMatrixElement::get(state) *
-      normalize;
+void
+SmTextureText2Collector::renderText(SoGLRenderAction * action,
+                                    const std::vector<SmTextureText2CollectorElement::TextItem> & items)
+{
+  // FIXME: sort items based on font
 
-    const SbViewVolume & vv = SoViewVolumeElement::get(state);
-    const SbViewportRegion & vp = SoViewportRegionElement::get(state);
-    const SbVec2s vpsize = vp.getViewportSizePixels();
+  SoState * state = action->getState();
+  state->push();
 
-    // Set up new view volume
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
+  SbMatrix normalize(0.5f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.5f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.5f, 0.5f, 0.0f, 1.0f);
+  SbMatrix projmatrix =
+    SoViewingMatrixElement::get(state) *
+    SoProjectionMatrixElement::get(state) *
+    normalize;
 
-    // set up texture and rendering
-    const SmTextureFont::FontImage * currentfont = items[0].font;
-    SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
-    SoTextureQualityElement::set(state, 0.3f);
-    SoGLTextureImageElement::set(state, this,
-                                 currentfont->getGLImage(),
-                                 SoTextureImageElement::MODULATE,
-                                 SbColor(1.0f, 1.0f, 1.0f));
-    SoLazyElement::setVertexOrdering(state, SoLazyElement::CCW);
-    SoGLTextureCoordinateElement::setTexGen(state, this, NULL);
+  const SbViewVolume & vv = SoViewVolumeElement::get(state);
+  const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+  const SbVec2s vpsize = vp.getViewportSizePixels();
 
-    SoGLTextureEnabledElement::set(state, this, TRUE);
-    SoLazyElement::enableBlending(state, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // Set up new view volume
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0, vpsize[0], 0, vpsize[1], -1.0f, 1.0f);
 
-    SoMaterialBundle mb(action);
-    mb.sendFirst();
+  // set up texture and rendering
+  const SmTextureFont::FontImage * currentfont = items[0].font;
+  SoLightModelElement::set(state, SoLightModelElement::BASE_COLOR);
+  SoTextureQualityElement::set(state, 0.3f);
+  SoGLTextureImageElement::set(state, this,
+    currentfont->getGLImage(),
+    SoTextureImageElement::MODULATE,
+    SbColor(1.0f, 1.0f, 1.0f));
+  SoLazyElement::setVertexOrdering(state, SoLazyElement::CCW);
+  SoGLTextureCoordinateElement::setTexGen(state, this, NULL);
 
-    glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
-    // use an alpha test function to avoid that we write values into
-    // the depth buffer for fully transparent parts of the text
-    glAlphaFunc(GL_GREATER, 0.01f);
-    glEnable(GL_ALPHA_TEST);
-    glDepthMask(this->depthMask.getValue());
-    glBegin(GL_QUADS);
+  SoGLTextureEnabledElement::set(state, this, TRUE);
+  SoLazyElement::enableBlending(state, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    const SbPlane & nearplane = vv.getPlane(0.0f);
+  SoMaterialBundle mb(action);
+  mb.sendFirst();
 
-    for (size_t i = 0; i < items.size(); i++) {
-      float dist = -nearplane.getDistance(items[i].worldpos);
-      if ((dist < 0.0f) ||
-          ((items[i].maxdist > 0.0f) && (dist > items[i].maxdist))) continue;
+  glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+  // use an alpha test function to avoid that we write values into
+  // the depth buffer for fully transparent parts of the text
+  glAlphaFunc(GL_GREATER, 0.01f);
+  glEnable(GL_ALPHA_TEST);
+  glDepthMask(this->depthMask.getValue());
+  glBegin(GL_QUADS);
 
-      glColor4fv(items[i].color.getValue());
-      int len = items[i].text.getLength();
-      if (len == 0) continue;
+  const SbPlane & nearplane = vv.getPlane(0.0f);
 
-      if (items[i].font != currentfont) {
-        glEnd();
-        currentfont = items[i].font;
-        SoGLTextureImageElement::set(state, this,
-                                     currentfont->getGLImage(),
-                                     SoTextureImageElement::MODULATE,
-                                     SbColor(1.0f, 1.0f, 1.0f));
-        SoGLLazyElement::getInstance(state)->send(state,
-                                                  SoLazyElement::GLIMAGE_MASK);
+  for (size_t i = 0; i < items.size(); i++) {
+    float dist = -nearplane.getDistance(items[i].worldpos);
+    if ((dist < 0.0f) ||
+      ((items[i].maxdist > 0.0f) && (dist > items[i].maxdist))) continue;
 
-        glBegin(GL_QUADS);
-      }
-      SbVec3f screenpoint;
-      projmatrix.multVecMatrix(items[i].worldpos, screenpoint);
+    glColor4fv(items[i].color.getValue());
+    int len = items[i].text.getLength();
+    if (len == 0) continue;
 
-      short ymin = short(-currentfont->getDescent());
+    if (items[i].font != currentfont) {
+      glEnd();
+      currentfont = items[i].font;
+      SoGLTextureImageElement::set(state, this,
+        currentfont->getGLImage(),
+        SoTextureImageElement::MODULATE,
+        SbColor(1.0f, 1.0f, 1.0f));
+      SoGLLazyElement::getInstance(state)->send(state,
+        SoLazyElement::GLIMAGE_MASK);
 
-      switch (items[i].vjustification) {
+      glBegin(GL_QUADS);
+    }
+    SbVec3f screenpoint;
+    projmatrix.multVecMatrix(items[i].worldpos, screenpoint);
+
+    short ymin = short(-currentfont->getDescent());
+
+    switch (items[i].vjustification) {
       case SmTextureText2::BOTTOM:
         break;
       case SmTextureText2::TOP:
@@ -235,16 +245,16 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
       default:
         assert(0 && "unknown alignment");
         break;
-      }
-      short w = static_cast<short>(currentfont->stringWidth(items[i].text));
+    }
+    short w = static_cast<short>(currentfont->stringWidth(items[i].text));
 
-      SbVec2s sp;
-      if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
+    SbVec2s sp;
+    if (!get_screenpoint_pixels(screenpoint, vpsize, sp)) continue;
 
-      SbVec2s n0 = SbVec2s(sp[0],
-                           sp[1] + ymin);
+    SbVec2s n0 = SbVec2s(sp[0],
+      sp[1] + ymin);
 
-      switch (items[i].justification) {
+    switch (items[i].justification) {
       case SmTextureText2::LEFT:
         break;
       case SmTextureText2::RIGHT:
@@ -255,21 +265,20 @@ SmTextureText2Collector::GLRenderBelowPath(SoGLRenderAction * action)
         break;
       default:
         assert(0 && "unknown alignment");
-      break;
-      }
-      currentfont->renderString(items[i].text, SbVec3f(n0[0], n0[1], screenpoint[2]), false);
+        break;
     }
-    glEnd();
-    glPopAttrib();
-    SoGLLazyElement::getInstance(state)->reset(state,
-                                               SoLazyElement::DIFFUSE_MASK);
-
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-
-    state->pop();
+    currentfont->renderString(items[i].text, SbVec3f(n0[0], n0[1], screenpoint[2]), false);
   }
+  glEnd();
+  glPopAttrib();
+  SoGLLazyElement::getInstance(state)->reset(state,
+    SoLazyElement::DIFFUSE_MASK);
+
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+
+  state->pop();
 }
 
 /**************************************************************************/
