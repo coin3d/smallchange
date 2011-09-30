@@ -85,6 +85,11 @@ protected:
   virtual void generatePrimitives(SoAction * action);
   virtual void computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center);
 
+  virtual int getStrings(SoState * state, const SbString * & strings) const;
+  virtual int getPositions(SoState * state, const SbVec3f * & positions) const;
+  virtual int getRotations(SoState * state, const float * & rotations) const;
+  virtual int getStringIndices(SoState * state, const int32_t * & indices) const;
+
 private:
   void renderString(const SmTextureFontBundle & bundle,
                     const SbString * s,

@@ -129,23 +129,57 @@ SmTextureText2::initClass(void)
   }
 }
 
+int
+SmTextureText2::getStrings(SoState *, const SbString * & strings) const
+{
+  const int num = this->string.getNum();
+  strings = num > 0 ? this->string.getValues(0) : 0;
+  return num;
+}
+
+int
+SmTextureText2::getPositions(SoState *, const SbVec3f * & positions) const
+{
+  const int num = this->position.getNum();
+  positions = num > 0 ? this->position.getValues(0) : 0;
+  return num;
+}
+
+int
+SmTextureText2::getRotations(SoState *, const float * & rotations) const
+{
+  const int num = this->rotation.getNum();
+  rotations = num > 0 ? this->rotation.getValues(0) : 0;
+  return num;
+}
+
+int
+SmTextureText2::getStringIndices(SoState *, const int32_t * & indices) const
+{
+  const int num = this->stringIndex.getNum();
+  indices = num > 0 ? this->stringIndex.getValues(0) : 0;
+  return num;
+}
+
 // doc from parent
 void
 SmTextureText2::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 {
+  SoState * state = action->getState();
+
   // never cull this node. We do quick culling in the render method
-  SoCacheElement::invalidate(action->getState());
+  SoCacheElement::invalidate(state);
 
   // this boundingbox will _not_ be 100% correct. We just supply an
   // estimate to avoid using lots of processing for calculating the
   // boundingbox.  FIXME: make it configurable if the bbox should be
   // accurate or not
-  const int num = this->position.getNum();
-  const SbVec3f * pos = this->position.getValues(0);
+  const SbVec3f * positions;
+  const int numpositions = this->getPositions(state, positions);
   const SbVec3f & offset = this->offset.getValue();
 
-  for (int i = 0; i < num; i++) {
-    box.extendBy(pos[i] + offset);
+  for (int i = 0; i < numpositions; i++) {
+    box.extendBy(positions[i] + offset);
   }
   center = box.getCenter();
 }
@@ -154,18 +188,29 @@ SmTextureText2::computeBBox(SoAction * action, SbBox3f & box, SbVec3f & center)
 void
 SmTextureText2::GLRender(SoGLRenderAction * action)
 {
-  if ((this->string.getNum() == 0) ||
-      (this->string.getNum() == 1 && this->string[0] == "") && !this->stringIndex.getNum()) return;
-  
-  const int32_t * stringindex = this->stringIndex.getNum() ? this->stringIndex.getValues(0) : NULL;
-  const int numstrings = stringindex ? this->stringIndex.getNum() : this->string.getNum();
   SoState * state = action->getState();
+  
+  const SbString * strings;
+  const int numstrings = this->getStrings(state, strings);
+
+  const SbVec3f * positions;
+  const int numpositions = this->getPositions(state, positions);
+
+  const float * rotations;
+  const int numrotations = this->getRotations(state, rotations);
+
+  const int32_t * indices;
+  const int numindices = this->getStringIndices(state, indices);
+
+  const int num = numindices > 0 ? numindices : numstrings;
+
+  if ((numstrings == 0) || (numstrings == 1 && strings[0] == "") && numindices == 0) return;
+  
   SbBool perpart =
     SoMaterialBindingElement::get(state) !=
     SoMaterialBindingElement::OVERALL;
   
-  if (((this->string.getNum() == this->position.getNum()) ||
-       stringindex) &&
+  if (((numstrings == numpositions) || numindices > 0) &&
       SmTextureText2CollectorElement::isCollecting(state)) {
     SbMatrix modelmatrix = SoModelMatrixElement::get(state);
     const SbVec3f & offset = this->offset.getValue();
@@ -174,16 +219,16 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     SbColor4f col(SoLazyElement::getDiffuse(state, 0),
                   1.0f - SoLazyElement::getTransparency(state, 0));
     
-    for (int i = 0; i < numstrings; i++) {
-      const int idx = stringindex ? stringindex[i] : i; 
+    for (int i = 0; i < num; i++) {
+      const int idx = numindices > 0 ? indices[i] : i; 
       if (perpart) {
         col = SbColor4f(SoLazyElement::getDiffuse(state, idx),
                         1.0f - SoLazyElement::getTransparency(state, idx));
       }
-      pos = this->position[idx] + offset;
+      pos = positions[idx] + offset;
       modelmatrix.multVecMatrix(pos, pos);
       SmTextureText2CollectorElement::add(state,
-                                          this->string[idx],
+                                          strings[idx],
                                           SmTextureFontElement::get(state),
                                           pos,
                                           this->maxRange.getValue(),
@@ -225,9 +270,6 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
   const SbViewportRegion & vp = SoViewportRegionElement::get(state);
   const SbVec2s vpsize = vp.getViewportSizePixels();
-  const int numpos = this->position.getNum();
-  const SbVec3f * pos = this->position.getValues(0);
-  const SbString * s = this->string.getValues(0);
   const SbVec3f & offset = this->offset.getValue();
 
   SbVec3f tmp;
@@ -243,17 +285,17 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPushAttrib(GL_DEPTH_BUFFER_BIT);
   glDepthFunc(GL_LEQUAL);
 
-  if (numpos > 1 || stringindex) {
-    for (int i = 0; i < numstrings; i++) {
-      int idx = stringindex ? stringindex[i] : i;
-      float rotation = *this->rotation.getValues(this->rotation.getNum() > 1 ? idx : 0);
+  if (numpositions > 1 || numindices > 0) {
+    for (int i = 0; i < num; i++) {
+      int idx = numindices > 0 ? indices[i] : i;
+      float rotation = rotations[numrotations > 1 ? idx : 0];
 
       if (perpart) {
         mb.send(idx, FALSE);
       }
-      tmp = pos[idx] + offset;
+      tmp = positions[idx] + offset;
       this->renderString(bundle,
-                         &s[SbMin(idx, this->string.getNum()-1)], 1,
+                         &strings[SbMin(idx, numstrings - 1)], 1,
                          tmp,
                          vv,
                          vp,
@@ -264,12 +306,12 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
     }
   }
   else {
-    tmp = numpos > 0 ? pos[0] : SbVec3f(0.0f, 0.0f, 0.0f);
+    tmp = numpositions > 0 ? positions[0] : SbVec3f(0.0f, 0.0f, 0.0f);
     tmp += offset;
-    float rotation = *this->rotation.getValues(0);
+    float rotation = rotations[0];
     this->renderString(bundle,
-                       &s[0],
-                       numstrings,
+                       strings,
+                       num,
                        tmp,
                        vv,
                        vp,
@@ -288,8 +330,8 @@ SmTextureText2::GLRender(SoGLRenderAction * action)
   glPushAttrib(GL_ALL_ATTRIB_BITS);
   glDisable(GL_TEXTURE_2D);
   glDepthFunc(GL_ALWAYS);
-  for (int i = 0; i < numstrings; i++){
-    int idx = stringindex ? stringindex[i] : i;
+  for (int i = 0; i < num; i++){
+    int idx = numindices > 0 ? indices[i] : i;
     SbVec3f p0, p1, p2, p3;
     this->buildStringQuad(action, idx, p0, p1, p2, p3);
     glBegin(GL_LINE_LOOP);
@@ -309,13 +351,22 @@ SmTextureText2::buildStringQuad(SoAction * action, int idx, SbVec3f & p0, SbVec3
 {
   //FIXME: Support multiple strings at one position (multiline text)
 
-  const SbVec3f * pos = this->position.getValues(0);
+  SoState * state = action->getState();
+
+  const SbString * strings;
+  const int numstrings = this->getStrings(state, strings);
+
+  const SbVec3f * positions;
+  const int numpositions = this->getPositions(state, positions);
+
+  const float * rotations;
+  const int numrotations = this->getRotations(state, rotations);
+
   const SbVec3f & offset = this->offset.getValue();
-  const SbString * string = this->string.getValues(idx);
+
   Justification halign = static_cast<Justification>(this->justification.getValue());
   VerticalJustification valign = static_cast<VerticalJustification>(this->verticalJustification.getValue());
 
-  SoState * state = action->getState();
   const SbViewVolume & vv = SoViewVolumeElement::get(state);
   const SbViewportRegion & vpr = SoViewportRegionElement::get(state);
   SbMatrix modelmatrix = SoModelMatrixElement::get(state);
@@ -326,12 +377,12 @@ SmTextureText2::buildStringQuad(SoAction * action, int idx, SbVec3f & p0, SbVec3
   float py = vpsize[1];
 
   SbVec3f world, screen;
-  modelmatrix.multVecMatrix(pos[idx] + offset, world);
+  modelmatrix.multVecMatrix(positions[idx] + offset, world);
   vv.projectToScreen(world, screen);
 
   float up, down, left, right;
 
-  float width = static_cast<float>(font->stringWidth(*string));
+  float width = static_cast<float>(font->stringWidth(strings[idx]));
   switch (halign){
     case LEFT:
       right = width;
@@ -370,7 +421,7 @@ SmTextureText2::buildStringQuad(SoAction * action, int idx, SbVec3f & p0, SbVec3
   down /= py;
 
   SbMatrix rotation = SbMatrix::identity();
-  rotation.setRotate(SbRotation(SbVec3f(0, 0, 1), *this->rotation.getValues(this->rotation.getNum() > 1 ? idx : 0)));
+  rotation.setRotate(SbRotation(SbVec3f(0, 0, 1), rotations[numrotations > 1 ? idx : 0]));
 
   SbMatrix translation = SbMatrix::identity();
   translation.setTranslate(SbVec3f(screen[0], screen[1], 0));
@@ -421,14 +472,23 @@ SmTextureText2::rayPick(SoRayPickAction * action)
 {
   //FIXME: Support multiple strings at one position (multiline text)?
   //For now, assumes 1 string at each position
-  this->computeObjectSpaceRay(action);
-  const int32_t * stringindex = this->stringIndex.getNum() ? this->stringIndex.getValues(0) : NULL;
-  const int numstrings = stringindex ? this->stringIndex.getNum() : this->string.getNum();
-  const SmTextureFont::FontImage * font = SmTextureFontElement::get(action->getState());
-  SoMaterialBindingElement::Binding binding = SoMaterialBindingElement::get(action->getState());
 
-  for (int i = 0; i < numstrings; i++){
-    int idx = stringindex ? stringindex[i] : i;
+  SoState * state = action->getState();
+
+  const SbString * strings;
+  const int numstrings = this->getStrings(state, strings);
+
+  const int32_t * indices;
+  const int numindices = this->getStringIndices(state, indices);
+
+  const int num = numindices > 0 ? numindices : numstrings;
+
+  this->computeObjectSpaceRay(action);
+  const SmTextureFont::FontImage * font = SmTextureFontElement::get(state);
+  SoMaterialBindingElement::Binding binding = SoMaterialBindingElement::get(state);
+
+  for (int i = 0; i < num; i++){
+    int idx = numindices > 0 ? indices[i] : i;
     SbVec3f p0, p1, p2, p3;
     this->buildStringQuad(action, idx, p0, p1, p2, p3);
 
@@ -469,18 +529,18 @@ SmTextureText2::rayPick(SoRayPickAction * action)
       float hdist = (ptonline-isect).length();
       hdist /= w;
 
-      const SbString * string = this->string.getValues(idx);
-      int width_pixels = font->stringWidth(*string);
+      const SbString & string = strings[idx];
+      int width_pixels = font->stringWidth(string);
       int height_pixels = font->height();
 
       int px = static_cast<int>(width_pixels * hdist);
       int py = static_cast<int>(height_pixels * vdist);
 
-      const char * cstr = string->getString();
+      const char * cstr = string.getString();
       int charindex = 0;
 
       int lastwidth = 0;
-      while (charindex < string->getLength()){
+      while (charindex < string.getLength()){
         unsigned char c = cstr[charindex];
         int width = font->getKerning(c, 0);//should return "true width" of the glyph
         int xoffset = font->getXOffset(c);//will be negative for fonts extending to the left
@@ -536,7 +596,11 @@ void
 SmTextureText2::getPrimitiveCount(SoGetPrimitiveCountAction *action)
 {
   if (!this->shouldPrimitiveCount(action)) return;
-  action->addNumText(this->position.getNum());
+
+  SoState * state = action->getState();
+  const SbVec3f * positions;
+  int numpositions = this->getPositions(state, positions);
+  action->addNumText(numpositions);
 }
 
 // doc from parent
