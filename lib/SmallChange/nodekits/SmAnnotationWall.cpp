@@ -125,6 +125,17 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
   for (i = 0; i < 4; i++) {
     bbox.extendBy(p[i]);
   }
+
+  // NOTE: Padding the bbox and the points used against the clipper to avoid
+  // culling/clipping annotation text. This is an issue for labels that protrude
+  // into neighboring tiles when doing tiled rendering, a la SoOffscreenRenderer.
+  SbMatrix translate;
+  translate.setTranslate(bbox.getCenter());
+  SbMatrix scale;
+  scale.setScale(2.0f);
+  SbMatrix grow = translate.inverse() * scale * translate;
+  bbox.transform(grow);
+  for (int i = 0; i < 5; i++) grow.multVecMatrix(p[i], p[i]);
   
   SbMatrix projmatrix;
   projmatrix = (SoModelMatrixElement::get(state) *
@@ -148,7 +159,7 @@ SmAnnotationWall::GLRender(SoGLRenderAction * action)
     for (i = 0; i < 4; i++) {
       clipper.addVertex(p[i]);
     }
-    for (i =0; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
       vvplane[i].transform(toobj);
       clipper.clip(vvplane[i]);
     }
