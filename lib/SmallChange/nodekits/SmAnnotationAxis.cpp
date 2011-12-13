@@ -30,7 +30,6 @@
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/elements/SoViewVolumeElement.h>
 #include <Inventor/elements/SoCullElement.h>
-#include <Inventor/elements/SoLazyElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/nodes/SoSwitch.h>
@@ -191,26 +190,26 @@ SmAnnotationAxis::GLRender(SoGLRenderAction * action)
   }
   if (SmTextureText2CollectorElement::isCollecting(state)) {
     if (this->annotation.getNum()) {
-      SmTextureText2 * t = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
+      SoMaterial * material = static_cast<SoMaterial*>(this->getAnyPart("textMaterial", TRUE));
+      SmTextureText2 * text = static_cast<SmTextureText2*>(this->getAnyPart("text", TRUE));
       SbMatrix modelmatrix = SoModelMatrixElement::get(state);
       SbVec3f pos;
-      SbColor4f col(SoLazyElement::getDiffuse(state, 0),
-                    1.0f - SoLazyElement::getTransparency(state, 0));
+      SbColor4f col(material->diffuseColor[0], 1.0f - material->transparency[0]);
       
       for (int i = 0; i < l1.getLength(); i++) {
         pos = this->annotationPos[l1[i]] + this->annotationOffset.getValue();
         modelmatrix.multVecMatrix(pos, pos);
         
         SmTextureText2CollectorElement::add(state,
-                                            this->annotation.getValues(0)[l1[i]%this->annotation.getNum()],
+                                            this->annotation.getValues(0)[l1[i] % this->annotation.getNum()],
                                             SmTextureFontElement::get(state),
                                             pos,
                                             -1.0,
                                             col,
-                                            static_cast<SmTextureText2::Justification>(t->justification.getValue()),
-                                            static_cast<SmTextureText2::VerticalJustification>(t->verticalJustification.getValue()));
+                                            static_cast<SmTextureText2::Justification>(text->justification.getValue()),
+                                            static_cast<SmTextureText2::VerticalJustification>(text->verticalJustification.getValue()));
         
-        if (t->string.getNum()) t->string.setNum(0);
+        if (text->string.getNum()) text->string.setNum(0);
       }
     }
   }
