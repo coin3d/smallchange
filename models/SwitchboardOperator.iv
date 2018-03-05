@@ -9,7 +9,7 @@
 #
 # - Lars J
 
-SwitchboardOperator {
+SmSwitchboardOperator {
   # The default is FALSE.  the length of the enable field wraps around the
   # child nodes as far as it goes.
   enable [

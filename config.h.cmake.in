@@ -1,0 +1,60 @@
+/******************************************************************************
+ * Generated after analisying of the legacy config.h.in with the following command:
+ *
+ * grep -e '#undef ' config.h.in |sed -e 's/^#undef\ /-e /g' | xargs grep --exclude-dir={build,build-debug} --include=\*.{cpp,h} -rnw '/path/to/repo/sources'
+ * 
+ * The command results reveal that only the following defines are actually used 
+ * inside @PROJECT_NAME@ sources:
+ *
+ * HAVE_SYS_STAT_H 
+ * HAVE_UNISTD_H
+ * HAVE_WINDOWS_H
+ *
+ * Consequentely only these ones will be configured.
+ *
+ *
+ * NOTE: config.h is automatically generated from config.h.cmake.in, so don't
+ * edit config.h directly.
+ */
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#cmakedefine HAVE_SYS_STAT_H 1
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#cmakedefine HAVE_UNISTD_H 1
+
+/* Define to 1 if you have the <windows.h> header file. */
+#cmakedefine HAVE_WINDOWS_H 1
+
+/* Name of package */
+#define PACKAGE @PROJECT_NAME@
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* define this to the libSmallchange major version number */
+#define SMALLCHANGE_MAJOR_VERSION @PROJECT_VERSION_MAJOR@
+
+/* define this to the libSmallchange release version number */
+#define SMALLCHANGE_MICRO_VERSION @PROJECT_VERSION_PATCH@
+
+/* define this to the libSmallchange minor version number */
+#define SMALLCHANGE_MINOR_VERSION @PROJECT_VERSION_MINOR@
+
+/* define this to the full libSmallchange major.minor.micro version number */
+#define SMALLCHANGE_VERSION @PROJECT_VERSION@

@@ -22,7 +22,7 @@ main(int argc, char ** argv )
     fprintf(stderr,"Usage: cameracontrol <ivfile> [helicopter|examiner|sphere] [speed]\n");
     return -1;
   } 
-  @WIDGET@ window = So@Gui@::init( argv[0] );
+  auto window = So@Gui@::init( argv[0] );
   if (window == NULL) return -1;
 
   smallchange_init();

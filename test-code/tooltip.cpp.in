@@ -76,7 +76,7 @@ main(int argc, char ** argv )
 {
   if (argc == 1) { usage(); return 0; }
     
-  @WIDGET@ window = So@Gui@::init( argv[0] );
+  auto window = So@Gui@::init( argv[0] );
   smallchange_init();
     
   So@Gui@ExaminerViewer * ex1 = new So@Gui@ExaminerViewer( window );
