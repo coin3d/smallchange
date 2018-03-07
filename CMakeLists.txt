@@ -8,8 +8,24 @@ project(SmallChange
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-option(HAVE_DEBUG                   "Add debugging information during the configure process" ON)
-option(SMALLCHANGE_BUILD_STATIC_LIB "Build SmallChange as a static library")
+option(HAVE_DEBUG          "Add debugging information during the configure process" ON)
+option(SM_BUILD_STATIC_LIB "Build SmallChange as a static library")
+
+function(versionize)
+  foreach(dir ${ARGN})
+    set(name      "CMAKE_INSTALL_${dir}")
+    set(full-name "CMAKE_INSTALL_FULL_${dir}")
+    if(${name} MATCHES ${PROJECT_NAME})
+      string(REPLACE "${PROJECT_NAME}" "${PROJECT_NAME}${PROJECT_VERSION_MAJOR}" value      "${${name}}")
+      string(REPLACE "${PROJECT_NAME}" "${PROJECT_NAME}${PROJECT_VERSION_MAJOR}" full-value "${${full-name}}")
+    else()
+      set(value      "${${name}}/${PROJECT_NAME}${PROJECT_VERSION_MAJOR}")
+      set(full-value "${CMAKE_INSTALL_PREFIX}/${value}")
+    endif()
+    set(${name}      ${value}      PARENT_SCOPE)
+    set(${full-name} ${full-value} PARENT_SCOPE)
+  endforeach()
+endfunction()
 
 function(dump_variable)
   if (HAVE_DEBUG)
@@ -55,6 +71,7 @@ configure_file(config.h.cmake.in config.h)
 
 ###############################################################################
 # Build setup
+versionize(INCLUDEDIR DOCDIR)
 
 include_directories( BEFORE
   ${PROJECT_BINARY_DIR}
