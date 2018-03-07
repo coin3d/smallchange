@@ -7,9 +7,9 @@ endmacro()
 
 set(LIBNAME "SmallChange")
 
-if (NOT SMALLCHANGE_BUILD_STATIC_LIB)
+if (NOT SM_BUILD_STATIC_LIB)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif(NOT SMALLCHANGE_BUILD_STATIC_LIB)
+endif(NOT SM_BUILD_STATIC_LIB)
 
 configure_file(basic.h.cmake.in basic.h @ONLY)
      
@@ -24,12 +24,12 @@ build_components(
   nodes
 )
 
-if(SMALLCHANGE_BUILD_STATIC_LIB)
+if(SM_BUILD_STATIC_LIB)
   message(STATUS "Building STATIC library")
   add_library(${LIBNAME} STATIC
     ${OBJS}
   )
-else(SMALLCHANGE_BUILD_STATIC_LIB)
+else(SM_BUILD_STATIC_LIB)
   message(STATUS "Building Dynamic Shared Object library")
   add_library(${LIBNAME} SHARED
     ${OBJS}
@@ -38,4 +38,12 @@ else(SMALLCHANGE_BUILD_STATIC_LIB)
     VERSION   ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
   )
-endif(SMALLCHANGE_BUILD_STATIC_LIB)
+endif(SM_BUILD_STATIC_LIB)
+
+###############################################################################
+# installation part
+
+install(TARGETS ${LIBNAME}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libs
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libs
+)
