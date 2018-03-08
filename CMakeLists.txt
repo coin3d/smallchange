@@ -15,13 +15,8 @@ function(versionize)
   foreach(dir ${ARGN})
     set(name      "CMAKE_INSTALL_${dir}")
     set(full-name "CMAKE_INSTALL_FULL_${dir}")
-    if(${name} MATCHES ${PROJECT_NAME})
-      string(REPLACE "${PROJECT_NAME}" "${PROJECT_NAME}${PROJECT_VERSION_MAJOR}" value      "${${name}}")
-      string(REPLACE "${PROJECT_NAME}" "${PROJECT_NAME}${PROJECT_VERSION_MAJOR}" full-value "${${full-name}}")
-    else()
-      set(value      "${${name}}/${PROJECT_NAME}${PROJECT_VERSION_MAJOR}")
-      set(full-value "${CMAKE_INSTALL_PREFIX}/${value}")
-    endif()
+    set(value      "${${name}}/${PROJECT_NAME}")
+    set(full-value "${CMAKE_INSTALL_PREFIX}/${value}")
     set(${name}      ${value}      PARENT_SCOPE)
     set(${full-name} ${full-value} PARENT_SCOPE)
   endforeach()
@@ -71,7 +66,16 @@ configure_file(config.h.cmake.in config.h)
 
 ###############################################################################
 # Build setup
-versionize(INCLUDEDIR DOCDIR)
+
+dump_variable(
+CMAKE_INSTALL_FULL_INCLUDEDIR
+CMAKE_INSTALL_FULL_DOCDIR
+)
+versionize(INCLUDEDIR)
+dump_variable(
+CMAKE_INSTALL_FULL_INCLUDEDIR
+CMAKE_INSTALL_FULL_DOCDIR
+)
 
 include_directories( BEFORE
   ${PROJECT_BINARY_DIR}
@@ -81,9 +85,77 @@ include_directories( BEFORE
 )
 
 add_definitions(-DHAVE_CONFIG_H)
+
 ###############################################################################
 # Build 
 
 add_subdirectory(lib)
 add_subdirectory(test-code)
 add_subdirectory(docs)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel)
+
+###############################################################################
+# CPACK (defaults as commented set() statements)
+
+# commons
+###############################################################################
+# set(CPACK_PACKAGE_NAME              "${PROJECT_NAME}")
+# set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
+set(CPACK_PACKAGE_VERSION_MAJOR     "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR     "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH     "${PROJECT_VERSION_PATCH}")
+# set(CPACK_PACKAGE_VERSION           "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+set(CPACK_PACKAGE_DESCRIPTION_FILE  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+
+# components
+###############################################################################
+set(CPACK_COMPONENT_DEVEL_DEPENDS libs)
+
+# Debian
+###############################################################################
+# set(CPACK_DEB_COMPONENT_INSTALL ON)
+# set(CPACK_DEBIAN_DOCUMENTATION_PACKAGE_NAME "libcoin80-doc")
+# set(CPACK_DEBIAN_DOCUMENTATION_PACKAGE_SECTION "doc")
+# set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "libcoin80")
+# set(CPACK_DEBIAN_DEVEL_PACKAGE_NAME "libcoin80-dev")
+# set(CPACK_DEBIAN_DEVEL_PACKAGE_SECTION "libdevel")
+# set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://bitbucket.org/Coin3D/coin")
+# set(CPACK_DEBIAN_PACKAGE_NAME "libcoin80")
+# set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+# set(CPACK_DEBIAN_RUNTIME_PACKAGE_NAME "libcoin80-dev")
+# set(CPACK_DEBIAN_RUNTIME_PACKAGE_SECTION "libs")
+
+# Windows
+###############################################################################
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}-${PROJECT_VERSION}")
+set(CPACK_NSIS_PACKAGE_NAME         "${PROJECT_NAME} ${PROJECT_VERSION}")
+set(CPACK_NSIS_URL_INFO_ABOUT       ${CPACK_DEBIAN_PACKAGE_HOMEPAGE})
+
+# RPM
+###############################################################################
+# set(CPACK_RPM_PACKAGE_NAME           ${CPACK_PACKAGE_NAME})
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+set(CPACK_RPM_PACKAGE_GROUP          "Development/Libraries")
+set(CPACK_RPM_PACKAGE_LICENSE        "3-clause BSD")
+set(CPACK_RPM_MAIN_COMPONENT         "libs")
+set(CPACK_RPM_PACKAGE_URL            "https://bitbucket.org/Coin3D/smallchange")
+set(CPACK_RPM_LIBS_PACKAGE_PROVIDES  "${PROJECT_NAME}")
+set(CPACK_RPM_DEVEL_PACKAGE_REQUIRES "${PROJECT_NAME}")
+# workaround for erroneous inclusion of system directories
+# see https://stackoverflow.com/questions/24983181/cpack-generates-rpms-with-files-entries-that-conflict-with-the-rpm-spec-how-to
+# set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/usr/lib64/cmake")
+
+if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+endif()
+
+include(CPack)
+
+dump_variable(
+CPACK_PACKAGE_NAME
+CPACK_PACKAGE_VERSION
+CPACK_RPM_PACKAGE_NAME
+)
