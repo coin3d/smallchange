@@ -9,5 +9,3 @@ SoGenerateSceneGraphAction.cpp
 SoTweakAction.cpp
 ToVertexArrayShapeAction.cpp
 )
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel FILES_MATCHING PATTERN "*.h")
