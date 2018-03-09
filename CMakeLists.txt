@@ -5,11 +5,12 @@ project(SmallChange
   LANGUAGES CXX
 )
 
+include(CheckIncludeFileCXX)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-option(HAVE_DEBUG          "Add debugging information during the configure process" ON)
-option(SM_BUILD_STATIC_LIB "Build SmallChange as a static library")
+option(HAVE_DEBUG                   "Add debugging information during the configure process" ON)
+option(SmallChange_BUILD_STATIC_LIB "Build SmallChange as a static library")
 
 function(versionize)
   foreach(dir ${ARGN})
@@ -50,7 +51,6 @@ dump_variable(
   Coin_INCLUDE_DIR
 )
 
-include(CheckIncludeFileCXX)
 # Only the following defines are actually used inside the project sources:
 # HAVE_SYS_STAT_H
 # HAVE_UNISTD_H
@@ -94,6 +94,32 @@ add_subdirectory(test-code)
 add_subdirectory(docs)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel)
+
+###############################################################################
+# Generates config
+
+configure_package_config_file(
+  ${PROJECT_NAME}Config.cmake.in ${PROJECT_NAME}Config.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
+)
+
+install(
+	FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
+	COMPONENT devel
+)
+
+write_basic_package_version_file(
+	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY ExactVersion
+)
+
+install(
+	FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
+	COMPONENT devel
+)
 
 ###############################################################################
 # CPACK (defaults as commented set() statements)
@@ -146,7 +172,7 @@ set(CPACK_RPM_LIBS_PACKAGE_PROVIDES  "${PROJECT_NAME}")
 set(CPACK_RPM_DEVEL_PACKAGE_REQUIRES "${PROJECT_NAME}")
 # workaround for erroneous inclusion of system directories
 # see https://stackoverflow.com/questions/24983181/cpack-generates-rpms-with-files-entries-that-conflict-with-the-rpm-spec-how-to
-# set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/usr/lib64/cmake")
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/usr/lib64/cmake")
 
 if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
