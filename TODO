@@ -1,4 +1,4 @@
-- add several more nodes. coming soon. (pederb)
-- find a more zappy name than SmallChange (larsa)
+- cpack setup for Linux Debian distros (ggabbiani)
+- cleanup of code already merged into mainstream Coin (ggabbiani)
 - adapt lib for dynamic loading and auto-initialization from Coin when Coin
   has that functionality so you don't have to link with SmallChange (larsa)

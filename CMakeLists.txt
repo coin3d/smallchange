@@ -98,9 +98,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/config.h DESTINATION ${CMAKE_INSTALL_I
 ###############################################################################
 # Generates config
 
+set(SM_DOCDIR     "${CMAKE_INSTALL_DOCDIR}")
+set(SM_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}")
+set(SM_LIBDIR     "${CMAKE_INSTALL_LIBDIR}")
 configure_package_config_file(
   ${PROJECT_NAME}Config.cmake.in ${PROJECT_NAME}Config.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
+  PATH_VARS SM_DOCDIR SM_INCLUDEDIR SM_LIBDIR
 )
 
 install(

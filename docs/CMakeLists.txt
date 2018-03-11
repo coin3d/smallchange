@@ -14,7 +14,10 @@ file(GLOB_RECURSE DOX *.dox*)
 set(SM_DOCUMENTATION_FILES ${PROJECT_SOURCE_DIR}/README.md ${SM_DOCUMENTATION_FILES} CACHE INTERNAL "${PROJECT_NAME} documentation files")
 
 if(SM_BUILD_DOCUMENTATION)
-	if(NOT DOXYGEN_FOUND)
+
+    set(DOXYGEN_TAGFILES "${Coin_DOC_DIR}/html/Coin.tag=${Coin_DOC_DIR}/html")
+
+    if(NOT DOXYGEN_FOUND)
 		message(FATAL_ERROR "Doxygen is needed to build the documentation.")
 	endif()
 	
@@ -93,8 +96,9 @@ if(SM_BUILD_DOCUMENTATION)
 	set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 	set(DOXYGEN_OUTPUT_DIR ${PROJECT_BINARY_DIR}/html)
 	set(DOXYGEN_OUTPUT ${DOXYGEN_OUTPUT_DIR}/index.html)
-# 	configure_file(smallchange.doxygen.cmake.in ${DOXYFILE} @ONLY)
-	configure_file(smallchange.doxygen.in ${DOXYFILE} @ONLY)
+	dump_variable(DOXYGEN_TAGFILES)
+	configure_file(smallchange.doxygen.cmake.in ${DOXYFILE} @ONLY)
+# 	configure_file(smallchange.doxygen.in ${DOXYFILE} @ONLY)
 	
 	add_custom_command(
 		OUTPUT ${DOXYGEN_OUTPUT}
