@@ -162,7 +162,7 @@ set(CPACK_COMPONENT_DEVEL_DEPENDS libs)
 ###############################################################################
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}-${PROJECT_VERSION}")
 set(CPACK_NSIS_PACKAGE_NAME         "${PROJECT_NAME} ${PROJECT_VERSION}")
-set(CPACK_NSIS_URL_INFO_ABOUT       ${CPACK_DEBIAN_PACKAGE_HOMEPAGE})
+set(CPACK_NSIS_URL_INFO_ABOUT       "https://bitbucket.org/Coin3D/smallchange")
 
 # RPM
 ###############################################################################
