@@ -2,7 +2,7 @@ macro(build_components)
   foreach(_module ${ARGN})
     add_subdirectory(${_module})
     list(APPEND OBJS "$<TARGET_OBJECTS:${_module}>")
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_module}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_module} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel FILES_MATCHING PATTERN "*.h")
   endforeach()
 endmacro()
 
@@ -13,6 +13,7 @@ if (NOT SmallChange_BUILD_STATIC_LIB)
 endif(NOT SmallChange_BUILD_STATIC_LIB)
 
 configure_file(basic.h.cmake.in basic.h @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/basic.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT devel)
      
 build_components(
   actions
