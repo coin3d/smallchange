@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.10.1)
-project(SmallChange 
+project(SmallChange
   VERSION 1.0.0
   DESCRIPTION "A collection of extensions to the Open Inventor API."
   LANGUAGES CXX
 )
+# PROJECT_NAME is used also for the target library name and the package name
+string(TOLOWER "${PROJECT_NAME}" SM_SHORTNAME)
+set(SM_URL "https://bitbucket.org/Coin3D/${SM_SHORTNAME}")
+set(SM_CONTACT "coin-support@coin3d.org")
 
 include(CheckIncludeFileCXX)
 include(CMakePackageConfigHelpers)
