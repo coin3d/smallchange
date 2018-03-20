@@ -22,14 +22,14 @@ set(CPACK_PACKAGE_VERSION             "@PROJECT_VERSION@")
 set(CPACK_PACKAGE_FILE_NAME           "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.fc27.@CMAKE_HOST_SYSTEM_PROCESSOR@")
 set(CPACK_RESOURCE_FILE_LICENSE       "@PROJECT_SOURCE_DIR@/COPYING")
 set(CPACK_RESOURCE_FILE_README        "@PROJECT_SOURCE_DIR@/README.txt")
-set(CPACK_PACKAGE_CONTACT             "XXXX")
+set(CPACK_PACKAGE_CONTACT             "@SM_CONTACT@")
 
 ###############################################################################
 # RPM settings
 set(CPACK_RPM_COMPONENT_INSTALL                   "ON")
 set(CPACK_RPM_PACKAGE_GROUP                       "Development/Libraries")
 set(CPACK_RPM_PACKAGE_LICENSE                     "3-clause BSD")
-set(CPACK_RPM_PACKAGE_URL                         "https://bitbucket.org/Coin3D/smallchange")
+set(CPACK_RPM_PACKAGE_URL                         "${SM_URL}")
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/usr/lib64/cmake")
 # component libs
 set(CPACK_RPM_LIBS_PACKAGE_NAME                   "${CPACK_PACKAGE_NAME}")
