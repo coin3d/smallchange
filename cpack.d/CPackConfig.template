@@ -33,7 +33,7 @@ set(CPACK_PACKAGE_VERSION             "@PROJECT_VERSION@")
 # set(CPACK_PACKAGE_FILE_NAME           "XXXX")
 set(CPACK_RESOURCE_FILE_LICENSE       "@PROJECT_SOURCE_DIR@/COPYING")
 set(CPACK_RESOURCE_FILE_README        "@PROJECT_SOURCE_DIR@/README.txt")
-set(CPACK_PACKAGE_CONTACT             "XXXX")
+set(CPACK_PACKAGE_CONTACT             "@SM_CONTACT@")
 
 ###############################################################################
 # OS specific settings
