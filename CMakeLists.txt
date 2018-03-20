@@ -13,7 +13,7 @@ include(CheckIncludeFileCXX)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-option(HAVE_DEBUG                   "Add debugging information during the configure process" ON)
+option(HAVE_DEBUG                   "Add debugging information during the configure process")
 option(SmallChange_BUILD_STATIC_LIB "Build SmallChange as a static library")
 
 function(versionize)
@@ -96,8 +96,6 @@ add_definitions(-DHAVE_CONFIG_H)
 add_subdirectory(lib)
 add_subdirectory(test-code)
 add_subdirectory(docs)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel)
 
 ###############################################################################
 # Generates config
