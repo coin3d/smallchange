@@ -26,26 +26,20 @@
 /* Define to 1 if you have the <windows.h> header file. */
 #cmakedefine HAVE_WINDOWS_H 1
 
-/* Name of package */
-#define PACKAGE @PROJECT_NAME@
-
 /* Define to the address where bug reports for this package should be sent. */
-#undef PACKAGE_BUGREPORT
+#define PACKAGE_BUGREPORT "@SM_CONTACT@"
 
 /* Define to the full name of this package. */
-#undef PACKAGE_NAME
+#define PACKAGE_NAME "@PROJECT_NAME@"
 
 /* Define to the full name and version of this package. */
-#undef PACKAGE_STRING
-
-/* Define to the one symbol short name of this package. */
-#undef PACKAGE_TARNAME
+#define PACKAGE_STRING "@PROJECT_NAME@ @PROJECT_VERSION@"
 
 /* Define to the home page for this package. */
-#undef PACKAGE_URL
+#define PACKAGE_URL "@SM_URL@"
 
 /* Define to the version of this package. */
-#undef PACKAGE_VERSION
+#define PACKAGE_VERSION "@PROJECT_VERSION@"
 
 /* define this to the libSmallchange major version number */
 #define SMALLCHANGE_MAJOR_VERSION @PROJECT_VERSION_MAJOR@
@@ -56,5 +50,5 @@
 /* define this to the libSmallchange minor version number */
 #define SMALLCHANGE_MINOR_VERSION @PROJECT_VERSION_MINOR@
 
-/* define this to the full libSmallchange major.minor.micro version number */
-#define SMALLCHANGE_VERSION @PROJECT_VERSION@
+/* define this to the full lib@SM_LIBNAME@ major.minor.micro version number */
+#define SMALLCHANGE_VERSION "@PROJECT_VERSION@"
