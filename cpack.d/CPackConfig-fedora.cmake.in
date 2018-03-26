@@ -1,10 +1,26 @@
 ###############################################################################
 # CPACK Configuration for Linux Fedora 27 with host target
 # See also http://fedoraproject.org/wiki/Packaging:Naming
+# This configuration tested with rpmlint (https://github.com/rpm-software-management/rpmlint)
+
+# this macro define a component package according to Fedora specifications for
+# COMPONENT NAME, GROUP and FILE NAME POSTFIX (third optional argument)
+macro(component COMPONENT GROUP)
+  if (${ARGC} GREATER 2)
+    set(CPACK_RPM_${COMPONENT}_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-${ARGV2}")
+  else()
+    set(CPACK_RPM_${COMPONENT}_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+  endif()
+  set(CPACK_RPM_${COMPONENT}_FILE_NAME "${CPACK_RPM_${COMPONENT}_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-1${DIST}.@CMAKE_HOST_SYSTEM_PROCESSOR@.rpm")
+  set(CPACK_RPM_${COMPONENT}_PACKAGE_GROUP ${GROUP})
+endmacro(component)
+
+# see https://fedoraproject.org/wiki/Packaging:DistTag?rd=Packaging/DistTag
+set(DIST ".fc27")
 
 ###############################################################################
 # CPACK general settings
-set(CPACK_BUILD_SOURCE_DIRS           "@PROJECT_SOURCE_DIR@;@PROJECT_BINARY_DIR@")
+# set(CPACK_BUILD_SOURCE_DIRS           "@PROJECT_SOURCE_DIR@;@PROJECT_BINARY_DIR@")
 set(CPACK_CMAKE_GENERATOR             "@CMAKE_GENERATOR@")
 set(CPACK_INSTALL_CMAKE_PROJECTS      "@PROJECT_BINARY_DIR@;@PROJECT_NAME@;ALL;/")
 set(CPACK_COMPONENTS_ALL              "devel;docs;libs")
@@ -19,7 +35,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR       "@PROJECT_VERSION_MAJOR@")
 set(CPACK_PACKAGE_VERSION_MINOR       "@PROJECT_VERSION_MINOR@")
 set(CPACK_PACKAGE_VERSION_PATCH       "@PROJECT_VERSION_PATCH@")
 set(CPACK_PACKAGE_VERSION             "@PROJECT_VERSION@")
-set(CPACK_PACKAGE_FILE_NAME           "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.fc27.@CMAKE_HOST_SYSTEM_PROCESSOR@")
+set(CPACK_PACKAGE_FILE_NAME           "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-1${DIST}.@CMAKE_HOST_SYSTEM_PROCESSOR@.rpm")
 set(CPACK_RESOURCE_FILE_LICENSE       "@PROJECT_SOURCE_DIR@/COPYING")
 set(CPACK_RESOURCE_FILE_README        "@PROJECT_SOURCE_DIR@/README.txt")
 set(CPACK_PACKAGE_CONTACT             "@SM_CONTACT@")
@@ -27,19 +43,12 @@ set(CPACK_PACKAGE_CONTACT             "@SM_CONTACT@")
 ###############################################################################
 # RPM settings
 set(CPACK_RPM_COMPONENT_INSTALL                   "ON")
-set(CPACK_RPM_PACKAGE_GROUP                       "Development/Libraries")
-set(CPACK_RPM_PACKAGE_LICENSE                     "3-clause BSD")
-set(CPACK_RPM_PACKAGE_URL                         "${SM_URL}")
+set(CPACK_RPM_PACKAGE_LICENSE                     "BSD")
+set(CPACK_RPM_PACKAGE_URL                         "@SM_URL@")
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "/usr/lib64/cmake")
-# component libs
-set(CPACK_RPM_LIBS_PACKAGE_NAME                   "${CPACK_PACKAGE_NAME}")
-set(CPACK_RPM_LIBS_FILE_NAME                      "${CPACK_RPM_LIBS_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.fc27.@CMAKE_HOST_SYSTEM_PROCESSOR@.rpm")
-set(CPACK_RPM_LIBS_PACKAGE_PROVIDES               "${CPACK_PACKAGE_NAME}")
-# component devel
-set(CPACK_RPM_DEVEL_PACKAGE_NAME                  "${CPACK_PACKAGE_NAME}-devel")
-set(CPACK_RPM_DEVEL_FILE_NAME                     "${CPACK_RPM_DEVEL_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.fc27.@CMAKE_HOST_SYSTEM_PROCESSOR@.rpm")
-set(CPACK_RPM_DEVEL_PACKAGE_REQUIRES              "${CPACK_RPM_LIBS_PACKAGE_PROVIDES}")
-# component docs
-set(CPACK_RPM_DOCS_PACKAGE_NAME                   "${CPACK_PACKAGE_NAME}-doc")
-set(CPACK_RPM_DOCS_FILE_NAME                      "${CPACK_RPM_DOCS_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.fc27.noarch.rpm")
+set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE            "@CMAKE_CURRENT_SOURCE_DIR@/fedora_post_uninstall.sh")
+set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE          "@CMAKE_CURRENT_SOURCE_DIR@/fedora_post_uninstall.sh")
 set(CPACK_RPM_DOCS_PACKAGE_ARCHITECTURE           "noarch")
+component(LIBS  "System Environment/Libraries")
+component(DEVEL "Development/Libraries" devel)
+component(DOCS  "Documentation" doc)
