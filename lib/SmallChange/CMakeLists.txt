@@ -1,6 +1,7 @@
 macro(build_components)
   foreach(_module ${ARGN})
     add_subdirectory(${_module})
+    target_compile_definitions(${_module} PRIVATE -DHAVE_CONFIG_H)
     list(APPEND OBJS "$<TARGET_OBJECTS:${_module}>")
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_module} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel FILES_MATCHING PATTERN "*.h")
   endforeach()
