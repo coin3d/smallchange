@@ -87,9 +87,9 @@ main(int argc, char ** argv)
   SoOrthographicCamera * cam = (SoOrthographicCamera *) campath->getTail();
   assert(cam != NULL);
   SbVec3f pos = cam->position.getValue();
-  cam->position.setValue(SbVec3f(min[0] + ((max[0]-min[0])/2.0),
-                                 min[1] + ((max[1]-min[1])/2.0),
-				 pos[2]));
+  cam->position.setValue(SbVec3f(min[0] + ((max[0]-min[0])/2.0f),
+                                 min[1] + ((max[1]-min[1])/2.0f),
+                                 pos[2]));
   cam->height.setValue(bheight);
 
   if ( TRUE ) { // FIXME: only write .iv-scene if asked
@@ -103,8 +103,8 @@ main(int argc, char ** argv)
     writer.apply(graph);
   }
 
-  int width = (int) ceil(bwidth * 150.0) + 2;
-  int height = (int) ceil(bheight * 150.0);
+  int width = (int) ceil(bwidth * 150.0f) + 2;
+  int height = (int) ceil(bheight * 150.0f);
   fprintf(stderr, "image: %d x %d\n", width, height);
   if ( TRUE ) { // FIXME: only write image if asked
     SoOffscreenRenderer renderer(SbViewportRegion(width, height));
@@ -112,7 +112,7 @@ main(int argc, char ** argv)
     glra->setNumPasses(9);
     // FIXME: auto-crop image afterwards?  seems like it's a perfect fit right now
     renderer.setComponents(SoOffscreenRenderer::RGB_TRANSPARENCY);
-    renderer.setBackgroundColor(SbColor(1.0,1.0,1.0));
+    renderer.setBackgroundColor(SbColor(1.0f,1.0f,1.0f));
     renderer.render(graph);
     // FIXME: support command line option filename
     // FIXME: also support .eps

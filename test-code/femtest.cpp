@@ -104,7 +104,7 @@ main(int argc, char ** argv)
   root->addChild(fem);
 
   SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer(window);
-  examinerviewer->setBackgroundColor(SbColor(0.2,0.4,0.6));
+  examinerviewer->setBackgroundColor(SbColor(0.2f,0.4f,0.6f));
   examinerviewer->setSceneGraph(root);
   examinerviewer->show();
   SoQt::show( window );

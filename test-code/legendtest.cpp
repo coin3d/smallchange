@@ -17,7 +17,6 @@
 #include <SmallChange/nodes/SmDepthBuffer.h>
 #include <Inventor/actions/SoSearchAction.h>
 
-
 // *************************************************************************
 
 #ifdef CLOD_TRICOUNT // dummy 
@@ -39,7 +38,7 @@ static uint32_t color_cb(double val)
     return (uint32_t(val*255)<<8)|0x222200ff;
   }
   else {
-    return (uint32_t(val*255.0)<<24)|(uint32_t(val*255.0)<<16) | 0x22ff;
+    return (uint32_t(val*255)<<24)|(uint32_t(val*255)<<16) | 0x22ff;
   }
 }
 
@@ -74,7 +73,7 @@ main(int argc, char ** argv)
     fprintf(stderr,"found LegendKit\n");
     
     kit->setColorCB(color_cb);
-    kit->setImageTransparency(0.2);
+    kit->setImageTransparency(0.2f);
     kit->useTextureNotImage(TRUE);
     kit->setBackgroundColor(SbColor(1.0f, 1.0f, 1.0f), 0.2f);
     kit->setTickAndLinesColor(SbColor(0.0f, 0.0f, 0.0f), 0.0f);
