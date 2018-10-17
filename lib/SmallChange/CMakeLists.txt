@@ -1,20 +1,6 @@
-macro(build_components)
-  foreach(_module ${ARGN})
-    add_subdirectory(${_module})
-    target_compile_definitions(${_module} PRIVATE -DHAVE_CONFIG_H)
-    list(APPEND OBJS "$<TARGET_OBJECTS:${_module}>")
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_module} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT devel FILES_MATCHING PATTERN "*.h")
-  endforeach()
-endmacro()
-
-if (NOT SmallChange_BUILD_STATIC_LIB)
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif(NOT SmallChange_BUILD_STATIC_LIB)
-
 configure_file(basic.h.cmake.in basic.h @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/basic.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT devel)
-     
-build_components(
+
+set(SM_BUILD_COMPONENTS
   actions
   draggers
   elements
@@ -25,26 +11,82 @@ build_components(
   nodes
 )
 
-if(SmallChange_BUILD_STATIC_LIB)
-  message(STATUS "Building STATIC library")
-  add_library(${PROJECT_NAME} STATIC
-    ${OBJS}
-  )
-else(SmallChange_BUILD_STATIC_LIB)
-  message(STATUS "Building Dynamic Shared Object library")
-  add_library(${PROJECT_NAME} SHARED
-    ${OBJS}
-  )
-  set_target_properties(${PROJECT_NAME} PROPERTIES 
-    VERSION   ${PROJECT_VERSION}
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-  )
-endif(SmallChange_BUILD_STATIC_LIB)
+foreach(_module ${SM_BUILD_COMPONENTS})
+  add_subdirectory(${_module})
+  target_compile_definitions(${_module} PRIVATE SMALLCHANGE_DEBUG=$<CONFIG:Debug> SMALLCHANGE_INTERNAL HAVE_CONFIG_H)
+  if(WIN32)
+    if(SMALLCHANGE_BUILD_SHARED_LIBS)
+      target_compile_definitions(${_module} PRIVATE SMALLCHANGE_MAKE_DLL)
+    endif()
+    if(MSVC)
+      target_compile_definitions(${_module} PRIVATE _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS _USE_MATH_DEFINES)
+      if(NOT SMALLCHANGE_BUILD_SHARED_LIBS)
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Z7")                       # Override default /Zi to embed
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Z7")     # debugging info in the .lib.
+      endif()
+    endif()
+  endif()
+  list(APPEND OBJS $<TARGET_OBJECTS:${_module}>)
+endforeach()
 
-###############################################################################
-# installation part
+if(WIN32)
+  if(MINGW)
+    set(SMALLCHANGE_DEFAULT_SHARED_POSTFIX "")
+    set(SMALLCHANGE_DEFAULT_STATIC_POSTFIX "")
+  else()
+    # On Windows the major version number is part of the library name
+    set(SMALLCHANGE_DEFAULT_SHARED_POSTFIX ${PROJECT_VERSION_MAJOR})
+    set(SMALLCHANGE_DEFAULT_STATIC_POSTFIX ${PROJECT_VERSION_MAJOR}s)
+  endif()
+  if(SMALLCHANGE_BUILD_SHARED_LIBS)
+    set(SMALLCHANGE_DEFAULT_POSTFIX ${SMALLCHANGE_DEFAULT_SHARED_POSTFIX})
+  else()
+    set(SMALLCHANGE_DEFAULT_POSTFIX ${SMALLCHANGE_DEFAULT_STATIC_POSTFIX})
+  endif()
+  set(CMAKE_RELEASE_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX})
+  set(CMAKE_MINSIZEREL_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX})
+  set(CMAKE_RELWITHDEBINFO_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX})
+  set(CMAKE_DEBUG_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX}d)
+elseif(APPLE)
+else()
+endif()
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libs
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libs
+if(SMALLCHANGE_BUILD_SHARED_LIBS)
+  add_library(${PROJECT_NAME} SHARED ${OBJS})
+  target_compile_definitions(${PROJECT_NAME} INTERFACE SMALLCHANGE_DLL)
+  if(WIN32)
+    configure_file(${PROJECT_NAME}.rc.cmake.in ${PROJECT_NAME}.rc)
+    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE SMALLCHANGE_MAKE_DLL)
+  endif()
+else()
+  add_library(${PROJECT_NAME} STATIC ${OBJS})
+  target_compile_definitions(${PROJECT_NAME} INTERFACE SMALLCHANGE_NOT_DLL)
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${SMALLCHANGE_SO_VERSION})
+
+target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARY})
+
+# ############################################################################
+# Install targets
+# ############################################################################
+
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT development
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime NAMELINK_SKIP
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
 )
+
+if(SMALLCHANGE_BUILD_SHARED_LIBS)
+  install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT development NAMELINK_ONLY)
+  if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION ${CMAKE_INSTALL_BINDIR} CONFIGURATIONS Debug RelWithDebInfo COMPONENT debug)
+  endif()
+endif()
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/basic.h" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT development)
+
+foreach(_module ${SM_BUILD_COMPONENTS})
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_module} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT development FILES_MATCHING PATTERN "*.h")
+endforeach()
