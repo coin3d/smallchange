@@ -33,6 +33,7 @@
 /*!
   \class SmDepthBuffer SmDepthBuffer.h
   \brief The SmDepthBuffer class is a node used to control the GL depth buffer.
+
   \ingroup nodes
 
   It is basically a direct mapping of glDepthFunc(). In addition it is possible
@@ -40,12 +41,12 @@
   traversed.
 */
 
-#include "SmDepthBuffer.h"
-#include <Inventor/actions/SoGLRenderAction.h>
-
-#if HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif // HAVE_CONFIG_H
+
+#include "SmDepthBuffer.h"
+#include <Inventor/actions/SoGLRenderAction.h>
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>

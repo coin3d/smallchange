@@ -35,6 +35,7 @@
   SoAngle1Dragger.h
   \brief The SoAngle1Dragger class is for rotating geometry around a 
   single axis.
+
   \ingroup draggers
 
   Use an instance of this dragger class in your scenegraph to let the

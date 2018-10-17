@@ -1,8 +1,8 @@
-#include <SmallChange/nodes/SmTrack.h>
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif // HAVE_CONFIG_H
+
+#include <SmallChange/nodes/SmTrack.h>
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>

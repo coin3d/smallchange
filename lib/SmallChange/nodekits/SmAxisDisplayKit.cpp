@@ -34,6 +34,7 @@
   \class SmAxisDisplayKit SmAxisDisplayKit.h
   \brief The SmAxisDisplayKit is used to draw colored and annotated axes
   in the lower right corner of the display.
+
   \ingroup nodekits
 
   This class is organized as a nodekit, but should be used as a normal

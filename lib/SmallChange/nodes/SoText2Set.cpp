@@ -33,6 +33,7 @@
 /*!
   \class SoText2Set SoText2Set.h SmallChange/nodes/SoText2Set.h
   \brief The SoText2Set class is a node type for visualizing a set of 2D texts aligned with the camera plane.
+
   \ingroup nodes
 
   See documentation of Inventor/shapenodes/SoText2
@@ -61,14 +62,14 @@
   \sa SoText2
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
 #include "SoText2Set.h"
 #include <Inventor/nodes/SoSubNode.h>
 
 #include <Inventor/errors/SoDebugError.h>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef HAVE_GLX
 #include <GL/glx.h>

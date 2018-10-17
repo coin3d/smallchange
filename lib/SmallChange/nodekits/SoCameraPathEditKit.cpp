@@ -209,9 +209,9 @@ SoCameraPathEditKit::SoCameraPathEditKit()
 
 
   SoRotation * pitchRotate = (SoRotation *)this->getAnyPart("pitchRotate", TRUE);
-  pitchRotate->rotation.setValue(SbVec3f(0, 0, 1), 0.5*3.1459);
+  pitchRotate->rotation.setValue(SbVec3f(0, 0, 1), float(M_PI_2));
   SoRotation * bankRotate = (SoRotation *)this->getAnyPart("bankRotate", TRUE);
-  bankRotate->rotation.setValue(SbVec3f(1, 0, 0), 0.5*3.1459);
+  bankRotate->rotation.setValue(SbVec3f(1, 0, 0), float(M_PI_2));
 
   SoCoordinate3 * coordinates = (SoCoordinate3 *)this->getAnyPart("coordinates", TRUE);
   draggerTransform->translation = coordinates->point[activePoint.getValue()];
@@ -251,9 +251,9 @@ SoCameraPathEditKit::SoCameraPathEditKit()
   SoTransform * objectTransform = (SoTransform *)this->getAnyPart("objectTransform", TRUE);
   SbMatrix m1, m2;
   SbRotation r;
-  r.setValue(SbVec3f(0, 1, 0), -0.5*3.1459);
+  r.setValue(SbVec3f(0, 1, 0), -float(M_PI_2));
   m1.setRotate(r);
-  r.setValue(SbVec3f(1, 0, 0), -0.5*3.1459);
+  r.setValue(SbVec3f(1, 0, 0), -float(M_PI_2));
   m2.setRotate(r);
   m1.multLeft(m2);
   // objectTransform->rotation = m1;
@@ -408,7 +408,7 @@ void SoCameraPathEditKit::pickCallback(void * data, SoEventCallback * eventCallb
 
               // timestamp are specified
               if (thisp->timestamp.getNum() != 0) {
-                float k = (curvedetails->getPartIndex() + 0.5)/((float)curve->getLinesPerSegment());
+                float k = (curvedetails->getPartIndex() + 0.5f)/((float)curve->getLinesPerSegment());
                 SbTime timeA = thisp->timestamp[curvedetails->getLineIndex()];
                 SbTime timeB = thisp->timestamp[curvedetails->getLineIndex() + 1];
                 SbTime delta = timeB - timeA;
@@ -642,9 +642,9 @@ void SoCameraPathEditKit::updateDraggers()
 
       SbMatrix m1, m2;
       SbRotation r;
-      r.setValue(SbVec3f(0, 1, 0), -0.5*3.1459);
+      r.setValue(SbVec3f(0, 1, 0), -float(M_PI_2));
       m1.setRotate(r);
-      r.setValue(SbVec3f(1, 0, 0), -0.5*3.1459);
+      r.setValue(SbVec3f(1, 0, 0), -float(M_PI_2));
       m2.setRotate(r);
       m1.multLeft(m2);
       totMat.multRight(m1);

@@ -96,7 +96,7 @@ SeekData::seeksensorCB(void * closure, SoSensor * sensor)
   
   if (end) {
     thisp->sensor->unschedule();
-    cameradict->remove((unsigned long)thisp->camera);
+    cameradict->remove((uintptr_t)thisp->camera);
     delete thisp;
   }
 }
@@ -204,12 +204,12 @@ void cam_seek_to_point(SoCamera * camera,
 
   void * seekdata_ptr = NULL;
   SeekData * seekdata;
-  if (cameradict->find((unsigned long) camera, seekdata_ptr)) {
+  if (cameradict->find((uintptr_t) camera, seekdata_ptr)) {
     seekdata = (SeekData*) seekdata_ptr;
   } else {
     seekdata = new SeekData;
     seekdata->camera = camera;
-    cameradict->enter((unsigned long) camera, seekdata);
+    cameradict->enter((uintptr_t) camera, seekdata);
   }
 
   seekdata->startpoint = cam_get_pos(camera);
@@ -269,5 +269,5 @@ void cam_seek_to_node(SoCamera * camera,
 SbBool cam_is_seeking(SoCamera * camera)
 {
   void * dummy = NULL;
-  return cameradict->find((unsigned long) camera, dummy);
+  return cameradict->find((uintptr_t) camera, dummy);
 }

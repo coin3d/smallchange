@@ -31,8 +31,9 @@
 \**************************************************************************/
 
 /*!
-  \class InterleavedArraysShape InterleavedArrayShape.h SmallChange/nodes/InterleavedArraysShape.h
+  \class InterleavedArraysShape InterleavedArraysShape.h SmallChange/nodes/InterleavedArraysShape.h
   \brief The InterleavedArraysShape class is used to render static geometry very fast.
+
   \ingroup nodes
 
   It creates a VBO (vertex buffer object) vertex cache internally, and

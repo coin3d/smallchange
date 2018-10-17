@@ -33,6 +33,7 @@
 /*!
   \class SoFEMKit SoFEMKit.h
   \brief The SoFEMKit class is used to visualize finite element meshes.
+
   \ingroup nodekits
 */
 
@@ -347,7 +348,7 @@ SoFEMKit::setNodeColor(const int nodeidx, const SbColor & color)
 }
 
 /*!
-  Sets the \elementidx element color.
+  Sets the \a elementidx element color.
 */
 void 
 SoFEMKit::setElementColor(const int elementidx, const SbColor & color)

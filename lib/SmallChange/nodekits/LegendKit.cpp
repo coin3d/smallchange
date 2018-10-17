@@ -33,6 +33,7 @@
 /*!
   \class LegendKit LegendKit.h
   \brief The LegendKit class is used to draw a simple colormap legend.
+
   \ingroup nodekits
 
   FIXME: there should be an explanation of general usage here,

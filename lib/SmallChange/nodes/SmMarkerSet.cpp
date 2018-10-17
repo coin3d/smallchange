@@ -33,6 +33,7 @@
 /*!
   \class SmMarkerSet SmMarkerSet.h SmallChange/nodes/SmMarkerSet.h
   \brief The SmMarkerSet class displays a set of 2D bitmap markers in 3D.
+
   \ingroup nodes
 
   This node is identical with the Coin3D node called SoMarkerSet. The
@@ -41,6 +42,10 @@
   the camera.
 
 */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
 
 #include "SmMarkerSet.h"
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -57,10 +62,6 @@
 #include <Inventor/elements/SoCullElement.h>
 #include <Inventor/misc/SoState.h>
 #include <cstring>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #include <Inventor/system/gl.h>
 

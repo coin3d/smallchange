@@ -33,6 +33,7 @@
 /*!
   \class PickCallback PickCallback.h Inventor/nodes/PickCallback.h
   \brief The PickCallback class is group node with callbacks when some child is picked.
+
   \ingroup nodes
 
   It provides an easy way of adding interactivity to your scene graph, since

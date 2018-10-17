@@ -30,15 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 \**************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
 #include "ViewportRegion.h"
 #include <Inventor/elements/SoViewportRegionElement.h>
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/elements/SoGLCacheContextElement.h>
 #include <Inventor/threads/SbMutex.h>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
@@ -68,6 +68,7 @@ public:
 /*!
   \class ViewportRegion ViewportRegion.h Inventor/nodes/ViewportRegion.h
   \brief The ViewportRegion class is used to specify a sub-viewport.
+
   \ingroup nodes
 */
 

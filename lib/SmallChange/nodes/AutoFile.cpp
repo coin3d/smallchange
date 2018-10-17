@@ -33,6 +33,7 @@
 /*!
   \class AutoFile AutoFile.h
   \brief The AutoFile class is used to automatically reload files when modified.
+
   \ingroup nodes
 
   It works by using a timer sensor that triggers an idle sensor at
@@ -107,11 +108,12 @@
 
 // *************************************************************************
 
-#include "AutoFile.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include "AutoFile.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

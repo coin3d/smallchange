@@ -33,6 +33,7 @@
 /*!
   \class SkyDome SkyDome.h
   \brief The SkyDome class is a shape node for rendering skydomes.
+
   \ingroup nodes
 
 */

@@ -33,11 +33,16 @@
 /*!
   \class SmHeadlight SmHeadlight.h SmallChange/nodes/SmHeadlight.h
   \brief The SmHeadlight class is a node type for specifying a viewer headlight.
+
   \ingroup nodes
 
   See also documentation of parent class for important information
   regarding light sources in general.
 */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
 
 #include <SmallChange/nodes/SmHeadlight.h>
 
@@ -52,9 +57,6 @@
 #include <Inventor/elements/SoViewingMatrixElement.h>
 #include <Inventor/elements/SoLightElement.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 #include <Inventor/system/gl.h>
 
 #if COIN_DEBUG

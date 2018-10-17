@@ -33,6 +33,7 @@
 /*!
   \class PickSwitch PickSwitch.h Inventor/nodes/PickSwitch.h
   \brief The PickSwitch class is a pick-activated switch node.
+
   \ingroup nodes
 
   This node can add simple interactivity to your scene. When the current

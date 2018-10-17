@@ -67,6 +67,10 @@
   The maximum scalefactor applied to the shape. Default value is FLT_MAX.
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "ShapeScale.h"
 
 #include <Inventor/actions/SoGLRenderAction.h>
@@ -81,10 +85,6 @@
 #include <Inventor/SbRotation.h>
 #include <Inventor/caches/SoCache.h>
 #include <cfloat>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 SO_KIT_SOURCE(ShapeScale);
 

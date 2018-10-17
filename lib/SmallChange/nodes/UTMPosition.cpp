@@ -33,6 +33,7 @@
 /*!
   \class UTMPosition UTMPosition.h SmallChange/nodes/UTMPosition.h
   \brief The UTMPosition class is a node type for specifying geometry translations.
+
   \ingroup nodes
 
   It should be used in conjunction with the UTMCamera node. The

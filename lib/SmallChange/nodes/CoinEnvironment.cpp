@@ -33,6 +33,7 @@
 /*!
   \class CoinEnvironment CoinEnvironment.h Inventor/nodes/CoinEnvironment.h
   \brief The CoinEnvironment class is a node for specifying global rendering parameters.
+
   \ingroup nodes
 
   This node type provides the application programmer with the ability

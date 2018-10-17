@@ -31,8 +31,9 @@
 \**************************************************************************/
 
 /*!
-  \class UTMCamera UTMCamera SmallChange/nodes/UTMCamera.h
+  \class UTMCamera UTMCamera.h SmallChange/nodes/UTMCamera.h
   \brief The UTMCamera class defines a camera node with perspective rendering and an UTM position.
+
   \ingroup nodes
 
   This node adds a field \a utmposition to the perspective camera
@@ -86,7 +87,7 @@
   \var SoSFVec3d UTMCamera::utmposition
 
   First value of vector is easting (+X) position of the camera, second
-  is northing (+Y) position, and third ist he elevation (+Z) position
+  is northing (+Y) position, and third is the elevation (+Z) position
   of the camera.
 
   Default value is [0, 0, 0].

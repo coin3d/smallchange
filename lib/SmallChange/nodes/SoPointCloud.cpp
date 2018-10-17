@@ -33,6 +33,7 @@
 /*!
   \class SoPointCloud SoPointCloud.h Inventor/nodes/SoPointCloud.h
   \brief The SoPointCloud class is used to display a set of 3D points.
+
   \ingroup nodes
 
   When a point is closer to the camera than a specified distance, it
@@ -49,6 +50,10 @@
   traversal actions).
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
 #include "SoPointCloud.h"
 #include "SmHQSphere.h"
 
@@ -59,9 +64,6 @@
 #include <Inventor/C/glue/gl.h>
 
 #include <Inventor/actions/SoGLRenderAction.h>
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>

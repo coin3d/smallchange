@@ -123,6 +123,10 @@
   such that spine segment positions are affected by scale, but not the geometry.
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
 #include "SoLODExtrusion.h"
 // #include <Inventor/nodes/SoSubNodeP.h>
 #include <Inventor/misc/SoNormalGenerator.h>
@@ -151,10 +155,6 @@
 #include <cmath>
 
 #include "../misc/SbList.h"
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>

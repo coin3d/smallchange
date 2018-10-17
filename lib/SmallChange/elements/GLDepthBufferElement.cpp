@@ -31,15 +31,15 @@
 \**************************************************************************/
 
 /*!
-  \class GLDepthBufferElement Inventor/elements/GLDepthBufferElement.h
+  \class GLDepthBufferElement GLDepthBufferElement.h Inventor/elements/GLDepthBufferElement.h
   \brief The SoGLDrawStyleElement controls the OpenGL depth buffer.
 */
 
-#include "GLDepthBufferElement.h"
-
-#if HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif // HAVE_CONFIG_H
+
+#include "GLDepthBufferElement.h"
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>

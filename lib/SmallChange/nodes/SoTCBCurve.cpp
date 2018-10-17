@@ -33,6 +33,7 @@
 /*!
   \class SoTCBCurve SoTCBCurve.h Inventor/nodes/SoTCBCurve.h
   \brief The SoTCBCurve class is a node for representing smooth curves.
+
   \ingroup nodes
 
   The TCB-type curve guarantees that all controlpoints are touched by
@@ -99,16 +100,16 @@
   \endcode
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif // HAVE_CONFIG_H
+
 #include "SoTCBCurve.h"
 
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/elements/SoGLCoordinateElement.h>
 #include <Inventor/SoPrimitiveVertex.h>
 #include <Inventor/details/SoLineDetail.h>
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif // HAVE_CONFIG_H
 
 #ifdef __COIN__
 #include <Inventor/system/gl.h>

@@ -33,6 +33,7 @@
 /*!
   \class SoAngle1Manip SoAngle1Manip.h 
   \brief The SoAngle1Manip class is for rotating geometry around a single axis.
+
   \ingroup draggers
 
   Use an instance of this dragger class in your scenegraph to let the
