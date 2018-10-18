@@ -11,24 +11,6 @@ set(SM_BUILD_COMPONENTS
   nodes
 )
 
-foreach(_module ${SM_BUILD_COMPONENTS})
-  add_subdirectory(${_module})
-  target_compile_definitions(${_module} PRIVATE SMALLCHANGE_DEBUG=$<CONFIG:Debug> SMALLCHANGE_INTERNAL HAVE_CONFIG_H)
-  if(WIN32)
-    if(SMALLCHANGE_BUILD_SHARED_LIBS)
-      target_compile_definitions(${_module} PRIVATE SMALLCHANGE_MAKE_DLL)
-    endif()
-    if(MSVC)
-      target_compile_definitions(${_module} PRIVATE _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS _USE_MATH_DEFINES)
-      if(NOT SMALLCHANGE_BUILD_SHARED_LIBS)
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Z7")                       # Override default /Zi to embed
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Z7")     # debugging info in the .lib.
-      endif()
-    endif()
-  endif()
-  list(APPEND OBJS $<TARGET_OBJECTS:${_module}>)
-endforeach()
-
 if(WIN32)
   if(MINGW)
     set(SMALLCHANGE_DEFAULT_SHARED_POSTFIX "")
@@ -49,7 +31,26 @@ if(WIN32)
   set(CMAKE_DEBUG_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX}d)
 elseif(APPLE)
 else()
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
+
+foreach(_module ${SM_BUILD_COMPONENTS})
+  add_subdirectory(${_module})
+  target_compile_definitions(${_module} PRIVATE SMALLCHANGE_DEBUG=$<CONFIG:Debug> SMALLCHANGE_INTERNAL HAVE_CONFIG_H)
+  if(WIN32)
+    if(SMALLCHANGE_BUILD_SHARED_LIBS)
+      target_compile_definitions(${_module} PRIVATE SMALLCHANGE_MAKE_DLL)
+    endif()
+    if(MSVC)
+      target_compile_definitions(${_module} PRIVATE _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS _USE_MATH_DEFINES)
+      if(NOT SMALLCHANGE_BUILD_SHARED_LIBS)
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Z7")                       # Override default /Zi to embed
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Z7")     # debugging info in the .lib.
+      endif()
+    endif()
+  endif()
+  list(APPEND OBJS $<TARGET_OBJECTS:${_module}>)
+endforeach()
 
 if(SMALLCHANGE_BUILD_SHARED_LIBS)
   add_library(${PROJECT_NAME} SHARED ${OBJS})
