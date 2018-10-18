@@ -2,7 +2,7 @@ version: 1.0.0-{branch}-ci-{build}
 
 branches:
   only:
-  - appveyorci
+  - syncro
 
 #shallow clone does not work when subrepos are involved!
 #shallow_clone: true
