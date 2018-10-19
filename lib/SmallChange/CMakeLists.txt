@@ -67,7 +67,7 @@ endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${SMALLCHANGE_SO_VERSION})
 
-target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARY})
+target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARIES})
 
 # ############################################################################
 # Install targets
