@@ -8,6 +8,7 @@ branches:
 #shallow_clone: true
 
 environment:
+  APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDPx3p3VQLqsXvsez2UBapRN/dgRf/KWMswjA/m0UAVPe9YuekSwyGA+ZsjeTtAU3uH9BcxEHicGN8NnrTNIQzD3nB/IWxxzbg/ftLMJ4N4rPM+6ZG825pD1dHpj4vzjotzhdBT428h0WsmmVgalIxXTeoYZwJtp3Skxt6nslaxyimmB2wUulIA7m02n08C0WZKB3FfY69bd0+nnz4/JJqyTiYrEvkFML9YpchKMcdn+zDFJ/fVSxUWRs19bXFEuF0k/tSVN1kAf7SSqz9QLL9tuZUrzFikTb9QN9WsFqAEmg36UDU5vflRkmMr4ttzEFV5+WX01JdjuRZeHsxpABGn appveyor
   BITBUCKET_LOGIN_ID: volkerenderlein@hotmail.com
   BITBUCKET_CREDENTIALS:
     secure: klDv0GkxxTy1F5PBcgsXlg==
@@ -163,6 +164,10 @@ on_success:
   - sh: |
       cd $APPVEYOR_BUILD_FOLDER
       curl --user $BITBUCKET_LOGIN_ID:$BITBUCKET_CREDENTIALS   https://api.bitbucket.org/2.0/repositories/$APPVEYOR_ACCOUNT_NAME/$APPVEYOR_PROJECT_SLUG/downloads   --form files=\@$BUILD_ARCHIVE
+
+on_finish:
+  - sh: export APPVEYOR_SSH_BLOCK=true
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 
 notifications:
   - provider: Email
