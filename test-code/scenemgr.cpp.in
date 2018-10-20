@@ -1,26 +1,25 @@
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/So@Gui@RenderArea.h>
+#include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/actions/SoHandleEventAction.h>
+#include <Inventor/nodes/SoRotation.h>
+#include <Inventor/nodes/SoEventCallback.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoDirectionalLight.h>
 #include <Inventor/nodes/SoPerspectiveCamera.h>
-#include <Inventor/actions/SoSearchAction.h>
-#include <Inventor/actions/SoHandleEventAction.h>
-
-#include <Inventor/@Gui@/So@Gui@.h>
-#include <Inventor/@Gui@/So@Gui@RenderArea.h>
-#include <SmallChange/misc/Init.h>
-#include <SmallChange/nodekits/SmCameraControlKit.h>
-#include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
-#include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
-#include <SmallChange/eventhandlers/SmSphereEventHandler.h>
-#include <Inventor/nodes/SoRotation.h>
-#include <Inventor/nodes/SoEventCallback.h>
 #include <Inventor/nodes/SoTexture2.h>
 #include <Inventor/events/SoKeyboardEvent.h>
 #include <Inventor/events/SoMouseButtonEvent.h>
 #include <Inventor/sensors/SoFieldSensor.h>
+#include <SmallChange/misc/Init.h>
 #include <SmallChange/misc/SmSceneManager.h>
 #include <SmallChange/nodes/SmViewpointWrapper.h>
 #include <SmallChange/nodekits/SmPopupMenuKit.h>
-#include <stdio.h>
+#include <SmallChange/nodekits/SmCameraControlKit.h>
+#include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
+#include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
+#include <SmallChange/eventhandlers/SmSphereEventHandler.h>
+#include <cstdio>
 
 // FIXME: need some kind of wrapper kit for menus to make it
 // a bit easier to create and manage them
@@ -136,7 +135,7 @@ menusensor_cb(void * userdata, SoSensor * s)
 }
 
 
-static void 
+static void
 mbevent_cb(void * userdata, SoEventCallback * node)
 {
   const SoEvent * e = node->getEvent();
@@ -164,7 +163,7 @@ mbevent_cb(void * userdata, SoEventCallback * node)
   }
 }
 
-static void 
+static void
 event_cb(void * userdata, SoEventCallback * node)
 {
   SmSceneManager * scenemgr = (SmSceneManager*) userdata;
@@ -181,13 +180,13 @@ main(int argc, char ** argv )
   if (argc == 1) {
     fprintf(stderr,"Usage: scenemgr <ivfile> [-m helicopter|examiner|sphere] [speed]] [-t menutex]\n");
     return -1;
-  } 
-  auto window = So@Gui@::init( argv[0] );
+  }
+  @WIDGET@ window = So@Gui@::init( argv[0] );
   if (window == NULL) return -1;
 
   smallchange_init();
   SoDB::setRealTimeInterval(SbTime(1.0/50.0));
-  
+
   SoInput * input = new SoInput;
   SbBool ok = input->openFile(argv[1]);
   if (!ok) {
@@ -195,7 +194,7 @@ main(int argc, char ** argv )
     return -1;
   }
 
-  SoSeparator *root = SoDB::readAll(input); 
+  SoSeparator *root = SoDB::readAll(input);
   if (!root) {
     fprintf(stderr,"Unable to read file.\n");
     return -1;
@@ -203,7 +202,7 @@ main(int argc, char ** argv )
   root->ref();
 
   SmCameraControlKit * ck = NULL;
-  
+
   SoSearchAction sa;
   sa.setType(SmCameraControlKit::getClassTypeId());
   sa.setInterest(SoSearchAction::FIRST);
@@ -229,14 +228,14 @@ main(int argc, char ** argv )
         SmHelicopterEventHandler *helihandler;
         ck->eventHandler = helihandler = new SmHelicopterEventHandler;
         i++;
-        if (i < argc) { 
+        if (i < argc) {
           helihandler->speed.setValue(atof(argv[i]));
           i++;
         }
       }
       else if (strcmp(argv[i], "examiner") == 0) {
         ck->eventHandler = new SmExaminerEventHandler;
-      } 
+      }
       else if (strcmp(argv[i], "sphere") == 0) {
         ck->eventHandler = new SmSphereEventHandler;
       }
@@ -252,9 +251,9 @@ main(int argc, char ** argv )
     }
     else i++;
   }
-  
+
   SoCamera * camera = NULL;
-  
+
   // handle VRML97 Viewpoints
   if (SmViewpointWrapper::hasViewpoints(root)) {
     camera = new SmViewpointWrapper;
@@ -283,7 +282,7 @@ main(int argc, char ** argv )
     tex->filename = menutex;
     menu->setPart("backgroundTexture", tex);
     submenu->setPart("backgroundTexture", tex);
-  }  
+  }
   const char * items[] = {
     "As Is",
     "Wireframe",
@@ -307,11 +306,11 @@ main(int argc, char ** argv )
     NULL,
     submenu
   };
-  
+
   menu->itemList.setValues(0, 7, items);
   menu->itemData.setValues(0, 7, itemdata);
   submenu->itemList.setValues(0,2, subitems);
-  
+
   scenedata data;
   data.scenemgr = scenemgr;
   data.menu = menu;
@@ -324,7 +323,7 @@ main(int argc, char ** argv )
   SoFieldSensor * menusensor = new SoFieldSensor(menusensor_cb, &data);
   menusensor->attach(&menu->pickedItem);
 
-  SoFieldSensor * submenusensor = new SoFieldSensor(submenusensor_cb, 
+  SoFieldSensor * submenusensor = new SoFieldSensor(submenusensor_cb,
                                                     &subdata);
   submenusensor->attach(&submenu->pickedItem);
 
@@ -349,7 +348,7 @@ main(int argc, char ** argv )
   delete renderarea;
   delete menusensor;
   delete submenusensor;
-  
+
 
   root->unref();
   ck->unref();

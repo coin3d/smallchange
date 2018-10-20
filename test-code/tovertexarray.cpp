@@ -1,22 +1,22 @@
 #include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/SoOutput.h>
+#include <Inventor/SoInteraction.h>
+#include <Inventor/actions/SoWriteAction.h>
+#include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/errors/SoDebugError.h>
+#include <Inventor/nodekits/SoBaseKit.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoCoordinate4.h>
 #include <Inventor/nodes/SoNormal.h>
 #include <Inventor/nodes/SoTextureCoordinate2.h>
 #include <Inventor/nodes/SoSeparator.h>
-#include <Inventor/actions/SoWriteAction.h>
-#include <Inventor/actions/SoSearchAction.h>
-#include <Inventor/errors/SoDebugError.h>
 #include <Inventor/nodes/SoShapeHints.h>
-#include <Inventor/SoInput.h>
-#include <Inventor/SoOutput.h>
-#include <Inventor/SoInteraction.h>
-#include <SmallChange/misc/Init.h>
 #include <cassert>
 #include <cstdio>
+#include <SmallChange/misc/Init.h>
 #include <SmallChange/actions/SmToVertexArrayShapeAction.h>
-#include <Inventor/nodekits/SoBaseKit.h>
 
 static void strip_node(SoType type, SoNode * root)
 {
@@ -34,7 +34,7 @@ static void strip_node(SoType type, SoNode * root)
       g->removeChild(p->getIndexFromTail(0));
     }
   }
-  sa.reset();  
+  sa.reset();
 }
 
 int
@@ -58,15 +58,15 @@ main(int argc, char ** argv )
   SoInteraction::init();
   SoBaseKit::setSearchingChildren(TRUE);
   smallchange_init();
-    
+
   SoInput input;
   SbBool ok = input.openFile(argv[1]);
   if (!ok) {
     fprintf(stderr,"Unable to open file.\n");
     return -1;
   }
-  SoSeparator * root = SoDB::readAll(&input); 
-  
+  SoSeparator * root = SoDB::readAll(&input);
+
   SbBool vrml1 = input.isFileVRML1();
   SbBool vrml2 = input.isFileVRML2();
 
@@ -74,7 +74,7 @@ main(int argc, char ** argv )
     fprintf(stderr,"VRML2 not supported yet\n");
     return -1;
   }
-  
+
   if (!root) {
     fprintf(stderr,"Unable to read file.\n");
     return -1;
@@ -105,7 +105,7 @@ main(int argc, char ** argv )
     SoWriteAction wa(&out);
     wa.apply(root);
   }
- 
+
   root->unref();
   return 0;
 } // main()

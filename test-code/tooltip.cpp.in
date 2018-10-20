@@ -1,18 +1,17 @@
 #include <Inventor/@Gui@/So@Gui@.h>
 #include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 #include <Inventor/SoDB.h>
-#include <Inventor/nodes/SoSeparator.h>
-#include <assert.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
-#include <SmallChange/misc/Init.h>
-#include <SmallChange/nodekits/SmTooltipKit.h>
+#include <Inventor/SoPickedPoint.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
-#include <Inventor/nodes/SoEventCallback.h>
-#include <Inventor/events/SoMouseButtonEvent.h>
-#include <Inventor/SoPickedPoint.h>
 #include <Inventor/details/SoFaceDetail.h>
+#include <Inventor/events/SoMouseButtonEvent.h>
+#include <Inventor/nodes/SoEventCallback.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/nodekits/SmTooltipKit.h>
 
 typedef struct {
   So@Gui@ExaminerViewer * viewer;
@@ -20,18 +19,18 @@ typedef struct {
 } myclosure;
 
 
-static void 
+static void
 mousebutton_cb(void * closure, SoEventCallback * node)
 {
   myclosure * data = (myclosure*) closure;
 
   if (!SO_MOUSE_RELEASE_EVENT(node->getEvent(), BUTTON1)) return;
 
-  SmTooltipKit * tooltip = (SmTooltipKit*) data->tooltip;  
+  SmTooltipKit * tooltip = (SmTooltipKit*) data->tooltip;
 
   const SoPickedPoint * pp = node->getPickedPoint();
   if (pp) {
-    
+
     SbVec3f p = pp->getObjectPoint();
     SbVec3f n = pp->getObjectNormal();
     SbVec4f tc = pp->getObjectTextureCoords();
@@ -59,7 +58,7 @@ mousebutton_cb(void * closure, SoEventCallback * node)
       tooltip->description.set1Value(5, tmp.getString());
     }
 
-    tooltip->setPickedPoint(node->getPickedPoint(), 
+    tooltip->setPickedPoint(node->getPickedPoint(),
                             data->viewer->getViewportRegion());
   }
   else tooltip->isActive = FALSE;
@@ -71,17 +70,16 @@ usage(void)
   fprintf(stderr,"Usage: tooltip <infile>\n");
 }
 
-int
-main(int argc, char ** argv )
+int main(int argc, char ** argv )
 {
   if (argc == 1) { usage(); return 0; }
-    
-  auto window = So@Gui@::init( argv[0] );
+
+  @WIDGET@ window = So@Gui@::init( argv[0] );
   smallchange_init();
-    
+
   So@Gui@ExaminerViewer * ex1 = new So@Gui@ExaminerViewer( window );
   ex1->setBackgroundColor(SbColor(0.1f, 0.3f, 0.5f));
-  
+
   SoInput input;
   SbBool ok = input.openFile(argv[1]);
   if (!ok) {
@@ -89,7 +87,7 @@ main(int argc, char ** argv )
     return -1;
   }
 
-  SoSeparator *root = SoDB::readAll(&input); 
+  SoSeparator *root = SoDB::readAll(&input);
   if (!root) {
     fprintf(stderr,"Unable to read file.\n");
     return -1;
@@ -109,7 +107,7 @@ main(int argc, char ** argv )
   ec->addEventCallback(SoMouseButtonEvent::getClassTypeId(),
                        mousebutton_cb, &data);
   ex1->setSceneGraph(root);
-  
+
   root->addChild(ec);
   root->addChild(tooltip);
 
@@ -122,4 +120,3 @@ main(int argc, char ** argv )
   root->unref();
   return 0;
 } // main()
-

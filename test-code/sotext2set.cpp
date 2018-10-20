@@ -1,28 +1,22 @@
-
-#include <Inventor/Qt/SoQt.h>
-#include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 #include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/SoOutput.h>
+#include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoCamera.h>
-#include <Inventor/actions/SoSearchAction.h>
-#include <Inventor/actions/SoWriteAction.h>
-#include <Inventor/SoInput.h>
-#include <Inventor/SoOutput.h>
-#include <cassert>
 #include <SmallChange/nodes/SoText2Set.h>
-
+#include <cassert>
 
 // *************************************************************************
 
-
-int
-main(
-  int argc,
-  char ** argv )
+int main(int argc, char ** argv )
 {
   assert(argc >= 2);
-  QWidget * window = SoQt::init( argv[0] );
+  @WIDGET@ * window = So@Gui@::init( argv[0] );
 
   SoText2Set::initClass();
 
@@ -34,11 +28,11 @@ main(
   assert(root);
   root->ref();
 
-  SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer( window );
+  So@Gui@ExaminerViewer * examinerviewer = new So@Gui@ExaminerViewer( window );
   examinerviewer->setSceneGraph( root );
   examinerviewer->show();
-  SoQt::show( window );
-  SoQt::mainLoop();
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
 
   delete examinerviewer;
 

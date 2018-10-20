@@ -1,9 +1,9 @@
-#include <Inventor/Qt/SoQt.h>
-#include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 #include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoMatrixTransform.h>
-#include <Inventor/SoInput.h>
 #include <SmallChange/nodekits/SoFEMKit.h>
 
 #define XSIZE 30
@@ -66,11 +66,11 @@ setup_fem(SoFEMKit * fem)
 
 #else // enable two planes
 
-  fem->enableElements(SbPlane(SbVec3f(0,0,0), 
+  fem->enableElements(SbPlane(SbVec3f(0,0,0),
                               SbVec3f(XSIZE, 0, ZSIZE),
                               SbVec3f(XSIZE, YSIZE, 0)), TRUE);
 
-  fem->enableElements(SbPlane(SbVec3f(0,0,0), 
+  fem->enableElements(SbPlane(SbVec3f(0,0,0),
                               SbVec3f(XSIZE, 0, 0),
                               SbVec3f(0, YSIZE, ZSIZE)), TRUE);
 
@@ -82,7 +82,7 @@ setup_fem(SoFEMKit * fem)
 int
 main(int argc, char ** argv)
 {
-  QWidget * window = SoQt::init( argv[0] );
+  @WIDGET@ * window = So@Gui@::init( argv[0] );
 
   SoFEMKit::initClass();
   SoSeparator * root = new SoSeparator;
@@ -103,12 +103,12 @@ main(int argc, char ** argv)
 
   root->addChild(fem);
 
-  SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer(window);
+  So@Gui@ExaminerViewer * examinerviewer = new So@Gui@ExaminerViewer(window);
   examinerviewer->setBackgroundColor(SbColor(0.2f,0.4f,0.6f));
   examinerviewer->setSceneGraph(root);
   examinerviewer->show();
-  SoQt::show( window );
-  SoQt::mainLoop();
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
 
   delete examinerviewer;
 

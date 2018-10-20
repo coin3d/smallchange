@@ -1,9 +1,9 @@
-#include <Inventor/Qt/SoQt.h>
-#include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 #include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoMatrixTransform.h>
-#include <Inventor/SoInput.h>
 #include <SmallChange/nodes/SoLODExtrusion.h>
 #include <cstdlib>
 
@@ -34,10 +34,9 @@ setup_lod(SoLODExtrusion * lod)
 
 }
 
-int
-main(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
-  QWidget * window = SoQt::init( argv[0] );
+  @WIDGET@ * window = So@Gui@::init( argv[0] );
 
   SoLODExtrusion::initClass();
   SoSeparator * root = new SoSeparator;
@@ -58,12 +57,12 @@ main(int argc, char ** argv)
 
   root->addChild(lod);
 
-  SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer(window);
+  So@Gui@ExaminerViewer * examinerviewer = new So@Gui@ExaminerViewer(window);
   examinerviewer->setBackgroundColor(SbColor(0.2f,0.4f,0.6f));
   examinerviewer->setSceneGraph(root);
   examinerviewer->show();
-  SoQt::show( window );
-  SoQt::mainLoop();
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
 
   delete examinerviewer;
 

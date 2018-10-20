@@ -1,7 +1,7 @@
-#include <SmallChange/misc/SmEnvelope.h>
-#include <SmallChange/misc/Init.h>
-#include <Inventor/SoInteraction.h>
 #include <Inventor/SoDB.h>
+#include <Inventor/SoInteraction.h>
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/misc/SmEnvelope.h>
 #include <cassert>
 #include <cstring>
 #include <cstdio>
@@ -21,7 +21,6 @@ int main(int argc, char ** argv)
   SoInteraction::init();
   smallchange_init();
 
-  
   SmEnvelope env;
   env.importFile(argv[1]);
   env.exportGeometry(argv[2], level, TRUE);

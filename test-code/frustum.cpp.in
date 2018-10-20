@@ -1,15 +1,15 @@
 #include <Inventor/@Gui@/So@Gui@.h>
 #include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 #include <Inventor/SoDB.h>
-#include <Inventor/nodes/SoSeparator.h>
-#include <assert.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
-#include <SmallChange/misc/Init.h>
-#include <SmallChange/nodes/FrustumCamera.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
-#include <stdio.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <SmallChange/misc/Init.h>
+#include <SmallChange/nodes/FrustumCamera.h>
+#include <cassert>
+#include <cstdio>
 
 static void
 usage(void)
@@ -17,19 +17,18 @@ usage(void)
   fprintf(stderr,"Usage: frustum <infile>\n");
 }
 
-int
-main(int argc, char ** argv )
+int main(int argc, char ** argv )
 {
   if (argc == 1) { usage(); return 0; }
 
   @WIDGET@ window = So@Gui@::init( argv[0] );
   smallchange_init();
-  
+
   SoDB::setRealTimeInterval(SbTime(1.0/50.0));
-  
+
   So@Gui@ExaminerViewer * ex1 = new So@Gui@ExaminerViewer( window );
   ex1->setBackgroundColor(SbColor(0.1f, 0.3f, 0.5f));
-  
+
   SoInput input;
   SbBool ok = input.openFile(argv[1]);
   if (!ok) {
@@ -37,7 +36,7 @@ main(int argc, char ** argv )
     return -1;
   }
 
-  SoSeparator *root = SoDB::readAll(&input); 
+  SoSeparator *root = SoDB::readAll(&input);
   if (!root) {
     fprintf(stderr,"Unable to read file.\n");
     return -1;
@@ -48,7 +47,7 @@ main(int argc, char ** argv )
   sa.setType(SoCamera::getClassTypeId());
   sa.setInterest(SoSearchAction::FIRST);
   sa.apply(root);
-  
+
   if (sa.getPath() == NULL) {
     FrustumCamera * camera = new FrustumCamera;
     camera->ref();
@@ -65,4 +64,3 @@ main(int argc, char ** argv )
   root->unref();
   return 0;
 } // main()
-

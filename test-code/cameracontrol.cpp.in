@@ -1,17 +1,15 @@
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/So@Gui@RenderArea.h>
+#include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoDirectionalLight.h>
 #include <Inventor/nodes/SoPerspectiveCamera.h>
-#include <Inventor/actions/SoSearchAction.h>
-
-#include <Inventor/@Gui@/So@Gui@.h>
-#include <Inventor/@Gui@/So@Gui@RenderArea.h>
 #include <SmallChange/misc/Init.h>
 #include <SmallChange/nodekits/SmCameraControlKit.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
-
-#include <stdio.h>
+#include <cstdio>
 
 // *************************************************************************
 
@@ -21,8 +19,8 @@ main(int argc, char ** argv )
   if (argc == 1) {
     fprintf(stderr,"Usage: cameracontrol <ivfile> [helicopter|examiner|sphere] [speed]\n");
     return -1;
-  } 
-  auto window = So@Gui@::init( argv[0] );
+  }
+  @WIDGET@ window = So@Gui@::init( argv[0] );
   if (window == NULL) return -1;
 
   smallchange_init();
@@ -34,7 +32,7 @@ main(int argc, char ** argv )
     return -1;
   }
 
-  SoSeparator *root = SoDB::readAll(input); 
+  SoSeparator *root = SoDB::readAll(input);
   if (!root) {
     fprintf(stderr,"Unable to read file.\n");
     return -1;
@@ -42,7 +40,7 @@ main(int argc, char ** argv )
   root->ref();
 
   SmCameraControlKit * ck = NULL;
-  
+
   SoSearchAction sa;
   sa.setType(SmCameraControlKit::getClassTypeId());
   sa.setInterest(SoSearchAction::FIRST);
@@ -60,12 +58,12 @@ main(int argc, char ** argv )
     if (strcmp(argv[2], "helicopter") == 0) {
       SmHelicopterEventHandler *helihandler;
       ck->eventHandler = helihandler = new SmHelicopterEventHandler;
-      if (argc >= 4) 
+      if (argc >= 4)
         helihandler->speed.setValue(atof(argv[3]));
     }
     else if (strcmp(argv[2], "examiner") == 0) {
       ck->eventHandler = new SmExaminerEventHandler;
-    } 
+    }
     else if (strcmp(argv[2], "sphere") == 0) {
       ck->eventHandler = new SmSphereEventHandler;
     }
@@ -75,7 +73,7 @@ main(int argc, char ** argv )
   }
 
   SoCamera * camera = (SoCamera*) ck->getPart("camera", TRUE);
-  
+
   So@Gui@RenderArea * renderarea = new So@Gui@RenderArea( window );
   renderarea->setTransparencyType(SoGLRenderAction::SORTED_OBJECT_BLEND);
   //  camera->viewAll(root, renderarea->getViewportRegion() );

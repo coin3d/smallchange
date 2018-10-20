@@ -1,25 +1,23 @@
-
-#include <Inventor/Qt/SoQt.h>
-#include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 #include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/SoOutput.h>
+#include <Inventor/actions/SoSearchAction.h>
+#include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoTranslation.h>
 #include <Inventor/nodes/SoCamera.h>
-#include <Inventor/actions/SoSearchAction.h>
-#include <Inventor/actions/SoWriteAction.h>
-#include <Inventor/SoInput.h>
-#include <Inventor/SoOutput.h>
-#include <cassert>
 #include <SmallChange/misc/Init.h>
 #include <SmallChange/nodekits/LegendKit.h>
 #include <SmallChange/elements/GLDepthBufferElement.h>
 #include <SmallChange/nodes/ViewportRegion.h>
 #include <SmallChange/nodes/SmDepthBuffer.h>
-#include <Inventor/actions/SoSearchAction.h>
+#include <cassert>
 
 // *************************************************************************
 
-#ifdef CLOD_TRICOUNT // dummy 
+#ifdef CLOD_TRICOUNT // dummy
 int clod_tricount;
 #endif
 
@@ -42,15 +40,14 @@ static uint32_t color_cb(double val)
   }
 }
 
-int
-main(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
   if (argc != 2) {
     (void)fprintf(stderr, "\n\tUsage: %s legendkitfile.iv\n\n", argv[0]);
     exit(1);
   }
 
-  QWidget * window = SoQt::init(argv[0]);
+  @WIDGET@ * window = So@Gui@::init(argv[0]);
   smallchange_init();
   // LegendKit::initClass();
 
@@ -71,7 +68,7 @@ main(int argc, char ** argv)
   if (path) {
     LegendKit * kit = (LegendKit*) path->getTail();
     fprintf(stderr,"found LegendKit\n");
-    
+
     kit->setColorCB(color_cb);
     kit->setImageTransparency(0.2f);
     kit->useTextureNotImage(TRUE);
@@ -102,11 +99,11 @@ main(int argc, char ** argv)
     //    kit->enableImage(FALSE);
   }
 
-  SoQtExaminerViewer * examinerviewer = new SoQtExaminerViewer( window );
+  So@Gui@ExaminerViewer * examinerviewer = new So@Gui@ExaminerViewer( window );
   examinerviewer->setSceneGraph( root );
   examinerviewer->show();
-  SoQt::show( window );
-  SoQt::mainLoop();
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
 
   delete examinerviewer;
 
@@ -116,7 +113,7 @@ main(int argc, char ** argv)
     SoWriteAction wa(&out);
     wa.apply(root);
   }
-#endif  
+#endif
 
   root->unref();
 

@@ -15,12 +15,11 @@ int main(int argc, char ** argv)
   srand(0);
 
   printf("#Inventor V2.1 ascii\n"
-         "DrawStyle { style LINES }\n" 
+         "DrawStyle { style LINES }\n"
          "Cube { }\n"
          "DrawStyle { style FILLED }\n"
          "MaterialBinding { value PER_PART }\n"
          "Material { diffuseColor [\n");
-
 
   for (int i = 0; i < num; i++) {
     SbVec3f pos(float(rand()) / RAND_MAX,
@@ -29,30 +28,29 @@ int main(int argc, char ** argv)
     pos *= 0.5f;
     pos += SbVec3f(0.5f, 0.5f, 0.5f);
 
-
-    if (i == num-1) 
-      printf("    %g %g %g ]\n", 
+    if (i == num-1)
+      printf("    %g %g %g ]\n",
              pos[0], pos[1], pos[2]);
     else
       printf("    %g %g %g,\n",
              pos[0], pos[1], pos[2]);
-    
+
   }
   printf("}\n");
 
   printf("Complexity { textureQuality 1.0 }\n"
          "SmTextureText2 {\n"
          "  position [\n");
-  
+
   for (int i = 0; i < num; i++) {
     SbVec3f pos(float(rand()) / RAND_MAX,
                 float(rand()) / RAND_MAX,
                 float(rand()) / RAND_MAX);
     pos -= SbVec3f(0.5f, 0.5f, 0.5f);
     pos *= 0.8f;
-    
-    if (i == num-1) 
-      printf("    %g %g %g ]\n", 
+
+    if (i == num-1)
+      printf("    %g %g %g ]\n",
              pos[0], pos[1], pos[2]);
     else
       printf("    %g %g %g,\n",
@@ -62,9 +60,9 @@ int main(int argc, char ** argv)
 
   printf("  string [\n");
   for (int i = 0; i < num; i++) {
-    if (i == num-1) 
+    if (i == num-1)
       printf("    \"SIM %d\" ]\n", i+1);
-    else 
+    else
       printf("    \"SIM %d\",\n", i+1);
   }
   printf("}\n");

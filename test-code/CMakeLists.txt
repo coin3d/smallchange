@@ -1,5 +1,6 @@
 # tests performed on SoQt only
-set(Gui "Qt")
+set(Gui Qt)
+set(WIDGET QWidget*)
 
 configure_file(cameracontrol.cpp.in cameracontrol.cpp @ONLY)
 add_executable(cameracontrol ${CMAKE_CURRENT_BINARY_DIR}/cameracontrol.cpp)
@@ -12,7 +13,7 @@ add_executable(femtest femtest.cpp)
 target_link_libraries(femtest SoQt::SoQt SmallChange)
 
 add_executable(iv2scenegraph iv2scenegraph.cpp)
-target_link_libraries(iv2scenegraph SoQt::SoQt SmallChange)
+target_link_libraries(iv2scenegraph SmallChange)
 
 add_executable(legendtest legendtest.cpp)
 target_link_libraries(legendtest SoQt::SoQt SmallChange)
