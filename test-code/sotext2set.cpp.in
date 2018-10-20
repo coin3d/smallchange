@@ -16,7 +16,7 @@
 int main(int argc, char ** argv )
 {
   assert(argc >= 2);
-  @WIDGET@ * window = So@Gui@::init( argv[0] );
+  @WIDGET@ window = So@Gui@::init( argv[0] );
 
   SoText2Set::initClass();
 

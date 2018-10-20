@@ -9,23 +9,35 @@ target_link_libraries(cameracontrol SoQt::SoQt SmallChange)
 add_executable(envelope envelope.cpp)
 target_link_libraries(envelope SmallChange)
 
-add_executable(femtest femtest.cpp)
+configure_file(femtest.cpp.in femtest.cpp @ONLY)
+add_executable(femtest ${CMAKE_CURRENT_BINARY_DIR}/femtest.cpp)
 target_link_libraries(femtest SoQt::SoQt SmallChange)
+
+#configure_file(frustum.cpp.in frustum.cpp @ONLY)
+#add_executable(frustum ${CMAKE_CURRENT_BINARY_DIR}/frustum.cpp)
+#target_link_libraries(frustum SoQt::SoQt SmallChange)
 
 add_executable(iv2scenegraph iv2scenegraph.cpp)
 target_link_libraries(iv2scenegraph SmallChange)
 
-add_executable(legendtest legendtest.cpp)
+configure_file(legendtest.cpp.in legendtest.cpp @ONLY)
+add_executable(legendtest ${CMAKE_CURRENT_BINARY_DIR}/legendtest.cpp)
 target_link_libraries(legendtest SoQt::SoQt SmallChange)
 
-add_executable(lodexttest lodexttest.cpp)
+configure_file(lodexttest.cpp.in lodexttest.cpp @ONLY)
+add_executable(lodexttest ${CMAKE_CURRENT_BINARY_DIR}/lodexttest.cpp)
 target_link_libraries(lodexttest SoQt::SoQt SmallChange)
 
 configure_file(scenemgr.cpp.in scenemgr.cpp @ONLY)
 add_executable(scenemgr ${CMAKE_CURRENT_BINARY_DIR}/scenemgr.cpp)
 target_link_libraries(scenemgr SoQt::SoQt SmallChange)
 
-add_executable(sotext2set sotext2set.cpp)
+#configure_file(scenery.cpp.in scenery.cpp @ONLY)
+#add_executable(scenery ${CMAKE_CURRENT_BINARY_DIR}/scenery.cpp)
+#target_link_libraries(scenery SoQt::SoQt SmallChange)
+
+configure_file(sotext2set.cpp.in sotext2set.cpp @ONLY)
+add_executable(sotext2set ${CMAKE_CURRENT_BINARY_DIR}/sotext2set.cpp)
 target_link_libraries(sotext2set SoQt::SoQt SmallChange)
 
 add_executable(texturetext2 texturetext2.cpp)
@@ -37,4 +49,3 @@ target_link_libraries(tooltip SoQt::SoQt SmallChange)
 
 add_executable(tovertexarray tovertexarray.cpp)
 target_link_libraries(tovertexarray SmallChange)
-

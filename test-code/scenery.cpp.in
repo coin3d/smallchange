@@ -30,8 +30,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 \**************************************************************************/
 
-#include <cstdlib>
-#include <cstdio>
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
 
 #include <Inventor/SoDB.h>
 #include <Inventor/SoInput.h>
@@ -46,8 +46,8 @@
 #include <SmallChange/misc/Init.h>
 #include <SmallChange/nodes/SmScenery.h>
 
-#include <Inventor/@Gui@/So@Gui@.h>
-#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
+#include <cstdlib>
+#include <cstdio>
 
 static const char * appname = NULL;
 static const char * ivfile = NULL;

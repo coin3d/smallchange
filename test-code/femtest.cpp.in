@@ -82,7 +82,7 @@ setup_fem(SoFEMKit * fem)
 int
 main(int argc, char ** argv)
 {
-  @WIDGET@ * window = So@Gui@::init( argv[0] );
+  @WIDGET@ window = So@Gui@::init( argv[0] );
 
   SoFEMKit::initClass();
   SoSeparator * root = new SoSeparator;

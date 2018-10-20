@@ -1,23 +1,19 @@
-
-#include <cstdio>
-#include <cmath>
-
 #include <Inventor/SoDB.h>
 #include <Inventor/SoInput.h>
 #include <Inventor/SoOutput.h>
-#include <Inventor/nodekits/SoNodeKit.h>
 #include <Inventor/SoInteraction.h>
 #include <Inventor/SoOffscreenRenderer.h>
-
+#include <Inventor/nodekits/SoNodeKit.h>
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoOrthographicCamera.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/actions/SoWriteAction.h>
 #include <Inventor/actions/SoGLRenderAction.h>
-
 #include <SmallChange/actions/SoGenerateSceneGraphAction.h>
 #include <SmallChange/actions/SoTweakAction.h>
+#include <cstdio>
+#include <cmath>
 
 /*
  * --inventor-out

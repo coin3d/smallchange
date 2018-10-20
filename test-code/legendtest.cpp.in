@@ -47,7 +47,7 @@ int main(int argc, char ** argv)
     exit(1);
   }
 
-  @WIDGET@ * window = So@Gui@::init(argv[0]);
+  @WIDGET@ window = So@Gui@::init(argv[0]);
   smallchange_init();
   // LegendKit::initClass();
 
