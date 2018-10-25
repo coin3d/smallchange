@@ -3,13 +3,18 @@ cmake_minimum_required(VERSION 3.0)
 project(SmallChange VERSION 1.0.0)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
+# ############################################################################
+# these will be removed after upgrading CMake minimum version
+set(PROJECT_DESCRIPTION "A collection of extensions to the Open Inventor API")
+# ############################################################################
+
 string(TIMESTAMP SMALLCHANGE_BUILD_YEAR "%Y")
 math(EXPR SMALLCHANGE_SO_VERSION ${PROJECT_VERSION_MAJOR}*20)
 
-# ############################################################################
-# these will be removed after upgrading CMake minimum version to 3.9.6
-set(PROJECT_DESCRIPTION "A collection of extensions to the Open Inventor API")
-# ############################################################################
+if(POLICY CMP0072)
+  # get rid of OpenGL GLVND warning from CMake 3.11
+  cmake_policy(SET CMP0072 NEW)
+endif()
 
 # ############################################################################
 # Prevent in-source builds, as they often cause severe build problems
@@ -68,7 +73,6 @@ else()
 endif()
 
 find_package(SoQt REQUIRED)
-#find_package(superglu REQUIRED)
 
 # ##########################################################################
 # Setup build environment

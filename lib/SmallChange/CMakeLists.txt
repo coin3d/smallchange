@@ -36,14 +36,16 @@ endif()
 
 foreach(_module ${SM_BUILD_COMPONENTS})
   add_subdirectory(${_module})
-  target_compile_definitions(${_module} PRIVATE SMALLCHANGE_DEBUG=$<CONFIG:Debug> SMALLCHANGE_INTERNAL HAVE_CONFIG_H)
+  target_compile_definitions(${_module} PRIVATE HAVE_CONFIG_H SMALLCHANGE_INTERNAL SMALLCHANGE_DEBUG=$<CONFIG:Debug>)
   if(WIN32)
-    if(SMALLCHANGE_BUILD_SHARED_LIBS)
-      target_compile_definitions(${_module} PRIVATE SMALLCHANGE_MAKE_DLL)
-    endif()
     if(MSVC)
       target_compile_definitions(${_module} PRIVATE _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS _USE_MATH_DEFINES)
-      if(NOT SMALLCHANGE_BUILD_SHARED_LIBS)
+    endif()
+    if(SMALLCHANGE_BUILD_SHARED_LIBS)
+      target_compile_definitions(${_module} PRIVATE SMALLCHANGE_MAKE_DLL INTERFACE SMALLCHANGE_DLL)
+    else()
+      target_compile_definitions(${_module} PRIVATE INTERFACE SMALLCHANGE_NOT_DLL)
+      if(MSVC)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Z7")                       # Override default /Zi to embed
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Z7")     # debugging info in the .lib.
       endif()
@@ -54,20 +56,30 @@ endforeach()
 
 if(SMALLCHANGE_BUILD_SHARED_LIBS)
   add_library(${PROJECT_NAME} SHARED ${OBJS})
-  target_compile_definitions(${PROJECT_NAME} INTERFACE SMALLCHANGE_DLL)
-  if(WIN32)
-    configure_file(${PROJECT_NAME}.rc.cmake.in ${PROJECT_NAME}.rc)
-    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE SMALLCHANGE_MAKE_DLL)
-  endif()
 else()
   add_library(${PROJECT_NAME} STATIC ${OBJS})
-  target_compile_definitions(${PROJECT_NAME} INTERFACE SMALLCHANGE_NOT_DLL)
+endif()
+
+if(WIN32)
+  if(MSVC)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS _USE_MATH_DEFINES)
+  endif()
+  if(SMALLCHANGE_BUILD_SHARED_LIBS)
+    configure_file(${PROJECT_NAME}.rc.cmake.in ${PROJECT_NAME}.rc)
+    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.rc")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE SMALLCHANGE_MAKE_DLL INTERFACE SMALLCHANGE_DLL)
+  else()
+    target_compile_definitions(${PROJECT_NAME} INTERFACE SMALLCHANGE_NOT_DLL)
+    if(MSVC)
+      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Z7")                       # Override default /Zi to embed
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Z7")     # debugging info in the .lib.
+    endif()
+  endif()
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${SMALLCHANGE_SO_VERSION})
 
-target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARY})
 
 # ############################################################################
 # Install targets
