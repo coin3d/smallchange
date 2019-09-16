@@ -37,6 +37,20 @@ include(GNUInstallDirs)
 # Provide options to customise the build
 # ############################################################################
 
+function(report_prepare)
+  set(multiValueArgs IF_APPLE IF_WIN32)
+  cmake_parse_arguments(REPORT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+  if (REPORT_IF_APPLE AND APPLE)
+    list(APPEND res ${REPORT_IF_APPLE})
+  endif()
+  if (REPORT_IF_WIN32 AND WIN32)
+    list(APPEND res ${REPORT_IF_WIN32})
+  endif()
+  list(APPEND res ${REPORT_UNPARSED_ARGUMENTS})
+  list(APPEND PACKAGE_OPTIONS ${res})
+  set(PACKAGE_OPTIONS "${PACKAGE_OPTIONS}" PARENT_SCOPE)
+endfunction(report_prepare)
+
 option(HAVE_DEBUG                    "Add debugging information during the configure process")
 option(SMALLCHANGE_BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(SMALLCHANGE_USE_QT5 "Prefer Qt5 over Qt4 if available" ON)
@@ -45,6 +59,16 @@ cmake_dependent_option(SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION "Document intern
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_MAN "Build SmallChange man pages." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_QTHELP "Build QtHelp documentation." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_CHM "Build compressed HTML help manual (requires HTML help compiler)" OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
+
+report_prepare(
+  SMALLCHANGE_BUILD_SHARED_LIBS
+  SMALLCHANGE_USE_QT5
+  SMALLCHANGE_BUILD_DOCUMENTATION
+  SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION
+  SMALLCHANGE_BUILD_DOC_MAN
+  SMALLCHANGE_BUILD_DOC_QTHELP
+  SMALLCHANGE_BUILD_DOC_CHM
+)
 
 # ############################################################################
 # Find all necessary and optional SmallChange dependencies
