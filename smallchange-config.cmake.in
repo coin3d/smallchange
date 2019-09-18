@@ -57,7 +57,9 @@ set_and_check(@PROJECT_NAME@_LIBRARY_DIRS "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 set(@PROJECT_NAME@_LIBRARY_DIR ${@PROJECT_NAME@_LIBRARY_DIRS})
 
 # optional directory from documentation component
-set_and_check(@PROJECT_NAME@_DOC_DIR "@PACKAGE_CMAKE_INSTALL_DOCDIR@")
+if (EXISTS "@PACKAGE_CMAKE_INSTALL_DOCDIR@")
+  set(@PROJECT_NAME@_DOC_DIR "@PACKAGE_CMAKE_INSTALL_DOCDIR@")
+endif()
 
 # For backwards compatibility define upper case versions of output variables
 foreach(_var
