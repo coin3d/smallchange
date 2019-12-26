@@ -1,7 +1,7 @@
 m4_define([SMALLCHANGE_MAJOR], [1])
 m4_define([SMALLCHANGE_MINOR], [0])
 m4_define([SMALLCHANGE_MICRO], [0])
-m4_define([SMALLCHANGE_BETA], [a])
+m4_define([SMALLCHANGE_BETA], [])
 
 # this is bogus, but policy has not been set for this yet
 m4_define([SMALLCHANGE_ABI_CURRENT], [m4_eval((SMALLCHANGE_MAJOR*20)+SMALLCHANGE_MINOR)])
