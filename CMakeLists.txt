@@ -59,6 +59,7 @@ cmake_dependent_option(SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION "Document intern
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_MAN "Build SmallChange man pages." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_QTHELP "Build QtHelp documentation." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_CHM "Build compressed HTML help manual (requires HTML help compiler)" OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
+option(SMALLCHANGE_USE_CPACK "If enabled the cpack subrepo is mandatory" OFF)
 
 report_prepare(
   SMALLCHANGE_BUILD_SHARED_LIBS
@@ -225,4 +226,6 @@ install(EXPORT ${PROJECT_NAME}
 
 # CPACK section moved in the package-config directory. 
 # Please see the README file inside.
-add_subdirectory(cpack.d)
+if (SMALLCHANGE_USE_CPACK)
+  add_subdirectory(cpack.d)
+endif()
