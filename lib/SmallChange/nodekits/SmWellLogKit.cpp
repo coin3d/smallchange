@@ -102,7 +102,7 @@
   SoSFInt32 SmWellLogKit::leftCurveIndex
 
   The curve index of the left curve. Is used to select the curve on
-  the left side of the wel. Use -1 to disable.
+  the left side of the well. Use -1 to disable.
 */
 
 /*!
@@ -156,7 +156,7 @@
 */
 
 /*!
-  SoSFFloat SmWellLogKit::wellRadius
+  SoSFFloat SmWellLogKit::wellColor
 
   The color of the well bore.
 */

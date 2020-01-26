@@ -232,14 +232,14 @@ SmTextureFont::FontImage::~FontImage()
 /*!
 
   Adds the image for a glyph to the texture image. The size of the
-  image must be smaller than the glyphsize provided in the
-  constructor. Glyphwidth is the number of pixels to advance before
-  rendering the next character.  gfxglyphwidth is the width of the
+  image must be smaller than the \a glyphsize provided in the
+  constructor. \a glyphwidth is the number of pixels to advance before
+  rendering the next character.  \a gfxglyphwidth is the width of the
   glyph in the bitmap. If you supply a negative number in
-  gfxglyphwidth, the width of the glyphs supplied in the constructor
+  \a gfxglyphwidth, the width of the glyphs supplied in the constructor
   will be used instead.
 
-  xoffset is the offset used when rendering the glyph. This is useful
+  \a xoffset is the offset used when rendering the glyph. This is useful
   for specifying glyphs that extend to the left of the glyph position.
 */
 void
@@ -327,7 +327,7 @@ SmTextureFont::FontImage::stringWidth(const SbString & s) const
 
 /*!
 
-  Convenience method to render \a s at postion \a pos. This function
+  Convenience method to render \a s at position \a pos. This function
   assumed a coordinate system with 1 pixel == 1 unit is set up.
 
 */

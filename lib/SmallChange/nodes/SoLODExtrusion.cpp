@@ -49,7 +49,7 @@
 */
 
 /*! \var SoSFBool SoLODExtrusion::ccw
-  Whether or not \e crossSection vertices are ordered counter-clockwise
+  Whether or not \e crossSection vertices are ordered counterclockwise
   or not.
  */
 
@@ -103,7 +103,7 @@
 
   Makes it possible to lock the extrusion Z-axis to always have this
   value. The extrusion coordinate system will need to be orthonormal,
-  of course, so the Z-axis will be transformed to accout for this.
+  of course, so the Z-axis will be transformed to account for this.
   Default value is (0, 0, 0), which means that the Z-axis is not
   locked.
 */

@@ -36,8 +36,8 @@
 
   \ingroup nodes
 
-  The TCB-type curve guarantees that all controlpoints are touched by
-  the curve. If no timestamps are specified, all timeintervals are set
+  The TCB-type curve guarantees that all control points are touched by
+  the curve. If no timestamps are specified, all time intervals are set
   to equal length. Coordinates are read from the state.
 
   Note that the list of timestamps \e must be sorted in increasing order.
@@ -363,12 +363,12 @@ SoTCBCurve::computeBBox(SoAction *action, SbBox3f &box, SbVec3f &center)
   This function is based on the Lightwave SDK (ftp.newtek.com) and
   calculates a TCB-type curve. Code for handling continuity / tension
   / bias is removed (values = 1).  Quite ironic as this is how the
-  curve got it's name. :) The timestamp-table must be sorted in
+  curve got its name. :) The timestamp table must be sorted in
   increasing order. Time values specified outside the range of
   timestamps will be clipped to the nearest value.
 
   This function is totally independent of the rest of the class, and
-  may be used for general curvecalculations.
+  may be used for general curve calculations.
 */
 void
 SoTCBCurve::TCB(const SbVec3f * vec, const SoMFTime &timestamp,
@@ -445,7 +445,7 @@ int
 SoTCBCurveP::getLinesPerSegment(SoAction * action)
 {
   // FIXME: the magic number (100.0f) should really be replaced with
-  // something based on the screenspace the curve occupies
+  // something based on the screen space the curve occupies
   // instead. 20030109 mortene.
   return (int)(PUBLIC(this)->getComplexityValue(action) * 100.0f);
 }

@@ -187,7 +187,7 @@ SmDynamicObjectKit::initClass(void)
 
 /*!
   Init callback function used to get terrain elevation when 
-  object hasRelativeElevation.
+  object has relative elevation.
   
   This method need only be called once.
 */
@@ -340,11 +340,11 @@ SmDynamicObjectKit::getGeometryVisibility(void)
 }
 
 /*!
-  Find nodekit (this or one of it's descendants) by objectId.
-  Only the first nodekit with matching objectId is returned.
+  Find nodekit (this or one of its descendants) by \a objectId.
+  Only the first nodekit with matching \a objectId is returned.
 
   This mechanism (in a small way) duplicates the node name functionality
-  in OI, for two reasons:
+  in Open Inventor, for two reasons:
   - cannot limit id to node name acceptable by Coin, and
   - cannot limit id to not duplicate node name already used elsewhere
     in the scene graph.
@@ -367,7 +367,7 @@ SmDynamicObjectKit::getObjectByObjectId(const SbName objectId)
 /*!  
   \param newObject Pointer to object to be added
   \param parentId ObjectId of desired parent object
-  \return Pointer to parent if successful (ie parent was found) otherwise NULL
+  \return Pointer to parent if successful (i.e. parent was found) otherwise NULL
 
   Add a new object to the object hierarchy. \a parentId controls
   where in the object hierarchy the new object is inserted. Note that

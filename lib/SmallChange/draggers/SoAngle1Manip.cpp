@@ -36,12 +36,12 @@
 
   \ingroup draggers
 
-  Use an instance of this dragger class in your scenegraph to let the
-  end-users of your application rotate geometry around a pre-defined
+  Use an instance of this dragger class in your scene graph to let the
+  end-users of your application rotate geometry around a predefined
   axis vector in 3D.
 
   For the dragger orientation and positioning itself, use some kind of
-  transformation node in your scenegraph, as usual.
+  transformation node in your scene graph, as usual.
 */
 
 #include "SoAngle1Manip.h"

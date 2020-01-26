@@ -142,8 +142,8 @@ static const unsigned int NOT_AVAILABLE = UINT_MAX;
 /*!
   \var SoMFFloat SoText2Set::rotation
 
-  Angle in radians between the text and the horisontal, in the camera
-  plane. Positive direction is counter clockwise.
+  Angle in radians between text and horizontal line, in the camera
+  plane. Positive direction is counterclockwise.
 */
 
 /*!

@@ -113,7 +113,7 @@ public:
 
 /*!
   \var SoSFBool ViewportRegion::clearColorBuffer
-  Set to TRUE to clear color buffer for the new viewport when the node is traversed.
+  Set to TRUE to clear color buffer for the new viewport when node is traversed.
 */
 
 /*!

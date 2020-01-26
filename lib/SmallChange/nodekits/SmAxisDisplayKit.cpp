@@ -303,8 +303,8 @@ SmAxisDisplayKit::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 }
 
 /*!
- Overloaded to detect when fields changes in order to correctly
- regenerate the private scene graph.
+  Overloaded to detect when fields change in order to correctly
+  regenerate the private scene graph.
 */
 void 
 SmAxisDisplayKit::notify(SoNotList * l)
@@ -345,7 +345,7 @@ SmAxisDisplayKit::setDefaultOnNonWritingFields(void)
 #define PUBLIC(obj) (obj)->master
 
 /*!
-  Called when something has changed and the private scenegraph 
+  Called when something has changed and the private scene graph 
   under the "axessep" part needs to be regenerated.
 */
 void 
@@ -464,7 +464,7 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
 }
 
 /*!
-  Callback to be able to sync our camera position with movements of the
+  Callback to enable the synchronization of our camera position with movements of the
   main camera.
 */
 void 

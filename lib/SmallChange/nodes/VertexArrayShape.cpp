@@ -32,7 +32,7 @@
 
 /*!
   \class SmVertexArrayShape
-  \brief The SmVertexArrayShape class us used to render using OpenGL vertex arrays (and soon with vertex buffer objects).
+  \brief The SmVertexArrayShape class us used to render using OpenGL vertex arrays (and soon vertex buffer objects).
 
 */
 

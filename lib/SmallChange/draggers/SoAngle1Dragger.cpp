@@ -38,15 +38,15 @@
 
   \ingroup draggers
 
-  Use an instance of this dragger class in your scenegraph to let the
-  end-users of your application rotate geometry around a pre-defined
+  Use an instance of this dragger class in your scene graph to let the
+  end-users of your application rotate geometry around a predefined
   axis vector in 3D.
 
   For the dragger orientation and positioning itself, use some kind of
-  transformation node in your scenegraph, as usual.
+  transformation node in your scene graph, as usual.
 
   This class offers a field angle, given in radians. This field holds
-  the current angle, in un-normalized values. In other words, it holds
+  the current angle, as not normalized value. In other words, it holds
   the number of rotations the dragger has done. 
 */
 
@@ -66,11 +66,11 @@
   This field is continuously updated to contain the angle (in radians) 
   of the current direction vector of the dragger.
 
-  The application programmer using this dragger in his scenegraph
+  The application programmer using this dragger in his scene graph
   should connect the relevant node fields in the scene to this field
   to make them follow the dragger orientation.
 
-  The angle hold un-normalized values. In other words, it holds the number
+  The angle holds a not normalized value. In other words, it holds the number
   of rotations the dragger has done, in addition to the orientation.
 */
 
@@ -254,7 +254,7 @@ SoAngle1Dragger::setProjector(SbCylinderProjector * p)
 
 /*!
   Returns projector instance used for converting from user interaction
-  dragger movements to 3D dragger re-orientation.
+  dragger movements to 3D dragger reorientation.
 
   \sa setProjector()
 */

@@ -229,7 +229,7 @@ SmCameraControlKit::handleEvent(SoHandleEventAction * action)
 }
 
 /*!  
-  Convenience function for viewAll-functionality. Has special
+  Convenience function for viewAll functionality. Has special
   handling for UTMCamera and UTMPosition nodes.
 */
 void 

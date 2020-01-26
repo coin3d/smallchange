@@ -106,7 +106,7 @@
   This goes for ray picking results, and it also goes for primitive
   generation by SoShape classes for the SoCallbackAction class and
   fallback shape rendering through primitive generation (a useful
-  debugging trick when debugging for instance raypicking).
+  debugging trick when debugging for instance ray picking).
 
 */
 
@@ -188,7 +188,7 @@
   \defgroup events Event Classes
 
   \brief
-  These classes are te event types you can send to a scene graph
+  These classes are the event types you can send to a scene graph
   through the SoHandleEventAction.
   
   \details
@@ -350,8 +350,8 @@
   \defgroup projectors Projector Classes
 
   \brief
-  The projector classes are used to convert between screenspace (2D)
-  locations and locations in worldspace (3D).  
+  The projector classes are used to convert between screen space (2D)
+  locations and locations in world space (3D).  
   
   \details
   They are mostly used in relation to user interaction with the mouse
@@ -404,7 +404,7 @@
   \defgroup soscxml Coin specific State Chart XML Classes
 
   \brief
-  This set of classes implement a coin-specific mode of scxml.
+  This set of classes implement a Coin specific mode of scxml.
 
   \sa navigation
   \sa scxml
@@ -490,7 +490,7 @@
   
   \details
   You can use this to e.g. generate scalable PostScript images for
-  printing instead of raster images that will become pixellated when
+  printing instead of raster images that will become pixelated when
   you scale them up.
 
   See below for \ref hardcopy_overview.

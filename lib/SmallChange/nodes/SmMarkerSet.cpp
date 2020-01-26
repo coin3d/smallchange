@@ -85,7 +85,7 @@
 /*!
   \var SoSFInt32 SmMarkerSet::maxMarkersToRender
 
-  Specifies how many markers to render based on their closeness to the camera.
+  Specifies how many markers to render based on their distance to the camera.
 */
 
 

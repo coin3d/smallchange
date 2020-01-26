@@ -58,13 +58,13 @@
 /*!
   \var SoSFFloat ShapeScale::minScale
 
-  The minimum scalefactor applied to the shape. Default value is 0.0.
+  The minimum scale factor applied to the shape. Default value is 0.0.
 */
 
 /*!
   \var SoSFFloat ShapeScale::maxScale
 
-  The maximum scalefactor applied to the shape. Default value is FLT_MAX.
+  The maximum scale factor applied to the shape. Default value is FLT_MAX.
 */
 
 #ifdef HAVE_CONFIG_H

@@ -66,7 +66,7 @@
   Selects which child to traverse during rendering (and some other)
   actions.
 
-  When the length of this multifield is larger than the number of children
+  When the length of this multi-field is larger than the number of children
   this group has, the enable list is modulated over the children.  This lets
   you have full control over the number of times and order each child is
   traversed.
