@@ -42,7 +42,7 @@
   \var SoSFBool SmTooltipKit::autoTrigger
   
   When TRUE, will search for SmTooltip nodes in front of shapes and
-  pop up a tooltip when the mouse pointer has been still over an
+  pop up a tooltip when the mouse pointer has been resting over an
   object for over autoTriggerTime seconds. Default value is FALSE.
 */
 
@@ -338,7 +338,7 @@ SmTooltipKit::getPrimitiveCount(SoGetPrimitiveCountAction * action)
 
 /*!  
   Sets the current viewport region. The viewport region will also
-  be picked up when the node is travered with SoGLRenderAction.
+  be picked up when the node is traversed with SoGLRenderAction.
 */
 void 
 SmTooltipKit::setViewportRegion(const SbViewportRegion & vp)

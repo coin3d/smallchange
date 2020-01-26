@@ -630,7 +630,7 @@ Coinboard::generatePrimitives(SoAction * action)
 }
 
 /*!
-  This is a Coin method. It calculates the bounding box of the fron
+  This is a Coin method. It calculates the bounding box of the front
   facing shapes.
 */
 void

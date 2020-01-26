@@ -36,12 +36,12 @@
 
   \ingroup nodes
 
-  When encountering nodes of this type during traversal, the
-  coordinates it contains will be put on the statestack for later use
+  When encountering a node of this type during traversal, the
+  coordinates it contains will be put on the state stack for later use
   by shape nodes of types which needs coordinate sets (like SoFaceSet
   nodes or SoPointSet nodes). If your scene graph contains an
   UTMCamera node, the coordinates will be adjusted for this. This is
-  just a convenience node whihc makes it possible to specify shapes
+  just a convenience node which makes it possible to specify shapes
   directly in UTMCoordinates. It should only be used for quite simple
   and static geometry, as transformation nodes will have no effect on
   this node. To specify more complex geometry, you're better off

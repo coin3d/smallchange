@@ -44,7 +44,7 @@
   anything but the backgroundMaterial, tickMaterial and extraNodes
   parts.
   
-  This nodekit contains the follwing parts:
+  This nodekit contains the following parts:
 
   \li topSeparator The separator that holds all subscene for this
   kit. Private.
@@ -193,8 +193,8 @@
 
 /*!
   \var SoSFFloat LegendKit::discreteUseLower
-  When calculating the discrete color between bigticks, use the lower
-  value of that section (the value right above the previous bigtick),
+  When calculating the discrete color between big ticks, use the lower
+  value of that section (the value right above the previous big tick),
   instead of the upper value (the value right below the current
   bigtick).
 */
@@ -1384,7 +1384,7 @@ LegendKit::setBackgroundColor(const SbColor & color, const float transparency)
 }
 
 /*!
-  Enables or disables the Legend background.
+  Enables or disables the legend background.
 */
 void
 LegendKit::enableBackground(const SbBool onoff)

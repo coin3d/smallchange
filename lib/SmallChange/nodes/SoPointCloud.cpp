@@ -41,7 +41,7 @@
   field).
 
   This node either uses the coordinates currently on the state
-  (typically set up by a leading SoCoordinate3 node in the scenegraph)
+  (typically set up by a leading SoCoordinate3 node in the scene graph)
   or from a SoVertexProperty node attached to this node to render a
   set of 3D points.
 

@@ -70,7 +70,7 @@ DEF BaseNode Separator {
 }
 
 DEF SeparatorNode WWWAnchor {
-  name "http://doc.coin3d.org/Coin/classSeparator.html"
+  name "http://coin3d.github.io/Coin/classSeparator.html"
   Texture2Transform { translation 1 3 }
   RotationXYZ { axis X angle 1.57079 }
   Cylinder { radius 0.2 height 0.04 }

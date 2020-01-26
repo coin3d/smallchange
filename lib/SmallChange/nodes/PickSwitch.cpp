@@ -38,7 +38,7 @@
 
   This node can add simple interactivity to your scene. When the current
   child is picked, the whichChild field is changed to the active
-  ot inactive child. It can operate in two modes. If the toggle field
+  or inactive child. It can operate in two modes. If the toggle field
   is set to TRUE, the active/inactive state is changed each time
   the child is picked. If toggle is FALSE, the active child is
   the current child only when the some child is selected and the mouse

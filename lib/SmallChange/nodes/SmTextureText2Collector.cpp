@@ -40,10 +40,10 @@
   and you use the SORTED_OBJECT_BLEND or DELAYED_BLEND transparency
   modes.
 
-  SmTextureText2 will also invalidate render and bbox caches every
+  SmTextureText2 will also invalidate render and bounding box caches every
   time the camera moves. In addition, you might get quite a lot of
   OpenGL state changes when rendering the SmTextureText2 nodes
-  inbetween other geometry.
+  in between other geometry.
 
   To solve these problem, it's possible to use this node to optimize text
   rendering. It will collect all strings from all SmTextureText2 nodes
@@ -63,7 +63,7 @@
   \endcode
 
   Please note that this node will only be able to optimize SmTextureText2 nodes
-  where the number of postions equals the number of strings.
+  where the number of positions equals the number of strings.
 */
 
 #include "SmTextureText2Collector.h"

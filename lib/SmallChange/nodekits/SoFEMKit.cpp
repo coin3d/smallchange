@@ -218,7 +218,7 @@ SoFEMKit::reset(void)
   Add a node (vertex) to the FEM. \a nodeidx should be used
   to refer to this node (e.g. when setting the node color or
   when creating elements). Each node must have an unique 
-  nodeidx.
+  \a nodeidx.
 */
 void 
 SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
@@ -241,7 +241,7 @@ SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
 /*!
   Add a 3D element to the FEM. \a elementidx should be an unique
   index that is used when setting element color. \a nodes should
-  be eight node indices, ordered like this:
+  be an array of eight node indices, ordered like this:
 
      5_______6
      /|     /|
@@ -253,7 +253,7 @@ SoFEMKit::addNode(const int nodeidx, const SbVec3f & xyz)
     --------
    0        3
 
-  \a layerindex can be used to specify the layer this element is in.       
+  \a layerindex can be used to specify the layer this element is in.
 
 */
 
@@ -289,7 +289,7 @@ SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int la
 /*!
   Add a 2D element to the FEM. \a elementidx must be an unique
   index that can be used when setting the element color. \a
-  nodes should contain the four node indices in the folowing
+  nodes should contain the four node indices in the following
   order:
 
 
@@ -300,7 +300,7 @@ SoFEMKit::add3DElement(const int elementidx, const int32_t * nodes, const int la
   |------|
   0      1
 
-  \a layerindex can be used to specify the layer this element is in.       
+  \a layerindex can be used to specify the layer this element is in.
 */
 
 void 
@@ -449,7 +449,7 @@ SoFEMKit::enableElement(const int elementidx, const SbBool onoff)
 }
 
 /*!
-  Enable/disable elements in the \a leyerindex layer.
+  Enable/disable elements in the \a layerindex layer.
 */
 void 
 SoFEMKit::enableLayer(const int layerindex, const SbBool onoroff)

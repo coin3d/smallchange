@@ -68,7 +68,7 @@
 */
 
 
-/*
+/*!
   \var SoMFString SmTooltip::description
 
   The tooltip string.
