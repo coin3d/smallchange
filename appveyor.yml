@@ -203,11 +203,11 @@ before_build:
       DOWNLOAD_FILE_SOQT=soqt-$SOQT_REPO_TAG_NAME-$COMPILER_ID-$CMAKE_PLATFORM.tar.gz
       echo download file $DOWNLOAD_FILE_SOQT
       if [ -z "${APPVEYOR_REPO_TAG_NAME+x}" ]; then
-        export DOWNLOAD_ADDRESS_SOQT=https://github.com/soqt3d/superglu/releases/download/v$SOQT_VERSION/$DOWNLOAD_FILE_SOQT
+        export DOWNLOAD_ADDRESS_SOQT=https://github.com/coin3d/soqt/releases/download/v$SOQT_VERSION/$DOWNLOAD_FILE_SOQT
       else
-        RELEASE_ID=`curl -s -H "Authorization: token $GH_AUTH_TOKEN" https://api.github.com/repos/soqt3d/soqt/releases | jq '.[] | select(.name=="CI builds") | .id'`
-        ASSET_ID=`curl -s -H "Authorization: token $GH_AUTH_TOKEN" https://api.github.com/repos/soqt3d/soqt/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_SOQT "$DOWNLOAD_FILE_SOQT" '.assets[] | select(.name==$DOWNLOAD_FILE_SOQT) | .id'`
-        export DOWNLOAD_ADDRESS_SOQT=https://api.github.com/repos/soqt3d/soqt/releases/assets/$ASSET_ID
+        RELEASE_ID=`curl -s -H "Authorization: token $GH_AUTH_TOKEN" https://api.github.com/repos/coin3d/soqt/releases | jq '.[] | select(.name=="CI builds") | .id'`
+        ASSET_ID=`curl -s -H "Authorization: token $GH_AUTH_TOKEN" https://api.github.com/repos/coin3d/soqt/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_SOQT "$DOWNLOAD_FILE_SOQT" '.assets[] | select(.name==$DOWNLOAD_FILE_SOQT) | .id'`
+        export DOWNLOAD_ADDRESS_SOQT=https://api.github.com/repos/coin3d/soqt/releases/assets/$ASSET_ID
       fi
       echo download address $DOWNLOAD_ADDRESS_SOQT
       curl -s -S -L -H "Authorization: token $GH_AUTH_TOKEN" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_SOQT $DOWNLOAD_ADDRESS_SOQT
