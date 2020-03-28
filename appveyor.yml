@@ -21,19 +21,19 @@ environment:
   GH_AUTH_TOKEN:
     secure: 850frgRGZcc4Cljd2P7Ej68no4/kkl4EMB+DjnX725wcKBRJuFk/kGRdJGyKXd2u
   matrix:
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-#      CMAKE_GENERATOR: 'Unix Makefiles'
-#      CMAKE_PLATFORM: x86
-#      CMAKE_ARCH_FLAGS: -m32
-#      COMPILER_ID: gcc
-#      # QT_DIR: C:\Qt\5.10.1\msvc2015
-#
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-#      CMAKE_GENERATOR: 'Unix Makefiles'
-#      CMAKE_PLATFORM: x64
-#      CMAKE_ARCH_FLAGS: -m64
-#      COMPILER_ID: gcc
-#      # QT_DIR: C:\Qt\5.10.1\msvc2015
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      CMAKE_GENERATOR: 'Unix Makefiles'
+      CMAKE_PLATFORM: x86
+      CMAKE_ARCH_FLAGS: -m32
+      COMPILER_ID: gcc
+      # QT_DIR: C:\Qt\5.10.1\msvc2015
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      CMAKE_GENERATOR: 'Unix Makefiles'
+      CMAKE_PLATFORM: x64
+      CMAKE_ARCH_FLAGS: -m64
+      COMPILER_ID: gcc
+      # QT_DIR: C:\Qt\5.10.1\msvc2015
 
 #    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
 #      CMAKE_GENERATOR: 'Visual Studio 10 2010'
@@ -154,7 +154,7 @@ before_build:
       echo download file %DOWNLOAD_FILE_SOQT%
       for /f %%i in ('curl -s -H "Authorization: token %GH_AUTH_TOKEN%" https://api.github.com/repos/coin3d/soqt/releases ^| jq -r ".[] | select(.name==\"CI builds\") | .id"') do set RELEASE_ID=%%i
       for /f %%i in ('curl -s -H "Authorization: token %GH_AUTH_TOKEN%" https://api.github.com/repos/coin3d/soqt/releases/%RELEASE_ID% ^| jq -r --arg DOWNLOAD_FILE_SOQT "%DOWNLOAD_FILE_SOQT%" ".assets[] | select(.name==$DOWNLOAD_FILE_SOQT) | .id"') do set ASSET_ID=%%i
-      set DOWNLOAD_ADDRESS_SOQT=https://api.github.com/repos/coin3d/coin/releases/assets/%ASSET_ID%
+      set DOWNLOAD_ADDRESS_SOQT=https://api.github.com/repos/coin3d/soqt/releases/assets/%ASSET_ID%
       if defined APPVEYOR_REPO_TAG_NAME set DOWNLOAD_ADDRESS_SOQT=https://github.com/coin3d/soqt/releases/tag/v%SOQT_VERSION%/%DOWNLOAD_FILE_SOQT%
       curl -s -S -L -H "Authorization: token %GH_AUTH_TOKEN%" -H "Accept: application/octet-stream" -o %DOWNLOAD_FILE_SOQT% %DOWNLOAD_ADDRESS_SOQT%
       7z x %DOWNLOAD_FILE_SOQT%     -o%APPVEYOR_BUILD_FOLDER%\downloads
@@ -189,7 +189,7 @@ before_build:
       DOWNLOAD_FILE_COIN=coin-$COIN_REPO_TAG_NAME-$COMPILER_ID-$CMAKE_PLATFORM.tar.gz
       echo download file $DOWNLOAD_FILE_COIN
       if [ -z "${APPVEYOR_REPO_TAG_NAME+x}" ]; then
-        export DOWNLOAD_ADDRESS_COIN=https://github.com/coin3d/superglu/releases/download/v$COIN_VERSION/$DOWNLOAD_FILE_COIN
+        export DOWNLOAD_ADDRESS_COIN=https://github.com/coin3d/coin/releases/download/v$COIN_VERSION/$DOWNLOAD_FILE_COIN
       else
         RELEASE_ID=`curl -s -H "Authorization: token $GH_AUTH_TOKEN" https://api.github.com/repos/coin3d/coin/releases | jq '.[] | select(.name=="CI builds") | .id'`
         ASSET_ID=`curl -s -H "Authorization: token $GH_AUTH_TOKEN" https://api.github.com/repos/coin3d/coin/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_COIN "$DOWNLOAD_FILE_COIN" '.assets[] | select(.name==$DOWNLOAD_FILE_COIN) | .id'`
