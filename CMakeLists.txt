@@ -80,22 +80,28 @@ report_prepare(
 find_package(OpenGL REQUIRED)
 find_package(Coin REQUIRED)
 
+set(SMALLCHANGE_PKG_DEPS "Coin")
+
 if(SMALLCHANGE_USE_QT5)
   find_package(Qt5 COMPONENTS Core Widgets QUIET)
 endif()
 
 if(Qt5_FOUND)
-  set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+  set(QUARTER_QT_TARGETS Qt5::Core Qt5::Gui Qt5::Widgets)
   string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt5Core_VERSION_STRING}")
   string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt5Core_VERSION_STRING}")
   string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt5Core_VERSION_STRING}")
-  set(PACKAGE_ADDITIONAL_REQUIREMENTS "Qt5Core, Qt5Gui, Qt5Widgets")
+  set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} Qt5Core Qt5Gui Qt5Widgets")
 else()
   set(QT_USE_IMPORTED_TARGETS ON)
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+  set(QUARTER_QT_TARGETS Qt4::QtCore Qt4::QtGui)
   include(${QT_USE_FILE})
-  set(PACKAGE_ADDITIONAL_REQUIREMENTS "QtCore, QtGui")
+  set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} QtCore QtGui")
 endif()
+
+set(SMALLCHANGE_PKG_LIBS "" CACHE INTERNAL "Link libraries for package config")
+set(SMALLCHANGE_PKG_FLAGS "" CACHE INTERNAL "Compilation flags for package config")
 
 find_package(SoQt REQUIRED)
 

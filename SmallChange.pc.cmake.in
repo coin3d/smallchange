@@ -13,9 +13,9 @@ htmldir=${docdir}/html
 Name: @PROJECT_NAME@
 Description: A collection of Coin extensions
 Version: @PROJECT_VERSION@
-Requires: Coin
+Requires: @SMALLCHANGE_PKG_DEPS@
 Conflicts:
-Libs: -L${libdir} -lSmallChange @SMALLCHANGE_EXTRA_LDFLAGS@ @SMALLCHANGE_EXTRA_LIBS@
-Cflags: -I${includedir} @SMALLCHANGE_EXTRA_CFLAGS@ @SMALLCHANGE_EXTRA_CPPFLAGS@
+Libs: -L${libdir} @SMALLCHANGE_PKG_LIBS@
+Cflags: -I${includedir} @SMALLCHANGE_PKG_FLAGS@
 
 frameworkdir=@frameworkdir@
