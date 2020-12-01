@@ -20,13 +20,6 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install freeglut3-dev qt5-default
           mkdir cmake_download_dir
-          DOWNLOAD_FILE_SUPERGLU=superglu-latest-Ubuntu-gcc7-x64.tar.gz
-          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/superglu/releases | jq -r --arg SUPERGLU_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$SUPERGLU_REPO_TAG_NAME) | .id'`
-          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/superglu/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_SUPERGLU "$DOWNLOAD_FILE_SUPERGLU" '.assets[] | select(.name==$DOWNLOAD_FILE_SUPERGLU) | .id'`
-          export DOWNLOAD_ADDRESS_SUPERGLU=https://api.github.com/repos/coin3d/superglu/releases/assets/$ASSET_ID
-          echo download file $DOWNLOAD_FILE_SUPERGLU from address $DOWNLOAD_ADDRESS_SUPERGLU
-          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_SUPERGLU $DOWNLOAD_ADDRESS_SUPERGLU
-          tar xzf $DOWNLOAD_FILE_SUPERGLU -C cmake_download_dir
           DOWNLOAD_FILE_COIN=coin-latest-Ubuntu-gcc7-x64.tar.gz
           RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases | jq -r --arg COIN_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$COIN_REPO_TAG_NAME) | .id'`
           ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_COIN "$DOWNLOAD_FILE_COIN" '.assets[] | select(.name==$DOWNLOAD_FILE_COIN) | .id'`
@@ -67,13 +60,6 @@ jobs:
         shell: cmd
         run: |
           mkdir cmake_download_dir
-          set DOWNLOAD_FILE_SUPERGLU=superglu-latest-msvc16-x64.zip
-          for /f %%i in ('curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/superglu/releases ^| jq -r --arg SUPERGLU_REPO_TAG_NAME "CI-builds" ".[] | select(.tag_name==$SUPERGLU_REPO_TAG_NAME) | .id"') do set RELEASE_ID=%%i
-          for /f %%i in ('curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/superglu/releases/%RELEASE_ID% ^| jq -r --arg DOWNLOAD_FILE_SUPERGLU "%DOWNLOAD_FILE_SUPERGLU%" ".assets[] | select(.name==$DOWNLOAD_FILE_SUPERGLU) | .id"') do set ASSET_ID=%%i
-          set DOWNLOAD_ADDRESS_SUPERGLU=https://api.github.com/repos/coin3d/superglu/releases/assets/%ASSET_ID%
-          echo download file %DOWNLOAD_FILE_SUPERGLU% from address %DOWNLOAD_ADDRESS_SUPERGLU%
-          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o %DOWNLOAD_FILE_SUPERGLU% %DOWNLOAD_ADDRESS_SUPERGLU%
-          7z x %DOWNLOAD_FILE_SUPERGLU% -ocmake_download_dir
           set DOWNLOAD_FILE_COIN=coin-latest-msvc16-x64.zip
           for /f %%i in ('curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases ^| jq -r --arg COIN_REPO_TAG_NAME "CI-builds" ".[] | select(.tag_name==$COIN_REPO_TAG_NAME) | .id"') do set RELEASE_ID=%%i
           for /f %%i in ('curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases/%RELEASE_ID% ^| jq -r --arg DOWNLOAD_FILE_COIN "%DOWNLOAD_FILE_COIN%" ".assets[] | select(.name==$DOWNLOAD_FILE_COIN) | .id"') do set ASSET_ID=%%i
@@ -112,13 +98,6 @@ jobs:
 #        run: |
 #          brew install qt5
 #          mkdir cmake_download_dir
-#          DOWNLOAD_FILE_SUPERGLU=superglu-latest-Ubuntu-gcc7-x64.tar.gz
-#          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/superglu/releases | jq -r --arg SUPERGLU_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$SUPERGLU_REPO_TAG_NAME) | .id'`
-#          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/superglu/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_SUPERGLU "$DOWNLOAD_FILE_SUPERGLU" '.assets[] | select(.name==$DOWNLOAD_FILE_SUPERGLU) | .id'`
-#          export DOWNLOAD_ADDRESS_SUPERGLU=https://api.github.com/repos/coin3d/superglu/releases/assets/$ASSET_ID
-#          echo download file $DOWNLOAD_FILE_SUPERGLU from address $DOWNLOAD_ADDRESS_SUPERGLU
-#          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_SUPERGLU $DOWNLOAD_ADDRESS_SUPERGLU
-#          tar xzf $DOWNLOAD_FILE_SUPERGLU -C cmake_download_dir
 #          DOWNLOAD_FILE_COIN=coin-latest-macos-clang11-x64.tar.gz
 #          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases | jq -r --arg COIN_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$COIN_REPO_TAG_NAME) | .id'`
 #          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_COIN "$DOWNLOAD_FILE_COIN" '.assets[] | select(.name==$DOWNLOAD_FILE_COIN) | .id'`
