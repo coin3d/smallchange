@@ -171,7 +171,7 @@ public:
     this->transpptr = NULL;
     this->vrmlifs = NULL;
   }
-  SmEnvelopeP() {
+  ~SmEnvelopeP() {
     delete this->search;
   }
 
