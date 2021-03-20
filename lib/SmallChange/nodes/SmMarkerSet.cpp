@@ -145,7 +145,7 @@ SmMarkerSet::SmMarkerSet()
 SmMarkerSet::~SmMarkerSet()
 {
   if (PRIVATE(this)->pointdistancelist != NULL)
-    delete PRIVATE(this)->pointdistancelist;
+    delete [] PRIVATE(this)->pointdistancelist;
 }
 
 // ----------------------------------------------------------------------
@@ -261,7 +261,7 @@ SmMarkerSet::GLRender(SoGLRenderAction * action)
   if (numpts != PRIVATE(this)->pointdistancelistlen ||
       PRIVATE(this)->pointdistancelist == NULL) {
     if (PRIVATE(this)->pointdistancelist != NULL)
-      delete PRIVATE(this)->pointdistancelist;
+      delete [] PRIVATE(this)->pointdistancelist;
     PRIVATE(this)->pointdistancelist = new smmarkerset_indexdistance[numpts];
     PRIVATE(this)->pointdistancelistlen = numpts;
   }

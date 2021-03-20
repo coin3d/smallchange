@@ -335,7 +335,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
 
     if (PRIVATE(this)->dirty || PRIVATE(this)->textdistancelist == NULL) {
       if (PRIVATE(this)->textdistancelist != NULL)
-        delete PRIVATE(this)->textdistancelist;
+        delete [] PRIVATE(this)->textdistancelist;
       PRIVATE(this)->textdistancelist = new sotext2set_indexdistance[stringcnt];
     }
 
@@ -843,7 +843,7 @@ SoText2SetP::buildGlyphCache(SoState * state)
   if (!this->shouldBuildGlyphCache(state)) { return; }
 
   const char * s;
-  int len;
+  size_t len;
   SbVec2s thissize, thispos;
   unsigned int idx;
   SbName curfontname;
