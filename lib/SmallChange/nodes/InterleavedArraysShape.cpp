@@ -545,24 +545,24 @@ InterleavedArraysShape::enableArrays(SoGLRenderAction * action,
 
   if (colors) {
     cc_glglue_glColorPointer(glue, 4, GL_UNSIGNED_BYTE,
-                             PRIVATE(this)->vertexsize, 
+                             (GLsizei) PRIVATE(this)->vertexsize, 
                              (const GLvoid*) PRIVATE(this)->coloroffset);
     cc_glglue_glEnableClientState(glue, GL_COLOR_ARRAY);
   }
   if (texcoords) {
     cc_glglue_glTexCoordPointer(glue, 2, GL_FLOAT, 
-                                PRIVATE(this)->vertexsize,
+                                (GLsizei) PRIVATE(this)->vertexsize,
                                 (const GLvoid*) PRIVATE(this)->texcoordoffset);
     cc_glglue_glEnableClientState(glue, GL_TEXTURE_COORD_ARRAY);
   }
   if (normals) {
     cc_glglue_glNormalPointer(glue, GL_FLOAT, 
-                              PRIVATE(this)->vertexsize,
+                              (GLsizei) PRIVATE(this)->vertexsize,
                               (const GLvoid*) PRIVATE(this)->normaloffset);
     cc_glglue_glEnableClientState(glue, GL_NORMAL_ARRAY);
   }
   cc_glglue_glVertexPointer(glue, 3, GL_FLOAT,
-                            PRIVATE(this)->vertexsize,
+                            (GLsizei) PRIVATE(this)->vertexsize,
                             NULL);
   cc_glglue_glEnableClientState(glue, GL_VERTEX_ARRAY);
 

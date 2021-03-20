@@ -973,9 +973,9 @@ LegendKit::renderText(SoGLRenderAction * action)
 void 
 LegendKit::renderString(const char * str, int xpos, int ypos)
 {
-  int len = strlen(str);
+  size_t len = strlen(str);
   const unsigned char * ustr = (const unsigned char*) str;
-  for (int i = 0; i < len; i++) {
+  for (size_t i = 0; i < len; i++) {
     if (ustr[i] >= 32) { // just in case?
       glRasterPos2i(xpos, ypos);
       glBitmap(FONT_WIDTH, FONT_HEIGHT, 0, 0, 0, 0, 
