@@ -171,6 +171,9 @@ public:
     this->transpptr = NULL;
     this->vrmlifs = NULL;
   }
+  SmEnvelopeP() {
+    delete this->search;
+  }
 
   SbBox3f bbox;
   
