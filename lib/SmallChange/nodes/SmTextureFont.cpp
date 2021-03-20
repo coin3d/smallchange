@@ -302,8 +302,8 @@ SmTextureFont::FontImage::getGlyphImage(const unsigned char c) const
 
   for (short y = 0; y < size[1]; y++) {
     for (short x = 0; x < size[0]; x++) {
-      for (int c = 0; c < nc; c++) {
-        *dst++ = src[(pos[1]+y)*fullsize[0]*nc + (pos[0]+x)*nc + c];
+      for (int ch = 0; ch < nc; ch++) {
+        *dst++ = src[(pos[1]+y)*fullsize[0]*nc + (pos[0]+x)*nc + ch];
       }
     }
   }
