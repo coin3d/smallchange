@@ -293,7 +293,7 @@ public:
     memcpy(this->data, val, num*sizeof(float));
     this->text = new char*[num];
     for (int i = 0; i < num; i++) {
-      int len = strlen(text[i]);
+      size_t len = strlen(text[i]);
       this->text[i] = new char[len+1];
       strcpy(this->text[i], text[i]);
     }

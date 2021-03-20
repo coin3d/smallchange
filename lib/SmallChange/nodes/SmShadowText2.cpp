@@ -283,7 +283,7 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
   nilpoint[1] += this->pixelOffset.getValue()[1];
 
   float xpos, ypos;
-  int strwidth;
+  size_t strwidth;
 
   xpos = nilpoint[0];      // to get rid of compiler warning..
   ypos = nilpoint[1];
@@ -304,7 +304,7 @@ SmShadowText2::GLRender(SoGLRenderAction * action)
       xpos = nilpoint[0] - (strwidth * 8.0f)/2.0f;
       break;
     }
-    for (int i2 = 0; i2 < strwidth; i2++) {
+    for (size_t i2 = 0; i2 < strwidth; i2++) {
 
       int idx = painter_isolatin1_mapping[s[i2]];
 
