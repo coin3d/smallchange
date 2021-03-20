@@ -233,7 +233,7 @@ SbCubicSpline::getPoint(const SbMatrix & m, const float t)
 
 #else
   double t1 = (double) t;
-  double t2 = t*t;
+  double t2 = t1*t;
   double t3 = t2*t;
 
   return 
