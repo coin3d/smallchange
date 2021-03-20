@@ -98,13 +98,16 @@ sm_vavertex::operator==(const sm_vavertex & ov) const
 class SmToVertexArrayShapeActionP {
 public:
   SmToVertexArrayShapeActionP(void)
-    : cbaction(SbViewportRegion(640, 480)) { 
+    : cbaction(SbViewportRegion(640, 480)) {
       cbaction.addTriangleCallback(SoShape::getClassTypeId(), triangle_cb, this);
       cbaction.addPreCallback(SoVertexShape::getClassTypeId(),
                               pre_shape_cb, this);
       this->vhash = new SbHash <int32_t, sm_vavertex>;
       this->useifs = TRUE;
     }
+  ~SmToVertexArrayShapeActionP() {
+    delete this->vhash;
+  }
 
   static SoCallbackAction::Response pre_shape_cb(void * userdata, SoCallbackAction * action, const SoNode * node) {
     SmToVertexArrayShapeActionP * thisp = (SmToVertexArrayShapeActionP*)userdata;

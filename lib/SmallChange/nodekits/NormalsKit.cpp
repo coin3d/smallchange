@@ -148,9 +148,7 @@ SmNormalsKit::~SmNormalsKit(void)
   PRIVATE(this)->coords->unref();
   PRIVATE(this)->lines->unref();
   delete PRIVATE(this)->scenesensor;
-  if ( PRIVATE(this)->cbaction != NULL ) {
-    delete PRIVATE(this)->cbaction;
-  }
+  delete PRIVATE(this)->cbaction;
   delete PRIVATE(this);
 }
 
