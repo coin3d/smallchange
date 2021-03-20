@@ -742,13 +742,13 @@ SmPopupMenuKit::trigger_cb(void * closure, SoSensor * s)
   int idx = PRIVATE(thisp)->triggeritem;
   
   if (idx >= 0 && idx < thisp->itemSchemeScript.getNum()) {
-    SbString s = thisp->itemSchemeScript[idx];
-    if (s.getLength()) {        
-      if (s[0] == '(' || s[0] == ';') {
-        schemescriptcb(s.getString());
+    SbString script = thisp->itemSchemeScript[idx];
+    if (script.getLength()) {
+      if (script[0] == '(' || script[0] == ';') {
+        schemescriptcb(script.getString());
       }
       else {
-        schemefilecb(s.getString());
+        schemefilecb(script.getString());
       }
     }
   }
