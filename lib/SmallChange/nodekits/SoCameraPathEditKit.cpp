@@ -766,7 +766,7 @@ void SoCameraPathEditKit::insertControlpoint(int idx, const SbVec3f &pos, const 
   // timestamps (equal intervals between each controlpoint)
   else {
     for (int i = 0; i < numControlpoints; i++)
-      timestamp.set1Value(i, float(i)*timeScale.getValue());
+      timestamp.set1Value(i, double(i)*timeScale.getValue());
 
     t = idx;
   }

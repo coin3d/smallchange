@@ -201,7 +201,7 @@ SmHelicopterEventHandler::moveCamera(const SbVec3f & vec, const SbBool dorotate)
   }
   
   if (camera->isOfType(UTMCamera::getClassTypeId())) {
-    SbVec3d ddst(dst[0]*dist, dst[1]*dist, dst[2]*dist);
+    SbVec3d ddst((double)dst[0]*dist, (double)dst[1]*dist, (double)dst[2]*dist);
     SbVec3d pos = utmcamera->utmposition.getValue() + ddst;
     utmcamera->utmposition = pos;
   }

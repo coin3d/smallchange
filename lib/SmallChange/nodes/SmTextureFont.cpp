@@ -220,7 +220,7 @@ SmTextureFont::FontImage::FontImage(const SbVec2s glyphsize_in,
   // initialize image to a blank image
   SbVec2s dummy;
   int dummy2;
-  memset(this->getValue(dummy, dummy2), 0, w*h*numcomp);
+  memset(this->getValue(dummy, dummy2), 0, (size_t)w*h*numcomp);
   this->glimage = NULL;
 }
 
@@ -550,7 +550,7 @@ SmTextureFont::initClass(void)
     int dummy2;
     render_text(img.getValue(dummy, dummy2),
               texturetext_isolatin1_mapping[c], 255, 255);
-    default_font->addGlyph(c, img, 7, 8);
+    default_font->addGlyph(static_cast<unsigned char>(c), img, 7, 8);
   }
   cc_coin_atexit(destroyClass);
 }
