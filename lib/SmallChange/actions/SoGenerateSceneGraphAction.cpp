@@ -186,7 +186,7 @@ protected:
 
 private:
   SoSearchAction * searcher;
-  SoNode * getSceneGraphItem(SbString itemName);
+  SoNode * getSceneGraphItem(const SbString & itemName);
   SoGenerateSceneGraphAction * api;
 };
 
@@ -213,7 +213,7 @@ SoGenerateSceneGraphActionP::~SoGenerateSceneGraphActionP(void)
 }
 
 SoNode *
-SoGenerateSceneGraphActionP::getSceneGraphItem(SbString itemName)
+SoGenerateSceneGraphActionP::getSceneGraphItem(const SbString & itemName)
 {
   static SoSeparator * sgitems = NULL; // how do you unref/delete this on exit?
   if ( sgitems == NULL ) {
