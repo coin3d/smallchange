@@ -86,7 +86,7 @@ else()
   set_target_properties(${PROJECT_NAME} PROPERTIES VERSION "${SMALLCHANGE_SO_VERSION}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}" SOVERSION ${SMALLCHANGE_SO_VERSION})
 endif()
 
-target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARY})
+target_link_libraries(${PROJECT_NAME} Coin::Coin ${OPENGL_LIBRARIES})
 
 # ############################################################################
 # Install targets
