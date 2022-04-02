@@ -989,7 +989,6 @@ InterleavedArraysShape::VBO::bindBuffer(uint32_t contextid)
 void
 InterleavedArraysShape::VBO::context_destruction_cb(uint32_t context, void * userdata)
 {
-  GLuint buffer;
   VBO * thisp = (VBO*) userdata;
   const cc_glglue * glue = cc_glglue_instance((int) context);
 

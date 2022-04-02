@@ -418,7 +418,7 @@ void
 SmTextureFont::FontImage::setKerning(unsigned char glyph, unsigned char next, int kerning)
 {
   uintptr_t key = uintptr_t(glyph)<<8 | uintptr_t(next);
-  void * val = reinterpret_cast<void*> (kerning);
+  void * val = reinterpret_cast<void*>(static_cast<uintptr_t>(kerning));
   this->kerningdict.enter(key, val);
 }
 
@@ -432,7 +432,7 @@ SmTextureFont::FontImage::getKerning(unsigned char glyph, unsigned char next) co
   uintptr_t key = uintptr_t(glyph)<<8 | uintptr_t(next);
   void * val;
   if (this->kerningdict.find(key, val)) {
-    return reinterpret_cast<uintptr_t> (val);
+    return static_cast<int>(reinterpret_cast<uintptr_t>(val));
   }
   return this->glyphwidth[glyph];
 }
