@@ -53,6 +53,7 @@ endfunction(report_prepare)
 
 option(HAVE_DEBUG                    "Add debugging information during the configure process")
 option(SMALLCHANGE_BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(SMALLCHANGE_USE_QT6 "Prefer Qt6 over Qt5 if available" ON)
 option(SMALLCHANGE_USE_QT5 "Prefer Qt5 over Qt4 if available" ON)
 option(SMALLCHANGE_BUILD_DOCUMENTATION "Build and install API documentation (requires Doxygen)." OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION "Document internal code not part of the API." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
@@ -63,6 +64,7 @@ option(SMALLCHANGE_USE_CPACK "If enabled the cpack subrepo is mandatory" OFF)
 
 report_prepare(
   SMALLCHANGE_BUILD_SHARED_LIBS
+  SMALLCHANGE_USE_QT6
   SMALLCHANGE_USE_QT5
   SMALLCHANGE_BUILD_DOCUMENTATION
   SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION
@@ -82,12 +84,27 @@ find_package(Coin REQUIRED)
 
 set(SMALLCHANGE_PKG_DEPS "Coin")
 
-if(SMALLCHANGE_USE_QT5)
+if(SMALLCHANGE_USE_QT6)
+  find_package(Qt6 COMPONENTS Core Widgets QUIET)
+endif()
+
+if(NOT Qt6_FOUND AND SMALLCHANGE_USE_QT5)
   find_package(Qt5 COMPONENTS Core Widgets QUIET)
 endif()
 
-if(Qt5_FOUND)
-  set(QUARTER_QT_TARGETS Qt5::Core Qt5::Gui Qt5::Widgets)
+if(NOT Qt6_FOUND AND NOT Qt5_FOUND)
+  set(QT_USE_IMPORTED_TARGETS ON)
+  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+endif()
+
+if(Qt6_FOUND)
+  set(SMALLCHANGE_QT_TARGETS Qt6::Core Qt6::Gui Qt6::Widgets)
+  string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt6Core_VERSION_STRING}")
+  string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt6Core_VERSION_STRING}")
+  string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt6Core_VERSION_STRING}")
+  set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} Qt6Core Qt6Gui Qt6Widgets")
+elseif(Qt5_FOUND)
+  set(SMALLCHANGE_QT_TARGETS Qt5::Core Qt5::Gui Qt5::Widgets)
   string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt5Core_VERSION_STRING}")
   string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt5Core_VERSION_STRING}")
   string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt5Core_VERSION_STRING}")
@@ -95,7 +112,7 @@ if(Qt5_FOUND)
 else()
   set(QT_USE_IMPORTED_TARGETS ON)
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-  set(QUARTER_QT_TARGETS Qt4::QtCore Qt4::QtGui)
+  set(SMALLCHANGE_QT_TARGETS Qt4::QtCore Qt4::QtGui)
   include(${QT_USE_FILE})
   set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} QtCore QtGui")
 endif()
@@ -130,8 +147,13 @@ function(versionize)
   foreach(dir ${ARGN})
     set(name      "CMAKE_INSTALL_${dir}")
     set(full-name "CMAKE_INSTALL_FULL_${dir}")
-    set(value      "${${name}}/${PROJECT_NAME}")
-    set(full-value "${CMAKE_INSTALL_PREFIX}/${value}")
+    if(${name} MATCHES ${PROJECT_NAME})
+      string(REPLACE "${PROJECT_NAME}" "${PROJECT_NAME}${PROJECT_VERSION_MAJOR}" value      "${${name}}")
+      string(REPLACE "${PROJECT_NAME}" "${PROJECT_NAME}${PROJECT_VERSION_MAJOR}" full-value "${${full-name}}")
+    else()
+      set(value      "${${name}}/${PROJECT_NAME}${PROJECT_VERSION_MAJOR}")
+      set(full-value "${CMAKE_INSTALL_PREFIX}/${value}")
+    endif()
     set(${name}      ${value}      PARENT_SCOPE)
     set(${full-name} ${full-value} PARENT_SCOPE)
   endforeach()
@@ -140,19 +162,14 @@ endfunction()
 function(dump_variable)
   if (HAVE_DEBUG)
     foreach(f ${ARGN})
-      message("${f} = ${${f}}")
+      if (DEFINED ${f})
+        message("${f} = ${${f}}")
+      else()
+        message("${f} = ***UNDEF***")
+      endif()
     endforeach()
   endif()
 endfunction()
-
-macro(dump_include_dirs)
-  if (HAVE_DEBUG)
-    get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-    foreach(dir ${dirs})
-      message(STATUS "include dir = '${dir}'")
-    endforeach()
-  endif()
-endmacro()
 
 # Only the following defines are actually used inside the project sources:
 # HAVE_SYS_STAT_H
@@ -169,13 +186,13 @@ configure_file(config.h.cmake.in config.h)
 # Build setup
 
 dump_variable(
-CMAKE_INSTALL_FULL_INCLUDEDIR
-CMAKE_INSTALL_FULL_DOCDIR
+  CMAKE_INSTALL_FULL_INCLUDEDIR
+  CMAKE_INSTALL_FULL_DOCDIR
 )
 versionize(INCLUDEDIR)
 dump_variable(
-CMAKE_INSTALL_FULL_INCLUDEDIR
-CMAKE_INSTALL_FULL_DOCDIR
+  CMAKE_INSTALL_FULL_INCLUDEDIR
+  CMAKE_INSTALL_FULL_DOCDIR
 )
 
 include_directories(BEFORE

@@ -1,7 +1,7 @@
 /******************************************************************************
- * Generated after analisying of the legacy config.h.in with the following command:
+ * Generated after analysing the legacy config.h.in with the following command:
  *
- * grep -e '#undef ' config.h.in |sed -e 's/^#undef\ /-e /g' | xargs grep --exclude-dir={build,build-debug} --include=\*.{cpp,h} -rnw '/path/to/repo/sources'
+ * grep -e '#undef ' config.h.in | sed -e 's/^#undef\ /-e /g' | xargs grep --exclude-dir={build,build-debug} --include=\*.{cpp,h} -rnw '/path/to/repo/sources'
  * 
  * The command results reveal that only the following defines are actually used 
  * inside @PROJECT_NAME@ sources:
@@ -10,8 +10,7 @@
  * HAVE_UNISTD_H
  * HAVE_WINDOWS_H
  *
- * Consequentely only these ones will be configured.
- *
+ * Consequentely only these will be configured.
  *
  * NOTE: config.h is automatically generated from config.h.cmake.in, so don't
  * edit config.h directly.
