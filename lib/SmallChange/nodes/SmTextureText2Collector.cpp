@@ -84,7 +84,7 @@
 #include <Inventor/bundles/SoMaterialBundle.h>
 #include <Inventor/system/gl.h>
 #include <Inventor/SbPlane.h>
-#include <assert.h>
+#include <cassert>
 
 SO_NODE_SOURCE(SmTextureText2Collector);
 

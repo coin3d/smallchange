@@ -43,10 +43,10 @@
 #include <Inventor/actions/SoGLRenderAction.h>
 #include <Inventor/actions/SoPickAction.h>
 #include <Inventor/actions/SoGetBoundingBoxAction.h>
-#include <assert.h>
+#include <cassert>
 #include <Inventor/C/tidbits.h>
 #include <Inventor/system/gl.h>
-#include <string.h>
+#include <cstring>
 
 /**************************************************************************/
 
