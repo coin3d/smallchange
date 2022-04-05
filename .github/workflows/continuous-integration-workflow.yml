@@ -87,40 +87,42 @@ jobs:
           path: cmake_install_dir/
         if: always()
 
-#  macos-build:
-#    name: MacOS Build
-#    runs-on: macos-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Checkout submodules
-#        run: git submodule update --init --recursive
-#      - name: Create build directory and run CMake
-#        run: |
-#          brew install qt5
-#          mkdir cmake_download_dir
-#          DOWNLOAD_FILE_COIN=coin-latest-macos-bigsur-clang13-x64.tar.gz
-#          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases | jq -r --arg COIN_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$COIN_REPO_TAG_NAME) | .id'`
-#          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_COIN "$DOWNLOAD_FILE_COIN" '.assets[] | select(.name==$DOWNLOAD_FILE_COIN) | .id'`
-#          export DOWNLOAD_ADDRESS_COIN=https://api.github.com/repos/coin3d/coin/releases/assets/$ASSET_ID
-#          echo download file $DOWNLOAD_FILE_COIN from address $DOWNLOAD_ADDRESS_COIN
-#          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_COIN $DOWNLOAD_ADDRESS_COIN
-#          tar xzf $DOWNLOAD_FILE_COIN -C cmake_download_dir
-#          DOWNLOAD_FILE_SOQT=soqt-latest-macos-bigsur-clang13-x64.tar.gz
-#          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/soqt/releases | jq -r --arg SOQT_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$SOQT_REPO_TAG_NAME) | .id'`
-#          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/soqt/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_SOQT "$DOWNLOAD_FILE_SOQT" '.assets[] | select(.name==$DOWNLOAD_FILE_SOQT) | .id'`
-#          export DOWNLOAD_ADDRESS_SOQT=https://api.github.com/repos/coin3d/soqt/releases/assets/$ASSET_ID
-#          echo download file $DOWNLOAD_FILE_SOQT from address $DOWNLOAD_ADDRESS_SOQT
-#          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_SOQT $DOWNLOAD_ADDRESS_SOQT
-#          tar xzf $DOWNLOAD_FILE_SOQT -C cmake_download_dir
-#          cmake -S . -B cmake_build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=cmake_install_dir -DCMAKE_PREFIX_PATH="cmake_download_dir/Coin3D;/usr/local/opt/qt5"
-#      - name: Build project
-#        run: sudo cmake --build cmake_build_dir --target install --config Release -- -j4
-#      #- name: Run tests
-#      #  run: ctest -C Release -VV
-#      #  working-directory: cmake_build_dir
-#      - name: Create Artifacts
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: MacOS-Artifacts
-#          path: cmake_install_dir/
-#        if: always()
+  macos-build:
+    name: MacOS Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Create build directory and run CMake
+        run: |
+          brew install qt5
+          export PATH=$PATH:$(brew --prefix qt5)/bin
+          export CMAKE_PREFIX_PATH=/usr/local/opt/qt5
+          mkdir cmake_download_dir
+          DOWNLOAD_FILE_COIN=coin-latest-macos-bigsur-clang13-x64.tar.gz
+          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases | jq -r --arg COIN_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$COIN_REPO_TAG_NAME) | .id'`
+          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_COIN "$DOWNLOAD_FILE_COIN" '.assets[] | select(.name==$DOWNLOAD_FILE_COIN) | .id'`
+          export DOWNLOAD_ADDRESS_COIN=https://api.github.com/repos/coin3d/coin/releases/assets/$ASSET_ID
+          echo download file $DOWNLOAD_FILE_COIN from address $DOWNLOAD_ADDRESS_COIN
+          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_COIN $DOWNLOAD_ADDRESS_COIN
+          tar xzf $DOWNLOAD_FILE_COIN -C cmake_download_dir
+          DOWNLOAD_FILE_SOQT=soqt-latest-macos-bigsur-clang13-x64.tar.gz
+          RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/soqt/releases | jq -r --arg SOQT_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$SOQT_REPO_TAG_NAME) | .id'`
+          ASSET_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/soqt/releases/$RELEASE_ID | jq -r --arg DOWNLOAD_FILE_SOQT "$DOWNLOAD_FILE_SOQT" '.assets[] | select(.name==$DOWNLOAD_FILE_SOQT) | .id'`
+          export DOWNLOAD_ADDRESS_SOQT=https://api.github.com/repos/coin3d/soqt/releases/assets/$ASSET_ID
+          echo download file $DOWNLOAD_FILE_SOQT from address $DOWNLOAD_ADDRESS_SOQT
+          curl -s -S -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/octet-stream" -o $DOWNLOAD_FILE_SOQT $DOWNLOAD_ADDRESS_SOQT
+          tar xzf $DOWNLOAD_FILE_SOQT -C cmake_download_dir
+          cmake -S . -B cmake_build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=cmake_install_dir -DCMAKE_PREFIX_PATH="cmake_download_dir/Coin3D;/usr/local/opt/qt5"
+      - name: Build project
+        run: sudo cmake --build cmake_build_dir --target install --config Release -- -j4
+      #- name: Run tests
+      #  run: ctest -C Release -VV
+      #  working-directory: cmake_build_dir
+      - name: Create Artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: MacOS-Artifacts
+          path: cmake_install_dir/
+        if: always()
