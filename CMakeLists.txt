@@ -55,6 +55,7 @@ option(HAVE_DEBUG                    "Add debugging information during the confi
 option(SMALLCHANGE_BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(SMALLCHANGE_USE_QT6 "Prefer Qt6 over Qt5 if available" ON)
 option(SMALLCHANGE_USE_QT5 "Prefer Qt5 over Qt4 if available" ON)
+option(SMALLCHANGE_USE_WX "Prefer wxWidgets over Qt if available" OFF)
 option(SMALLCHANGE_BUILD_DOCUMENTATION "Build and install API documentation (requires Doxygen)." OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION "Document internal code not part of the API." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_MAN "Build SmallChange man pages." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
@@ -66,6 +67,7 @@ report_prepare(
   SMALLCHANGE_BUILD_SHARED_LIBS
   SMALLCHANGE_USE_QT6
   SMALLCHANGE_USE_QT5
+  SMALLCHANGE_USE_WX
   SMALLCHANGE_BUILD_DOCUMENTATION
   SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION
   SMALLCHANGE_BUILD_DOC_MAN
@@ -84,43 +86,50 @@ find_package(Coin REQUIRED)
 
 set(SMALLCHANGE_PKG_DEPS "Coin")
 
-if(SMALLCHANGE_USE_QT6)
-  find_package(Qt6 COMPONENTS Core Widgets QUIET)
-endif()
+if(NOT SMALLCHANGE_USE_WX)
+    if(SMALLCHANGE_USE_QT6)
+      find_package(Qt6 COMPONENTS Core Widgets QUIET)
+    endif()
 
-if(NOT Qt6_FOUND AND SMALLCHANGE_USE_QT5)
-  find_package(Qt5 COMPONENTS Core Widgets QUIET)
-endif()
+    if(NOT Qt6_FOUND AND SMALLCHANGE_USE_QT5)
+      find_package(Qt5 COMPONENTS Core Widgets QUIET)
+    endif()
 
-if(NOT Qt6_FOUND AND NOT Qt5_FOUND)
-  set(QT_USE_IMPORTED_TARGETS ON)
-  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-endif()
+    if(NOT Qt6_FOUND AND NOT Qt5_FOUND)
+      set(QT_USE_IMPORTED_TARGETS ON)
+      find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+    endif()
 
-if(Qt6_FOUND)
-  set(SMALLCHANGE_QT_TARGETS Qt6::Core Qt6::Gui Qt6::Widgets)
-  string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt6Core_VERSION_STRING}")
-  string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt6Core_VERSION_STRING}")
-  string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt6Core_VERSION_STRING}")
-  set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} Qt6Core Qt6Gui Qt6Widgets")
-elseif(Qt5_FOUND)
-  set(SMALLCHANGE_QT_TARGETS Qt5::Core Qt5::Gui Qt5::Widgets)
-  string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt5Core_VERSION_STRING}")
-  string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt5Core_VERSION_STRING}")
-  string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt5Core_VERSION_STRING}")
-  set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} Qt5Core Qt5Gui Qt5Widgets")
+    if(Qt6_FOUND)
+      set(SMALLCHANGE_QT_TARGETS Qt6::Core Qt6::Gui Qt6::Widgets)
+      string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt6Core_VERSION_STRING}")
+      string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt6Core_VERSION_STRING}")
+      string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt6Core_VERSION_STRING}")
+      set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} Qt6Core Qt6Gui Qt6Widgets")
+    elseif(Qt5_FOUND)
+      set(SMALLCHANGE_QT_TARGETS Qt5::Core Qt5::Gui Qt5::Widgets)
+      string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" QT_VERSION_MAJOR "${Qt5Core_VERSION_STRING}")
+      string(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" QT_VERSION_MINOR "${Qt5Core_VERSION_STRING}")
+      string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" QT_VERSION_PATCH "${Qt5Core_VERSION_STRING}")
+      set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} Qt5Core Qt5Gui Qt5Widgets")
+    else()
+      set(QT_USE_IMPORTED_TARGETS ON)
+      find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+      set(SMALLCHANGE_QT_TARGETS Qt4::QtCore Qt4::QtGui)
+      include(${QT_USE_FILE})
+      set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} QtCore QtGui")
+    endif()
+
+    set(SMALLCHANGE_PKG_LIBS "" CACHE INTERNAL "Link libraries for package config")
+    set(SMALLCHANGE_PKG_FLAGS "" CACHE INTERNAL "Compilation flags for package config")
+
+    find_package(SoQt REQUIRED)
 else()
-  set(QT_USE_IMPORTED_TARGETS ON)
-  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-  set(SMALLCHANGE_QT_TARGETS Qt4::QtCore Qt4::QtGui)
-  include(${QT_USE_FILE})
-  set(SMALLCHANGE_PKG_DEPS "${SMALLCHANGE_PKG_DEPS} QtCore QtGui")
+    set(SMALLCHANGE_PKG_LIBS "" CACHE INTERNAL "Link libraries for package config")
+    set(SMALLCHANGE_PKG_FLAGS "" CACHE INTERNAL "Compilation flags for package config")
+    
+    find_package(SoWx REQUIRED)
 endif()
-
-set(SMALLCHANGE_PKG_LIBS "" CACHE INTERNAL "Link libraries for package config")
-set(SMALLCHANGE_PKG_FLAGS "" CACHE INTERNAL "Compilation flags for package config")
-
-find_package(SoQt REQUIRED)
 
 # ##########################################################################
 # Setup build environment
