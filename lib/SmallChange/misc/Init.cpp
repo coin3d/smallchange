@@ -59,6 +59,7 @@
 #include <SmallChange/nodekits/SmCameraControlKit.h>
 #include <SmallChange/nodekits/SmDynamicObjectKit.h>
 #include <SmallChange/nodekits/DynamicBaseKit.h>
+#include <SmallChange/nodekits/SmOceanKit.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
@@ -179,6 +180,7 @@ smallchange_init(void)
   SmDynamicObjectKit::initClass();
   SmTrackPointKit::initClass();
   SmTrack::initClass();
+  SmOceanKit::initClass();
 #endif // temporary compile fix
 
   SmTextureFontElement::initClass();

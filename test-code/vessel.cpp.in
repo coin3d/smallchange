@@ -1,0 +1,118 @@
+#include <Inventor/@Gui@/So@Gui@.h>
+#include <Inventor/@Gui@/viewers/So@Gui@ExaminerViewer.h>
+#include <Inventor/SoDB.h>
+#include <Inventor/SoInput.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoMatrixTransform.h>
+#include <SmallChange/nodekits/SoVesselKit.h>
+
+#define XSIZE 30
+#define YSIZE 30
+#define ZSIZE 30
+
+#define NODEIDX(x, y, z) (((z)*XSIZE*YSIZE)+((y)*XSIZE)+x)
+#define ELEMENTIDX(x, y, z) (((z)*(XSIZE-1)*(YSIZE-1))+((y)*(XSIZE-1))+x)
+
+
+static void
+setup_fem(SoFEMKit * fem)
+{
+  int x, y, z;
+  for (z = 0; z < ZSIZE; z++) {
+    for (y = 0; y < YSIZE; y++) {
+      for (x = 0; x < XSIZE; x++) {
+        fem->addNode(NODEIDX(x,y,z), SbVec3f(x, y, z));
+#if 0 // enable to set node color
+        fem->setNodeColor(NODEIDX(x,y,z), SbColor(float(x)/XSIZE,
+                                                  float(y)/YSIZE,
+                                                  float(z)/ZSIZE));
+#endif // node color
+      }
+    }
+  }
+
+  int nodeidx[8];
+
+  for (z = 0; z < ZSIZE-1; z++) {
+    for (y = 0; y < YSIZE-1; y++) {
+      for (x = 0; x < XSIZE-1; x++) {
+        nodeidx[0] = NODEIDX(x,y,z);
+        nodeidx[1] = NODEIDX(x,y+1,z);
+        nodeidx[2] = NODEIDX(x+1,y+1,z);
+        nodeidx[3] = NODEIDX(x+1,y,z);
+        nodeidx[4] = NODEIDX(x,y,z+1);
+        nodeidx[5] = NODEIDX(x,y+1,z+1);
+        nodeidx[6] = NODEIDX(x+1,y+1,z+1);
+        nodeidx[7] = NODEIDX(x+1,y,z+1);
+        fem->add3DElement(ELEMENTIDX(x,y,z), nodeidx);
+        fem->setElementColor(ELEMENTIDX(x,y,z), SbColor(float(x)/XSIZE,
+                                                        float(y)/YSIZE,
+                                                        float(z)/ZSIZE));
+      }
+    }
+  }
+
+  fem->enableAllElements(FALSE);
+
+#if 0 // just enable elements on random
+
+  for (z = 0; z < ZSIZE-1; z++) {
+    for (y = 0; y < YSIZE-1; y++) {
+      for (x = 0; x < XSIZE-1; x++) {
+        fem->enableElement(ELEMENTIDX(x,y,z), rand()&1);
+      }
+    }
+  }
+
+#else // enable two planes
+
+  fem->enableElements(SbPlane(SbVec3f(0,0,0),
+                              SbVec3f(XSIZE, 0, ZSIZE),
+                              SbVec3f(XSIZE, YSIZE, 0)), TRUE);
+
+  fem->enableElements(SbPlane(SbVec3f(0,0,0),
+                              SbVec3f(XSIZE, 0, 0),
+                              SbVec3f(0, YSIZE, ZSIZE)), TRUE);
+
+#endif // enable/disable debug
+
+  fem->removeHiddenFaces(TRUE);
+}
+
+int
+main(int argc, char ** argv)
+{
+  @WIDGET@ window = So@Gui@::init( argv[0] );
+
+  SoFEMKit::initClass();
+  SoSeparator * root = new SoSeparator;
+  root->ref();
+
+  SoFEMKit * fem = new SoFEMKit;
+
+#if 0 // enable to test left handed coordinate system
+  SoMatrixTransform * mt = new SoMatrixTransform;
+  mt->matrix = SbMatrix(1,0,0,0,
+                        0,1,0,0,
+                        0,0,-1,0,
+                        0,0,0,1);
+  root->addChild(mt);
+  fem->ccw = FALSE;
+#endif // left handed
+  setup_fem(fem);
+
+  root->addChild(fem);
+
+  So@Gui@ExaminerViewer * examinerviewer = new So@Gui@ExaminerViewer(window);
+  examinerviewer->setBackgroundColor(SbColor(0.2f,0.4f,0.6f));
+  examinerviewer->setSceneGraph(root);
+  examinerviewer->show();
+  So@Gui@::show( window );
+  So@Gui@::mainLoop();
+
+  delete examinerviewer;
+
+  root->unref();
+
+  return 0;
+} // main()

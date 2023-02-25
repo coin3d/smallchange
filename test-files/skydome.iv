@@ -1,0 +1,13 @@
+#Inventor V2.1 ascii
+
+Separator {
+  SkyDome {
+    startAngle 0
+    endAngle 0.75
+    numStacks 8
+    numSlices 32
+    height 1
+    radius 1
+  }
+}
+

@@ -49,6 +49,10 @@ set(SM_HEADERS
   SmallChange/nodekits/SmWellLogKit.h
   SmallChange/nodekits/SoCameraPathEditKit.h
   SmallChange/nodekits/SoFEMKit.h
+  SmallChange/nodekits/SmOceanKit.h
+  SmallChange/nodekits/OceanKit.cpp
+  SmallChange/nodekits/SmVesselKit.h
+  SmallChange/nodekits/SmVesselKit.cpp
   SmallChange/nodes/AutoFile.h
   SmallChange/nodes/Coinboard.h
   SmallChange/nodes/CoinEnvironment.h

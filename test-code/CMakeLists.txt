@@ -37,26 +37,32 @@ target_link_libraries(scenemgr ${TARGET_LIB} SmallChange)
 #add_executable(scenery ${CMAKE_CURRENT_BINARY_DIR}/scenery.cpp)
 #target_link_libraries(scenery ${TARGET_LIB} SmallChange)
 
+add_executable(sc2iv sc2iv.cpp)
+target_link_libraries(sc2iv ${TARGET_LIB} SmallChange)
+
 configure_file(sotext2set.cpp.in sotext2set.cpp @ONLY)
 add_executable(sotext2set ${CMAKE_CURRENT_BINARY_DIR}/sotext2set.cpp)
 target_link_libraries(sotext2set ${TARGET_LIB} SmallChange)
 
+configure_file(sc_viewer.cpp.in sc_viewer.cpp @ONLY)
+add_executable(sc_viewer ${CMAKE_CURRENT_BINARY_DIR}/sc_viewer.cpp)
+target_link_libraries(sc_viewer ${TARGET_LIB} SmallChange)
+
+add_executable(vessel vessel.cpp)
+target_link_libraries(vessel ${TARGET_LIB} SmallChange)
 
 configure_file(tooltip.cpp.in tooltip.cpp @ONLY)
 add_executable(tooltip ${CMAKE_CURRENT_BINARY_DIR}/tooltip.cpp)
 target_link_libraries(tooltip ${TARGET_LIB} SmallChange)
 
-if(NOT SMALLCHANGE_USE_WX)
-    add_executable(envelope envelope.cpp)
-    target_link_libraries(envelope SmallChange)
+add_executable(envelope envelope.cpp)
+target_link_libraries(envelope SmallChange)
 
-    add_executable(iv2scenegraph iv2scenegraph.cpp)
-    target_link_libraries(iv2scenegraph SmallChange)
+add_executable(iv2scenegraph iv2scenegraph.cpp)
+target_link_libraries(iv2scenegraph SmallChange)
 
-    add_executable(texturetext2 texturetext2.cpp)
-    target_link_libraries(texturetext2 SmallChange)
+add_executable(texturetext2 texturetext2.cpp)
+target_link_libraries(texturetext2 SmallChange)
 
-    add_executable(tovertexarray tovertexarray.cpp)
-    target_link_libraries(tovertexarray SmallChange)
-
-endif()
+add_executable(tovertexarray tovertexarray.cpp)
+target_link_libraries(tovertexarray SmallChange)
