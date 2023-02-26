@@ -47,6 +47,7 @@
 #include <SmallChange/nodes/SoPointCloud.h>
 #include <SmallChange/nodes/SoTCBCurve.h>
 #include <SmallChange/nodes/SoText2Set.h>
+#include <SmallChange/nodes/SmScenery.h>
 #include <SmallChange/nodes/SmVertexArrayShape.h>
 #include <SmallChange/actions/SmToVertexArrayShapeAction.h>
 #include <SmallChange/actions/SoTweakAction.h>
@@ -72,10 +73,12 @@
 #include <SmallChange/nodes/SkyDome.h>
 #include <SmallChange/nodes/SmTooltip.h>
 #include <SmallChange/nodes/SmHQSphere.h>
+#include <SmallChange/nodes/SmColorGradient.h>
 #include <SmallChange/nodes/InterleavedArraysShape.h>
 #include <SmallChange/engines/CubicSplineEngine.h>
 
 #include <SmallChange/elements/UTMElement.h>
+#include <SmallChange/elements/SmColorGradientElement.h>
 #include <SmallChange/nodes/UTMCamera.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/UTMCoordinate.h>
@@ -141,6 +144,7 @@ smallchange_init(void)
   SoTweakAction::initClass();
   SoGenerateSceneGraphAction::initClass();
   SmTooltip::initClass();
+  SmScenery::initClass();
 
   CubicSplineEngine::initClass();
 
@@ -169,6 +173,9 @@ smallchange_init(void)
 
   SmVertexArrayShape::initClass();
   SmToVertexArrayShapeAction::initClass();
+
+  SmColorGradientElement::initClass();
+  SmColorGradient::initClass();
 
   SmCoordinateSystem::initClass();
   SmViewpointWrapper::initClass();

@@ -49,7 +49,7 @@ int main(int argc, char ** argv )
   sa.apply(root);
 
   if (sa.getPath() == NULL) {
-    FrustumCamera * camera = new FrustumCamera;
+    SoFrustumCamera * camera = new SoFrustumCamera;
     camera->ref();
     camera->viewAll(root, ex1->getViewportRegion());
     root->insertChild(camera, 0);
