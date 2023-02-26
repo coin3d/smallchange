@@ -76,11 +76,11 @@ public:
       scenery = (SmScenery *) saction->getPath()->getTail();
       cbaction->setViewportRegion(this->getViewportRegion());
       cbaction->apply(this->getSceneManager()->getSceneGraph());
-      scenery->preFrame();
+      scenery->preFrame(0 /*TODO: check parameter not required in the test*/);
     }
     So@Gui@ExaminerViewer::actualRedraw();
     if ( scenery ) {
-      if ( scenery->postFrame() )
+      if ( scenery->postFrame(0 /*TODO: check parameter not required in the test*/) )
         So@Gui@ExaminerViewer::scheduleRedraw();
     }
   }
