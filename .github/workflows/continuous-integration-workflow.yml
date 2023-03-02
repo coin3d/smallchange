@@ -96,9 +96,9 @@ jobs:
         run: git submodule update --init --recursive
       - name: Create build directory and run CMake
         run: |
-          brew install qt5
-          export PATH=$PATH:$(brew --prefix qt5)/bin
-          export CMAKE_PREFIX_PATH=/usr/local/opt/qt5
+          brew install wxwidgets
+          export PATH=$PATH:$(brew --prefix wxwidgets)/bin
+          export CMAKE_PREFIX_PATH=/usr/local/opt/wxwidgets
           mkdir cmake_download_dir
           DOWNLOAD_FILE_COIN=coin-latest-macos-bigsur-clang13-x64.tar.gz
           RELEASE_ID=`curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/coin3d/coin/releases | jq -r --arg COIN_REPO_TAG_NAME "CI-builds" '.[] | select(.tag_name==$COIN_REPO_TAG_NAME) | .id'`
