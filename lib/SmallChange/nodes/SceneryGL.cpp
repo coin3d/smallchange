@@ -41,11 +41,15 @@
 #include <dlfcn.h>
 #endif // HAVE_DLFCN_H
 
-#ifdef HAVE_OPENGL_GL_H
-#include <OpenGL/gl.h>
-#else
+#ifdef __COIN__
+#include <Inventor/system/gl.h>
+#else // SGI/TGS Inventor
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
-#endif
+#endif // SGI/TGS Inventor
+
 
 /* this source file is shared between SIM Scenery and SmallChange, hence the
  * strange conditional includes below */
