@@ -25,6 +25,16 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
+#include <Inventor/C/basic.h>
+#include "../misc/SbList.h"
+#include "../misc/SbHash.h"
+#include "../misc/SbVec3.h"
+#include "../misc/SbBox3.h"
+#include "../misc/SbPlane.h"
+#include <SmallChange/misc/SceneryGlue.h>
+#include <SmallChange/nodes/SceneryGL.h>
+#include <Inventor/errors/SoDebugError.h>
+
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
 #else /* !HAVE_WINDOWS_H */
@@ -50,32 +60,6 @@
 #include <GL/gl.h>
 #endif // SGI/TGS Inventor
 
-
-/* this source file is shared between SIM Scenery and SmallChange, hence the
- * strange conditional includes below */
-#ifdef SS_MAJOR_VERSION
-/* we are building in the SIM Scenery source repository */
-#include "SbList.h"
-#include "SbHash.h"
-#include "SbVec3.h"
-#include "SbBox3.h"
-#include "SbPlane.h"
-
-#include <sim/scenery/scenery.h>
-#include <sim/scenery/SceneryGL.h>
-#include <sim/cbase/debugerror.h>
-#else /* !SS_MAJOR_VERSION */
-/* we are building in the SmallChange source repository */
-#include <Inventor/C/basic.h>
-#include "../misc/SbList.h"
-#include "../misc/SbHash.h"
-#include "../misc/SbVec3.h"
-#include "../misc/SbBox3.h"
-#include "../misc/SbPlane.h"
-#include <SmallChange/misc/SceneryGlue.h>
-#include <SmallChange/nodes/SceneryGL.h>
-#include <Inventor/errors/SoDebugError.h>
-#endif /* !SS_MAJOR_VERSION */
 
 /* ********************************************************************** */
 
