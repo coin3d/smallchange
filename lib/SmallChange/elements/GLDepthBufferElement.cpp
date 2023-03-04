@@ -48,6 +48,7 @@
 #include <windows.h>
 #endif // HAVE_WINDOWS_H
 #include <GL/gl.h>
+#error Not here
 #endif // SGI/TGS Inventor
 
 #include <cassert>

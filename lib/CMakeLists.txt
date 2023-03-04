@@ -11,6 +11,8 @@ set(SM_HEADERS
   SmallChange/draggers/SoAngle1Manip.h
   SmallChange/elements/GLDepthBufferElement.h
   SmallChange/elements/UTMElement.h
+  SmallChange/elements/SmColorGradientElement.h # re-added
+  SmallChange/elements/SmSceneryViewElement.h  # re-added
   SmallChange/engines/CubicSplineEngine.h
   SmallChange/engines/Rot2Heading.h
   SmallChange/engines/SmInverseRotation.h
@@ -30,6 +32,7 @@ set(SM_HEADERS
   SmallChange/misc/SmEnvelope.h
   SmallChange/misc/SmHash.h
   SmallChange/misc/SmSceneManager.h
+  SmallChange/misc/SceneryGlue.h # re-addded
   SmallChange/nodekits/DynamicBaseKit.h
   SmallChange/nodekits/DynamicNodeKit.h
   SmallChange/nodekits/LegendKit.h
@@ -49,6 +52,10 @@ set(SM_HEADERS
   SmallChange/nodekits/SmWellLogKit.h
   SmallChange/nodekits/SoCameraPathEditKit.h
   SmallChange/nodekits/SoFEMKit.h
+  SmallChange/nodekits/SmOceanKit.h
+  SmallChange/nodekits/OceanKit.cpp
+  SmallChange/nodekits/SmVesselKit.h
+  SmallChange/nodekits/SmVesselKit.cpp
   SmallChange/nodes/AutoFile.h
   SmallChange/nodes/Coinboard.h
   SmallChange/nodes/CoinEnvironment.h
@@ -82,7 +89,11 @@ set(SM_HEADERS
   SmallChange/nodes/UTMCoordinate.h
   SmallChange/nodes/UTMPosition.h
   SmallChange/nodes/ViewportRegion.h
-)
+  SmallChange/nodes/SceneryGL.h  # re-added
+  SmallChange/nodes/SmColorGradient.h # re-added
+  SmallChange/nodes/SmScenery.h # re-added
+  SmallChange/nodes/SmSceneryView.h # re-added
+        )
 set(SM_SOURCES
   SmallChange/dummy.cpp
   SmallChange/actions/SoGenerateSceneGraphAction.cpp
@@ -93,6 +104,8 @@ set(SM_SOURCES
   SmallChange/draggers/SoAngle1Manip.cpp
   SmallChange/elements/GLDepthBufferElement.cpp
   SmallChange/elements/UTMElement.cpp
+  SmallChange/elements/ColorGradientElement.cpp # re-added
+  SmallChange/elements/SmSceneryViewElement.cpp # re-added
   SmallChange/engines/CubicSplineEngine.cpp
   SmallChange/engines/Rot2Heading.cpp
   SmallChange/engines/SmInverseRotation.cpp
@@ -106,6 +119,7 @@ set(SM_SOURCES
   SmallChange/misc/Init.cpp
   SmallChange/misc/SbCubicSpline.cpp
   SmallChange/misc/SceneManager.cpp
+  SmallChange/misc/SceneryGlue.cpp
   SmallChange/nodekits/bitmapfont.cpp
   SmallChange/nodekits/DynamicBaseKit.cpp
   SmallChange/nodekits/GeoMarkerKit.cpp
@@ -130,7 +144,10 @@ set(SM_SOURCES
   SmallChange/nodes/InterleavedArraysShape.cpp
   SmallChange/nodes/PickCallback.cpp
   SmallChange/nodes/PickSwitch.cpp
-#  SmallChange/nodes/SceneryView.cpp
+  SmallChange/nodes/SceneryView.cpp  # re-added
+  SmallChange/nodes/ColorGradient.cpp  # re-added
+  SmallChange/nodes/Scenery.cpp  # re-added
+  SmallChange/nodes/SceneryGL.cpp # re-added
   SmallChange/nodes/ShapeScale.cpp
   SmallChange/nodes/SkyDome.cpp
   SmallChange/nodes/SmBillboardClipPlane.cpp
@@ -181,6 +198,7 @@ if(WIN32)
   set(CMAKE_RELWITHDEBINFO_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX})
   set(CMAKE_DEBUG_POSTFIX ${SMALLCHANGE_DEFAULT_POSTFIX}d)
 elseif(APPLE)
+  add_definitions(-DGL_SILENCE_DEPRECATION)
 else()
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()

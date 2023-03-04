@@ -47,6 +47,7 @@
 #include <SmallChange/nodes/SoPointCloud.h>
 #include <SmallChange/nodes/SoTCBCurve.h>
 #include <SmallChange/nodes/SoText2Set.h>
+#include <SmallChange/nodes/SmScenery.h>
 #include <SmallChange/nodes/SmVertexArrayShape.h>
 #include <SmallChange/actions/SmToVertexArrayShapeAction.h>
 #include <SmallChange/actions/SoTweakAction.h>
@@ -59,6 +60,7 @@
 #include <SmallChange/nodekits/SmCameraControlKit.h>
 #include <SmallChange/nodekits/SmDynamicObjectKit.h>
 #include <SmallChange/nodekits/DynamicBaseKit.h>
+#include <SmallChange/nodekits/SmOceanKit.h>
 #include <SmallChange/eventhandlers/SmExaminerEventHandler.h>
 #include <SmallChange/eventhandlers/SmHelicopterEventHandler.h>
 #include <SmallChange/eventhandlers/SmSphereEventHandler.h>
@@ -71,10 +73,12 @@
 #include <SmallChange/nodes/SkyDome.h>
 #include <SmallChange/nodes/SmTooltip.h>
 #include <SmallChange/nodes/SmHQSphere.h>
+#include <SmallChange/nodes/SmColorGradient.h>
 #include <SmallChange/nodes/InterleavedArraysShape.h>
 #include <SmallChange/engines/CubicSplineEngine.h>
 
 #include <SmallChange/elements/UTMElement.h>
+#include <SmallChange/elements/SmColorGradientElement.h>
 #include <SmallChange/nodes/UTMCamera.h>
 #include <SmallChange/nodes/UTMPosition.h>
 #include <SmallChange/nodes/UTMCoordinate.h>
@@ -140,6 +144,7 @@ smallchange_init(void)
   SoTweakAction::initClass();
   SoGenerateSceneGraphAction::initClass();
   SmTooltip::initClass();
+  SmScenery::initClass();
 
   CubicSplineEngine::initClass();
 
@@ -169,6 +174,9 @@ smallchange_init(void)
   SmVertexArrayShape::initClass();
   SmToVertexArrayShapeAction::initClass();
 
+  SmColorGradientElement::initClass();
+  SmColorGradient::initClass();
+
   SmCoordinateSystem::initClass();
   SmViewpointWrapper::initClass();
   SmPopupMenuKit::initClass();
@@ -179,6 +187,7 @@ smallchange_init(void)
   SmDynamicObjectKit::initClass();
   SmTrackPointKit::initClass();
   SmTrack::initClass();
+  SmOceanKit::initClass();
 #endif // temporary compile fix
 
   SmTextureFontElement::initClass();

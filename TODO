@@ -1,3 +1,4 @@
+- some double free corruption on exit on Linux system (e.g. scenery)
 - Windows and Mac OsX untested
 - adapt lib for dynamic loading and auto-initialization from Coin when Coin
   has that functionality so you don't have to link with SmallChange (larsa)
