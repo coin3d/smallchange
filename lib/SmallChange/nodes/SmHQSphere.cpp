@@ -349,7 +349,7 @@ SmHQSphereP::genGeom(const int level)
 
   // detect triangles that are on the back side of the sphere, on the
   // right side, with at least one vertex on the right-side-edge of
-  // the texture. Fix texture coordinates for those trianges
+  // the texture. Fix texture coordinates for those triangles
   n = this->idx.getLength();
   int32_t * iptr = (int32_t*) this->idx.getArrayPtr();
 

@@ -159,7 +159,7 @@
   terrain.
 
   If used, the number of values must correspond to the number of colors in
-  the colorMap field, or coloration will be ignored alltogether.
+  the colorMap field, or coloration will be ignored all together.
   For TRUE / INTERPOLATED, the number of elevation values will have to
   be equal to the number of colors - elevation values outside the given
   range of elevation values will just use the colosest color value.

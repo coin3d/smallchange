@@ -143,7 +143,7 @@ AC_ARG_WITH([framework],
   * ) sim_ac_framework=false ;;
   esac])
 
-# don't allow name to be overrided - just toggled on/off
+# don't allow name to be overridden - just toggled on/off
 sim_ac_framework_name="MAC_FRAMEWORK_NAME_DEFAULT"
 sim_ac_framework_prefix="MAC_FRAMEWORK_PREFIX_DEFAULT"
 sim_ac_framework_version="MAC_FRAMEWORK_VERSION_DEFAULT"
@@ -258,7 +258,7 @@ AC_SUBST(SUFFIX)
 # System tests.
 
 # The last argument consists of a space character, because the macro
-# wants a non-empty argument to check for compilability instead of
+# wants a non-empty argument to check for compileability instead of
 # just presence.
 AC_CHECK_HEADERS(
   [windows.h unistd.h ctype.h sys/stat.h sys/types.h dirent.h],

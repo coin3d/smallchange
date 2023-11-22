@@ -439,7 +439,7 @@ sc_probe_gl(const unsigned int ctxid, sc_msghandler_fp msghandler)
 
   GL->HAVE_MULTITEXTURES = FALSE;
   if ( (minor >= 3) || (exts && strstr(exts, "GL_ARB_multitexture ")) ) {
-    // multi-texturing is available frmo OpenGL 1.3 and up
+    // multi-texturing is available from OpenGL 1.3 and up
     GL->HAVE_MULTITEXTURES = TRUE;
     if ( msghandler ) {
       msghandler("PROBE: detected multitexturing support\n");
@@ -565,7 +565,7 @@ sc_probe_gl(const unsigned int ctxid, sc_msghandler_fp msghandler)
       }
     } else {
       // Apparently, Windows software rendering can report TRUE on
-      // multitexturing, withough having glMultiTexCoord2f available
+      // multitexturing, without having glMultiTexCoord2f available
       GL->HAVE_MULTITEXTURES = FALSE;
       sc_set_glClientActiveTexture(ctxid, NULL);
       if ( msghandler ) {
@@ -836,7 +836,7 @@ sc_default_texture_activate(RenderState * state, void * handle)
 #if 1
   // FIXME:  Consider mipmapping.  I'm not sure it's needed for
   // anything but the top block, since the texture is LODed along
-  // with the terrain blocks already.  However, for sattelite view
+  // with the terrain blocks already.  However, for satellite view
   // of the top block, it would definitely be a good idea.
   // 20031123 larsa
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

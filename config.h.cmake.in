@@ -10,7 +10,7 @@
  * HAVE_UNISTD_H
  * HAVE_WINDOWS_H
  *
- * Consequentely only these will be configured.
+ * Consequently only these will be configured.
  *
  * NOTE: config.h is automatically generated from config.h.cmake.in, so don't
  * edit config.h directly.

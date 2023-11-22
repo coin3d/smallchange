@@ -392,7 +392,7 @@ SmPopupMenuKit::GLRender(SoGLRenderAction * action)
   
   SoState *state = action->getState();
   state->push();
-  // set elements directly to overwrite overrided elements
+  // set elements directly to overwrite overridden elements
   SoDrawStyleElement::set(state, SoDrawStyleElement::FILLED);
   SoComplexityTypeElement::set(state, this, SoComplexityTypeElement::getDefault());
   SoComplexityElement::set(state, this, SoComplexityElement::getDefault());
@@ -571,7 +571,7 @@ SmPopupMenuKit::itemPicked(const int idx)
 
 /*!  
   Sets the current viewport region. The viewport region will also
-  be picked up when the node is travered with SoGLRenderAction.
+  be picked up when the node is traversed with SoGLRenderAction.
 */
 void 
 SmPopupMenuKit::setViewportRegion(const SbViewportRegion & vp)

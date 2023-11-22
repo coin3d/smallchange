@@ -450,7 +450,7 @@ SmCameraControlKit::setClippingPlanes(void)
     nearval = camera->nearDistance.getValue();
     farval = farval * (1.0f + SLACK); 
     if (farval <= nearval) {
-      // nothing is visible, so just set farval to som value > nearval.
+      // nothing is visible, so just set farval to some value > nearval.
       farval = nearval + 10.0f;
     }
     camera->farDistance = farval;

@@ -79,7 +79,7 @@ private:
 End class definition, start template method implementation
 */
 
-//only compile when instanciating with new types
+//only compile when instantiating with new types
 #ifndef DYNAMIC_NODEKIT_NO_GENERATE_FUNCTIONS
 template <class Base> SoType DynamicNodeKit<Base>::classTypeId STATIC_SOTYPE_INIT;
 template <class Base> const SoFieldData ** DynamicNodeKit<Base>::parentFieldData = NULL;
@@ -323,7 +323,7 @@ DynamicNodeKit<Base>::finishEditing()
   }
 
   this->createFieldList();//adds all entries from catalog to SoBaseKit::pimpl->instancelist
-  this->createDefaultParts();//instanciates all the parts that are not null by default
+  this->createDefaultParts();//instantiates all the parts that are not null by default
 
   this->isEditing = false;
   this->finished = true;

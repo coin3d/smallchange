@@ -364,7 +364,7 @@ SoText2Set::GLRender(SoGLRenderAction * action)
     // FIXME: Is this warning enough? Should there be a warning at
     // all? (20040206 handegar)
     if (stringcnt > (unsigned int)this->position.getNum())
-      SoDebugError::postWarning("SoText2Set::GLRender", "Position not specfied for all the strings.");
+      SoDebugError::postWarning("SoText2Set::GLRender", "Position not specified for all the strings.");
 
     unsigned int counter = (this->maxStringsToRender.getValue() != -1) ?
       this->maxStringsToRender.getValue() : stringcnt;
