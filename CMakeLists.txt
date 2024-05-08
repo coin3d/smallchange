@@ -57,6 +57,7 @@ option(SMALLCHANGE_USE_QT6 "Prefer Qt6 over Qt5 if available" ON)
 option(SMALLCHANGE_USE_QT5 "Prefer Qt5 over Qt4 if available" ON)
 option(SMALLCHANGE_USE_WX "Prefer wxWidgets over Qt if available" OFF)
 option(SMALLCHANGE_BUILD_DOCUMENTATION "Build and install API documentation (requires Doxygen)." OFF)
+option(SMALLCHANGE_BUILD_AWESOME_DOCUMENTATION "Build and install API documentation in new modern style (requires Doxygen)." OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION "Document internal code not part of the API." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_MAN "Build SmallChange man pages." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
 cmake_dependent_option(SMALLCHANGE_BUILD_DOC_QTHELP "Build QtHelp documentation." OFF "SMALLCHANGE_BUILD_DOCUMENTATION" OFF)
@@ -69,6 +70,7 @@ report_prepare(
   SMALLCHANGE_USE_QT5
   SMALLCHANGE_USE_WX
   SMALLCHANGE_BUILD_DOCUMENTATION
+  SMALLCHANGE_BUILD_AWESOME_DOCUMENTATION
   SMALLCHANGE_BUILD_INTERNAL_DOCUMENTATION
   SMALLCHANGE_BUILD_DOC_MAN
   SMALLCHANGE_BUILD_DOC_QTHELP
