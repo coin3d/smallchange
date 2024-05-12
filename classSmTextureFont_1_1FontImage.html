@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.10.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- BEGIN opengraph metadata -->
+<meta property="og:title" content="Doxygen Awesome" />
+<meta property="og:image" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta property="og:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<meta property="og:url" content="https://jothepro.github.io/doxygen-awesome-css/" />
+<!-- END opengraph metadata -->
+<!-- BEGIN twitter metadata -->
+<meta name="twitter:image:src" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta name="twitter:title" content="Doxygen Awesome" />
+<meta name="twitter:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<!-- END twitter metadata -->
+<title>SmallChange: SmTextureFont::FontImage Class Reference</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" type="image/svg+xml" href="logo.drawio.svg"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+<script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+<script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+<script type="text/javascript" src="toggle-alternative-theme.js"></script>
+<script type="text/javascript">
+    DoxygenAwesomeFragmentCopyButton.init()
+    DoxygenAwesomeDarkModeToggle.init()
+    DoxygenAwesomeParagraphLink.init()
+    DoxygenAwesomeInteractiveToc.init()
+    DoxygenAwesomeTabs.init()
+</script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="custom.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="custom-alternative.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!-- https://tholman.com/github-corners/ -->
+<a href="https://github.com/coin3d/smallchange" class="github-corner" title="View source on GitHub" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 250 250" width="40" height="40" style="position: absolute; top: 0; border: 0; right: 0; z-index: 99;" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="Coin_logo.png"/></td>
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SmallChange
+   &#160;<span id="projectnumber">1.0.0</span>
+   </div>
+   <div id="projectbrief">A collection of extensions to Coin3D</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.10.0 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function(){initNavTree('classSmTextureFont_1_1FontImage.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classSmTextureFont_1_1FontImage-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">SmTextureFont::FontImage Class Reference</div></div>
+</div><!--header-->
+<div class="contents">
+<div class="dynheader">
+Inheritance diagram for SmTextureFont::FontImage:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="classSmTextureFont_1_1FontImage.png" usemap="#SmTextureFont::FontImage_map" alt=""/>
+  <map id="SmTextureFont::FontImage_map" name="SmTextureFont::FontImage_map">
+<area href="classSbImage.html" alt="SbImage" shape="rect" coords="0,0,160,24"/>
+  </map>
+</div></div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a0e09b3e1643702e85d1de38f6fe37180" id="r_a0e09b3e1643702e85d1de38f6fe37180"><td class="memItemLeft" align="right" valign="top"><a id="a0e09b3e1643702e85d1de38f6fe37180" name="a0e09b3e1643702e85d1de38f6fe37180"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FontImage</b> (<a class="el" href="classSbList.html">const</a> SbVec2s glyphsize, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> leading, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> ascent, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> descent, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> <a class="el" href="classSbList.html">numcomponents</a>)</td></tr>
+<tr class="separator:a0e09b3e1643702e85d1de38f6fe37180"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad00da6ba85ec9cc9d8de3936f9b167c8" id="r_ad00da6ba85ec9cc9d8de3936f9b167c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classSbList.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad00da6ba85ec9cc9d8de3936f9b167c8">addGlyph</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">c</a>, <a class="el" href="classSbList.html">const</a> <a class="el" href="classSbImage.html">SbImage</a> &amp;image, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> width, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> <a class="el" href="classSbList.html">gfxwidth</a>=-1, <a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a> xoffset=0)</td></tr>
+<tr class="separator:ad00da6ba85ec9cc9d8de3936f9b167c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2593fb20d616b7117b0e7a4efb8b93f1" id="r_a2593fb20d616b7117b0e7a4efb8b93f1"><td class="memItemLeft" align="right" valign="top"><a id="a2593fb20d616b7117b0e7a4efb8b93f1" name="a2593fb20d616b7117b0e7a4efb8b93f1"></a>
+<a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getAscent</b> () <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a2593fb20d616b7117b0e7a4efb8b93f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c33704968cf5f678c005a069c08e744" id="r_a9c33704968cf5f678c005a069c08e744"><td class="memItemLeft" align="right" valign="top"><a id="a9c33704968cf5f678c005a069c08e744" name="a9c33704968cf5f678c005a069c08e744"></a>
+<a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getDescent</b> () <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a9c33704968cf5f678c005a069c08e744"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a358fc251d14a4cbe109e061dab2e53b6" id="r_a358fc251d14a4cbe109e061dab2e53b6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classSbList.html">SoGLImage</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a358fc251d14a4cbe109e061dab2e53b6">getGLImage</a> (<a class="el" href="classSbList.html">void</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a358fc251d14a4cbe109e061dab2e53b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a166a215c90ba6c20c061356ee56baeb3" id="r_a166a215c90ba6c20c061356ee56baeb3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classSbImage.html">SbImage</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a166a215c90ba6c20c061356ee56baeb3">getGlyphImage</a> (<a class="el" href="classSbList.html">const</a> <a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">c</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a166a215c90ba6c20c061356ee56baeb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6da89fb556dd240d1cb03c975546ad1a" id="r_a6da89fb556dd240d1cb03c975546ad1a"><td class="memItemLeft" align="right" valign="top">SbVec2f&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6da89fb556dd240d1cb03c975546ad1a">getGlyphPosition</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">c</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a6da89fb556dd240d1cb03c975546ad1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f9fd13cb5bc4e0f2e234c234f07483a" id="r_a3f9fd13cb5bc4e0f2e234c234f07483a"><td class="memItemLeft" align="right" valign="top"><a id="a3f9fd13cb5bc4e0f2e234c234f07483a" name="a3f9fd13cb5bc4e0f2e234c234f07483a"></a>
+SbVec2s&#160;</td><td class="memItemRight" valign="bottom"><b>getGlyphPositionPixels</b> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">c</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a3f9fd13cb5bc4e0f2e234c234f07483a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e33b4de3ed3b25d7ef77c413c806394" id="r_a2e33b4de3ed3b25d7ef77c413c806394"><td class="memItemLeft" align="right" valign="top">SbVec2f&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e33b4de3ed3b25d7ef77c413c806394">getGlyphSize</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">c</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a2e33b4de3ed3b25d7ef77c413c806394"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1983bf75aded72bb0d8ec2832944c851" id="r_a1983bf75aded72bb0d8ec2832944c851"><td class="memItemLeft" align="right" valign="top"><a id="a1983bf75aded72bb0d8ec2832944c851" name="a1983bf75aded72bb0d8ec2832944c851"></a>
+<a class="el" href="classSbList.html">const</a> SbVec2s &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getGlyphSizePixels</b> () <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a1983bf75aded72bb0d8ec2832944c851"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab21fb45488e8092b314d7e066b19ecdb" id="r_ab21fb45488e8092b314d7e066b19ecdb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab21fb45488e8092b314d7e066b19ecdb">getGlyphWidth</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">c</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:ab21fb45488e8092b314d7e066b19ecdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3d7f6e86c388b7af27f36306293ce59" id="r_ae3d7f6e86c388b7af27f36306293ce59"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3d7f6e86c388b7af27f36306293ce59">getKerning</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">glyph</a>, <a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> next) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:ae3d7f6e86c388b7af27f36306293ce59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa615bf0f1af980f1115a64615fd59575" id="r_aa615bf0f1af980f1115a64615fd59575"><td class="memItemLeft" align="right" valign="top"><a id="aa615bf0f1af980f1115a64615fd59575" name="aa615bf0f1af980f1115a64615fd59575"></a>
+<a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getLeading</b> () <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:aa615bf0f1af980f1115a64615fd59575"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeff6f05adbc8d6cf739c590e0807ac0a" id="r_aeff6f05adbc8d6cf739c590e0807ac0a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeff6f05adbc8d6cf739c590e0807ac0a">getXOffset</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">glyph</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:aeff6f05adbc8d6cf739c590e0807ac0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab763e3a5d1ad261932096417145d8da5" id="r_ab763e3a5d1ad261932096417145d8da5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab763e3a5d1ad261932096417145d8da5">height</a> () <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:ab763e3a5d1ad261932096417145d8da5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a32d840c6f0bcf8d373903769efd67e" id="r_a2a32d840c6f0bcf8d373903769efd67e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classSbList.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a32d840c6f0bcf8d373903769efd67e">renderString</a> (<a class="el" href="classSbList.html">const</a> SbString &amp;<a class="el" href="classSbList.html">s</a>, <a class="el" href="classSbList.html">const</a> <a class="el" href="classSbVec3f.html">SbVec3f</a> &amp;pos, <a class="el" href="classSbList.html">const</a> <a class="el" href="classbool.html">bool</a> <a class="el" href="classSbList.html">needglbeginend</a>=<a class="el" href="classSbList.html">true</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:a2a32d840c6f0bcf8d373903769efd67e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af60e92cf9a843e8b198edbf10145e252" id="r_af60e92cf9a843e8b198edbf10145e252"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classSbList.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af60e92cf9a843e8b198edbf10145e252">setKerning</a> (<a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> <a class="el" href="classSbList.html">glyph</a>, <a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a> next, <a class="el" href="classint.html">int</a> <a class="el" href="classSbList.html">kerning</a>)</td></tr>
+<tr class="separator:af60e92cf9a843e8b198edbf10145e252"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1292df09a76aebec1cd71adcb4bdde2" id="r_ad1292df09a76aebec1cd71adcb4bdde2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad1292df09a76aebec1cd71adcb4bdde2">stringWidth</a> (<a class="el" href="classSbList.html">const</a> SbString &amp;<a class="el" href="classSbList.html">s</a>) <a class="el" href="classSbList.html">const</a></td></tr>
+<tr class="separator:ad1292df09a76aebec1cd71adcb4bdde2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ad00da6ba85ec9cc9d8de3936f9b167c8" name="ad00da6ba85ec9cc9d8de3936f9b167c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad00da6ba85ec9cc9d8de3936f9b167c8">&#9670;&#160;</a></span>addGlyph()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classSbList.html">void</a> SmTextureFont::FontImage::addGlyph </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>c</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classSbImage.html">SbImage</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>image</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>glyphwidth</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>gfxglyphwidth</em><span class="paramdefsep"> = </span><span class="paramdefval">-1</span>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>xoffset</em><span class="paramdefsep"> = </span><span class="paramdefval">0</span></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Adds the image for a glyph to the texture image. The size of the image must be smaller than the <em>glyphsize</em> provided in the constructor. <em>glyphwidth</em> is the number of pixels to advance before rendering the next character. <em>gfxglyphwidth</em> is the width of the glyph in the bitmap. If you supply a negative number in <em>gfxglyphwidth</em>, the width of the glyphs supplied in the constructor will be used instead.</p>
+<p><em>xoffset</em> is the offset used when rendering the glyph. This is useful for specifying glyphs that extend to the left of the glyph position. </p>
+
+</div>
+</div>
+<a id="a358fc251d14a4cbe109e061dab2e53b6" name="a358fc251d14a4cbe109e061dab2e53b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a358fc251d14a4cbe109e061dab2e53b6">&#9670;&#160;</a></span>getGLImage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classSbList.html">SoGLImage</a> * SmTextureFont::FontImage::getGLImage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">void</a></td>          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the SoGLImage instance for this font. </p>
+
+</div>
+</div>
+<a id="a166a215c90ba6c20c061356ee56baeb3" name="a166a215c90ba6c20c061356ee56baeb3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a166a215c90ba6c20c061356ee56baeb3">&#9670;&#160;</a></span>getGlyphImage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classSbImage.html">SbImage</a> SmTextureFont::FontImage::getGlyphImage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>c</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the glyph image for <em>c</em>. </p>
+
+</div>
+</div>
+<a id="a6da89fb556dd240d1cb03c975546ad1a" name="a6da89fb556dd240d1cb03c975546ad1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6da89fb556dd240d1cb03c975546ad1a">&#9670;&#160;</a></span>getGlyphPosition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SbVec2f SmTextureFont::FontImage::getGlyphPosition </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>c</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the lower left corner position of the glyph in texture coordinates. </p>
+
+</div>
+</div>
+<a id="a2e33b4de3ed3b25d7ef77c413c806394" name="a2e33b4de3ed3b25d7ef77c413c806394"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e33b4de3ed3b25d7ef77c413c806394">&#9670;&#160;</a></span>getGlyphSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SbVec2f SmTextureFont::FontImage::getGlyphSize </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>c</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the size of the glyph, in texture coordinates. </p>
+
+</div>
+</div>
+<a id="ab21fb45488e8092b314d7e066b19ecdb" name="ab21fb45488e8092b314d7e066b19ecdb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab21fb45488e8092b314d7e066b19ecdb">&#9670;&#160;</a></span>getGlyphWidth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> SmTextureFont::FontImage::getGlyphWidth </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>c</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the width of the glyph in the texture. </p>
+
+</div>
+</div>
+<a id="ae3d7f6e86c388b7af27f36306293ce59" name="ae3d7f6e86c388b7af27f36306293ce59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3d7f6e86c388b7af27f36306293ce59">&#9670;&#160;</a></span>getKerning()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> SmTextureFont::FontImage::getKerning </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>glyph</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>next</em></span>&#160;) const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the kerning for glyph/next. If no kerning info exists for the pair, the width of the glyph is returned. </p>
+
+</div>
+</div>
+<a id="aeff6f05adbc8d6cf739c590e0807ac0a" name="aeff6f05adbc8d6cf739c590e0807ac0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeff6f05adbc8d6cf739c590e0807ac0a">&#9670;&#160;</a></span>getXOffset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> SmTextureFont::FontImage::getXOffset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>glyph</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the x offset for <em>glyph</em>. </p>
+
+</div>
+</div>
+<a id="ab763e3a5d1ad261932096417145d8da5" name="ab763e3a5d1ad261932096417145d8da5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab763e3a5d1ad261932096417145d8da5">&#9670;&#160;</a></span>height()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> SmTextureFont::FontImage::height </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the height of the font (ascent + descent + 1). </p>
+
+</div>
+</div>
+<a id="a2a32d840c6f0bcf8d373903769efd67e" name="a2a32d840c6f0bcf8d373903769efd67e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a32d840c6f0bcf8d373903769efd67e">&#9670;&#160;</a></span>renderString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classSbList.html">void</a> SmTextureFont::FontImage::renderString </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> SbString &amp;</td>          <td class="paramname"><span class="paramname"><em>s</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classSbVec3f.html">SbVec3f</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>pos</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> <a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>needglbeginend</em><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="classSbList.html">true</a></span></span>&#160;) const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Convenience method to render <em>s</em> at position <em>pos</em>. This function assumed a coordinate system with 1 pixel == 1 unit is set up. </p>
+
+</div>
+</div>
+<a id="af60e92cf9a843e8b198edbf10145e252" name="af60e92cf9a843e8b198edbf10145e252"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af60e92cf9a843e8b198edbf10145e252">&#9670;&#160;</a></span>setKerning()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classSbList.html">void</a> SmTextureFont::FontImage::setKerning </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>glyph</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSbList.html">unsigned</a> <a class="el" href="classSbList.html">char</a></td>          <td class="paramname"><span class="paramname"><em>next</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>kerning</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Sets kerning for the glyph/next pair. </p>
+
+</div>
+</div>
+<a id="ad1292df09a76aebec1cd71adcb4bdde2" name="ad1292df09a76aebec1cd71adcb4bdde2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1292df09a76aebec1cd71adcb4bdde2">&#9670;&#160;</a></span>stringWidth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> SmTextureFont::FontImage::stringWidth </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classSbList.html">const</a> SbString &amp;</td>          <td class="paramname"><span class="paramname"><em>s</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Convenience method that calculates the width (in pixels) for <em>s</em>. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li><a class="el" href="SmTextureFont_8h_source.html">SmTextureFont.h</a></li>
+<li><b>SmTextureFont.cpp</b></li>
+</ul>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="classSmTextureFont.html">SmTextureFont</a></li><li class="navelem"><a class="el" href="classSmTextureFont_1_1FontImage.html">FontImage</a></li>
+    <li class="footer">Generated on Sun May 12 2024 19:32:40 for SmallChange by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
+  </ul>
+</div>
+</body>
+</html>
