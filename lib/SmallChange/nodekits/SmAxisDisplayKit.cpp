@@ -80,6 +80,17 @@
 */
 
 /*!
+  \var SoMFBool SmAxisDisplayKit::drawAsLines
+
+  Specifies whether arrows should be drawn as lines or as cylinders.
+  Cylinders may look better but lines are always drawn with the same width
+  You can use the drawestyle (SoDrawStyle) catalog entry to change the width of
+  the lines.
+
+  Default value is FALSE.
+*/
+
+/*!
   \var SoMFString SmAxisDisplayKit::annotations
 
   Specifies annotation for each axis. The annotation will be rendered
@@ -154,6 +165,7 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SO_KIT_ADD_FIELD(axes, (0.0f, 0.0f, 0.0f));
   SO_KIT_ADD_FIELD(colors, (1.0f, 1.0f, 1.0f));
   SO_KIT_ADD_FIELD(enableArrows, (TRUE));
+  SO_KIT_ADD_FIELD(drawAsLines, (FALSE));
   SO_KIT_ADD_FIELD(annotations, (""));
   SO_KIT_ADD_FIELD(headlight, (TRUE));
 
@@ -183,7 +195,7 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   vpr->clearDepthBuffer = TRUE;
 
   SoDrawStyle *drawstyle = (SoDrawStyle *)this->getAnyPart("drawstyle", TRUE);
-  drawstyle->lineWidth = 2;
+  drawstyle->lineWidth = 1;
 
   SoShapeHints * sh = (SoShapeHints*) this->getAnyPart("shapehints", TRUE);
   sh->vertexOrdering = SoShapeHints::COUNTERCLOCKWISE;
@@ -379,28 +391,31 @@ SmAxisDisplayKitP::oneshot_cb(void * closure, SoSensor * s)
 
     // Vector
     if (!linesep) { // Reuse linesep for all axes
-#if 0 // boring lines :)
-      linesep = new SoSeparator;
-      SoCoordinate3 *coord = new SoCoordinate3;
-      SoLineSet *ls = new SoLineSet;
+    	linesep = new SoSeparator;
+		if (PUBLIC(thisp)->drawAsLines.getValue() == TRUE) {
+		  // boring lines :)
+		  SoCoordinate3 *coord = new SoCoordinate3;
+		  SoLineSet *ls = new SoLineSet;
 
-      coord->point.set1Value(0, 0.0f, 0.0f, 0.0f);
-      coord->point.set1Value(1, 0.0f, 1.0f, 0.0f);
-      ls->numVertices.setValue(2);
+		  coord->point.set1Value(0, 0.0f, 0.0f, 0.0f);
+		  coord->point.set1Value(1, 0.0f, 1.0f, 0.0f);
+		  ls->numVertices.setValue(2);
 
-      linesep->addChild(coord);
-      linesep->addChild(ls);
-#else // better looking cylinders
-      linesep = new SoSeparator;
-      SoCylinder * cyl = new SoCylinder;
-      cyl->radius = 0.02f;
-      cyl->height = 1.0f;
-      SoTranslation * t = new SoTranslation;
-      t->translation = SbVec3f(0.0f, 0.5f, 0.0f);      
-      linesep->addChild(t);
-      linesep->addChild(cyl);
-#endif // cylinders
+		  linesep->addChild(coord);
+		  linesep->addChild(ls);
+		}
+		else {
+		  // better looking cylinders
+		  SoCylinder * cyl = new SoCylinder;
+		  cyl->radius = 0.02f;
+		  cyl->height = 1.0f;
+		  SoTranslation * t = new SoTranslation;
+		  t->translation = SbVec3f(0.0f, 0.5f, 0.0f);
+		  linesep->addChild(t);
+		  linesep->addChild(cyl);
+		}
     }
+
     axissep->addChild(axiscol);
     axissep->addChild(axistrans);
     axissep->addChild(linesep);

@@ -63,6 +63,7 @@ public:
   SoMFVec3f axes;
   SoMFColor colors;
   SoMFBool enableArrows;
+  SoSFBool drawAsLines;
   SoMFString annotations;
   SoSFBool headlight;
 
