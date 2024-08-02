@@ -57,12 +57,14 @@ class SMALLCHANGE_DLL_API SmAxisDisplayKit : public SoBaseKit
   SO_KIT_CATALOG_ENTRY_HEADER(shapehints);
   SO_KIT_CATALOG_ENTRY_HEADER(headlightNode);
   SO_KIT_CATALOG_ENTRY_HEADER(axessep);
+  SO_KIT_CATALOG_ENTRY_HEADER(font);
 
 public:
   SoSFRotation orientation;
   SoMFVec3f axes;
   SoMFColor colors;
   SoMFBool enableArrows;
+  SoSFBool drawAsLines;
   SoMFString annotations;
   SoSFBool headlight;
 
