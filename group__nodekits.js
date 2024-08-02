@@ -47,6 +47,7 @@ var group__nodekits =
       [ "annotations", "classSmAxisDisplayKit.html#a85e6a681dd3d16c0e154c42aed3e39a3", null ],
       [ "axes", "classSmAxisDisplayKit.html#a7455406ef57188df5e7373bca3ae7728", null ],
       [ "colors", "classSmAxisDisplayKit.html#aa47deeb7e8842c0ec0b152680ed4ff0d", null ],
+      [ "drawAsLines", "classSmAxisDisplayKit.html#a16e61a29a88d5624df1a1695f6950095", null ],
       [ "enableArrows", "classSmAxisDisplayKit.html#a39e06c54cf2ceeccd3d4add7ec0a9441", null ],
       [ "orientation", "classSmAxisDisplayKit.html#a4a52945662700fcbcce5ea7aea95b0dd", null ]
     ] ],

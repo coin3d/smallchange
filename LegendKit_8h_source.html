@@ -185,46 +185,46 @@ $(function(){initNavTree('LegendKit_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#include &lt;SmallChange/basic.h&gt;</span></div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="keyword">class </span>SbViewport;</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="keyword">class </span>SoState;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="keyword">class </span><a class="code hl_class" href="classSbList.html">SbViewport</a>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="keyword">class </span><a class="code hl_class" href="classSbList.html">SoState</a>;</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">class </span>SbColor;</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">class </span>SbVec2s;</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
 <div class="foldopen" id="foldopen00057" data-start="{" data-end="};">
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="classLegendKit.html">   57</a></span><span class="keyword">class </span>SMALLCHANGE_DLL_API <a class="code hl_class" href="classLegendKit.html">LegendKit</a> : <span class="keyword">public</span> SoBaseKit {</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="classLegendKit.html">   57</a></span><span class="keyword">class </span><a class="code hl_class" href="classSbList.html">SMALLCHANGE_DLL_API</a> <a class="code hl_class" href="classLegendKit.html">LegendKit</a> : <span class="keyword">public</span> SoBaseKit {</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keyword">typedef</span> SoBaseKit inherited;</div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  SO_KIT_HEADER(<a class="code hl_class" href="classLegendKit.html">LegendKit</a>);</div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  SO_KIT_CATALOG_ENTRY_HEADER(topSeparator);</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">topSeparator</a>);</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  SO_KIT_CATALOG_ENTRY_HEADER(viewport);</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  SO_KIT_CATALOG_ENTRY_HEADER(resetTransform);</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">resetTransform</a>);</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  SO_KIT_CATALOG_ENTRY_HEADER(position);</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  SO_KIT_CATALOG_ENTRY_HEADER(depthBuffer);</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  SO_KIT_CATALOG_ENTRY_HEADER(lightModel);</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">depthBuffer</a>);</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">lightModel</a>);</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  SO_KIT_CATALOG_ENTRY_HEADER(camera);</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  SO_KIT_CATALOG_ENTRY_HEADER(texture);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  SO_KIT_CATALOG_ENTRY_HEADER(shapeHints);</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  SO_KIT_CATALOG_ENTRY_HEADER(backgroundMaterial);</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  SO_KIT_CATALOG_ENTRY_HEADER(backgroundShape);</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  SO_KIT_CATALOG_ENTRY_HEADER(imageSeparator);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  SO_KIT_CATALOG_ENTRY_HEADER(imageTransform);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  SO_KIT_CATALOG_ENTRY_HEADER(imageMaterial);</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  SO_KIT_CATALOG_ENTRY_HEADER(imageSwitch);     </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  SO_KIT_CATALOG_ENTRY_HEADER(imageGroup);</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  SO_KIT_CATALOG_ENTRY_HEADER(imageTranslation);</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">texture</a>);</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">shapeHints</a>);</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">pickStyle</a>);</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">backgroundMaterial</a>);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">backgroundShape</a>);</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">imageSeparator</a>);</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">imageTransform</a>);</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">imageMaterial</a>);</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">imageSwitch</a>);     </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">imageGroup</a>);</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">imageTranslation</a>);</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  SO_KIT_CATALOG_ENTRY_HEADER(image);</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  SO_KIT_CATALOG_ENTRY_HEADER(textureGroup);</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  SO_KIT_CATALOG_ENTRY_HEADER(textureQuality);</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  SO_KIT_CATALOG_ENTRY_HEADER(textureImage);</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  SO_KIT_CATALOG_ENTRY_HEADER(textureShape);</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  SO_KIT_CATALOG_ENTRY_HEADER(tickMaterial);</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  SO_KIT_CATALOG_ENTRY_HEADER(renderCallbackLines);</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  SO_KIT_CATALOG_ENTRY_HEADER(textMaterial);</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  SO_KIT_CATALOG_ENTRY_HEADER(renderCallbackText);</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  SO_KIT_CATALOG_ENTRY_HEADER(extraNodes);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">textureGroup</a>);</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">textureQuality</a>);</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">textureImage</a>);</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">textureShape</a>);</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">tickMaterial</a>);</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">renderCallbackLines</a>);</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">textMaterial</a>);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">renderCallbackText</a>);</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  SO_KIT_CATALOG_ENTRY_HEADER(<a class="code hl_class" href="classSbList.html">extraNodes</a>);</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  <a class="code hl_class" href="classLegendKit.html">LegendKit</a>(<span class="keywordtype">void</span>);</div>
@@ -247,29 +247,29 @@ $(function(){initNavTree('LegendKit_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno"><a class="line" href="classLegendKit.html#aced81b23533d421979528eff543d1a98">  109</a></span>  SoSFBool <a class="code hl_variable" href="classLegendKit.html#aced81b23533d421979528eff543d1a98">discreteUseLower</a>;</div>
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>  SoSFBool threadSafe;</div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  <span class="keywordtype">void</span> preRender(<a class="code hl_class" href="classSoAction.html">SoAction</a> * action);</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  <span class="keywordtype">void</span> preRender(<a class="code hl_class" href="classSoAction.html">SoAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  </div>
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>  <span class="keywordtype">void</span> setImageTransparency(<span class="keyword">const</span> <span class="keywordtype">float</span> transparency = 0.0f);</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  <span class="keywordtype">void</span> useTextureNotImage(<span class="keyword">const</span> SbBool onoff);</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  <span class="keywordtype">void</span> setColorCB(uint32_t (*colorCB)(<span class="keywordtype">double</span>, <span class="keywordtype">void</span>*), <span class="keywordtype">void</span> * userdata = NULL);</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  <span class="keywordtype">void</span> useTextureNotImage(<span class="keyword">const</span> SbBool <a class="code hl_class" href="classSbList.html">onoff</a>);</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  <span class="keywordtype">void</span> setColorCB(uint32_t (*colorCB)(<span class="keywordtype">double</span>, <span class="keywordtype">void</span>*), <span class="keywordtype">void</span> * <a class="code hl_class" href="classSbList.html">userdata</a> = <a class="code hl_class" href="classSbList.html">NULL</a>);</div>
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>  <span class="keywordtype">void</span> setColorCB(uint32_t (*colorCB)(<span class="keywordtype">double</span>));</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  </div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  <span class="keywordtype">void</span> clearTicks(<span class="keywordtype">void</span>);</div>
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  <span class="keywordtype">void</span> addSmallTick(<span class="keywordtype">double</span> nval);</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>  <span class="keywordtype">void</span> addBigTick(<span class="keywordtype">double</span> nval, <span class="keywordtype">double</span> tickvalue, <span class="keyword">const</span> SbString * discretestring = NULL);</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>  <span class="keywordtype">void</span> addBigTick(<span class="keywordtype">double</span> nval, <span class="keyword">const</span> SbString &amp; <span class="keywordtype">string</span>, <span class="keyword">const</span> SbString * discretestring = NULL);</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>  <span class="keywordtype">void</span> addBigTick(<span class="keywordtype">double</span> nval, <span class="keywordtype">double</span> <a class="code hl_class" href="classSbList.html">tickvalue</a>, <span class="keyword">const</span> SbString * discretestring = <a class="code hl_class" href="classSbList.html">NULL</a>);</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>  <span class="keywordtype">void</span> addBigTick(<span class="keywordtype">double</span> nval, <span class="keyword">const</span> SbString &amp; <span class="keywordtype">string</span>, <span class="keyword">const</span> SbString * discretestring = <a class="code hl_class" href="classSbList.html">NULL</a>);</div>
 <div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  <span class="keywordtype">void</span> setDiscreteMode(<span class="keyword">const</span> SbBool onoff);</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  <span class="keywordtype">void</span> setDiscreteMode(<span class="keyword">const</span> SbBool <a class="code hl_class" href="classSbList.html">onoff</a>);</div>
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>  <span class="keywordtype">void</span> addDiscreteColor(<span class="keywordtype">double</span> uppernval, uint32_t color);</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>  <span class="keywordtype">void</span> addDiscreteColor(<span class="keywordtype">double</span> uppernval);</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>  </div>
 <div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>  <span class="keywordtype">void</span> clearData(<span class="keywordtype">void</span>);</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>  <span class="keywordtype">void</span> enableImage(<span class="keyword">const</span> SbBool onoff);</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>  <span class="keywordtype">void</span> enableImage(<span class="keyword">const</span> SbBool <a class="code hl_class" href="classSbList.html">onoff</a>);</div>
 <div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  <span class="keywordtype">float</span> getLegendWidth(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span> </div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>  <span class="keyword">typedef</span> SbString SoNumberFormatCB(<span class="keyword">const</span> <span class="keywordtype">double</span> number, <span class="keywordtype">void</span> * closure);</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  <span class="keywordtype">void</span> setNumberFormatCallback(SoNumberFormatCB * cb, <span class="keywordtype">void</span> * closure);</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>  <span class="keyword">typedef</span> SbString SoNumberFormatCB(<span class="keyword">const</span> <span class="keywordtype">double</span> <a class="code hl_class" href="classSbList.html">number</a>, <span class="keywordtype">void</span> * <a class="code hl_class" href="classSbList.html">closure</a>);</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  <span class="keywordtype">void</span> setNumberFormatCallback(SoNumberFormatCB * <a class="code hl_class" href="classSbList.html">cb</a>, <span class="keywordtype">void</span> * <a class="code hl_class" href="classSbList.html">closure</a>);</div>
 <div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
 <div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>  <span class="comment">// convenience methods for setting part attributes</span></div>
@@ -277,42 +277,42 @@ $(function(){initNavTree('LegendKit_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>  <span class="keywordtype">void</span> setTextColor(<span class="keyword">const</span> SbColor &amp; color, <span class="keyword">const</span> <span class="keywordtype">float</span> transparency = 0.0f);</div>
 <div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>  <span class="keywordtype">void</span> setPosition(<span class="keyword">const</span> SbVec2s &amp; pos);</div>
 <div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>  <span class="keywordtype">void</span> setBackgroundColor(<span class="keyword">const</span> SbColor &amp; color, <span class="keyword">const</span> <span class="keywordtype">float</span> transparency = 0.0f);</div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>  <span class="keywordtype">void</span> enableBackground(<span class="keyword">const</span> SbBool onoff);</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>  <span class="keywordtype">void</span> enableBackground(<span class="keyword">const</span> SbBool <a class="code hl_class" href="classSbList.html">onoff</a>);</div>
 <div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
 <div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span> </div>
 <div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> GLRender(SoGLRenderAction * action);</div>
-<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> getBoundingBox(SoGetBoundingBoxAction * action);</div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> handleEvent(SoHandleEventAction * action);</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> search(SoSearchAction * action);</div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> callback(SoCallbackAction * action);</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> getMatrix(SoGetMatrixAction * action);</div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> pick(SoPickAction * action);</div>
-<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> rayPick(SoRayPickAction * action);</div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> audioRender(SoAudioRenderAction * action);</div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> getPrimitiveCount(SoGetPrimitiveCountAction * action);</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> GLRender(<a class="code hl_class" href="classSbList.html">SoGLRenderAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> getBoundingBox(<a class="code hl_class" href="classSbList.html">SoGetBoundingBoxAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> handleEvent(<a class="code hl_class" href="classSbList.html">SoHandleEventAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> search(SoSearchAction * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> callback(<a class="code hl_class" href="classSbList.html">SoCallbackAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> getMatrix(<a class="code hl_class" href="classSbList.html">SoGetMatrixAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> pick(<a class="code hl_class" href="classSbList.html">SoPickAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> rayPick(<a class="code hl_class" href="classSbList.html">SoRayPickAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> audioRender(<a class="code hl_class" href="classSbList.html">SoAudioRenderAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> getPrimitiveCount(<a class="code hl_class" href="classSbList.html">SoGetPrimitiveCountAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>  </div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>  <span class="keyword">virtual</span> SbBool affectsState(<span class="keywordtype">void</span>) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
 <div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  <span class="keyword">virtual</span> <a class="code hl_class" href="classLegendKit.html">~LegendKit</a>();</div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> notify(SoNotList * list);</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> notify(<a class="code hl_class" href="classSbList.html">SoNotList</a> * <a class="code hl_class" href="classSbList.html">list</a>);</div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>  </div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="keyword">private</span>:</div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>  <span class="keywordtype">void</span> recalcSize(SoState * state);</div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>  <span class="keywordtype">void</span> initBackground(<span class="keyword">const</span> SbBool force = FALSE);</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>  <span class="keywordtype">void</span> recalcSize(<a class="code hl_class" href="classSbList.html">SoState</a> * state);</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>  <span class="keywordtype">void</span> initBackground(<span class="keyword">const</span> SbBool <a class="code hl_class" href="classSbList.html">force</a> = <a class="code hl_class" href="classSbList.html">FALSE</a>);</div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>  <span class="keywordtype">void</span> initTextureImage(<span class="keywordtype">void</span>);</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>  <span class="keywordtype">void</span> initImage(<span class="keywordtype">void</span>);</div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>  <span class="keywordtype">void</span> reallyInitImage(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> * data, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> * rowdata = NULL);</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>  <span class="keywordtype">void</span> reallyInitImage(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> * data, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> * <a class="code hl_class" href="classSbList.html">rowdata</a> = <a class="code hl_class" href="classSbList.html">NULL</a>);</div>
 <div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>  <span class="keywordtype">void</span> fillImageAlpha(<span class="keywordtype">void</span>);</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>  <span class="keyword">static</span> <span class="keywordtype">void</span> renderCBlines(<span class="keywordtype">void</span> * userdata, <a class="code hl_class" href="classSoAction.html">SoAction</a> * action);</div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>  <span class="keyword">static</span> <span class="keywordtype">void</span> renderCBtext(<span class="keywordtype">void</span> * userdata, <a class="code hl_class" href="classSoAction.html">SoAction</a> * action);</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>  <span class="keywordtype">void</span> render(SoGLRenderAction * action, <span class="keyword">const</span> SbBool lines);</div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>  <span class="keywordtype">void</span> renderLines(SoGLRenderAction * action);</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>  <span class="keywordtype">void</span> renderText(SoGLRenderAction * action);</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>  <span class="keywordtype">void</span> renderString(<span class="keyword">const</span> <span class="keywordtype">char</span> * str, <span class="keywordtype">int</span> xpos, <span class="keywordtype">int</span> ypos);</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>  <span class="keyword">static</span> <span class="keywordtype">void</span> renderCBlines(<span class="keywordtype">void</span> * <a class="code hl_class" href="classSbList.html">userdata</a>, <a class="code hl_class" href="classSoAction.html">SoAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>  <span class="keyword">static</span> <span class="keywordtype">void</span> renderCBtext(<span class="keywordtype">void</span> * <a class="code hl_class" href="classSbList.html">userdata</a>, <a class="code hl_class" href="classSoAction.html">SoAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>  <span class="keywordtype">void</span> render(<a class="code hl_class" href="classSbList.html">SoGLRenderAction</a> * <a class="code hl_class" href="classSbList.html">action</a>, <span class="keyword">const</span> SbBool lines);</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>  <span class="keywordtype">void</span> renderLines(<a class="code hl_class" href="classSbList.html">SoGLRenderAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>  <span class="keywordtype">void</span> renderText(<a class="code hl_class" href="classSbList.html">SoGLRenderAction</a> * <a class="code hl_class" href="classSbList.html">action</a>);</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>  <span class="keywordtype">void</span> renderString(<span class="keyword">const</span> <span class="keywordtype">char</span> * <a class="code hl_class" href="classSbList.html">str</a>, <span class="keywordtype">int</span> <a class="code hl_class" href="classSbList.html">xpos</a>, <span class="keywordtype">int</span> <a class="code hl_class" href="classSbList.html">ypos</a>);</div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span> </div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>  <span class="keywordtype">void</span> setSwitchValue(<span class="keyword">const</span> <span class="keywordtype">char</span> * part, <span class="keyword">const</span> <span class="keywordtype">int</span> value);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>  <span class="keywordtype">void</span> setSwitchValue(<span class="keyword">const</span> <span class="keywordtype">char</span> * <a class="code hl_class" href="classSbList.html">part</a>, <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code hl_class" href="classSbList.html">value</a>);</div>
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span> </div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>  <span class="keyword">class </span>LegendKitP * pimpl;</div>
 <div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>  <span class="keyword">friend</span> <span class="keyword">class </span>LegendKitP;</div>
@@ -337,6 +337,7 @@ $(function(){initNavTree('LegendKit_8h_source.html',''); initResizable(); });
 <div class="ttc" id="aclassLegendKit_html_aced81b23533d421979528eff543d1a98"><div class="ttname"><a href="classLegendKit.html#aced81b23533d421979528eff543d1a98">LegendKit::discreteUseLower</a></div><div class="ttdeci">SoSFBool discreteUseLower</div><div class="ttdef"><b>Definition</b> LegendKit.h:109</div></div>
 <div class="ttc" id="aclassLegendKit_html_ad20ae1b5f66427748a50b489574773c7"><div class="ttname"><a href="classLegendKit.html#ad20ae1b5f66427748a50b489574773c7">LegendKit::tickValueFormat</a></div><div class="ttdeci">SoSFString tickValueFormat</div><div class="ttdef"><b>Definition</b> LegendKit.h:103</div></div>
 <div class="ttc" id="aclassLegendKit_html_af759746c03537506dfff3c557b9a801a"><div class="ttname"><a href="classLegendKit.html#af759746c03537506dfff3c557b9a801a">LegendKit::delayedRender</a></div><div class="ttdeci">SoSFBool delayedRender</div><div class="ttdef"><b>Definition</b> LegendKit.h:107</div></div>
+<div class="ttc" id="aclassSbList_html"><div class="ttname"><a href="classSbList.html">SbList</a></div><div class="ttdef"><b>Definition</b> misc/SbList.h:69</div></div>
 <div class="ttc" id="aclassSoAction_html"><div class="ttname"><a href="classSoAction.html">SoAction</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
@@ -344,7 +345,7 @@ $(function(){initNavTree('LegendKit_8h_source.html',''); initResizable(); });
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_97aefd0d527b934f1d99a682da8fe6a9.html">lib</a></li><li class="navelem"><a class="el" href="dir_a879be32c934ecfdce3b37de6341a4fd.html">SmallChange</a></li><li class="navelem"><a class="el" href="dir_1bc060cb5102d005382f7f10314ab658.html">nodekits</a></li><li class="navelem"><b>LegendKit.h</b></li>
-    <li class="footer">Generated on Sun May 12 2024 19:32:40 for SmallChange by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
+    <li class="footer">Generated on Fri Aug 2 2024 09:23:34 for SmallChange by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
 </body>

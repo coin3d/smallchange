@@ -1263,6 +1263,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>SoSFBool</type>
+      <name>drawAsLines</name>
+      <anchorfile>classSmAxisDisplayKit.html</anchorfile>
+      <anchor>a16e61a29a88d5624df1a1695f6950095</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>SoMFBool</type>
       <name>enableArrows</name>
       <anchorfile>classSmAxisDisplayKit.html</anchorfile>

@@ -1,5 +1,6 @@
 var NAVTREEINDEX1 =
 {
+"classSmAxisDisplayKit.html#a4e73067212efbd2f10c6a9f03aefeb93":[0,14,1,4],
 "classSmAxisDisplayKit.html#a7455406ef57188df5e7373bca3ae7728":[0,14,1,6],
 "classSmAxisDisplayKit.html#a85e6a681dd3d16c0e154c42aed3e39a3":[0,14,1,5],
 "classSmAxisDisplayKit.html#aa47deeb7e8842c0ec0b152680ed4ff0d":[0,14,1,7],
@@ -248,6 +249,5 @@ var NAVTREEINDEX1 =
 "classSoTCBCurve.html#a682935a583c04ce4e96e49c55770c502":[0,15,13,3],
 "classSoTCBCurve.html#a8e039d15f7ae7d709f306a0c47bd4c9f":[0,15,13,0],
 "classSoTCBCurve.html#aaac56a19cec26877803c7e3af429673a":[0,15,13,1],
-"classSoTCBCurve.html#ac6e158ca49e3f4815e678c0d70f2b7d1":[0,15,13,2],
-"classSoTCBCurve.html#aef030c86d248903dbd13714eef529a11":[0,15,13,4]
+"classSoTCBCurve.html#ac6e158ca49e3f4815e678c0d70f2b7d1":[0,15,13,2]
 };

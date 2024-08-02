@@ -1,5 +1,6 @@
 var NAVTREEINDEX2 =
 {
+"classSoTCBCurve.html#aef030c86d248903dbd13714eef529a11":[0,15,13,4],
 "classSoText2.html":[2,0,99],
 "classSoText2Set.html":[0,15,14],
 "classSoText2Set.html#a155abb39d03578928cb4980f59bc0077":[0,15,14,8],

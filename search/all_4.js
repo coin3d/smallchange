@@ -9,7 +9,8 @@ var searchData=
   ['discreteuselower_6',['discreteUseLower',['../classLegendKit.html#aced81b23533d421979528eff543d1a98',1,'LegendKit']]],
   ['doaction_7',['doAction',['../classUTMCoordinate.html#a99870e6348cec71c9fad3852e9947513',1,'UTMCoordinate::doAction()'],['../classUTMPosition.html#a0595dfc0e1faf9dce4a1540a4455695b',1,'UTMPosition::doAction()'],['../classViewportRegion.html#afee0f09150bcd0320359a7b6338137db',1,'ViewportRegion::doAction()']]],
   ['dragger_20classes_8',['Dragger Classes',['../group__draggers.html',1,'']]],
-  ['dynamicbasekit_9',['DynamicBaseKit',['../classDynamicBaseKit.html',1,'']]],
-  ['dynamicnodekit_10',['DynamicNodeKit',['../classDynamicNodeKit.html',1,'']]],
-  ['dynamicnodekit_3c_20sobasekit_20_3e_11',['DynamicNodeKit&lt; SoBaseKit &gt;',['../classDynamicNodeKit.html',1,'']]]
+  ['drawaslines_9',['drawAsLines',['../classSmAxisDisplayKit.html#a16e61a29a88d5624df1a1695f6950095',1,'SmAxisDisplayKit']]],
+  ['dynamicbasekit_10',['DynamicBaseKit',['../classDynamicBaseKit.html',1,'']]],
+  ['dynamicnodekit_11',['DynamicNodeKit',['../classDynamicNodeKit.html',1,'']]],
+  ['dynamicnodekit_3c_20sobasekit_20_3e_12',['DynamicNodeKit&lt; SoBaseKit &gt;',['../classDynamicNodeKit.html',1,'']]]
 ];
