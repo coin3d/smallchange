@@ -180,7 +180,8 @@ SmAxisDisplayKit::SmAxisDisplayKit(void)
   SO_KIT_ADD_CATALOG_ENTRY(viewportRegion, ViewportRegion, FALSE, topSeparator, drawstyle, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(drawstyle, SoDrawStyle, FALSE, topSeparator, shapehints, FALSE);
   SO_KIT_ADD_CATALOG_ENTRY(shapehints, SoShapeHints, FALSE, topSeparator, headlightNode, FALSE);
-  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SmHeadlight, FALSE, topSeparator, axessep, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(headlightNode, SmHeadlight, FALSE, topSeparator, font, TRUE);
+  SO_KIT_ADD_CATALOG_ENTRY(font, SoFont, FALSE, topSeparator, axessep, TRUE);
   SO_KIT_ADD_CATALOG_ENTRY(axessep, SoSeparator, FALSE, topSeparator, "", FALSE);
 
   SO_KIT_INIT_INSTANCE();
