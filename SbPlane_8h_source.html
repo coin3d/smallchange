@@ -172,7 +172,7 @@ $(function(){initNavTree('SbPlane_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &lt;cstdio&gt;</span></div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">class </span><a class="code hl_class" href="classSbList.html">SbLine</a>;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">class </span>SbLine;</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">class </span>SbMatrix;</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Type&gt; <span class="keyword">class </span><a class="code hl_class" href="classSbVec3.html">SbVec3</a>;</div>
@@ -182,30 +182,30 @@ $(function(){initNavTree('SbPlane_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="classSbPlane.html">   44</a></span><span class="keyword">class </span><a class="code hl_class" href="classSbPlane.html">SbPlane</a> {</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <a class="code hl_class" href="classSbPlane.html">SbPlane</a>(<span class="keywordtype">void</span>) { }</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <a class="code hl_class" href="classSbPlane.html">SbPlane</a>(<span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; N, <span class="keyword">const</span> Type D) : normal(N), distance(D) {</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <a class="code hl_class" href="classSbPlane.html">SbPlane</a>(<span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; N, <span class="keyword">const</span> Type D) : normal(N), distance(D) {</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    this-&gt;normal.normalize();</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  }</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <a class="code hl_class" href="classSbPlane.html">SbPlane</a>(<span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; <a class="code hl_class" href="classSbList.html">p0</a>, <span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; <a class="code hl_class" href="classSbList.html">p1</a>, <span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; <a class="code hl_class" href="classSbList.html">p2</a>) {</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    this-&gt;normal = (<a class="code hl_class" href="classSbList.html">p1</a> - <a class="code hl_class" href="classSbList.html">p0</a>).cross(<a class="code hl_class" href="classSbList.html">p2</a> - <a class="code hl_class" href="classSbList.html">p0</a>);</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <a class="code hl_class" href="classSbList.html">assert</a>(this-&gt;normal.sqrLength() != 0.0f); <span class="comment">// points on line</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <a class="code hl_class" href="classSbPlane.html">SbPlane</a>(<span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; p0, <span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; p1, <span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; p2) {</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    this-&gt;normal = (p1 - p0).cross(p2 - p0);</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    assert(this-&gt;normal.sqrLength() != 0.0f); <span class="comment">// points on line</span></div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    this-&gt;normal.normalize();</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    this-&gt;distance = this-&gt;normal.dot(<a class="code hl_class" href="classSbList.html">p0</a>);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    this-&gt;distance = this-&gt;normal.dot(p0);</div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  }</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  Type getDistance(<span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; point)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  Type getDistance(<span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; point)<span class="keyword"> const </span>{</div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordflow">return</span> point.dot(this-&gt;normal) - this-&gt;distance;</div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  }</div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; getNormal(<span class="keywordtype">void</span>)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; getNormal(<span class="keywordtype">void</span>)<span class="keyword"> const </span>{</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordflow">return</span> this-&gt;normal;</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  }</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keywordtype">void</span> offset(<span class="keyword">const</span> Type <a class="code hl_class" href="classSbList.html">d</a>) {</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    this-&gt;distance += <a class="code hl_class" href="classSbList.html">d</a>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keywordtype">void</span> offset(<span class="keyword">const</span> Type d) {</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    this-&gt;distance += d;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  }</div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keywordtype">int</span> isInHalfSpace(<span class="keyword">const</span> <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> &amp; point)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keywordtype">int</span> isInHalfSpace(<span class="keyword">const</span> <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> &amp; point)<span class="keyword"> const </span>{</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordflow">return</span> this-&gt;getDistance(point) &gt;= 0.0f;</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  }</div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
@@ -214,14 +214,13 @@ $(function(){initNavTree('SbPlane_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  }</div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  <a class="code hl_class" href="classSbList.html">SbVec3&lt;Type&gt;</a> normal;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  <a class="code hl_class" href="classSbVec3.html">SbVec3&lt;Type&gt;</a> normal;</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  Type distance;</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>};</div>
 </div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#endif </span><span class="comment">// !COIN_SBPLANE_H</span></div>
-<div class="ttc" id="aclassSbList_html"><div class="ttname"><a href="classSbList.html">SbList</a></div><div class="ttdef"><b>Definition</b> misc/SbList.h:69</div></div>
 <div class="ttc" id="aclassSbPlane_html"><div class="ttname"><a href="classSbPlane.html">SbPlane</a></div><div class="ttdef"><b>Definition</b> SbPlane.h:44</div></div>
 <div class="ttc" id="aclassSbVec3_html"><div class="ttname"><a href="classSbVec3.html">SbVec3</a></div><div class="ttdef"><b>Definition</b> SbVec3.h:40</div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -230,7 +229,7 @@ $(function(){initNavTree('SbPlane_8h_source.html',''); initResizable(); });
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_97aefd0d527b934f1d99a682da8fe6a9.html">lib</a></li><li class="navelem"><a class="el" href="dir_a879be32c934ecfdce3b37de6341a4fd.html">SmallChange</a></li><li class="navelem"><a class="el" href="dir_7201528a329fac1260b37fef8d12eebb.html">misc</a></li><li class="navelem"><b>SbPlane.h</b></li>
-    <li class="footer">Generated on Fri Aug 2 2024 09:23:34 for SmallChange by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
+    <li class="footer">Generated on Tue Sep 10 2024 20:35:47 for SmallChange by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
 </body>
