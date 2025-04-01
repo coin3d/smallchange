@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0...3.29)
 
 project(SmallChange VERSION 1.0.0)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
